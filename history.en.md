@@ -1,6 +1,11 @@
 # History
 
  - master/HEAD
+ - 4.1.4 (2025.3.13)
+   * Match styling of sound-playing/muted button to Firefox 136 and later.
+   * Add a new option to show tab preview panel only in the sidebar area.
+   * Fix mismatched checked state with special permission.
+   * [Add a mechanism to help collecting performance profile while initialization process.](https://github.com/piroor/treestyletab/discussions/3097#discussioncomment-12159391)
  - 4.1.3 (2025.1.16)
    * Show tab preview panel with visible background color on macOS.
    * Size tab preview panel in the contents area correctly on macOS Retina display. (regression on 4.1.2)
