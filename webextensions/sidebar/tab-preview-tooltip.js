@@ -11,10 +11,10 @@
 // and content scripts. Players are:
 //
 // * This script (CONTROLLER)
-// * The content script of the active tab to load tab preview frames
-//   (LOADER): injected by prepareFrame()
-// * The content script of the tab preview frame (FRAME): loaded as
-//   `/resources/tab-preview-frame.js`
+// * The content script of the active tab to load tab preview provider
+//   (LOADER): injected by preparePreview()
+// * The content script of the tab preview implementation (PANEL): loaded
+//   from `/resources/tab-preview-panel.js` and injected by preparePreview()
 // * The tab A: a tab to be shown in the preview tooltip.
 // * The tab B: the active tab which is used to show the preview tooltip.
 //
@@ -23,48 +23,33 @@
 // 1. The CONTROLLER detects `tab-item-substance-enter` (`mouseenter`) event
 //    on a tab substance.
 // 2. The CONTROLLER sends a message to the LOADER of the active tab,
-//    like "do you know the 'frameId' in your paeg?"
+//    like "do you have already prepared panel in your paeg?"
 //    1. If no response, the CONTROLLER loads a content script LOADER
-//       into the active tab.
-//       1. The LOADER generates a transparent iframe with the URL of
-//          `/resources/tab-preview-frame.html`.
-//       2. The FRAME is loaded and it sends a message to the CONTROLLER
-//          like "now I'm ready!"
-//       3. The CONTROLLER receives the message and gets the `sender.frameId`
-//          information corresponding to the message.
-//       4. The CONTROLLER sends the `frameId` information to the LOADER
-//          of the active tab, like "hey, your iframe is loaded  with the
-//          frameId XXX!`
-//       5. The LOADER of the active tab tracks the notified `frameId`.
+//       (and PANEL) into the active tab.
 //    2. The LOADER of the active tab responds to the CONTROLLER, like
-//       "OK, I'm ready and the frameId of my iframe is XXX!"
+//       "OK, I'm ready!"
 //    3. If these operation is not finished until some seconds, the
 //       CONTROLLER gives up to show the preview.
-// 3. The CONTROLLER receives the "I'm ready" response with `frameId` from
-//    the LOADER of the active tab.
+// 3. The CONTROLLER receives the "I'm ready" response from the LOADER of
+//    the active tab.
 // 4. The CONTROLLER generates a thumbnail image for the tab A, and sends
-//    a message with `frameId` to the FRAME in the active  tab, like "show
-//    a preview with a thumbnail image 'data:image/png,...' at the position
-//    (x,y)"
-// 5. The FRAME with the specified `frameId` shows the preview.
+//    a message to the PANEL in the active tab, like "show a preview with a
+//    thumbnail image 'data:image/png,...' at the position (x,y)"
+// 5. The PANEL shows the preview.
 //
 // When we need to hide a tab preview:
 //
 // 1. The CONTROLLER detects `tab-item-substance-leave` (`mouseleave`) event
 //    on a tab substance.
 // 2. The CONTROLLER sends a message to the LOADER of the active tab, like
-//    "do you know the 'frameId' in your paeg?"
+//    "do you have already prepared panel in your paeg?"
 //    1. If no response, the CONTROLLER gives up to hide the preview.
 //       We have nothing to do.
-// 3. The CONTROLLER receives the "I'm ready" response with `frameId` from
-//    the LOADER of the active tab.
-// 4. The CONTROLLER sends a message with `frameId` to the FRAME in the
-//    active tab, like "hide a preview"
-// 5. The FRAME with the specified `frameId` hides the preview.
-//
-// I think the CONTROLLER should not track `frameId` for each tab.
-// Contents of tabs are frequently destroyed, so `frameId` information
-// stored (cached) by the CONTROLLER will become obsolete too easily.
+// 3. The CONTROLLER receives the "I'm ready" response from the LOADER of
+//    the active tab.
+// 4. The CONTROLLER sends a message to the PANEL in the active tab, like
+//    "hide a preview"
+// 5. The PANEL hides the preview.
 
 import {
   configs,
@@ -77,30 +62,13 @@ import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import Tab from '/common/Tab.js';
 
-import * as TabPreviewFrame from '/resources/module/tab-preview-frame.js';
+import * as TabPreviewPanel from '/resources/module/tab-preview-panel.js';
 
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
 
 import { kEVENT_TAB_SUBSTANCE_ENTER, kEVENT_TAB_SUBSTANCE_LEAVE } from './components/TabElement.js';
 
-const TAB_PREVIEW_FRAME_STYLE = `
-  background: transparent;
-  border: 0 none;
-  bottom: 0;
-  color-scheme: light; /* "color-scheme:dark" (which can be applied by Firefox itself or the webpage) makes the background color of this element white and intransparent unexpectedly when the "Dark" theme is chosen on Firefox. We cannot override the white background color with the "background" declaration above, so we now override "color-scheme" instead. (Dark color scheme is injected by the caller, so we don't need to set "color-scheme:dark" here.) */
-  height: 100%;
-  left: 0;
-  overflow: hidden;
-  pointer-events: none;
-  position: fixed;
-  right: 0;
-  top: 0;
-  width: 100%;
-  z-index: ${Number.MAX_SAFE_INTEGER};
-`;
-
-const DIRECT_PANEL_AVAILABLE_URLS_MATCHER = new RegExp(`^moz-extension://${location.host}/`);
 const CAPTURABLE_URLS_MATCHER         = /^(https?|data):/;
 const PREVIEW_WITH_HOST_URLS_MATCHER  = /^(https?|moz-extension):/;
 const PREVIEW_WITH_TITLE_URLS_MATCHER = /^file:/;
@@ -121,127 +89,94 @@ function generateOneTimeCustomElementName() {
   return prefix + '-' + Date.now() + '-' + Math.round(Math.random() * 65000);
 }
 
-let mDirectLoadScript;
+let mPreviewProviderScript;
 
-async function prepareFrame(tabId) {
+async function preparePreview(tabId) {
   const tab = Tab.get(tabId);
   if (!tab)
     return;
 
-  if (DIRECT_PANEL_AVAILABLE_URLS_MATCHER.test(tab.url)) {
-    log('prepareFrame: load script to the tab contents itself ', tab.url);
-    // We must not insert iframe containing script tag with the internal URL
-    // if the tab is TST's internal page, because Firefox closes such tabs
-    // when the addon is reloaded. Instead we load tab preview frame script
-    // to the internal page directly.
-    if (!mDirectLoadScript) {
-      const response = await fetch('/resources/module/tab-preview-frame.js');
-      const moduleScript = await response.text();
-      mDirectLoadScript = moduleScript.replace(/^export /gm, '');
-    }
-    await browser.tabs.executeScript(tabId, {
-      runAt: 'document_start',
-      code: mDirectLoadScript,
-    });
-    return;
+  if (!mPreviewProviderScript) {
+    const response = await fetch('/resources/module/tab-preview-panel.js');
+    const moduleScript = await response.text();
+    mPreviewProviderScript = moduleScript.replace(/^export /gm, '');
   }
 
-  log('prepareFrame: insert iframe to the tab contents ', tab.url);
+  log('preparePreview: insert container to the tab contents ', tab.url);
   const logging = configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug;
   await browser.tabs.executeScript(tabId, {
     matchAboutBlank: true,
     runAt: 'document_start',
     code: `(() => {
+      ${mPreviewProviderScript}
+      window.lastInit = init;
+      (() => { // the LOADER
       const logging = ${!!logging};
 
-      window.closedIframeType = window.closedIframeType || '${generateOneTimeCustomElementName()}';
+      window.closedContainerType = window.closedContainerType || '${generateOneTimeCustomElementName()}';
 
       // cleanup!
-      for (const oldFrame of document.querySelectorAll(window.closedIframeType)) {
-        oldFrame.parentNode.removeChild(oldFrame);
+      for (const oldConatiner of document.querySelectorAll(window.closedContainerType)) {
+        oldContainer.parentNode.removeChild(oldContainer);
       }
 
       // We cannot undefine custom element types, so we define it just one time.
-      if (!window.customElements.get(window.closedIframeType)) {
-        // This may exposes "moz-extension://<UUID>/" URL to the webpage, so
-        // it may allow the webpage to identify you by fingerprinting with the
-        // UUID. It is not safe for privacy, but sadly this is most safer way
-        // we can do.
-        // If we load iframe with "about:blank", we cannot inject arbitrary
-        // script into the iframe due to restrictions of WebExtensions API
-        // (tabs.executeScript()) and the cross-origin policy. We can bypass
-        // the cross-origin restrictions with sandbox=allow-same-origin, but
-        // it means that webpage scripts can read all contents of the iframe,
-        // thus titles and URLs (and preview images) from other tabs will be
-        // accessible from webpage scripts - it is seriously vulnerable.
-        // Data: URI and Blob URL have same issue.
-        const url = '${browser.runtime.getURL('/resources/tab-preview-frame.html')}';
-        // So we use a wrapper custom element to enclose the raw iframe.
-        // It should guard the raw iframe from accesses by webpage scripts.
-        class ClosedIframe extends HTMLElement {
+      if (!window.customElements.get(window.closedContainerType)) {
+        // We use a wrapper custom element to enclose all preview elements
+        // which can contain privacy information.
+        // It should guard them from accesses by webpage scripts.
+        class ClosedContainer extends HTMLElement {
           constructor() {
             super();
             const shadow = this.attachShadow({ mode: 'closed' });
-            const frame = document.createElement('iframe');
-            frame.setAttribute('src', url);
-            frame.setAttribute('sandbox', 'allow-same-origin allow-scripts');
-            frame.setAttribute('style', ${JSON.stringify(TAB_PREVIEW_FRAME_STYLE)});
-            shadow.appendChild(frame);
+            const root = document.createElement('div');
+            shadow.appendChild(root);
+            window.lastInit(root); // don't call "init()" directly - it can be obsolete by "uninit()".
           }
         }
-        window.customElements.define(window.closedIframeType, ClosedIframe);
+        window.customElements.define(window.closedContainerType, ClosedContainer);
       }
-      const frame = document.createElement(window.closedIframeType);
-      document.documentElement.appendChild(frame);
-
-      let lastFrameId;
-      let windowId;
+      const container = document.createElement(window.closedContainerType);
+      document.documentElement.appendChild(container);
 
       const onMessage = (message, _sender) => {
         switch (message?.type) {
-          case 'treestyletab:ask-tab-preview-frame-id':
-            if (lastFrameId)
-              return Promise.resolve(lastFrameId);
-            break;
-
-          case 'treestyletab:notify-tab-preview-owner-info':
-            lastFrameId = message.frameId;
-            windowId = message.windowId;
-            if (logging)
-              console.log('tab preview owner notified: ', {
-                frameId: lastFrameId,
-                windowId,
-              });
-            //frame.dataset.frameId = message.frameId; // Just for debugging. Do not expose this on released version!
-            break;
+          case 'treestyletab:ask-tab-preview-container-ready':
+            return Promise.resolve(true);
 
           case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
             if (logging)
-              console.log('tab detached from window, destroy tab preview frame');
+              console.log('tab detached from window, destroy tab preview container');
             destroy();
             break;
         }
       };
       browser.runtime.onMessage.addListener(onMessage);
 
-      const destroy = () => {
-        if (!frame.parentNode)
-          return;
-        lastFrameId = null;
-        windowId = null;
-        frame.parentNode.removeChild(frame);
-        browser.runtime.onMessage.removeListener(onMessage);
-      };
-      document.documentElement.addEventListener('mousemove', () => {
+      const onMouseMove = () => {
         if (logging)
-          console.log('mouse move on the content area, destroy tab preview frame');
+          console.log('mouse move on the content area, destroy tab preview container');
         browser.runtime.sendMessage({
           type: 'treestyletab:hide-tab-preview',
-          windowId,
           timestamp: Date.now(),
         });
         destroy();
-      }, { once: true });
+      };
+      document.documentElement.addEventListener('mousemove', onMouseMove, { once: true });
+
+      const destroy = () => {
+        uninit();
+        if (!container.parentNode)
+          return;
+        container.parentNode.removeChild(container);
+        browser.runtime.onMessage.removeListener(onMessage);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('unload', destroy);
+        window.removeEventListener('pagehide', destroy);
+      };
+      window.addEventListener('unload', destroy, { once: true });
+      window.addEventListener('pagehide', destroy, { once: true });
+      })()
     })()`,
   });
 }
@@ -279,38 +214,29 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
   const promisedPreviewURL = typeof message.previewURL == 'function' && message.previewURL();
   const shouldFallbackToSidebar = canRenderInSidebar && !message.hasCustomTooltip;
 
-  let frameId;
-  let loadedInfo;
+  let ready;
   let rawTab;
   try {
-    const [gotFrameId, gotLoadedInfo, gotRawTab] = await Promise.all([
+    const [gotReady, gotRawTab] = await Promise.all([
       browser.tabs.sendMessage(tabId, {
-        type: 'treestyletab:ask-tab-preview-frame-id',
-      }).catch(_error => {}),
-      DIRECT_PANEL_AVAILABLE_URLS_MATCHER.test(tab.url) && browser.tabs.sendMessage(tabId, {
-        type: 'treestyletab:ask-tab-preview-frame-loaded',
-        tabId,
+        type: 'treestyletab:ask-tab-preview-container-ready',
       }).catch(_error => {}),
       browser.tabs.get(tabId),
     ]);
-    frameId = gotFrameId;
-    loadedInfo = gotLoadedInfo;
+    ready = gotReady;
     rawTab = gotRawTab;
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { frameId, loadedInfo });
-    if (!frameId &&
-        (!loadedInfo ||
-         loadedInfo.tabId != tabId)) {
+    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });
+    if (!ready) {
       if (!message.canRetry) {
         log(` => no response, give up to send`);
         return false;
       }
 
       if (retrying) {
-        // Retried to load tab preview frame, but failed, so
+        // Retried to init tab preview panel, but failed, so
         // now we fall back to the in-sidebar tab preview.
         if (!shouldFallbackToSidebar ||
-            !shouldMessageSend(message) ||
-            DIRECT_PANEL_AVAILABLE_URLS_MATCHER.test(tab.url)) {
+            !shouldMessageSend(message)) {
           log(` => no response after retrying, give up to send`);
           deferredResultResolver(false);
           return false;
@@ -328,16 +254,16 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
         return false;
       }
 
-      // We prepare tab preview frame now, and retry sending after that.
+      // We prepare tab preview panel now, and retry sending after that.
       log(` => no response, retry`);
       let resultResolver;
       const promisedResult = new Promise((resolve, _reject) => {
         resultResolver = resolve;
       });
-      waitUntilPreviewFrameLoadedIntoTab(tabId).then(() => {
+      waitUntilPreviewContainerReadyInTab(tabId).then(() => {
         sendTabPreviewMessage(tabId, message, resultResolver);
       });
-      await prepareFrame(tabId);
+      await preparePreview(tabId);
       return promisedResult;
     }
   }
@@ -363,14 +289,14 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
       tabId,
       timestamp,
       ...message,
-      ...TabPreviewFrame.getColors(),
+      ...TabPreviewPanel.getColors(),
       ...(promisedPreviewURL ? { previewURL: null } : {}),
       widthInOuterWorld: rawTab.width,
       fixedOffsetTop: configs.tabPreviewTooltipOffsetTop,
       animation: shouldApplyAnimation(),
       logging: configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug,
-    }, frameId ? { frameId } : {});
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): message was sent to the frame, response=`, response, ', promisedPreviewURL=', promisedPreviewURL);
+    });
+    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): message was sent, response=`, response, ', promisedPreviewURL=', promisedPreviewURL);
     if (deferredResultResolver)
       deferredResultResolver(!!response);
 
@@ -382,25 +308,25 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
           timestamp,
           ...message,
           previewURL,
-          ...TabPreviewFrame.getColors(),
+          ...TabPreviewPanel.getColors(),
           widthInOuterWorld: rawTab.width,
           fixedOffsetTop: configs.tabPreviewTooltipOffsetTop,
           animation: shouldApplyAnimation(),
           logging: configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug,
-        }, frameId ? { frameId } : {});
-        log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}, with previewURL): message was sent to the frame again, response=`, response);
+        });
+        log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}, with previewURL): message was sent again, response=`, response);
       });
     }
   }
   catch (error) {
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): failed to send message to the frame `, error);
+    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): failed to send message `, error);
     if (!message.canRetry) {
       log(` => no response, give up to send`);
       return false;
     }
 
     if (retrying) {
-      // Retried to load tab preview frame, but failed, so
+      // Retried to initialize tab preview panel, but failed, so
       // now we fall back to the in-sidebar tab preview.
       if (!shouldFallbackToSidebar ||
           !shouldMessageSend(message)) {
@@ -421,23 +347,23 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
       return false;
     }
 
-    // the frame was destroyed unexpectedly, so we re-prepare it.
+    // the panel was destroyed unexpectedly, so we re-prepare it.
     log(` => no response, retry`);
     let resultResolver;
     const promisedResult = new Promise((resolve, _reject) => {
       resultResolver = resolve;
     });
-    waitUntilPreviewFrameLoadedIntoTab(tabId).then(() => {
+    waitUntilPreviewContainerReadyInTab(tabId).then(() => {
       sendTabPreviewMessage(tabId, message, resultResolver);
     });
-    await prepareFrame(tabId);
+    await preparePreview(tabId);
     return promisedResult;
   }
 
   if (typeof response != 'boolean' &&
       shouldMessageSend(message)) {
     log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): got invalid response, fallback to in-sidebar preview`);
-    // Failed to send message to the in-content tab preview frame, so
+    // Failed to send message to the in-content tab preview panel, so
     // now we fall back to the in-sidebar tab preview.
     return sendInSidebarTabPreviewMessage(message);
   }
@@ -446,17 +372,17 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
   return !!response;
 }
 
-async function waitUntilPreviewFrameLoadedIntoTab(tabId) {
+async function waitUntilPreviewContainerReadyInTab(tabId) {
   let resolver;
   const promisedLoaded = new Promise((resolve, _reject) => {
     resolver = resolve;
   });
   let timeout;
   const onMessage = (message, sender) => {
-    if (message?.type != 'treestyletab:tab-preview-frame-loaded' ||
+    if (message?.type != 'treestyletab:tab-preview-ready' ||
         sender.tab?.id != tabId)
       return;
-    log('waitUntilPreviewFrameLoadedIntoTab: loaded in the tab ', tabId);
+    log('waitUntilPreviewContainerReadyInTab: ready in the tab ', tabId);
     if (timeout) {
       clearTimeout(timeout);
       timeout = null;
@@ -467,7 +393,7 @@ async function waitUntilPreviewFrameLoadedIntoTab(tabId) {
   timeout = setTimeout(() => {
     if (!timeout)
       return;
-    log('waitUntilPreviewFrameLoadedIntoTab: timeout for the tab ', tabId);
+    log('waitUntilPreviewContainerReadyInTab: timeout for the tab ', tabId);
     timeout = null;
     browser.runtime.onMessage.removeListener(onMessage);
     resolver();
@@ -481,7 +407,7 @@ async function sendInSidebarTabPreviewMessage(message) {
   log(`sendInSidebarTabPreviewMessage(${message.type}})`);
   if (typeof message.previewURL == 'function')
     message.previewURL = await message.previewURL();
-  await TabPreviewFrame.handleMessage({
+  await TabPreviewPanel.handleMessage({
     timestamp: startAt,
     ...message,
     windowId: TabsStore.getCurrentWindowId(),
@@ -654,44 +580,10 @@ browser.tabs.onActivated.addListener(activeInfo => {
 });
 
 
-browser.runtime.onMessage.addListener((message, sender) => {
-  if (message?.type != 'treestyletab:tab-preview-frame-loaded')
-    return;
-
-  log('tab preview frame is loaded, sender = ', sender);
-
-  if (sender.envType == 'addon_child' &&
-      !sender.frameId) {
-    log(' => in-sidebar preview');
-    return;
-  }
-
-  if (sender.tab &&
-      DIRECT_PANEL_AVAILABLE_URLS_MATCHER.test(sender.tab.url)) {
-    log(' => in-content previews with TST internal pages');
-    browser.tabs.sendMessage(sender.tab.id, {
-      type: 'treestyletab:notify-tab-preview-owner-info',
-      tabId: sender.tab.id,
-    });
-    return;
-  }
-
-  const windowId = TabsStore.getCurrentWindowId();
-  if (windowId &&
-      sender.tab?.windowId == windowId) {
-    log(' => in-content previews with regular webpages');
-    browser.tabs.sendMessage(sender.tab.id, {
-      type: 'treestyletab:notify-tab-preview-owner-info',
-      frameId: sender.frameId,
-      windowId,
-    });
-    return;
-  }
-});
-
 Sidebar.onReady.addListener(() => {
+  TabPreviewPanel.init(document.querySelector('#tabPreviewRoot'));
   const windowId = TabsStore.getCurrentWindowId();
-  TabPreviewFrame.setWindowId(windowId);
+  TabPreviewPanel.setWindowId(windowId);
 });
 
 document.querySelector('#tabbar').addEventListener('mouseleave', async () => {

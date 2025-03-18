@@ -10,20 +10,15 @@
 
 // This script can be loaded in three ways:
 //  * REGULAR case:
-//    loaded into an iframe embedded to a public webpage
-//  * TAB case:
-//    loaded into an TST internal page loaded in a tab
+//    loaded into a public webpage
 //  * SIDEBAR case:
 //    loaded into the TST sidebar
 
-let panel = null;
+let panel     = null;
+let root      = null;
+let onMessage = null;
 
 let windowId = null; // for SIDEBAR case
-let tabId = null; // for TAB case
-if (!location.href.startsWith('moz-extension://')) { // for REGULAR case
-  document.documentElement.style.pointerEvents = 'none';
-  document.documentElement.classList.add('tab-preview-frame');
-}
 
 // https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5
 const BASE_PANEL_WIDTH  = 280;
@@ -35,22 +30,34 @@ const isWindows = /^Win/i.test(navigator.platform);
 const isLinux = /Linux/i.test(navigator.platform);
 const isMac = /^Mac/i.test(navigator.platform);
 
-let onMessage;
+export function init(givenRoot) {
+  try {
+  root = givenRoot || document.documentElement;
+  root.classList.add('tab-preview-root');
 
-try{
   const style = document.createElement('style');
   style.setAttribute('type', 'text/css');
   style.textContent = `
-    :root {
+    .tab-preview-root {
       --tab-preview-panel-show-hide-animation: opacity 0.1s ease-out;
       --tab-preview-panel-scale: 1; /* Web contents may be zoomed by the user, and we need to cancel the zoom effect. */
-    }
-    :root.tab-preview-frame {
+      background: transparent;
+      border: 0 none;
+      bottom: 0;
+      height: 100%;
+      left: 0;
       opacity: 1;
+      overflow: hidden;
+      pointer-events: none;
+      position: fixed;
+      right: 0;
+      top: 0;
       transition: var(--tab-preview-panel-show-hide-animation);
+      width: 100%;
+      z-index: ${Number.MAX_SAFE_INTEGER};
     }
 
-    :root.tab-preview-frame:hover {
+    .tab-preview-root:hover {
       opacity: 0;
     }
 
@@ -142,10 +149,10 @@ try{
       opacity: 0;
       overflow: hidden; /* clip the preview with the rounded edges */
       padding: 0;
-      pointer-events: none; /* for SIDEBAR and TAB case */
+      pointer-events: none;
       position: fixed;
       right: auto;
-      z-index: ${Number.MAX_SAFE_INTEGER}; /* for SIDEBAR and TAB case */
+      z-index: ${Number.MAX_SAFE_INTEGER};
     }
     .tab-preview-panel.rtl {
       direction: rtl;
@@ -290,14 +297,12 @@ try{
       content: "- ";
     }
   `;
-  document.head.appendChild(style);
+  root.appendChild(style);
 
   let lastTimestamp = 0;
   onMessage = (message, _sender) => {
     if ((windowId &&
-         message?.windowId != windowId) ||
-        (tabId &&
-         message?.tabId != tabId))
+         message?.windowId != windowId))
       return;
 
     if (message?.logging)
@@ -336,7 +341,7 @@ try{
         return (async () => {
           // Ensure the order of messages: "show" for newly hovered tab =>
           // "hide" for previously hovered tab.
-          await new Promise(window.requestAnimationFrame);
+          await new Promise(requestAnimationFrame);
           if (!panel ||
               (message.previewTabId &&
                panel.dataset.tabId != message.previewTabId)) {
@@ -363,34 +368,37 @@ try{
           panel.classList.remove('open');
         }
         break;
-
-      // for TAB case
-      case 'treestyletab:notify-tab-preview-owner-info':
-        tabId = message.tabId;
-        if (tabId) {
-          document.documentElement.style.pointerEvents = '';
-          document.documentElement.classList.remove('tab-preview-frame');
-        }
-        if (message?.logging)
-          console.log(' => now I am loaded in the tab ${tabId}');
-        break;
-
-      // for TAB case
-      case 'treestyletab:ask-tab-preview-frame-loaded':
-        return Promise.resolve({ tabId, windowId });
     }
   };
   browser.runtime.onMessage.addListener(onMessage);
-  window.addEventListener('unload', () => {
-    browser.runtime.onMessage.removeListener(onMessage);
-  }, { once: true });
+  window.addEventListener('unload', uninit, { once: true });
+  window.addEventListener('pagehide', uninit, { once: true });
 
   browser.runtime.sendMessage({
-    type: 'treestyletab:tab-preview-frame-loaded',
+    type: 'treestyletab:tab-preview-ready',
   });
+  }
+  catch (error) {
+    console.log('TST Tab Preview Frame fatal error: ', error);
+  }
 }
-catch (error) {
-  console.log('TST Tab Preview Frame fatal error: ', error);
+
+export function uninit() {
+  if (!onMessage)
+    return;
+
+  if (panel) {
+    panel.parentNode.removeChild(panel);
+    panel = null;
+  }
+
+  browser.runtime.onMessage.removeListener(onMessage);
+  onMessage = null;
+
+  root = null;
+
+  window.removeEventListener('unload', uninit);
+  window.removeEventListener('pagehide', uninit);
 }
 
 function preparePanel() {
@@ -417,7 +425,7 @@ function preparePanel() {
     if (preview.src)
       preview.classList.remove('loading');
   });
-  document.documentElement.appendChild(createdPanel);
+  root.appendChild(createdPanel);
 
   panel = createdPanel;
 }
@@ -433,7 +441,7 @@ function updatePanel({ previewTabId, title, url, tooltipHtml, hasPreview, previe
     hasPreview = hasLoadablePreviewURL;
 
   if (logging)
-    console.log('updatePanel ', { previewTabId, title, url, tooltipHtml, hasPreview, previewURL, previewTabRect, offsetTop, align, rtl, scale, widthInOuterWorld, fixedOffsetTop });
+    console.log('updatePanel ', { panel, previewTabId, title, url, tooltipHtml, hasPreview, previewURL, previewTabRect, offsetTop, align, rtl, scale, widthInOuterWorld, fixedOffsetTop });
 
   panel.classList.add('updating');
   panel.classList.toggle('animation', animation);
@@ -462,7 +470,7 @@ function updatePanel({ previewTabId, title, url, tooltipHtml, hasPreview, previe
   // But window.devicePixelRatio is not available if privacy.resistFingerprinting=true,
   // thus we need to calculate it based on tabs.Tab.width.
   scale = devicePixelRatio * (scale || 1);
-  document.documentElement.style.setProperty('--tab-preview-panel-scale', scale);
+  root.style.setProperty('--tab-preview-panel-scale', scale);
   const panelWidth = Math.min(window.innerWidth, BASE_PANEL_WIDTH / scale);
   panel.style.setProperty('--panel-width', `${panelWidth}px`);
 
@@ -534,7 +542,7 @@ function updatePanel({ previewTabId, title, url, tooltipHtml, hasPreview, previe
         completeUpdate.retryCount++ < 10) {
       if (logging)
         console.log('updatePanel/completeUpdate: panel size is zero, retrying ', completeUpdate.retryCount);
-      window.requestAnimationFrame(completeUpdate);
+      requestAnimationFrame(completeUpdate);
       return;
     }
 
@@ -628,7 +636,7 @@ function updatePanel({ previewTabId, title, url, tooltipHtml, hasPreview, previe
     const imageHeight = imageWidth / width * height;
     previewImage.style.width = previewImage.style.maxWidth = `min(100%, ${imageWidth}px)`;
     previewImage.style.height = previewImage.style.maxHeight = `${imageHeight}px`;
-    window.requestAnimationFrame(completeUpdate);
+    requestAnimationFrame(completeUpdate);
     return;
   }
   catch (error) {
