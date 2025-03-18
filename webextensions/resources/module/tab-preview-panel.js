@@ -392,12 +392,10 @@ export function uninit() {
   }
 
   browser.runtime.onMessage.removeListener(onMessage);
-  onMessage = null;
-
-  root = null;
-
   window.removeEventListener('unload', uninit);
   window.removeEventListener('pagehide', uninit);
+
+  root = init = onMessage = uninit = preparePanel = updatePanel = getPngDimensionsFromDataUri = getColors = getPreferredColor = null;
 }
 
 function preparePanel() {
