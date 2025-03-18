@@ -32,351 +32,350 @@ const isMac = /^Mac/i.test(navigator.platform);
 
 export function init(givenRoot) {
   try {
-  root = givenRoot || document.documentElement;
-  root.classList.add('tab-preview-root');
+    root = givenRoot || document.documentElement;
+    root.classList.add('tab-preview-root');
 
-  const style = document.createElement('style');
-  style.setAttribute('type', 'text/css');
-  style.textContent = `
-    .tab-preview-root {
-      --tab-preview-panel-show-hide-animation: opacity 0.1s ease-out;
-      --tab-preview-panel-scale: 1; /* Web contents may be zoomed by the user, and we need to cancel the zoom effect. */
-      background: transparent;
-      border: 0 none;
-      bottom: 0;
-      height: 100%;
-      left: 0;
-      opacity: 1;
-      overflow: hidden;
-      pointer-events: none;
-      position: fixed;
-      right: 0;
-      top: 0;
-      transition: var(--tab-preview-panel-show-hide-animation);
-      width: 100%;
-      z-index: ${Number.MAX_SAFE_INTEGER};
-    }
+    const style = document.createElement('style');
+    style.setAttribute('type', 'text/css');
+    style.textContent = `
+      .tab-preview-root {
+        --tab-preview-panel-show-hide-animation: opacity 0.1s ease-out;
+        --tab-preview-panel-scale: 1; /* Web contents may be zoomed by the user, and we need to cancel the zoom effect. */
+        background: transparent;
+        border: 0 none;
+        bottom: 0;
+        height: 100%;
+        left: 0;
+        opacity: 1;
+        overflow: hidden;
+        pointer-events: none;
+        position: fixed;
+        right: 0;
+        top: 0;
+        transition: var(--tab-preview-panel-show-hide-animation);
+        width: 100%;
+        z-index: ${Number.MAX_SAFE_INTEGER};
+      }
 
-    .tab-preview-root:hover {
-      opacity: 0;
-    }
+      .tab-preview-root:hover {
+        opacity: 0;
+      }
 
-    .tab-preview-panel {
-      /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/toolkit/themes/shared/popup.css#11-63 */
-      color-scheme: light dark;
+      .tab-preview-panel {
+        /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/toolkit/themes/shared/popup.css#11-63 */
+        color-scheme: light dark;
 
-      --panel-background: Menu;
-      --panel-color: MenuText;
-      --panel-padding-block: calc(4px / var(--tab-preview-panel-scale));
-      --panel-padding: var(--panel-padding-block) 0;
-      --panel-border-radius: calc(4px / var(--tab-preview-panel-scale));
-      --panel-border-color: ThreeDShadow;
-      --panel-width: initial;
+        --panel-background: Menu;
+        --panel-color: MenuText;
+        --panel-padding-block: calc(4px / var(--tab-preview-panel-scale));
+        --panel-padding: var(--panel-padding-block) 0;
+        --panel-border-radius: calc(4px / var(--tab-preview-panel-scale));
+        --panel-border-color: ThreeDShadow;
+        --panel-width: initial;
 
-      --panel-shadow-margin: 0px;
-      --panel-shadow: 0px 0px var(--panel-shadow-margin) hsla(0,0%,0%,.2);
-      -moz-window-input-region-margin: var(--panel-shadow-margin);
-      margin: calc(-1 * var(--panel-shadow-margin));
+        --panel-shadow-margin: 0px;
+        --panel-shadow: 0px 0px var(--panel-shadow-margin) hsla(0,0%,0%,.2);
+        -moz-window-input-region-margin: var(--panel-shadow-margin);
+        margin: calc(-1 * var(--panel-shadow-margin));
 
-      /* Panel design token theming */
-      --background-color-canvas: var(--panel-background);
+        /* Panel design token theming */
+        --background-color-canvas: var(--panel-background);
 
-      /*@media (-moz-platform: linux) {*/
-      ${isLinux ? '' : '/*'}
-        --panel-border-radius: calc(8px / var(--tab-preview-panel-scale));
-        --panel-padding-block: calc(3px / var(--tab-preview-panel-scale));
-
-        @media (prefers-contrast) {
-          --panel-border-color: color-mix(in srgb, currentColor 60%, transparent);
-        }
-      ${isLinux ? '' : '*/'}
-      /*}*/
-
-      /*@media (-moz-platform: linux) or (-moz-platform: windows) {*/
-      ${isLinux || isWindows ? '' : '/*'}
-        --panel-shadow-margin: calc(4px / var(--tab-preview-panel-scale));
-      ${isLinux || isWindows ? '' : '*/'}
-      /*}*/
-
-      /* On some linux WMs we need to draw square menus because alpha is not available */
-      @media /*(-moz-platform: linux) and*/ (not (-moz-gtk-csd-transparency-available)) {
+        /*@media (-moz-platform: linux) {*/
         ${isLinux ? '' : '/*'}
-        --panel-shadow-margin: 0px !important;
-        --panel-border-radius: 0px !important;
+          --panel-border-radius: calc(8px / var(--tab-preview-panel-scale));
+          --panel-padding-block: calc(3px / var(--tab-preview-panel-scale));
+
+          @media (prefers-contrast) {
+            --panel-border-color: color-mix(in srgb, currentColor 60%, transparent);
+          }
         ${isLinux ? '' : '*/'}
+        /*}*/
+
+        /*@media (-moz-platform: linux) or (-moz-platform: windows) {*/
+        ${isLinux || isWindows ? '' : '/*'}
+          --panel-shadow-margin: calc(4px / var(--tab-preview-panel-scale));
+        ${isLinux || isWindows ? '' : '*/'}
+        /*}*/
+
+        /* On some linux WMs we need to draw square menus because alpha is not available */
+        @media /*(-moz-platform: linux) and*/ (not (-moz-gtk-csd-transparency-available)) {
+          ${isLinux ? '' : '/*'}
+          --panel-shadow-margin: 0px !important;
+          --panel-border-radius: 0px !important;
+          ${isLinux ? '' : '*/'}
+        }
+
+        /*@media (-moz-platform: macos) {*/
+        ${isMac ? '' : '/*'}
+          appearance: auto;
+          -moz-default-appearance: menupopup;
+          background-color: Menu;
+          --panel-background: white /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */;
+          --panel-border-color: transparent;
+          --panel-border-radius: calc(6px / var(--tab-preview-panel-scale));
+        ${isMac ? '' : '*/'}
+        /*}*/
+
+        /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5 */
+        --panel-width: min(100%, calc(${BASE_PANEL_WIDTH}px / var(--tab-preview-panel-scale)));
+        --panel-padding: 0;
+
+        /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/toolkit/themes/shared/global-shared.css#111 */
+        /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/browser/themes/shared/browser-colors.css#90 */
+        --panel-border-color: light-dark(rgb(240, 240, 244), rgb(82, 82, 94));
+
+
+        @media (prefers-color-scheme: dark) {
+          --panel-background: ${isMac ? 'rgb(66, 65, 77)' /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */ : 'var(--dark-popup)'};
+          --panel-color: var(--dark-popup-text);
+          --panel-border-color: var(--dark-popup-border);
+        }
+
+        background: var(--panel-background);
+        border: var(--panel-border-color) solid calc(1px / var(--tab-preview-panel-scale));
+        border-radius: var(--panel-border-radius);
+        box-shadow: var(--panel-shadow);
+        box-sizing: border-box;
+        color: var(--panel-color);
+        direction: ltr;
+        font: Message-Box;
+        left: auto;
+        line-height: 1.5;
+        margin-block-start: 0px;
+        max-width: var(--panel-width);
+        min-width: var(--panel-width);
+        opacity: 0;
+        overflow: hidden; /* clip the preview with the rounded edges */
+        padding: 0;
+        pointer-events: none;
+        position: fixed;
+        right: auto;
+        z-index: ${Number.MAX_SAFE_INTEGER};
+      }
+      .tab-preview-panel.rtl {
+        direction: rtl;
+      }
+      .tab-preview-panel.animation {
+        transition: var(--tab-preview-panel-show-hide-animation),
+                    left 0.1s ease-out,
+                    margin-block-start 0.1s ease-out,
+                    right 0.1s ease-out;
+      }
+      .tab-preview-panel.extended {
+        max-width: min(100%, calc(var(--panel-width) * 2));
+      }
+      .tab-preview-panel.open {
+        opacity: 1;
+      }
+      .tab-preview-panel.animation.updating,
+      .tab-preview-panel.animation:not(.open) {
+        margin-block-start: 1ch; /* The native tab preview panel "popups up" on the vertical tab bar. */
+      }
+      /*
+      .tab-preview-panel[data-align="left"].updating,
+      .tab-preview-panel[data-align="left"]:not(.open) {
+        left: -1ch !important;
+      }
+      .tab-preview-panel[data-align="right"].updating,
+      .tab-preview-panel[data-align="right"]:not(.open) {
+        right: -1ch !important;
+      }
+      */
+
+      .tab-preview-panel.extended .tab-preview-title,
+      .tab-preview-panel.extended .tab-preview-url,
+      .tab-preview-panel.extended .tab-preview-image-container,
+      .tab-preview-panel:not(.extended) .tab-preview-extended-content {
+        display: none;
       }
 
-      /*@media (-moz-platform: macos) {*/
-      ${isMac ? '' : '/*'}
-        appearance: auto;
-        -moz-default-appearance: menupopup;
-        background-color: Menu;
-        --panel-background: white /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128
- */;
-        --panel-border-color: transparent;
-        --panel-border-radius: calc(6px / var(--tab-preview-panel-scale));
-      ${isMac ? '' : '*/'}
-      /*}*/
-
-      /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5 */
-      --panel-width: min(100%, calc(${BASE_PANEL_WIDTH}px / var(--tab-preview-panel-scale)));
-      --panel-padding: 0;
-
-      /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/toolkit/themes/shared/global-shared.css#111 */
-      /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/browser/themes/shared/browser-colors.css#90 */
-      --panel-border-color: light-dark(rgb(240, 240, 244), rgb(82, 82, 94));
-
-
-      @media (prefers-color-scheme: dark) {
-        --panel-background: ${isMac ? 'rgb(66, 65, 77)' /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */ : 'var(--dark-popup)'};
-        --panel-color: var(--dark-popup-text);
-        --panel-border-color: var(--dark-popup-border);
+      .tab-preview-panel-contents,
+      .tab-preview-panel-contents-inner-box {
+        max-width: calc(var(--panel-width) - (2px / var(--tab-preview-panel-scale)));
+        min-width: calc(var(--panel-width) - (2px / var(--tab-preview-panel-scale)));
+      }
+      .tab-preview-panel.extended .tab-preview-panel-contents,
+      .tab-preview-panel.extended .tab-preview-panel-contents-inner-box {
+        max-width: calc(min(100%, calc(var(--panel-width) * 2)) - (2px / var(--tab-preview-panel-scale)));
       }
 
-      background: var(--panel-background);
-      border: var(--panel-border-color) solid calc(1px / var(--tab-preview-panel-scale));
-      border-radius: var(--panel-border-radius);
-      box-shadow: var(--panel-shadow);
-      box-sizing: border-box;
-      color: var(--panel-color);
-      direction: ltr;
-      font: Message-Box;
-      left: auto;
-      line-height: 1.5;
-      margin-block-start: 0px;
-      max-width: var(--panel-width);
-      min-width: var(--panel-width);
-      opacity: 0;
-      overflow: hidden; /* clip the preview with the rounded edges */
-      padding: 0;
-      pointer-events: none;
-      position: fixed;
-      right: auto;
-      z-index: ${Number.MAX_SAFE_INTEGER};
-    }
-    .tab-preview-panel.rtl {
-      direction: rtl;
-    }
-    .tab-preview-panel.animation {
-      transition: var(--tab-preview-panel-show-hide-animation),
-                  left 0.1s ease-out,
-                  margin-block-start 0.1s ease-out,
-                  right 0.1s ease-out;
-    }
-    .tab-preview-panel.extended {
-      max-width: min(100%, calc(var(--panel-width) * 2));
-    }
-    .tab-preview-panel.open {
-      opacity: 1;
-    }
-    .tab-preview-panel.animation.updating,
-    .tab-preview-panel.animation:not(.open) {
-      margin-block-start: 1ch; /* The native tab preview panel "popups up" on the vertical tab bar. */
-    }
-    /*
-    .tab-preview-panel[data-align="left"].updating,
-    .tab-preview-panel[data-align="left"]:not(.open) {
-      left: -1ch !important;
-    }
-    .tab-preview-panel[data-align="right"].updating,
-    .tab-preview-panel[data-align="right"]:not(.open) {
-      right: -1ch !important;
-    }
-    */
+      .tab-preview-panel-contents {
+        max-height: calc(var(--panel-max-height) - (2px / var(--tab-preview-panel-scale)));
+      }
 
-    .tab-preview-panel.extended .tab-preview-title,
-    .tab-preview-panel.extended .tab-preview-url,
-    .tab-preview-panel.extended .tab-preview-image-container,
-    .tab-preview-panel:not(.extended) .tab-preview-extended-content {
-      display: none;
-    }
+      .tab-preview-panel.overflow .tab-preview-panel-contents {
+        mask-image: linear-gradient(to top, transparent 0, black 2em);
+      }
 
-    .tab-preview-panel-contents,
-    .tab-preview-panel-contents-inner-box {
-      max-width: calc(var(--panel-width) - (2px / var(--tab-preview-panel-scale)));
-      min-width: calc(var(--panel-width) - (2px / var(--tab-preview-panel-scale)));
-    }
-    .tab-preview-panel.extended .tab-preview-panel-contents,
-    .tab-preview-panel.extended .tab-preview-panel-contents-inner-box {
-      max-width: calc(min(100%, calc(var(--panel-width) * 2)) - (2px / var(--tab-preview-panel-scale)));
-    }
+      .tab-preview-title {
+        font-size: calc(1em / var(--tab-preview-panel-scale));
+        font-weight: bold;
+        margin: var(--panel-border-radius) var(--panel-border-radius) 0;
+        max-height: 3em; /* -webkit-line-clamp looks unavailable, so this is a workaround */
+        overflow: hidden;
+        /* text-overflow: ellipsis; */
+        -webkit-line-clamp: 2; /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#15-18 */
+      }
 
-    .tab-preview-panel-contents {
-      max-height: calc(var(--panel-max-height) - (2px / var(--tab-preview-panel-scale)));
-    }
+      .tab-preview-url {
+        font-size: calc(1em / var(--tab-preview-panel-scale));
+        margin: 0 var(--panel-border-radius);
+        opacity: 0.69; /* https://searchfox.org/mozilla-central/rev/234f91a9d3ebef0d514868701cfb022d5f199cb5/toolkit/themes/shared/design-system/tokens-shared.css#182 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
 
-    .tab-preview-panel.overflow .tab-preview-panel-contents {
-      mask-image: linear-gradient(to top, transparent 0, black 2em);
-    }
+      .tab-preview-extended-content {
+        font-size: calc(1em / var(--tab-preview-panel-scale));
+        margin: var(--panel-border-radius);
+        white-space: pre;
+      }
 
-    .tab-preview-title {
-      font-size: calc(1em / var(--tab-preview-panel-scale));
-      font-weight: bold;
-      margin: var(--panel-border-radius) var(--panel-border-radius) 0;
-      max-height: 3em; /* -webkit-line-clamp looks unavailable, so this is a workaround */
-      overflow: hidden;
-      /* text-overflow: ellipsis; */
-      -webkit-line-clamp: 2; /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#15-18 */
-    }
+      .tab-preview-image-container {
+        border-block-start: calc(1px / var(--tab-preview-panel-scale)) solid var(--panel-border-color);
+        margin-block-start: 0.25em;
+        max-height: calc(var(--panel-width) * ${BASE_PANEL_HEIGHT / BASE_PANEL_WIDTH}); /* use relative value instead of 140px */
+        overflow: hidden;
+      }
 
-    .tab-preview-url {
-      font-size: calc(1em / var(--tab-preview-panel-scale));
-      margin: 0 var(--panel-border-radius);
-      opacity: 0.69; /* https://searchfox.org/mozilla-central/rev/234f91a9d3ebef0d514868701cfb022d5f199cb5/toolkit/themes/shared/design-system/tokens-shared.css#182 */
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+      .tab-preview-image {
+        max-width: 100%;
+        opacity: 1;
+      }
+      .tab-preview-panel.animation:not(.updating) .tab-preview-image {
+        transition: opacity 0.2s ease-out;
+      }
+      .tab-preview-image.loading {
+        min-height: ${BASE_PANEL_HEIGHT}px;
+      }
 
-    .tab-preview-extended-content {
-      font-size: calc(1em / var(--tab-preview-panel-scale));
-      margin: var(--panel-border-radius);
-      white-space: pre;
-    }
+      .tab-preview-panel.blank,
+      .tab-preview-panel .blank,
+      .tab-preview-panel.hidden,
+      .tab-preview-panel .hidden {
+        display: none;
+      }
 
-    .tab-preview-image-container {
-      border-block-start: calc(1px / var(--tab-preview-panel-scale)) solid var(--panel-border-color);
-      margin-block-start: 0.25em;
-      max-height: calc(var(--panel-width) * ${BASE_PANEL_HEIGHT / BASE_PANEL_WIDTH}); /* use relative value instead of 140px */
-      overflow: hidden;
-    }
+      .tab-preview-panel.loading,
+      .tab-preview-panel .loading {
+        opacity: 0;
+      }
 
-    .tab-preview-image {
-      max-width: 100%;
-      opacity: 1;
-    }
-    .tab-preview-panel.animation:not(.updating) .tab-preview-image {
-      transition: opacity 0.2s ease-out;
-    }
-    .tab-preview-image.loading {
-      min-height: ${BASE_PANEL_HEIGHT}px;
-    }
-
-    .tab-preview-panel.blank,
-    .tab-preview-panel .blank,
-    .tab-preview-panel.hidden,
-    .tab-preview-panel .hidden {
-      display: none;
-    }
-
-    .tab-preview-panel.loading,
-    .tab-preview-panel .loading {
-      opacity: 0;
-    }
-
-    .tab-preview-panel.updating,
-    .tab-preview-panel .updating {
-      visibility: hidden;
-    }
+      .tab-preview-panel.updating,
+      .tab-preview-panel .updating {
+        visibility: hidden;
+      }
 
 
-    /* tree */
-    .tab-preview-extended-content ul,
-    .tab-preview-extended-content ul ul {
-      margin-block: 0;
-      margin-inline: 1em 0;
-      padding: 0;
-      list-style: disc;
-    }
+      /* tree */
+      .tab-preview-extended-content ul,
+      .tab-preview-extended-content ul ul {
+        margin-block: 0;
+        margin-inline: 1em 0;
+        padding: 0;
+        list-style: disc;
+      }
 
-    .tab-preview-extended-content .title-line {
-      display: flex;
-      flex-direction: row;
-      max-width: 100%;
-      white-space: nowrap;
-    }
-    .tab-preview-extended-content .title-line .title {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .tab-preview-extended-content .title-line .cookieStoreName {
-      display: flex;
-      margin-inline-start: 1ch;
-    }
-    .tab-preview-extended-content .title-line .cookieStoreName::before {
-      content: "- ";
-    }
-  `;
-  root.appendChild(style);
+      .tab-preview-extended-content .title-line {
+        display: flex;
+        flex-direction: row;
+        max-width: 100%;
+        white-space: nowrap;
+      }
+      .tab-preview-extended-content .title-line .title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .tab-preview-extended-content .title-line .cookieStoreName {
+        display: flex;
+        margin-inline-start: 1ch;
+      }
+      .tab-preview-extended-content .title-line .cookieStoreName::before {
+        content: "- ";
+      }
+    `;
+    root.appendChild(style);
 
-  let lastTimestamp = 0;
-  onMessage = (message, _sender) => {
-    if ((windowId &&
+    let lastTimestamp = 0;
+    onMessage = (message, _sender) => {
+      if ((windowId &&
          message?.windowId != windowId))
-      return;
+        return;
 
-    if (message?.logging)
-      console.log('on message: ', message);
+      if (message?.logging)
+        console.log('on message: ', message);
 
-    switch (message?.type) {
-      case 'treestyletab:show-tab-preview':
-        return (async () => {
+      switch (message?.type) {
+        case 'treestyletab:show-tab-preview':
+          return (async () => {
           // Simulate the behavior: show tab preview panel with delay
           // only when the panel is not shown yet.
-          if (typeof message.waitInitialShowUntil == 'number' &&
+            if (typeof message.waitInitialShowUntil == 'number' &&
               (!panel ||
                !panel.classList.contains('open'))) {
-            const delay = Math.max(0, message.waitInitialShowUntil - Date.now());
-            if (delay > 0) {
-              await new Promise((resolve, _reject) => {
-                setTimeout(resolve, delay);
-              });
+              const delay = Math.max(0, message.waitInitialShowUntil - Date.now());
+              if (delay > 0) {
+                await new Promise((resolve, _reject) => {
+                  setTimeout(resolve, delay);
+                });
+              }
             }
-          }
-          if (message.timestamp < lastTimestamp) {
+            if (message.timestamp < lastTimestamp) {
+              if (message?.logging)
+                console.log(`show tab preview(${message.previewTabId}): expired, give up to show/update preview `, message.timestamp);
+              return true;
+            }
             if (message?.logging)
-              console.log(`show tab preview(${message.previewTabId}): expired, give up to show/update preview `, message.timestamp);
+              console.log(`show tab preview(${message.previewTabId}): invoked, let's show/update preview `, message.timestamp);
+            lastTimestamp = message.timestamp;
+            preparePanel();
+            updatePanel(message);
+            panel.classList.add('open');
             return true;
-          }
-          if (message?.logging)
-            console.log(`show tab preview(${message.previewTabId}): invoked, let's show/update preview `, message.timestamp);
-          lastTimestamp = message.timestamp;
-          preparePanel();
-          updatePanel(message);
-          panel.classList.add('open');
-          return true;
-        })();
+          })();
 
-      case 'treestyletab:hide-tab-preview':
-        return (async () => {
+        case 'treestyletab:hide-tab-preview':
+          return (async () => {
           // Ensure the order of messages: "show" for newly hovered tab =>
           // "hide" for previously hovered tab.
-          await new Promise(requestAnimationFrame);
-          if (!panel ||
+            await new Promise(requestAnimationFrame);
+            if (!panel ||
               (message.previewTabId &&
                panel.dataset.tabId != message.previewTabId)) {
+              if (message?.logging)
+                console.log(`hide tab preview(${message.previewTabId}): already hidden, nothing to do `, message.timestamp);
+              if (!panel && !message.previewTabId) // on initial case
+                lastTimestamp = message.timestamp;
+              return;
+            }
+            if (message.timestamp < lastTimestamp) {
+              if (message?.logging)
+                console.log(`hide tab preview(${message.previewTabId}): expired, give up to hide preview `, message.timestamp);
+              return true;
+            }
             if (message?.logging)
-              console.log(`hide tab preview(${message.previewTabId}): already hidden, nothing to do `, message.timestamp);
-            if (!panel && !message.previewTabId) // on initial case
-              lastTimestamp = message.timestamp;
-            return;
-          }
-          if (message.timestamp < lastTimestamp) {
-            if (message?.logging)
-              console.log(`hide tab preview(${message.previewTabId}): expired, give up to hide preview `, message.timestamp);
+              console.log(`hide tab preview(${message.previewTabId}): invoked, let's hide preview `, message.timestamp);
+            lastTimestamp = message.timestamp;
+            panel.classList.remove('open');
             return true;
+          })();
+
+        case 'treestyletab:notify-sidebar-closed':
+          if (panel) {
+            panel.classList.remove('open');
           }
-          if (message?.logging)
-            console.log(`hide tab preview(${message.previewTabId}): invoked, let's hide preview `, message.timestamp);
-          lastTimestamp = message.timestamp;
-          panel.classList.remove('open');
-          return true;
-        })();
+          break;
+      }
+    };
+    browser.runtime.onMessage.addListener(onMessage);
+    window.addEventListener('unload', uninit, { once: true });
+    window.addEventListener('pagehide', uninit, { once: true });
 
-      case 'treestyletab:notify-sidebar-closed':
-        if (panel) {
-          panel.classList.remove('open');
-        }
-        break;
-    }
-  };
-  browser.runtime.onMessage.addListener(onMessage);
-  window.addEventListener('unload', uninit, { once: true });
-  window.addEventListener('pagehide', uninit, { once: true });
-
-  browser.runtime.sendMessage({
-    type: 'treestyletab:tab-preview-ready',
-  });
+    browser.runtime.sendMessage({
+      type: 'treestyletab:tab-preview-ready',
+    });
   }
   catch (error) {
     console.log('TST Tab Preview Frame fatal error: ', error);
