@@ -5,7 +5,7 @@
 */
 'use strict';
 
-// This is a sub part to show tab preview tooltip.
+// This is the main implementation to show the tab preview panel.
 // See also: /siedbar/tab-preview-tooltip.js
 
 // This script can be loaded in three ways:
