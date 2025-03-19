@@ -14,7 +14,7 @@
 // * The content script of the active tab to load tab preview provider
 //   (LOADER): injected by preparePreview()
 // * The content script of the tab preview implementation (IMPL): loaded
-//   from `/resources/tab-preview-panel.js` and injected by preparePreview()
+//   from `/resources/TabPreviewPanel.js` and injected by preparePreview()
 // * The tab A: a tab to be shown in the preview tooltip.
 // * The tab B: the active tab which is used to show the preview tooltip.
 //
@@ -62,7 +62,7 @@ import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import Tab from '/common/Tab.js';
 
-import * as TabPreviewPanel from '/resources/module/tab-preview-panel.js';
+import TabPreviewPanel from '/resources/module/TabPreviewPanel.js'; // the IMPL
 
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
@@ -89,28 +89,22 @@ function generateOneTimeCustomElementName() {
   return prefix + '-' + Date.now() + '-' + Math.round(Math.random() * 65000);
 }
 
-let mPreviewProviderScript;
+const mTabPreviewPanel = new TabPreviewPanel(document.querySelector('#tabPreviewRoot'));
 
 async function preparePreview(tabId) {
   const tab = Tab.get(tabId);
   if (!tab)
     return;
 
-  if (!mPreviewProviderScript) {
-    const response = await fetch('/resources/module/tab-preview-panel.js');
-    const moduleScript = await response.text();
-    mPreviewProviderScript = moduleScript.replace(/^export /gm, '');
-  }
-
   log('preparePreview: insert container to the tab contents ', tab.url);
   const logging = configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug;
   await browser.tabs.executeScript(tabId, {
     matchAboutBlank: true,
     runAt: 'document_start',
-    code: `(() => {
-      ${mPreviewProviderScript}
-      window.lastInit = init;
-      (() => { // the LOADER
+    code: `(() => { // the LOADER
+      ${TabPreviewPanel.toString()}
+      window.lastTabPreviewPanel = TabPreviewPanel;
+
       const logging = ${!!logging};
 
       window.closedContainerType = window.closedContainerType || '${generateOneTimeCustomElementName()}';
@@ -119,6 +113,8 @@ async function preparePreview(tabId) {
       for (const oldConatiner of document.querySelectorAll(window.closedContainerType)) {
         oldContainer.parentNode.removeChild(oldContainer);
       }
+
+      let tabPreviewPanel;
 
       // We cannot undefine custom element types, so we define it just one time.
       if (!window.customElements.get(window.closedContainerType)) {
@@ -131,7 +127,7 @@ async function preparePreview(tabId) {
             const shadow = this.attachShadow({ mode: 'closed' });
             const root = document.createElement('div');
             shadow.appendChild(root);
-            window.lastInit(root); // don't call "init()" directly - it can be obsolete by "uninit()".
+            tabPreviewPanel = new window.lastTabPreviewPanel(root); // don't touch "TabPreviewPanel" directly - it can be a reference to the obsolete one.
           }
         }
         window.customElements.define(window.closedContainerType, ClosedContainer);
@@ -165,7 +161,10 @@ async function preparePreview(tabId) {
       document.documentElement.addEventListener('mousemove', onMouseMove, { once: true });
 
       const destroy = () => {
-        uninit();
+        if (tabPreviewPanel) {
+          tabPreviewPanel.destroy();
+          tabPreviewPanel = null;
+        }
         if (!container.parentNode)
           return;
         container.parentNode.removeChild(container);
@@ -176,7 +175,6 @@ async function preparePreview(tabId) {
       };
       window.addEventListener('unload', destroy, { once: true });
       window.addEventListener('pagehide', destroy, { once: true });
-      })()
     })()`,
   });
 }
@@ -289,7 +287,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
       tabId,
       timestamp,
       ...message,
-      ...TabPreviewPanel.getColors(),
+      ...mTabPreviewPanel.getColors(),
       ...(promisedPreviewURL ? { previewURL: null } : {}),
       widthInOuterWorld: rawTab.width,
       fixedOffsetTop: configs.tabPreviewTooltipOffsetTop,
@@ -308,7 +306,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
           timestamp,
           ...message,
           previewURL,
-          ...TabPreviewPanel.getColors(),
+          ...mTabPreviewPanel.getColors(),
           widthInOuterWorld: rawTab.width,
           fixedOffsetTop: configs.tabPreviewTooltipOffsetTop,
           animation: shouldApplyAnimation(),
@@ -407,7 +405,7 @@ async function sendInSidebarTabPreviewMessage(message) {
   log(`sendInSidebarTabPreviewMessage(${message.type}})`);
   if (typeof message.previewURL == 'function')
     message.previewURL = await message.previewURL();
-  await TabPreviewPanel.handleMessage({
+  await mTabPreviewPanel.handleMessage({
     timestamp: startAt,
     ...message,
     windowId: TabsStore.getCurrentWindowId(),
@@ -579,11 +577,9 @@ browser.tabs.onActivated.addListener(activeInfo => {
   });
 });
 
-
 Sidebar.onReady.addListener(() => {
-  TabPreviewPanel.init(document.querySelector('#tabPreviewRoot'));
   const windowId = TabsStore.getCurrentWindowId();
-  TabPreviewPanel.setWindowId(windowId);
+  mTabPreviewPanel.windowId = windowId;
 });
 
 document.querySelector('#tabbar').addEventListener('mouseleave', async () => {

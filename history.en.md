@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+   * Simplify implementation of the tab preview panel embedded in the content area.
  - 4.1.4 (2025.3.13)
    * Match styling of sound-playing/muted button to Firefox 136 and later.
    * Add a new option to show tab preview panel only in the sidebar area.
