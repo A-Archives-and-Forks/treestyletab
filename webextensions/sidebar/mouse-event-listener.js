@@ -323,7 +323,7 @@ function onMouseDown(event) {
     timestamp: Date.now(),
   };
 
-  const apiEventType = tab ?
+  const apiEventType = (tab && mousedownDetail.targetType == 'tab') ?
     TSTAPI.kNOTIFY_TAB_MOUSEDOWN :
     mousedownDetail.targetType == 'newtabbutton' ?
       TSTAPI.kNOTIFY_NEW_TAB_BUTTON_MOUSEDOWN :
@@ -445,7 +445,7 @@ async function onMouseUp(event) {
 
   const lastMousedown = EventUtils.getLastMousedown(event.button);
   EventUtils.cancelHandleMousedown(event.button);
-  const extraContentsInfo = lastMousedown && lastMousedown.detail && lastMousedown.detail.$extraContentsInfo;
+  const extraContentsInfo = lastMousedown?.detail?.$extraContentsInfo;
   if (!lastMousedown) {
     log(' => no lastMousedown');
     return;
@@ -456,15 +456,16 @@ async function onMouseUp(event) {
   }
 
   if (tab) {
+    const notifiedTab = lastMousedown.detail?.targetType == 'tab' ? tab : null;
     const mouseupInfo = {
       ...lastMousedown,
-      detail:   EventUtils.getMouseEventDetail(event, tab),
-      tab,
+      detail: EventUtils.getMouseEventDetail(event, tab),
+      tab:    notifiedTab,
     };
 
     const mouseupAllowed = await TSTAPIFrontend.tryMouseOperationAllowedWithExtraContents(
       TSTAPI.kNOTIFY_EXTRA_CONTENTS_MOUSEUP,
-      TSTAPI.kNOTIFY_TAB_MOUSEUP,
+      notifiedTab ? TSTAPI.kNOTIFY_TAB_MOUSEUP : TSTAPI.kNOTIFY_TABBAR_MOUSEUP,
       mouseupInfo,
       extraContentsInfo
     );
@@ -475,7 +476,7 @@ async function onMouseUp(event) {
 
     const clickAllowed = await TSTAPIFrontend.tryMouseOperationAllowedWithExtraContents(
       TSTAPI.kNOTIFY_EXTRA_CONTENTS_CLICKED,
-      TSTAPI.kNOTIFY_TAB_CLICKED,
+      notifiedTab ? TSTAPI.kNOTIFY_TAB_CLICKED : TSTAPI.kNOTIFY_TABBAR_CLICKED,
       mouseupInfo,
       extraContentsInfo
     );
