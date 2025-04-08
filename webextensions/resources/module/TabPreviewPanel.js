@@ -17,7 +17,8 @@
 export default class TabPreviewPanel {
   #panel;
   #root;
-  #windowId;
+  #windowId; // for SIDEBAR case
+  #lastTimestamp = 0;
 
   // https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5
   BASE_PANEL_WIDTH  = 280;
@@ -292,14 +293,10 @@ export default class TabPreviewPanel {
   }
 
   constructor(givenRoot) {
-    this.#panel    = null;
-    this.#root     = null;
-    this.onMessage = null;
-    this.#windowId = null; // for SIDEBAR case
-
-    this.destroy = this.destroy.bind(this);
-
     try {
+      this.destroy = this.#destroy.bind(this);
+      this.onMessage = this.#onMessage.bind(this);
+
       this.#root = givenRoot || document.documentElement;
       this.#root.classList.add('tab-preview-root');
 
@@ -308,78 +305,6 @@ export default class TabPreviewPanel {
       style.textContent = this.styleRules;
       this.#root.appendChild(style);
 
-      let lastTimestamp = 0;
-      this.onMessage = (message, _sender) => {
-        if ((this.#windowId &&
-         message?.windowId != this.#windowId))
-          return;
-
-        if (message?.logging)
-          console.log('on message: ', message);
-
-        switch (message?.type) {
-          case 'treestyletab:show-tab-preview':
-            return (async () => {
-              // Simulate the behavior: show tab preview panel with delay
-              // only when the panel is not shown yet.
-              if (typeof message.waitInitialShowUntil == 'number' &&
-              (!this.#panel ||
-               !this.#panel.classList.contains('open'))) {
-                const delay = Math.max(0, message.waitInitialShowUntil - Date.now());
-                if (delay > 0) {
-                  await new Promise((resolve, _reject) => {
-                    setTimeout(resolve, delay);
-                  });
-                }
-              }
-              if (message.timestamp < lastTimestamp) {
-                if (message?.logging)
-                  console.log(`show tab preview(${message.previewTabId}): expired, give up to show/update preview `, message.timestamp);
-                return true;
-              }
-              if (message?.logging)
-                console.log(`show tab preview(${message.previewTabId}): invoked, let's show/update preview `, message.timestamp);
-              lastTimestamp = message.timestamp;
-              this.prepareUI();
-              this.updateUI(message);
-              this.#panel.classList.add('open');
-              return true;
-            })();
-
-          case 'treestyletab:hide-tab-preview':
-            return (async () => {
-              // Ensure the order of messages: "show" for newly hovered tab =>
-              // "hide" for previously hovered tab.
-              await new Promise(requestAnimationFrame);
-              if (!this.#panel ||
-              (message.previewTabId &&
-               this.#panel.dataset.tabId != message.previewTabId)) {
-                if (message?.logging)
-                  console.log(`hide tab preview(${message.previewTabId}): already hidden, nothing to do `, message.timestamp);
-                if (!this.#panel && !message.previewTabId) // on initial case
-                  lastTimestamp = message.timestamp;
-                return;
-              }
-              if (message.timestamp < lastTimestamp) {
-                if (message?.logging)
-                  console.log(`hide tab preview(${message.previewTabId}): expired, give up to hide preview `, message.timestamp);
-                return true;
-              }
-              if (message?.logging)
-                console.log(`hide tab preview(${message.previewTabId}): invoked, let's hide preview `, message.timestamp);
-              lastTimestamp = message.timestamp;
-              this.#panel.classList.remove('open');
-              return true;
-            })();
-
-          case 'treestyletab:notify-sidebar-closed':
-            if (this.#panel) {
-              this.#panel.classList.remove('open');
-            }
-            break;
-        }
-      };
-      this.onMessage = this.onMessage.bind(this);
       browser.runtime.onMessage.addListener(this.onMessage);
       window.addEventListener('unload', this.destroy, { once: true });
       window.addEventListener('pagehide', this.destroy, { once: true });
@@ -390,10 +315,82 @@ export default class TabPreviewPanel {
     }
     catch (error) {
       console.log('TST Tab Preview Frame fatal error: ', error);
+      this.#root = this.onMessage = this.destroy = null;
     }
   }
 
-  destroy() {
+  #onMessage(message, _sender) {
+    if ((this.#windowId &&
+     message?.windowId != this.#windowId))
+      return;
+
+    if (message?.logging)
+      console.log('on message: ', message);
+
+    switch (message?.type) {
+      case 'treestyletab:show-tab-preview':
+        return (async () => {
+          // Simulate the behavior: show tab preview panel with delay
+          // only when the panel is not shown yet.
+          if (typeof message.waitInitialShowUntil == 'number' &&
+          (!this.#panel ||
+           !this.#panel.classList.contains('open'))) {
+            const delay = Math.max(0, message.waitInitialShowUntil - Date.now());
+            if (delay > 0) {
+              await new Promise((resolve, _reject) => {
+                setTimeout(resolve, delay);
+              });
+            }
+          }
+          if (message.timestamp < this.#lastTimestamp) {
+            if (message?.logging)
+              console.log(`show tab preview(${message.previewTabId}): expired, give up to show/update preview `, message.timestamp);
+            return true;
+          }
+          if (message?.logging)
+            console.log(`show tab preview(${message.previewTabId}): invoked, let's show/update preview `, message.timestamp);
+          this.#lastTimestamp = message.timestamp;
+          this.prepareUI();
+          this.updateUI(message);
+          this.#panel.classList.add('open');
+          return true;
+        })();
+
+      case 'treestyletab:hide-tab-preview':
+        return (async () => {
+          // Ensure the order of messages: "show" for newly hovered tab =>
+          // "hide" for previously hovered tab.
+          await new Promise(requestAnimationFrame);
+          if (!this.#panel ||
+          (message.previewTabId &&
+           this.#panel.dataset.tabId != message.previewTabId)) {
+            if (message?.logging)
+              console.log(`hide tab preview(${message.previewTabId}): already hidden, nothing to do `, message.timestamp);
+            if (!this.#panel && !message.previewTabId) // on initial case
+              this.#lastTimestamp = message.timestamp;
+            return;
+          }
+          if (message.timestamp < this.#lastTimestamp) {
+            if (message?.logging)
+              console.log(`hide tab preview(${message.previewTabId}): expired, give up to hide preview `, message.timestamp);
+            return true;
+          }
+          if (message?.logging)
+            console.log(`hide tab preview(${message.previewTabId}): invoked, let's hide preview `, message.timestamp);
+          this.#lastTimestamp = message.timestamp;
+          this.#panel.classList.remove('open');
+          return true;
+        })();
+
+      case 'treestyletab:notify-sidebar-closed':
+        if (this.#panel) {
+          this.#panel.classList.remove('open');
+        }
+        break;
+    }
+  }
+
+  #destroy() {
     if (!this.onMessage)
       return;
 
@@ -406,7 +403,7 @@ export default class TabPreviewPanel {
     window.removeEventListener('unload', this.destroy);
     window.removeEventListener('pagehide', this.destroy);
 
-    this.#root = this.onMessage = null;
+    this.#root = this.onMessage = this.destroy = null;
   }
 
   prepareUI() {
