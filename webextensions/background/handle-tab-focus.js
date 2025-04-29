@@ -92,7 +92,7 @@ Tab.onActivating.addListener(async (tab, info = {}) => { // return false if the 
   log('  lastActiveTab: ', win.lastActiveTab); // it may be blank on a startup
   const lastActiveTab = Tab.get(win.lastActiveTab || info.previousTabId);
   cancelDelayedExpand(lastActiveTab);
-  let shouldSkipCollapsed = (
+  const shouldSkipCollapsed = (
     !info.byInternalOperation &&
     mMaybeTabSwitchingByShortcut &&
     configs.skipCollapsedTabsForTabSwitchingShortcuts
@@ -144,13 +144,11 @@ Tab.onActivating.addListener(async (tab, info = {}) => { // return false if the 
           }
         }
         else {
-          shouldSkipCollapsed = true;
           log('  => canceled by someone.');
         }
       }
       info.allowed = allowed;
-      if (!shouldSkipCollapsed)
-        await handleNewActiveTab(tab, info);
+      await handleNewActiveTab(tab, info);
     }
     if (shouldSkipCollapsed) {
       log('=> reaction for focusing collapsed descendant while Ctrl-Tab/Ctrl-Shift-Tab');
