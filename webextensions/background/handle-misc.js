@@ -259,13 +259,17 @@ async function onShortcutCommand(command) {
     case 'focusPreviousSibling':
       TabsInternalOperation.activateTab(
         activeTab.$TST.previousSiblingTab ||
-          activeTab.$TST.parent && activeTab.$TST.parent.$TST.lastChild
+          (activeTab.$TST.parent ?
+             activeTab.$TST.parent.$TST.lastChild :
+             Tab.getLastRootTab(activeTab.windowId))
       );
       return;
     case 'focusNextSibling':
       TabsInternalOperation.activateTab(
         activeTab.$TST.nextSiblingTab ||
-          activeTab.$TST.parent && activeTab.$TST.parent.$TST.firstChild
+          (activeTab.$TST.parent ?
+             activeTab.$TST.parent.$TST.firstChild :
+             Tab.getFirstVisibleTab(activeTab.windowId))
       );
       return;
 

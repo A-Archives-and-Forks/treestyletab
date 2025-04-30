@@ -2796,7 +2796,7 @@ Tab.getRootTabs = (windowId = null, options = {}) => {
 };
 
 Tab.getLastRootTab = (windowId, options = {}) => {
-  const tabs = this.getRootTabs(windowId, options);
+  const tabs = Tab.getRootTabs(windowId, options);
   return tabs[tabs.length - 1];
 };
 
