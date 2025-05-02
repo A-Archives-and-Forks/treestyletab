@@ -670,6 +670,9 @@ function reserveToRefreshNativeTabGroup(id) {
     const group = TabsStore.windows.get(windowId).tabGroups.get(id);
     group.$TST.updateElement(TabUpdateTarget.TabProperties);
     for (const tab of Tab.getNativeGroupMemberTabs(windowId, id)) {
+      CollapseExpand.setCollapsed(tab, {
+        collapsed: group.collapsed,
+      });
       tab.$TST.updateElement(TabUpdateTarget.TabProperties);
     }
   });

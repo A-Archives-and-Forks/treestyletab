@@ -2075,6 +2075,7 @@ export default class Tab {
     if (this.type == 'group') {
       this.raw.title = exported.title;
       this.raw.color = exported.color;
+      this.raw.collapsed = exported.collapsed;
       return;
     }
 
