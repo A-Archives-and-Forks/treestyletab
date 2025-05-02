@@ -568,7 +568,7 @@ async function rebuildAll(importedWindow) {
 
   const tabs = importedWindow.tabs.map(importedTab => Tab.import(importedTab));
 
-  Window.init(mTargetWindow, importedWindow.tabGroups);
+  Window.init(mTargetWindow, importedWindow.tabGroups.map(Tab.initNativeTabGroup));
   let lastDraw = Date.now();
   let count = 0;
   const maxCount = tabs.length;

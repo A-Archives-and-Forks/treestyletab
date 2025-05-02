@@ -81,7 +81,7 @@ export default class Window {
   }
   initTabGroups(tabGroups) {
     log(`initializing tabGroups of window ${this.id}: `, tabGroups);
-    this.tabGroups = new Map((tabGroups || []).map(group => [group.id, (new Tab(group), group)]));
+    this.tabGroups = new Map((tabGroups || []).map(group => [group.id, group]));
   }
 
   destroy() {
@@ -287,22 +287,6 @@ export default class Window {
       tabs,
       tabGroups: [...this.tabGroups.values()].map(group => ({ ...group, $TST: null })),
     };
-  }
-
-  updateNativeTabGroupItem(groupId) {
-    const group = this.tabGroups.get(groupId);
-    const members = Tab.getNativeGroupMemberTabs(this.id, groupId);
-    log('updateNativeTabGroupItem: ', group, members);
-
-    if (members.length == 0) {
-      return;
-    }
-
-    const maybeNativeGroupTab = members[0].$TST.unsafePreviousTab;
-    if (maybeNativeGroupTab?.rawGroup?.id == groupId) {
-      log('updateNativeTabGroupItem: native tab group item exists: ', maybeNativeGroupTab);
-      return;
-    }
   }
 }
 

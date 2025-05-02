@@ -1304,7 +1304,7 @@ async function onGroupCreated(group) {
   if (!win) {
     throw new Error('tabGroups.onCreated is called before the owner window is tracked');
   }
-  win.tabGroups.set(group.id, new Tab(group));
+  win.tabGroups.set(group.id, Tab.initNativeTabGroup(group));
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,

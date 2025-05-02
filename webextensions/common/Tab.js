@@ -1962,8 +1962,8 @@ export default class Tab {
       TabsStore.addNativelyGroupedTab(this.tab);
     }
 
-    const win = TabsStore.windows.get(this.tab.windowId);
-    win.updateNativeTabGroupItem(this.tab.groupId);
+    //const win = TabsStore.windows.get(this.tab.windowId);
+    //const group = win.tabGroups.get(this.tab.groupId);
   }
 
 
@@ -2581,6 +2581,14 @@ Tab.import = tab => {
   }
   existingTab.$TST.apply(tab);
   return existingTab;
+};
+
+Tab.initNativeTabGroup = group => {
+  if (group.$TST instanceof Tab) {
+    return group;
+  }
+  group.$TST = new Tab(group);
+  return group;
 };
 
 
