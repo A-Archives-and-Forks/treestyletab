@@ -301,6 +301,10 @@ tab-item.faviconized .background {
   --tab-dropshadow-padding: 0.13em;
 }
 
+tab-item[type="group"] .background {
+  border: 1px solid var(--tab-border);
+}
+
 #subpanel-selector-anchor:hover::before {
   bottom: 0;
   inset-inline-start: 0;

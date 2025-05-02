@@ -1044,7 +1044,29 @@ tab-item[data-group-id]:not([data-group-id="-1"]) {
 tab-item[type="group"],
 tab-item[type="group"]:hover {
   --tab-surface: var(--tab-group-color) !important;
+  --tab-border: var(--tab-group-color) !important;
   --tab-text: var(--tab-group-color-pale) !important;
+}
+
+tab-item[type="group"].subtree-collapsed,
+tab-item[type="group"].subtree-collapsed:hover {
+  --tab-surface: var(--tab-group-color-pale) !important;
+  --tab-text: var(--tab-group-color) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  tab-item[type="group"],
+  tab-item[type="group"]:hover {
+    --tab-surface: var(--tab-group-color-invert) !important;
+    --tab-border: var(--tab-group-color-invert) !important;
+    --tab-text: var(--tab-group-label-text-dark) !important;
+  }
+
+  tab-item[type="group"].subtree-collapsed,
+  tab-item[type="group"].subtree-collapsed:hover {
+    --tab-surface: var(--tab-group-label-text-dark) !important;
+    --tab-text: var(--tab-group-color-invert) !important;
+  }
 }
 
 tab-item[data-group-id]:not([data-group-id="-1"]) .native-tab-group-line {
@@ -1091,14 +1113,6 @@ tab-item[data-group-id]:not([data-group-id="-1"]) .native-tab-group-line {
   #normal-tabs-container.overflow
   .native-tab-group-line {
   inset-inline-end: calc(var(--tab-group-member-indent) * 0.5 + var(--shift-tabs-for-scrollbar-distance));
-}
-
-@media (prefers-color-scheme: dark) {
-  tab-item[type="group"],
-  tab-item[type="group"]:hover {
-    --tab-surface: var(--tab-group-color-invert) !important;
-    --tab-text: var(--tab-group-label-text-dark) !important;
-  }
 }
 
 

@@ -1064,6 +1064,14 @@ export default class Tab {
     return ancestors.length > 0 ? ancestors[ancestors.length-1] : this.tab ;
   }
 
+  get topmostSubtreeCollapsedAncestor() {
+    for (const ancestor of [...this.ancestors].reverse()) {
+      if (ancestor.$TST.subtreeCollapsed)
+        return ancestor;
+    }
+    return null;
+  }
+
   get nearestVisibleAncestorOrSelf() {
     for (const ancestor of this.ancestors) {
       if (!ancestor.$TST.collapsed)
@@ -2992,16 +3000,16 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
   }
 
   const win = TabsStore.windows.get(windowId);
-  const mixedTabs = [];
-  const knownGroupIds = new Set();
-  for (const tab of tabs) {
-    if (tab.groupId != -1 &&
-        !knownGroupIds.has(tab.groupId)) {
-      mixedTabs.push(win.tabGroups.get(tab.groupId));
-      log('Tab.getVirtualScrollRenderableTabs: inserted group item, ', mixedTabs[mixedTabs.length-1]);
+  const mixedTabs = [...tabs];
+  for (const group of win.tabGroups.values()) {
+    const firstMember = Tab.getFirstNativeGroupMemberTab(windowId, group.id);
+    const nextTabIndex = mixedTabs.findIndex(tab => tab.index >= firstMember.index);
+    if (nextTabIndex == -1) {
+      mixedTabs.unshift(group);
     }
-    mixedTabs.push(tab);
-    knownGroupIds.add(tab.groupId);
+    else {
+      mixedTabs.splice(nextTabIndex, 0, group);
+    }
   }
   log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
 
@@ -3089,6 +3097,17 @@ Tab.getNativeGroupMemberTabs = (windowId = null, groupId, options = {}) => {
     living: true,
     groupId,
     ...options
+  });
+};
+
+Tab.getFirstNativeGroupMemberTab = (windowId = null, groupId, options = {}) => {
+  return TabsStore.query({
+    windowId,
+    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+    living: true,
+    groupId,
+    ...options,
+    first: true,
   });
 };
 

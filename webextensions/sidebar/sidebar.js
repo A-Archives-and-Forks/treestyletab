@@ -574,6 +574,12 @@ async function rebuildAll(importedWindow) {
   const maxCount = tabs.length;
   for (const tab of tabs) {
     const trackedTab = Tab.init(tab, { existing: true, inBackground: true });
+    const group = trackedTab.$TST.nativeTabGroup;
+    if (group?.collapsed) {
+      CollapseExpand.setCollapsed(tab, {
+        collapsed: true,
+      });
+    }
     TabsUpdate.updateTab(trackedTab, tab, { forceApply: true });
     if (tab.active)
       TabsInternalOperation.setTabActive(trackedTab);
