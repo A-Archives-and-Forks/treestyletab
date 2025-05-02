@@ -2973,6 +2973,7 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
     ordered: true,
   });
   if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
+    log('Tab.getVirtualScrollRenderableTabs: no native tab group');
     return tabs;
   }
 
@@ -2983,12 +2984,12 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
     if (tab.groupId != -1 &&
         !knownGroupIds.has(tab.groupId)) {
       mixedTabs.push(win.tabGroups.get(tab.groupId));
-      //console.log('Tab.getVirtualScrollRenderableTabs: inserted group item, ', mixedTabs[mixedTabs.length-1]);
+      log('Tab.getVirtualScrollRenderableTabs: inserted group item, ', mixedTabs[mixedTabs.length-1]);
     }
     mixedTabs.push(tab);
     knownGroupIds.add(tab.groupId);
   }
-  //console.log('Tab.getVirtualScrollRenderableTabs: ', mixedTabs);
+  log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
 
   return mixedTabs;
 };
