@@ -2072,6 +2072,12 @@ export default class Tab {
   }
 
   apply(exported) { // not optimized and unsafe yet!
+    if (this.type == 'group') {
+      this.raw.title = exported.title;
+      this.raw.color = exported.color;
+      return;
+    }
+
     if (!this.tab)
       return;
 

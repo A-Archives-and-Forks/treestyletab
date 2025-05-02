@@ -659,6 +659,23 @@ function reserveToUpdateTabsIndex() {
   });
 }
 
+function reserveToRefreshNativeTabGroup(id) {
+  if (reserveToRefreshNativeTabGroup.invoked.has(id))
+    return;
+  reserveToRefreshNativeTabGroup.invoked.add(id);
+  window.requestAnimationFrame(() => {
+    reserveToRefreshNativeTabGroup.invoked.delete(id);
+
+    const windowId = TabsStore.getCurrentWindowId();
+    const group = TabsStore.windows.get(windowId).tabGroups.get(id);
+    group.$TST.updateElement(TabUpdateTarget.TabProperties);
+    for (const tab of Tab.getNativeGroupMemberTabs(windowId, id)) {
+      tab.$TST.updateElement(TabUpdateTarget.TabProperties);
+    }
+  });
+}
+reserveToRefreshNativeTabGroup.invoked = new Set();
+
 
 const BUFFER_KEY_PREFIX = 'sidebar-tab-';
 
@@ -1339,10 +1356,9 @@ BackgroundConnection.onMessage.addListener(async message => {
 
     case Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED: {
       const win = TabsStore.windows.get(message.windowId);
-      win.tabGroups.get(message.group.id).raw = {
-        ...win.tabGroups.get(message.group.id),
-        ...message.group,
-      };
+      const group = win.tabGroups.get(message.group.id);
+      group.$TST.apply(message.group);
+      reserveToRefreshNativeTabGroup(message.group.id);
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED: {

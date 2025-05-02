@@ -1309,7 +1309,7 @@ async function onGroupCreated(group) {
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
     windowId: group.windowId,
-    group,
+    group: { ...group, $TST: null },
   });
 }
 

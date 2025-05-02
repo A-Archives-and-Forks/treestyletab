@@ -693,75 +693,77 @@ windowId = ${raw.windowId}
       return;
 
     const raw       = this.$TST.raw;
-    const tab       = this.$TST.tab;
     const classList = this.classList;
 
     this.label = raw.title;
 
-    const openerOfGroupTab = tab && this.$TST.isGroupTab && Tab.getOpenerFromGroupTab(tab);
-    this.favIconUrl = openerOfGroupTab && openerOfGroupTab.favIconUrl || tab?.favIconUrl;
+    const tab = this.$TST.tab;
+    if (tab) {
+      const openerOfGroupTab = tab && this.$TST.isGroupTab && Tab.getOpenerFromGroupTab(tab);
+      this.favIconUrl = openerOfGroupTab && openerOfGroupTab.favIconUrl || tab?.favIconUrl;
 
-    for (const state of classList) {
-      if (IGNORE_CLASSES.has(state) ||
-          NATIVE_PROPERTIES.has(state))
-        continue;
-      if (!this.$TST.states.has(state))
-        classList.remove(state);
-    }
-    for (const state of this.$TST.states) {
-      if (IGNORE_CLASSES.has(state))
-        continue;
-      if (!classList.contains(state))
-        classList.add(state);
-    }
+      for (const state of classList) {
+        if (IGNORE_CLASSES.has(state) ||
+            NATIVE_PROPERTIES.has(state))
+          continue;
+        if (!this.$TST.states.has(state))
+          classList.remove(state);
+      }
+      for (const state of this.$TST.states) {
+        if (IGNORE_CLASSES.has(state))
+          continue;
+        if (!classList.contains(state))
+          classList.add(state);
+      }
 
-    for (const state of NATIVE_PROPERTIES) {
-      if (raw[state] == classList.contains(state))
-        continue;
-      classList.toggle(state, raw[state]);
-    }
+      for (const state of NATIVE_PROPERTIES) {
+        if (raw[state] == classList.contains(state))
+          continue;
+        classList.toggle(state, raw[state]);
+      }
 
-    if (this.$TST.childIds.length > 0)
-      this.setAttribute(Constants.kCHILDREN, `|${this.$TST.childIds.join('|')}|`);
-    else
-      this.removeAttribute(Constants.kCHILDREN);
+      if (this.$TST.childIds.length > 0)
+        this.setAttribute(Constants.kCHILDREN, `|${this.$TST.childIds.join('|')}|`);
+      else
+        this.removeAttribute(Constants.kCHILDREN);
 
-    if (this.$TST.parentId)
-      this.setAttribute(Constants.kPARENT, this.$TST.parentId);
-    else
-      this.removeAttribute(Constants.kPARENT);
+      if (this.$TST.parentId)
+        this.setAttribute(Constants.kPARENT, this.$TST.parentId);
+      else
+        this.removeAttribute(Constants.kPARENT);
 
-    const alreadyGrouped = this.$TST.getAttribute(Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER) || '';
-    if (this.getAttribute(Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER) != alreadyGrouped)
-      this.setAttribute(Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER, alreadyGrouped);
+      const alreadyGrouped = this.$TST.getAttribute(Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER) || '';
+      if (this.getAttribute(Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER) != alreadyGrouped)
+        this.setAttribute(Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER, alreadyGrouped);
 
-    const opener = this.$TST.getAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID) || '';
-    if (this.getAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID) != opener)
-      this.setAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID, opener);
+      const opener = this.$TST.getAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID) || '';
+      if (this.getAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID) != opener)
+        this.setAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID, opener);
 
-    const uri = this.$TST.getAttribute(Constants.kCURRENT_URI) || tab?.url;
-    if (this.getAttribute(Constants.kCURRENT_URI) != uri)
-      this.setAttribute(Constants.kCURRENT_URI, uri);
+      const uri = this.$TST.getAttribute(Constants.kCURRENT_URI) || tab?.url;
+      if (this.getAttribute(Constants.kCURRENT_URI) != uri)
+        this.setAttribute(Constants.kCURRENT_URI, uri);
 
-    const favIconUri = this.$TST.getAttribute(Constants.kCURRENT_FAVICON_URI) || tab?.favIconUrl;
-    if (this.getAttribute(Constants.kCURRENT_FAVICON_URI) != favIconUri)
-      this.setAttribute(Constants.kCURRENT_FAVICON_URI, favIconUri);
+      const favIconUri = this.$TST.getAttribute(Constants.kCURRENT_FAVICON_URI) || tab?.favIconUrl;
+      if (this.getAttribute(Constants.kCURRENT_FAVICON_URI) != favIconUri)
+        this.setAttribute(Constants.kCURRENT_FAVICON_URI, favIconUri);
 
-    const level = this.$TST.getAttribute(Constants.kLEVEL) || 0;
-    if (this.getAttribute(Constants.kLEVEL) != level)
-      this.setAttribute(Constants.kLEVEL, level);
+      const level = this.$TST.getAttribute(Constants.kLEVEL) || 0;
+      if (this.getAttribute(Constants.kLEVEL) != level)
+        this.setAttribute(Constants.kLEVEL, level);
 
-    const id = this.$TST.uniqueId.id;
-    if (this.getAttribute(Constants.kPERSISTENT_ID) != id)
-      this.setAttribute(Constants.kPERSISTENT_ID, id);
+      const id = this.$TST.uniqueId.id;
+      if (this.getAttribute(Constants.kPERSISTENT_ID) != id)
+        this.setAttribute(Constants.kPERSISTENT_ID, id);
 
-    if (this.$TST.subtreeCollapsed) {
-      if (!classList.contains(Constants.kTAB_STATE_SUBTREE_COLLAPSED))
-        classList.add(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
-    }
-    else {
-      if (classList.contains(Constants.kTAB_STATE_SUBTREE_COLLAPSED))
-        classList.remove(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
+      if (this.$TST.subtreeCollapsed) {
+        if (!classList.contains(Constants.kTAB_STATE_SUBTREE_COLLAPSED))
+          classList.add(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
+      }
+      else {
+        if (classList.contains(Constants.kTAB_STATE_SUBTREE_COLLAPSED))
+          classList.remove(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
+      }
     }
 
     const group = this.$TST.nativeTabGroup || this.$TST.rawGroup;
