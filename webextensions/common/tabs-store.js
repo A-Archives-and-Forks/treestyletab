@@ -249,6 +249,9 @@ function matchedWithQuery(tab, query) {
   if ('descendantOf' in query &&
       !tab.$TST.ancestorIds.includes(query.descendantOf))
     return false;
+  if (query.groupId &&
+      tab.groupId != query.groupId)
+    return false;
 
   return true;
 }
@@ -349,6 +352,7 @@ export const subtreeCollapsableTabsInWindow = new Map();
 export const draggingTabsInWindow    = new Map();
 export const duplicatingTabsInWindow = new Map();
 export const toBeGroupedTabsInWindow = new Map();
+export const nativelyGroupedTabsInWindow = new Map();
 export const loadingTabsInWindow     = new Map();
 export const unsynchronizedTabsInWindow = new Map();
 export const virtualScrollRenderableTabsInWindow  = new Map();
@@ -379,6 +383,7 @@ export function prepareIndexesForWindow(windowId) {
   draggingTabsInWindow.set(windowId, createMapWithName(`dragging tabs in window ${windowId}`));
   duplicatingTabsInWindow.set(windowId, createMapWithName(`duplicating tabs in window ${windowId}`));
   toBeGroupedTabsInWindow.set(windowId, createMapWithName(`to-be-grouped tabs in window ${windowId}`));
+  nativelyGroupedTabsInWindow.set(windowId, createMapWithName(`natively grouped tabs in window ${windowId}`));
   loadingTabsInWindow.set(windowId, createMapWithName(`loading tabs in window ${windowId}`));
   unsynchronizedTabsInWindow.set(windowId, createMapWithName(`unsynchronized tabs in window ${windowId}`));
   virtualScrollRenderableTabsInWindow.set(windowId, createMapWithName(`virtual scroll renderable tabs in window ${windowId}`));
@@ -403,6 +408,7 @@ export function unprepareIndexesForWindow(windowId) {
   toBeExpandedTabsInWindow.delete(windowId);
   subtreeCollapsableTabsInWindow.delete(windowId);
   toBeGroupedTabsInWindow.delete(windowId);
+  nativelyGroupedTabsInWindow.delete(windowId);
   loadingTabsInWindow.delete(windowId);
   unsynchronizedTabsInWindow.delete(windowId);
   virtualScrollRenderableTabsInWindow.delete(windowId);
@@ -489,6 +495,11 @@ export function updateIndexesForTab(tab) {
   else
     removeBundledActiveTab(tab);
 
+  if (tab.groupId && tab.groupId != -1)
+    addNativelyGroupedTab(tab);
+  else
+    removeNativelyGroupedTab(tab);
+
   updateVirtualScrollRenderabilityIndexForTab(tab);
 }
 
@@ -523,6 +534,7 @@ export function removeTabFromIndexes(tab) {
   removeDuplicatingTab(tab);
   removeDraggingTab(tab);
   removeToBeGroupedTab(tab);
+  removeNativelyGroupedTab(tab);
   removeLoadingTab(tab);
   removeUnsynchronizedTab(tab);
   //removeVirtualScrollRenderableTab(tab);
@@ -666,6 +678,13 @@ export function addToBeGroupedTab(tab) {
 }
 export function removeToBeGroupedTab(tab) {
   removeTabFromIndex(tab, toBeGroupedTabsInWindow);
+}
+
+export function addNativelyGroupedTab(tab) {
+  addTabToIndex(tab, nativelyGroupedTabsInWindow);
+}
+export function removeNativelyGroupedTab(tab) {
+  removeTabFromIndex(tab, nativelyGroupedTabsInWindow);
 }
 
 export function addLoadingTab(tab) {

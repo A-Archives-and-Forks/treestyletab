@@ -214,7 +214,7 @@ export function reserveToRenderVirtualScrollViewport({ trigger, force } = {}) {
 let mLastRenderableTabs;
 let mLastDisappearingTabs;
 let mLastRenderedVirtualScrollTabIds = [];
-const STICKY_SPACER_MATCHER = /^(\d+):sticky$/;
+const STICKY_SPACER_MATCHER = /^tab:(\d+):sticky$/;
 let mScrollPosition = 0;
 
 renderVirtualScrollViewport.triggers = new Set();
@@ -309,7 +309,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
   }
   else {
     const toBeRenderedTabs = renderableTabs.slice(firstRenderableIndex, lastRenderableIndex + 1);
-    const toBeRenderedTabIds = toBeRenderedTabs.map(tab => tab.id);
+    const toBeRenderedTabIds = toBeRenderedTabs.map(tab => tab.$TST.renderingId);
     const toBeRenderedTabIdsSet = new Set(toBeRenderedTabIds);
     for (const stickyTab of stickyTabs) {
       if (toBeRenderedTabIdsSet.has(stickyTab.id))
@@ -347,7 +347,8 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 spacer.parentNode.removeChild(spacer);
               continue;
             }
-            const tab = Tab.get(id);
+            const [type, rawId] = id.split(':');
+            const tab = type == 'tab' && Tab.get(parseInt(rawId));
             if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
             // We don't need to remove already rendered tab,
@@ -372,7 +373,8 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 spacer.parentNode.removeChild(spacer);
               continue;
             }
-            const tab = Tab.get(id);
+            const [type, rawId] = id.split(':');
+            const tab = type == 'tab' && Tab.get(parseInt(rawId));
             if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
             // We don't need to remove already rendered tab,
@@ -401,7 +403,10 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
               );
               continue;
             }
-            SidebarTabs.renderTab(Tab.get(id), {
+            const [type, rawId] = id.split(':');
+            const tab = type == 'tab' && Tab.get(parseInt(rawId));
+            const group = type == 'group' && win.tabGroups.get(parseInt(rawId));
+            SidebarTabs.renderTab(tab || group, {
               insertBefore: referenceTabHasValidReferenceElement ? referenceTab :
                 (referenceTab && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceTab.id}"]`)) ||
                 null,

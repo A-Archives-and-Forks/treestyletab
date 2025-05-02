@@ -29,7 +29,10 @@ export default class Window {
 
     this.id    = windowId;
     this.tabs  = new Map();
-    this.tabGroups = new Map((tabGroups || []).map(group => [group.id, group]));
+    this.tabGroups = new Map();
+    if (tabGroups) {
+      this.initTabGroups(tabGroups);
+    }
     this.order = [];
 
     this.containerElement = null;
@@ -75,6 +78,10 @@ export default class Window {
 
     // We should initialize private properties with blank value for better performance with a fixed shape.
     this.delayedDestroy = null;
+  }
+  initTabGroups(tabGroups) {
+    log(`initializing tabGroups of window ${this.id}: `, tabGroups);
+    this.tabGroups = new Map((tabGroups || []).map(group => [group.id, (new Tab(group), group)]));
   }
 
   destroy() {
@@ -278,8 +285,24 @@ export default class Window {
     }
     return {
       tabs,
-      tabGroups: [...this.tabGroups.values()],
+      tabGroups: [...this.tabGroups.values()].map(group => ({ ...group, $TST: null })),
     };
+  }
+
+  updateNativeTabGroupItem(groupId) {
+    const group = this.tabGroups.get(groupId);
+    const members = Tab.getNativeGroupMemberTabs(this.id, groupId);
+    log('updateNativeTabGroupItem: ', group, members);
+
+    if (members.length == 0) {
+      return;
+    }
+
+    const maybeNativeGroupTab = members[0].$TST.unsafePreviousTab;
+    if (maybeNativeGroupTab?.rawGroup?.id == groupId) {
+      log('updateNativeTabGroupItem: native tab group item exists: ', maybeNativeGroupTab);
+      return;
+    }
   }
 }
 
@@ -287,6 +310,9 @@ Window.onInitialized = new EventListenerManager();
 
 Window.init = (windowId, tabGroups) => {
   const win = TabsStore.windows.get(windowId) || new Window(windowId, tabGroups);
+  if (tabGroups && tabGroups.size != win.tabGroups.size) {
+    win.initTabGroups(tabGroups);
+  }
   Window.onInitialized.dispatch(win);
   return win;
 }

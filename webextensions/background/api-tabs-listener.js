@@ -1299,11 +1299,12 @@ browser.windows.onFocusChanged.addListener(windowId => {
 
 
 async function onGroupCreated(group) {
+  log('onGroupCreated ', group);
   const win = TabsStore.windows.get(group.windowId);
   if (!win) {
     throw new Error('tabGroups.onCreated is called before the owner window is tracked');
   }
-  win.tabGroups.set(group.id, group);
+  win.tabGroups.set(group.id, new Tab(group));
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
@@ -1316,14 +1317,15 @@ async function onGroupUpdated(group) {
   if (mPromisedStarted)
     await mPromisedStarted;
 
+  log('onGroupUpdated ', group);
   const win = TabsStore.windows.get(group.windowId);
   if (!win) {
     throw new Error('tabGroups.onUpdated is called before the owner window is tracked');
   }
-  win.tabGroups.set(group.id, {
+  win.tabGroups.get(group.id).raw = {
     ...win.tabGroups.get(group.id),
     ...group,
-  });
+  };
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED,
@@ -1336,10 +1338,12 @@ async function onGroupRemoved(group) {
   if (mPromisedStarted)
     await mPromisedStarted;
 
+  log('onGroupRemoved ', group);
   const win = TabsStore.windows.get(group.windowId);
   if (!win) {
     throw new Error('tabGroups.onRemoved is called before the owner window is tracked');
   }
+  win.tabGroups.get(group.id).destroy();
   win.tabGroups.delete(group.id);
 
   SidebarConnection.sendMessage({

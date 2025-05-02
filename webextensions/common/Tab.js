@@ -66,22 +66,27 @@ browser.windows.onRemoved.addListener(windowId => {
 });
 
 export default class Tab {
-  constructor(tab) {
-    const alreadyTracked = Tab.get(tab.id);
+  constructor(raw) {
+    const alreadyTracked = Tab.get(raw.id);
     if (alreadyTracked)
       return alreadyTracked.$TST;
 
-    log(`tab ${dumpTab(tab)} is newly tracked: `, tab);
+    log(`tab ${dumpTab(raw)} is newly tracked: `, raw);
 
-    tab.$TST = this;
-    this.tab = tab;
-    this.id  = tab.id;
+    raw.$TST = this;
+    this.raw = raw;
+    this.id  = raw.id;
+
+    const tab = this.tab;
+
     this.trackedAt = Date.now();
-    this.opened = new Promise((resolve, reject) => {
-      const resolvers = mOpenedResolvers.get(tab.id) || new Set();
-      resolvers.add({ resolve, reject });
-      mOpenedResolvers.set(tab.id, resolvers);
-    });
+    this.opened = tab ?
+      new Promise((resolve, reject) => {
+        const resolvers = mOpenedResolvers.get(tab.id) || new Set();
+        resolvers.add({ resolve, reject });
+        mOpenedResolvers.set(tab.id, resolvers);
+      }) :
+      Promise.resolve(true);
 
     // We should not change the shape of the object, so temporary data should be held in this map.
     this.temporaryMetadata = new Map();
@@ -138,59 +143,65 @@ export default class Tab {
       this.onUniqueIdGenerated = resolve;
     });
 
-    TabsStore.tabs.set(tab.id, tab);
+    if (tab) {
+      this.index = tab.index;
 
-    const win = TabsStore.windows.get(tab.windowId) || new Window(tab.windowId);
-    win.trackTab(tab);
+      TabsStore.tabs.set(tab.id, tab);
 
-    // Don't update indexes here, instead Window.prototype.trackTab()
-    // updates indexes because indexes are bound to windows.
-    // TabsStore.updateIndexesForTab(tab);
+      const win = TabsStore.windows.get(tab.windowId) || new Window(tab.windowId);
+      win.trackTab(tab);
 
-    if (tab.active) {
-      TabsStore.activeTabInWindow.set(tab.windowId, tab);
-      TabsStore.activeTabsInWindow.get(tab.windowId).add(tab);
+      // Don't update indexes here, instead Window.prototype.trackTab()
+      // updates indexes because indexes are bound to windows.
+      // TabsStore.updateIndexesForTab(tab);
+
+      if (tab.active) {
+        TabsStore.activeTabInWindow.set(tab.windowId, tab);
+        TabsStore.activeTabsInWindow.get(tab.windowId).add(tab);
+      }
+      else {
+        TabsStore.activeTabsInWindow.get(tab.windowId).delete(tab);
+      }
+
+      const incompletelyTrackedTabsPerWindow = mIncompletelyTrackedTabs.get(tab.windowId) || new Set();
+      incompletelyTrackedTabsPerWindow.add(tab);
+      mIncompletelyTrackedTabs.set(tab.windowId, incompletelyTrackedTabsPerWindow);
+      this.promisedUniqueId.then(() => {
+        incompletelyTrackedTabsPerWindow.delete(tab);
+        Tab.onTracked.dispatch(tab);
+      });
     }
-    else {
-      TabsStore.activeTabsInWindow.get(tab.windowId).delete(tab);
-    }
-
-    const incompletelyTrackedTabsPerWindow = mIncompletelyTrackedTabs.get(tab.windowId) || new Set();
-    incompletelyTrackedTabsPerWindow.add(tab);
-    mIncompletelyTrackedTabs.set(tab.windowId, incompletelyTrackedTabsPerWindow);
-    this.promisedUniqueId.then(() => {
-      incompletelyTrackedTabsPerWindow.delete(tab);
-      Tab.onTracked.dispatch(tab);
-    });
 
     // We should initialize private properties with blank value for better performance with a fixed shape.
     this.delayedInheritSoundStateFromChildren = null;
   }
 
   destroy() {
-    mPromisedTrackedTabs.delete(`${this.id}:true`);
-    mPromisedTrackedTabs.delete(`${this.id}:false`);
+    if (this.tab) {
+      mPromisedTrackedTabs.delete(`${this.id}:true`);
+      mPromisedTrackedTabs.delete(`${this.id}:false`);
 
-    Tab.onDestroyed.dispatch(this.tab);
-    this.detach();
+      Tab.onDestroyed.dispatch(this.tab);
+      this.detach();
 
-    if (this.temporaryMetadata.has('reservedCleanupNeedlessGroupTab')) {
-      clearTimeout(this.temporaryMetadata.get('reservedCleanupNeedlessGroupTab'));
-      this.temporaryMetadata.delete('reservedCleanupNeedlessGroupTab');
+      if (this.temporaryMetadata.has('reservedCleanupNeedlessGroupTab')) {
+        clearTimeout(this.temporaryMetadata.get('reservedCleanupNeedlessGroupTab'));
+        this.temporaryMetadata.delete('reservedCleanupNeedlessGroupTab');
+      }
+
+      TabsStore.tabs.delete(this.id);
+      if (this.uniqueId)
+        TabsStore.tabsByUniqueId.delete(this.uniqueId.id);
+
+      TabsStore.removeTabFromIndexes(this.tab);
     }
-
-    TabsStore.tabs.delete(this.id);
-    if (this.uniqueId)
-      TabsStore.tabsByUniqueId.delete(this.uniqueId.id);
-
-    TabsStore.removeTabFromIndexes(this.tab);
 
     if (this.element &&
         this.element.parentNode)
       this.element.parentNode.removeChild(this.element);
     this.unbindElement();
-    // this.tab.$TST = null; // tab.$TST is used by destruction processes.
-    this.tab = null;
+    // this.raw.$TST = null; // raw.$TST is used by destruction processes.
+    this.raw = null;
     this.promisedUniqueId = null;
     this.uniqueId = null;
     this.destroyed = true;
@@ -285,6 +296,28 @@ export default class Tab {
       console.log(`FATAL ERROR: Failed to get unique id for a tab ${this.id}: `, error);
       return {};
     });
+  }
+
+  get type() {
+    return 'color' in this.raw ? 'group' : 'tab';
+  }
+
+  get renderingId() {
+    return `${this.type}:${this.id}`;
+  }
+
+  get tab() {
+    if ('color' in this.raw) { // native tab group
+      return null;
+    }
+    return this.raw;
+  }
+
+  get rawGroup() {
+    if ('color' in this.raw) {
+      return this.raw;
+    }
+    return null;
   }
 
 
@@ -596,7 +629,7 @@ export default class Tab {
   }
 
   get defaultTooltipText() {
-    return this.cookieStoreName ? `${this.tab.title} - ${this.cookieStoreName}` : this.tab.title;
+    return this.cookieStoreName ? `${this.raw.title} - ${this.cookieStoreName}` : this.raw.title;
   }
 
   generateTooltipText() {
@@ -617,12 +650,12 @@ export default class Tab {
     return this.cookieStoreName ?
       `<span class="title-line"
             ><span class="title"
-                  >${sanitizeForHTMLText(this.tab.title)}</span
+                  >${sanitizeForHTMLText(this.raw.title)}</span
             ><span class="cookieStoreName"
                   >${sanitizeForHTMLText(this.cookieStoreName)}</span></span>` :
       `<span class="title-line"
             ><span class="title"
-                  >${sanitizeForHTMLText(this.tab.title)}</span></span>`;
+                  >${sanitizeForHTMLText(this.raw.title)}</span></span>`;
   }
 
   generateTooltipHtmlWithDescendants() {
@@ -1921,6 +1954,19 @@ export default class Tab {
   }
 
 
+  onNativeGroupModified() {
+    if (this.tab.groupId == -1) {
+      TabsStore.removeNativelyGroupedTab(this.tab);
+    }
+    else {
+      TabsStore.addNativelyGroupedTab(this.tab);
+    }
+
+    const win = TabsStore.windows.get(this.tab.windowId);
+    win.updateNativeTabGroupItem(this.tab.groupId);
+  }
+
+
   setAttribute(attribute, value) {
     if (this.element)
       this.element.setAttribute(attribute, value);
@@ -2912,12 +2958,31 @@ Tab.getSelectedTabs = (windowId = null, options = {}) => {
 };
 
 Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
-  return TabsStore.queryAll({
+  const tabs = TabsStore.queryAll({
     windowId,
     tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
     skipMatching: true,
     ordered: true,
   });
+  if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
+    return tabs;
+  }
+
+  const win = TabsStore.windows.get(windowId);
+  const mixedTabs = [];
+  let previousGroupId = -1;
+  for (const tab of tabs) {
+    if (tab.groupId != previousGroupId &&
+        tab.groupId != -1) {
+      mixedTabs.push(win.tabGroups.get(tab.groupId));
+      //console.log('Tab.getVirtualScrollRenderableTabs: inserted group item, ', mixedTabs[mixedTabs.length-1]);
+    }
+    mixedTabs.push(tab);
+    previousGroupId = tab.groupId;
+  }
+  //console.log('Tab.getVirtualScrollRenderableTabs: ', mixedTabs);
+
+  return mixedTabs;
 };
 
 Tab.getNeedToBeSynchronizedTabs = (windowId = null, options = {}) => {
@@ -2990,6 +3055,16 @@ Tab.getRecycledTabs = (windowId = null, options = {}) => {
     living:     true,
     states:     [Constants.kTAB_STATE_RESTORED, false],
     attributes: [Constants.kCURRENT_URI, new RegExp(`^(|${userNewTabUrls}|about:newtab|about:blank|about:privatebrowsing)$`)],
+    ...options
+  });
+};
+
+Tab.getNativeGroupMemberTabs = (windowId = null, groupId, options = {}) => {
+  return TabsStore.queryAll({
+    windowId,
+    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+    living: true,
+    groupId,
     ...options
   });
 };

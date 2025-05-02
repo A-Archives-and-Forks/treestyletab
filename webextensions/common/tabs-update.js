@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -364,6 +364,11 @@ export function updateTab(tab, newState = {}, options = {}) {
       // the newly active tab *was* discarded on onTabClosed handler.
       tab.$TST.toggleState(Constants.kTAB_STATE_DISCARDED, newState.discarded);
     });
+  }
+
+  if (options.forceApply ||
+      'groupId' in newState) {
+    tab.$TST.onNativeGroupModified();
   }
 
   update.soundStateChanged = update.soundStateChanged || soundStateChanged;

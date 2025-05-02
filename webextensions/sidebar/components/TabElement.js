@@ -74,7 +74,7 @@ export class TabElement extends HTMLElement {
     super();
 
     // We should initialize private properties with blank value for better performance with a fixed shape.
-    this._tab = null;
+    this._raw = null;
     this._reservedUpdateTooltip = null;
     this.__onMouseOver = null;
     this.__onMouseEnter = null;
@@ -163,7 +163,7 @@ export class TabElement extends HTMLElement {
       this._reservedUpdateTooltip = null;
     }
     this._endListening();
-    this._tab = null;
+    this._raw = null;
   }
 
   get initialized() {
@@ -177,7 +177,7 @@ export class TabElement extends HTMLElement {
       if (!this._labelElement.owner) {
         this._labelElement.addOverflowChangeListener(() => {
           if (!this.$TST ||
-              this.$TST.tab.pinned)
+              this.$TST.tab?.pinned)
             return;
           this.invalidateTooltip();
         });
@@ -205,10 +205,10 @@ export class TabElement extends HTMLElement {
   // Elements restored from cache are initialized without bundled tabs.
   // Thus we provide abiltiy to get tab and service objects from cached/restored information.
   get tab() {
-    return this._tab || (this._tab = Tab.get(parseInt(this.getAttribute(Constants.kAPI_TAB_ID))));
+    return this._raw || (this._raw = Tab.get(parseInt(this.getAttribute(Constants.kAPI_TAB_ID))));
   }
   set tab(value) {
-    return this._tab = value;
+    return this._raw = value;
   }
 
   get $TST() {
@@ -344,8 +344,8 @@ export class TabElement extends HTMLElement {
     if (!this.$TST) // called before binding on restoration from cache
       return;
 
-    const tab = this.$TST.tab;
-    const tabElement = tab && tab.$TST.element;
+    const raw = this.$TST.raw;
+    const tabElement = raw && raw.$TST.element;
     if (!tabElement)
       return;
 
@@ -382,14 +382,14 @@ export class TabElement extends HTMLElement {
     let debugTooltip;
     if (configs.debug) {
       debugTooltip = `
-${tab.title}
-#${tab.id}
+${raw.title}
+#${raw.id}
 (${tabElement.className})
 uniqueId = <${this.$TST.uniqueId.id}>
 duplicated = <${!!this.$TST.uniqueId.duplicated}> / <${this.$TST.uniqueId.originalTabId}> / <${this.$TST.uniqueId.originalId}>
 restored = <${!!this.$TST.uniqueId.restored}>
-tabId = ${tab.id}
-windowId = ${tab.windowId}
+rawId = ${raw.id}
+windowId = ${raw.windowId}
 `.trim();
       this.$TST.setAttribute('title', debugTooltip);
       if (!this.useTabPreviewTooltip) {
@@ -441,10 +441,10 @@ windowId = ${tab.windowId}
 
     let tooltip = null;
 
-    const tab = this.$TST.tab;
+    const raw = this.$TST.raw;
     if (this.classList.contains('faviconized') ||
         this.overflow ||
-        this.tooltip != tab.title)
+        this.tooltip != raw.title)
       tooltip = this.tooltip;
     else
       tooltip = null;
@@ -477,10 +477,10 @@ windowId = ${tab.windowId}
 
     let tooltip = null;
 
-    const tab = this.$TST.tab;
+    const raw = this.$TST.raw;
     if (this.classList.contains('faviconized') ||
         this.overflow ||
-        this.tooltip != tab.title)
+        this.tooltip != raw.title)
       tooltip = this.tooltipHtml;
     else
       tooltip = null;
@@ -549,7 +549,7 @@ windowId = ${tab.windowId}
   }
 
   _onMouseOver(_event) {
-    this._updateTabAndAncestorsTooltip(this.$TST.tab);
+    this._updateTabAndAncestorsTooltip(this.$TST.raw);
   }
 
   _onMouseEnter(event) {
@@ -679,13 +679,14 @@ windowId = ${tab.windowId}
     if (!this.$TST) // called before binding on restoration from cache
       return;
 
+    const raw       = this.$TST.raw;
     const tab       = this.$TST.tab;
     const classList = this.classList;
 
-    this.label = tab.title;
+    this.label = raw.title;
 
-    const openerOfGroupTab = this.$TST.isGroupTab && Tab.getOpenerFromGroupTab(tab);
-    this.favIconUrl = openerOfGroupTab && openerOfGroupTab.favIconUrl || tab.favIconUrl;
+    const openerOfGroupTab = tab && this.$TST.isGroupTab && Tab.getOpenerFromGroupTab(tab);
+    this.favIconUrl = openerOfGroupTab && openerOfGroupTab.favIconUrl || tab?.favIconUrl;
 
     for (const state of classList) {
       if (IGNORE_CLASSES.has(state) ||
@@ -702,9 +703,9 @@ windowId = ${tab.windowId}
     }
 
     for (const state of NATIVE_PROPERTIES) {
-      if (tab[state] == classList.contains(state))
+      if (raw[state] == classList.contains(state))
         continue;
-      classList.toggle(state, tab[state]);
+      classList.toggle(state, raw[state]);
     }
 
     if (this.$TST.childIds.length > 0)
@@ -725,11 +726,11 @@ windowId = ${tab.windowId}
     if (this.getAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID) != opener)
       this.setAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID, opener);
 
-    const uri = this.$TST.getAttribute(Constants.kCURRENT_URI) || tab.url;
+    const uri = this.$TST.getAttribute(Constants.kCURRENT_URI) || tab?.url;
     if (this.getAttribute(Constants.kCURRENT_URI) != uri)
       this.setAttribute(Constants.kCURRENT_URI, uri);
 
-    const favIconUri = this.$TST.getAttribute(Constants.kCURRENT_FAVICON_URI) || tab.favIconUrl;
+    const favIconUri = this.$TST.getAttribute(Constants.kCURRENT_FAVICON_URI) || tab?.favIconUrl;
     if (this.getAttribute(Constants.kCURRENT_FAVICON_URI) != favIconUri)
       this.setAttribute(Constants.kCURRENT_FAVICON_URI, favIconUri);
 

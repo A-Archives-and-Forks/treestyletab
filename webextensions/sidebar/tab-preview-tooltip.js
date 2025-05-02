@@ -436,15 +436,15 @@ async function onTabSubstanceEnter(event) {
     return;
   }
 
-  const active = event.target.tab.id == activeTab.id;
-  const url = PREVIEW_WITH_HOST_URLS_MATCHER.test(event.target.tab.url) ? new URL(event.target.tab.url).host :
-    PREVIEW_WITH_TITLE_URLS_MATCHER.test(event.target.tab.url) ? null :
-      event.target.tab.url;
+  const active = event.target.tab?.id == activeTab.id;
+  const url = PREVIEW_WITH_HOST_URLS_MATCHER.test(event.target.tab?.url) ? new URL(event.target.tab?.url).host :
+    PREVIEW_WITH_TITLE_URLS_MATCHER.test(event.target.tab?.url) ? null :
+      event.target.tab?.url;
   const hasCustomTooltip = !!event.target.hasCustomTooltip;
   const hasPreview = (
     !active &&
-    !event.target.tab.discarded &&
-    CAPTURABLE_URLS_MATCHER.test(event.target.tab.url) &&
+    !event.target.tab?.discarded &&
+    CAPTURABLE_URLS_MATCHER.test(event.target.tab?.url) &&
     !hasCustomTooltip
   );
   const previewURL = (
@@ -453,7 +453,7 @@ async function onTabSubstanceEnter(event) {
     configs.tabPreviewTooltip &&
     (async () => { // We just define a getter function for now, because further operations may contain async operations and we can call this at there for more optimization.
       try {
-        return await browser.tabs.captureTab(event.target.tab.id);
+        return await browser.tabs.captureTab(event.target.tab?.id);
       }
       catch (_error) {
       }
