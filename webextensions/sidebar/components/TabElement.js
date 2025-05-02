@@ -204,15 +204,27 @@ export class TabElement extends HTMLElement {
 
   // Elements restored from cache are initialized without bundled tabs.
   // Thus we provide abiltiy to get tab and service objects from cached/restored information.
-  get tab() {
-    return this._raw || (this._raw = Tab.get(parseInt(this.getAttribute(Constants.kAPI_TAB_ID))));
+  get raw() {
+    return this._raw || (
+      this._raw = (this.getAttribute('type') == 'group' ?
+        TabsStore.windows.get(parseInt(this.getAttribute(Constants.kAPI_GROUP_ID))) :
+        Tab.get(parseInt(this.getAttribute(Constants.kAPI_TAB_ID)))
+      )
+    );
   }
-  set tab(value) {
+  set raw(value) {
     return this._raw = value;
   }
 
+  get tab() { // for backward compatibility
+    return this.raw;
+  }
+  set tab(value) {
+    return this.raw = value;
+  }
+
   get $TST() {
-    return this._$TST || (this._$TST = this.tab && this.tab.$TST);
+    return this._$TST || (this._$TST = this.raw && this.raw.$TST);
   }
   set $TST(value) {
     return this._$TST = value;
@@ -261,7 +273,8 @@ export class TabElement extends HTMLElement {
     this._labelElement.setAttribute(Constants.kAPI_TAB_ID, this.getAttribute(Constants.kAPI_TAB_ID));
     this._labelElement.setAttribute(Constants.kAPI_WINDOW_ID, this.getAttribute(Constants.kAPI_WINDOW_ID));
 
-    if (this.tab)
+    if (this.getAttribute('type') == 'tab' &&
+        this.tab)
       this.dataset.index =
         this.substanceElement.dataset.index =
           this._labelElement.dataset.index =this.tab.index;

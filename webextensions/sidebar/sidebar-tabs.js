@@ -239,7 +239,13 @@ export function renderTab(tab, { containerElement, insertBefore } = {}) {
       document.createElement(kTAB_ELEMENT_NAME);
     tab.$TST.bindElement(tabElement);
     tab.$TST.setAttribute('id', getTabElementId(tab));
-    tab.$TST.setAttribute(Constants.kAPI_TAB_ID, tab.id || -1);
+    tab.$TST.setAttribute('type', tab.$TST.type);
+    if (tab.$TST.type == 'group') {
+      tab.$TST.setAttribute(Constants.kAPI_GROUP_ID, tab.id || -1);
+    }
+    else {
+      tab.$TST.setAttribute(Constants.kAPI_TAB_ID, tab.id || -1);
+    }
     tab.$TST.setAttribute(Constants.kAPI_WINDOW_ID, tab.windowId || -1);
     tab.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
     TabsStore.addUnsynchronizedTab(tab);

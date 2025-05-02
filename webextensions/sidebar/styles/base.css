@@ -1006,6 +1006,16 @@ tab-item.faviconized .contextual-identity-marker {
 }
 
 
+/* tab groups */
+
+tab-item[type="group"] tab-favicon,
+tab-item[type="group"] tab-closebox,
+tab-item[type="group"] .highlighter,
+tab-item[type="group"] .contextual-identity-marker {
+  display: none;
+}
+
+
 /* non-tab items */
 
 #tabbar-top,
