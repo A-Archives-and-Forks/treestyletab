@@ -49,6 +49,8 @@
                    top           var(--collapse-animation);
   --tab-indent-animation: margin-inline-start var(--indent-animation),
                           margin-inline-end   var(--indent-animation);
+  --tab-indent-positioning-animation: inset-inline-start var(--indent-animation),
+                                      inset-inline-end   var(--indent-animation);
 
   --button-opacity: 0.75;
   --button-hover-opacity: 1;
@@ -1050,16 +1052,45 @@ tab-item[data-group-id]:not([data-group-id="-1"]) .native-tab-group-line {
   display: block;
   max-width: 2px;
   min-width: 2px;
+  transition: var(--tab-indent-positioning-animation);
 }
 :root:not(.rtl).left .native-tab-group-line,
 :root.rtl.right .native-tab-group-line {
   inset-inline-start: calc(var(--tab-group-member-indent) * 0.5);
   inset-inline-end: auto;
 }
+:root:not(.rtl).left.shift-tabs-for-scrollbar-only-on-hover.on-scrollbar-area:hover
+  #normal-tabs-container.overflow
+  .native-tab-group-line,
+:root.rtl.right.shift-tabs-for-scrollbar-only-on-hover.on-scrollbar-area:hover
+  #normal-tabs-container.overflow
+  .native-tab-group-line,
+:root:not(.rtl).left:not(.shift-tabs-for-scrollbar-only-on-hover)
+  #normal-tabs-container.overflow
+  .native-tab-group-line,
+:root.rtl.right:not(.shift-tabs-for-scrollbar-only-on-hover)
+  #normal-tabs-container.overflow
+  .native-tab-group-line {
+  inset-inline-start: calc(var(--tab-group-member-indent) * 0.5 + var(--shift-tabs-for-scrollbar-distance));
+}
 :root:not(.rtl).right .native-tab-group-line,
 :root.rtl.left .native-tab-group-line {
   inset-inline-start: auto;
   inset-inline-end: calc(var(--tab-group-member-indent) * 0.5);
+}
+:root:not(.rtl).right.shift-tabs-for-scrollbar-only-on-hover.on-scrollbar-area:hover
+  #normal-tabs-container.overflow
+  .native-tab-group-line,
+:root.rtl.left.shift-tabs-for-scrollbar-only-on-hover.on-scrollbar-area:hover
+  #normal-tabs-container.overflow
+  .native-tab-group-line,
+:root:not(.rtl).right:not(.shift-tabs-for-scrollbar-only-on-hover)
+  #normal-tabs-container.overflow
+  .native-tab-group-line,
+:root.rtl.left:not(.shift-tabs-for-scrollbar-only-on-hover)
+  #normal-tabs-container.overflow
+  .native-tab-group-line {
+  inset-inline-end: calc(var(--tab-group-member-indent) * 0.5 + var(--shift-tabs-for-scrollbar-distance));
 }
 
 @media (prefers-color-scheme: dark) {
