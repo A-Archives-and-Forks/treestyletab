@@ -423,7 +423,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
 function extractIdPart(id) {
   if (STICKY_SPACER_MATCHER.test(id))
     return parseInt(RegExp.$1);
-  return id;
+  return parseInt(id.split(':')[1]);
 }
 
 let mLastStickyTabIdsAbove = new Set();
