@@ -2970,15 +2970,15 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
 
   const win = TabsStore.windows.get(windowId);
   const mixedTabs = [];
-  let previousGroupId = -1;
+  const knownGroupIds = new Set();
   for (const tab of tabs) {
-    if (tab.groupId != previousGroupId &&
-        tab.groupId != -1) {
+    if (tab.groupId != -1 &&
+        !knownGroupIds.has(tab.groupId)) {
       mixedTabs.push(win.tabGroups.get(tab.groupId));
       //console.log('Tab.getVirtualScrollRenderableTabs: inserted group item, ', mixedTabs[mixedTabs.length-1]);
     }
     mixedTabs.push(tab);
-    previousGroupId = tab.groupId;
+    knownGroupIds.add(tab.groupId);
   }
   //console.log('Tab.getVirtualScrollRenderableTabs: ', mixedTabs);
 
