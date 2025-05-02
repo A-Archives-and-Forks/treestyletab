@@ -1,7 +1,10 @@
 # History
 
  - master/HEAD
+   * Suppress Ctrl-Tab/Ctrl-Shift-Tab specific reactions (redirection of tab focus to skip collapsed tabs through tab switchings), when a collapsed tab get focused by something outside of TST except Ctrl-Tab/Ctrl-Shift-Tab e.g. clicking on a native tab.
+   * Cyclic focus of tabs with custom keyboard shortcuts for "focus to the next/previous sibling tab" commands.
    * Simplify implementation of the tab preview panel embedded in the content area.
+   * API: Notify [`tabbar-mousedown`|`tabbar-mouseup`|`tabbar-clicked`](https://github.com/piroor/treestyletab/wiki/API-for-other-addons#when-the-non-tab-area-is-clicked) instead of [`tab-mousedown`|`tab-mouseup`|`tab-clicked`](https://github.com/piroor/treestyletab/wiki/API-for-other-addons#when-a-tab-is-clicked) to other extensions by clicking on the indent area of each tab.
  - 4.1.4 (2025.3.13)
    * Match styling of sound-playing/muted button to Firefox 136 and later.
    * Add a new option to show tab preview panel only in the sidebar area.

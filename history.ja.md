@@ -1,7 +1,10 @@
 # 更新履歴
 
  - master/HEAD
+   * Ctrl-Tab/Ctrl-Shift-Tab時に固有の反応（タブの切り替え中に折りたたまれたタブがフォーカスされたら、それらを飛ばしてフォーカスするよう別のタブにリダイレクトする）を、Ctrl-Tab/Ctrl-Shift-Tab以外のTST外での操作でタブがフォーカスされたとき（例：Firefox本体のタブバーでタブをクリックしたときなど）には抑制するようにした
+   * 「前/次の同階層のタブにフォーカス」にキーボードショートカットを割り当てた場合にフォーカス移動がタブバー端で循環するようにした
    * タブのプレビューパネルの埋め込み方法をより単純化した
+   * API: 各タブのインデント領域をクリックしたときに、他の拡張機能向けに [`tab-mousedown`|`tab-mouseup`|`tab-clicked`](https://github.com/piroor/treestyletab/wiki/API-for-other-addons#when-a-tab-is-clicked) ではなく [`tabbar-mousedown`|`tabbar-mouseup`|`tabbar-clicked`](https://github.com/piroor/treestyletab/wiki/API-for-other-addons#when-the-non-tab-area-is-clicked) を通知するようにした
  - 4.1.4 (2025.3.13)
    * ミュート状態を表すアイコンの外観をFirefox 136以降のスタイルに合わせた
    * タブのプレビューをサイドバー内にのみ表示するオプションを追加
