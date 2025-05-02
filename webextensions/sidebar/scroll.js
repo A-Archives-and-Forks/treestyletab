@@ -347,8 +347,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 spacer.parentNode.removeChild(spacer);
               continue;
             }
-            const [type, rawId] = id.split(':');
-            const tab = type == 'tab' ? Tab.get(parseInt(rawId)) : null;
+            const tab = getRenderableItemById(id);
             if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
             // We don't need to remove already rendered tab,
@@ -373,8 +372,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 spacer.parentNode.removeChild(spacer);
               continue;
             }
-            const [type, rawId] = id.split(':');
-            const tab = type == 'tab' ? Tab.get(parseInt(rawId)) : null;
+            const tab = getRenderableItemById(id);
             if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
             // We don't need to remove already rendered tab,
@@ -386,7 +384,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
             SidebarTabs.unrenderTab(tab);
           }
           const referenceTab = fromEnd < mLastRenderedVirtualScrollTabIds.length ?
-            Tab.get(extractIdPart(mLastRenderedVirtualScrollTabIds[fromEnd])) :
+            getRenderableItemById(mLastRenderedVirtualScrollTabIds[fromEnd]) :
             null;
           const referenceTabHasValidReferenceElement = referenceTab?.$TST.element?.parentNode == win.containerElement;
           for (const id of insertIds) {
@@ -403,10 +401,8 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
               );
               continue;
             }
-            const [type, rawId] = id.split(':');
-            const tab = type == 'tab' && Tab.get(parseInt(rawId));
-            const group = type == 'group' && win.tabGroups.get(parseInt(rawId));
-            SidebarTabs.renderTab(tab || group, {
+            const tab = getRenderableItemById(id);
+            SidebarTabs.renderTab(tab, {
               insertBefore: referenceTabHasValidReferenceElement ? referenceTab :
                 (referenceTab && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceTab.id}"]`)) ||
                 null,
@@ -420,10 +416,22 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
 
   log(`${Date.now() - startAt} msec, offset = ${renderedOffset}`);
 }
-function extractIdPart(id) {
-  if (STICKY_SPACER_MATCHER.test(id))
-    return parseInt(RegExp.$1);
-  return parseInt(id.split(':')[1]);
+function getRenderableItemById(id) {
+  if (STICKY_SPACER_MATCHER.test(id)) {
+    return Tab.get(parseInt(RegExp.$1));
+  }
+
+  const [type, rawId] = id.split(':');
+  switch (type) {
+    case 'group':
+      return TabsStore.windows.get(TabsStore.getCurrentWindowId()).tabGroups.get(parseInt(rawId));
+
+    case 'tab':
+    default:
+      return Tab.get(parseInt(rawId));
+  }
+
+  return null;
 }
 
 let mLastStickyTabIdsAbove = new Set();
