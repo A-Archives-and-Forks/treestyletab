@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+ - 4.1.5 (2025.5.2)
    * Suppress Ctrl-Tab/Ctrl-Shift-Tab specific reactions (redirection of tab focus to skip collapsed tabs through tab switchings), when a collapsed tab get focused by something outside of TST except Ctrl-Tab/Ctrl-Shift-Tab e.g. clicking on a native tab.
    * Cyclic focus of tabs with custom keyboard shortcuts for "focus to the next/previous sibling tab" commands.
    * Simplify implementation of the tab preview panel embedded in the content area.
