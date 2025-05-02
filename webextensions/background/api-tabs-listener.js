@@ -68,6 +68,7 @@ export function init() {
   browser.windows.onCreated.addListener(onWindowCreated);
   browser.windows.onRemoved.addListener(onWindowRemoved);
   browser.tabGroups.onCreated.addListener(onGroupCreated);
+  browser.tabGroups.onUpdated.addListener(onGroupUpdated);
   browser.tabGroups.onRemoved.addListener(onGroupRemoved);
 
   browser.windows.getAll({}).then(windows => {
@@ -94,6 +95,7 @@ export function destroy() {
   browser.windows.onCreated.removeListener(onWindowCreated);
   browser.windows.onRemoved.removeListener(onWindowRemoved);
   browser.tabGroups.onCreated.removeListener(onGroupCreated);
+  browser.tabGroups.onUpdated.removeListener(onGroupUpdated);
   browser.tabGroups.onRemoved.removeListener(onGroupRemoved);
 }
 
@@ -1302,6 +1304,20 @@ async function onGroupCreated(group) {
     throw new Error('tabGroups.onCreated is called before the owner window is tracked');
   }
   win.tabGroups.set(group.id, group);
+}
+
+async function onGroupUpdated(group) {
+  if (mPromisedStarted)
+    await mPromisedStarted;
+
+  const win = TabsStore.windows.get(group.windowId);
+  if (!win) {
+    throw new Error('tabGroups.onUpdated is called before the owner window is tracked');
+  }
+  win.tabGroups.set(group.id, {
+    ...win.tabGroups.get(group.id),
+    ...group,
+  });
 }
 
 async function onGroupRemoved(group) {
