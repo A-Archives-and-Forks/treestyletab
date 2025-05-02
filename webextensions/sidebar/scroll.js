@@ -348,7 +348,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
               continue;
             }
             const [type, rawId] = id.split(':');
-            const tab = type == 'tab' && Tab.get(parseInt(rawId));
+            const tab = type == 'tab' ? Tab.get(parseInt(rawId)) : null;
             if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
             // We don't need to remove already rendered tab,
@@ -374,7 +374,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
               continue;
             }
             const [type, rawId] = id.split(':');
-            const tab = type == 'tab' && Tab.get(parseInt(rawId));
+            const tab = type == 'tab' ? Tab.get(parseInt(rawId)) : null;
             if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
             // We don't need to remove already rendered tab,
