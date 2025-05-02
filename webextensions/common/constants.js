@@ -128,9 +128,10 @@ export const kNOTIFY_CONFIRMATION_DIALOG_READY  = 'treestyletab:confirmation-dia
 export const kCONNECTION_HEARTBEAT = 'treestyletab:connection-heartbeat';
 
 export const kAPI_TAB_ID       = 'data-tab-id';
-export const kAPI_GROUP_ID     = 'data-group-id';
 export const kAPI_WINDOW_ID    = 'data-window-id';
+export const kAPI_NATIVE_TAB_GROUP_ID = 'data-native-tab-group-id';
 
+export const kGROUP_ID      = 'data-group-id';
 export const kPARENT        = 'data-parent-id';
 export const kCHILDREN      = 'data-child-ids';
 export const kLEVEL         = 'data-level';

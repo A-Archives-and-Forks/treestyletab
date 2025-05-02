@@ -64,6 +64,7 @@ function getBufferedUpdate(tab) {
     loadingStateReallyChanged: undefined,
     pinned:       undefined,
     hidden:       undefined,
+    groupId:      undefined,
     soundStateChanged: false,
   };
   mBufferedUpdates.set(tab.id, update);
@@ -369,6 +370,7 @@ export function updateTab(tab, newState = {}, options = {}) {
   if (options.forceApply ||
       'groupId' in newState) {
     tab.$TST.onNativeGroupModified();
+    update.attributes.added[Constants.kGROUP_ID] = newState.groupId;
   }
 
   update.soundStateChanged = update.soundStateChanged || soundStateChanged;

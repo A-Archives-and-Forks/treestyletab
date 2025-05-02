@@ -241,7 +241,7 @@ export function renderTab(tab, { containerElement, insertBefore } = {}) {
     tab.$TST.setAttribute('id', getTabElementId(tab));
     tab.$TST.setAttribute('type', tab.$TST.type);
     if (tab.$TST.type == 'group') {
-      tab.$TST.setAttribute(Constants.kAPI_GROUP_ID, tab.id || -1);
+      tab.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, tab.id || -1);
     }
     else {
       tab.$TST.setAttribute(Constants.kAPI_TAB_ID, tab.id || -1);

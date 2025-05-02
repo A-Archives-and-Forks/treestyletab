@@ -322,7 +322,7 @@ tab-item.bundled-active tab-item-substance:hover .background:not(.base),
   box-shadow: 0 0 var(--tab-dropshadow-blur) rgba(0, 0, 0, 0.2);
 }
 
-tab-item:not(.active):not(.bundled-active):not(.highlighted) tab-item-substance:hover .background:not(.base),
+tab-item:not([type="group"]):not(.active):not(.bundled-active):not(.highlighted) tab-item-substance:hover .background:not(.base),
 .after-tabs button:hover::before,
 .after-tabs [role="button"]:hover::before,
 #subpanel-selector-anchor:hover::before {

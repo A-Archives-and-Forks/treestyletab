@@ -11,6 +11,7 @@
   /* default size, they will be overridden. */
   --favicon-size: 16px;
   --tab-size: unset;
+  --tab-group-member-indent: 0px;
   --tab-indent: 0px;
   --tab-margin-block-start: 0px;
   --tab-margin-block-end: 0px;
@@ -498,7 +499,7 @@ tab-item-substance .caption {
 
 :root:not(.rtl).left tab-item:not(.pinned) tab-item-substance,
 :root.rtl.right tab-item:not(.pinned) tab-item-substance {
-  margin-inline-start: calc(var(--tab-margin-inline-start) + var(--tab-indent));
+  margin-inline-start: calc(var(--tab-margin-inline-start) + var(--tab-group-member-indent) + var(--tab-indent));
 }
 
 /* auto-hidden scrollbar placeholder workaround */
@@ -514,12 +515,12 @@ tab-item-substance .caption {
 :root.rtl.right:not(.shift-tabs-for-scrollbar-only-on-hover)
   #tabbar.scrollbar-autohide
   #normal-tabs-container.overflow tab-item:not(.pinned) tab-item-substance {
-  margin-inline-start: calc(var(--tab-margin-inline-start) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
+  margin-inline-start: calc(var(--tab-margin-inline-start) + var(--tab-group-member-indent) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
 }
 
 :root:not(.rtl).right tab-item:not(.pinned) tab-item-substance,
 :root.rtl.left tab-item:not(.pinned) tab-item-substance {
-  margin-inline-end: calc(var(--tab-margin-inline-end) + var(--tab-indent));
+  margin-inline-end: calc(var(--tab-margin-inline-end) + var(--tab-group-member-indent) + var(--tab-indent));
 }
 
 /* auto-hidden scrollbar placeholder workaround */
@@ -535,7 +536,7 @@ tab-item-substance .caption {
 :root.rtl.left:not(.shift-tabs-for-scrollbar-only-on-hover)
   #tabbar.scrollbar-autohide
   #normal-tabs-container.overflow tab-item:not(.pinned) tab-item-substance {
-  margin-inline-end: calc(var(--tab-margin-inline-end) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
+  margin-inline-end: calc(var(--tab-margin-inline-end) + var(--tab-group-member-indent) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
 }
 
 tab-item,
@@ -621,6 +622,7 @@ tab-item .burster,
 tab-item.faviconized.unread tab-favicon::before,
 tab-item.attention tab-favicon::before,
 tab-item .background,
+tab-item .native-tab-group-line,
 tab-item .extra-items-container.indent,
 tab-item .extra-items-container.behind,
 tab-item .extra-items-container.front,
@@ -658,13 +660,26 @@ tab-item .extra-items-container.indent {
   width: var(--tab-indent);
   z-index: var(--tab-indent-z-index);
 }
+:root:not(.rtl).left tab-item .extra-items-container.indent,
+:root.rtl.right tab-item .extra-items-container.indent {
+  inset-inline-start: var(--tab-group-member-indent);
+}
+:root:not(.rtl).right tab-item .extra-items-container.indent,
+:root.rtl.left tab-item .extra-items-container.indent {
+  inset-inline-end: var(--tab-group-member-indent);
+}
 /* auto-hidden scrollbar placeholder workaround */
 #tabbar.scrollbar-autohide
   #normal-tabs-container.overflow tab-item .extra-items-container.indent{
-  width: calc(var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
+  width: calc(var(--tab-group-member-indent) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
 }
-tab-item .extra-items-container.indent {
+:root:not(.rtl).left tab-item .extra-items-container.indent,
+:root.rtl.right tab-item .extra-items-container.indent {
   inset-inline-end: auto;
+}
+:root:not(.rtl).right tab-item .extra-items-container.indent,
+:root.rtl.left tab-item .extra-items-container.indent {
+  inset-inline-start: auto;
 }
 
 tab-item .extra-items-container.front {
@@ -1008,11 +1023,51 @@ tab-item.faviconized .contextual-identity-marker {
 
 /* tab groups */
 
+tab-item[type="group"] tab-twisty,
 tab-item[type="group"] tab-favicon,
 tab-item[type="group"] tab-closebox,
 tab-item[type="group"] .highlighter,
 tab-item[type="group"] .contextual-identity-marker {
   display: none;
+}
+
+tab-item[data-group-id]:not([data-group-id="-1"]) {
+  --space-xsmall: 0.267rem; /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#273 */
+  --space-xxsmall: calc(0.5 * var(--space-xsmall)); /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#272 */
+  --space-medium: calc(3 * var(--space-xsmall)); /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#275 */
+  --tab-group-member-indent: var(--space-medium); /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/browser/themes/shared/tabbrowser/tabs.css#1016 */
+  --tab-group-line-color: var(--tab-group-color);
+}
+
+tab-item[type="group"],
+tab-item[type="group"]:hover {
+  --tab-surface: var(--tab-group-color) !important;
+  --tab-text: var(--tab-group-color-pale) !important;
+}
+
+tab-item[data-group-id]:not([data-group-id="-1"]) .native-tab-group-line {
+  background: var(--tab-group-line-color);
+  display: block;
+  max-width: 2px;
+  min-width: 2px;
+}
+:root:not(.rtl).left .native-tab-group-line,
+:root.rtl.right .native-tab-group-line {
+  inset-inline-start: calc(var(--tab-group-member-indent) * 0.5);
+  inset-inline-end: auto;
+}
+:root:not(.rtl).right .native-tab-group-line,
+:root.rtl.left .native-tab-group-line {
+  inset-inline-start: auto;
+  inset-inline-end: calc(var(--tab-group-member-indent) * 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  tab-item[type="group"],
+  tab-item[type="group"]:hover {
+    --tab-surface: var(--tab-group-color-invert) !important;
+    --tab-text: var(--tab-group-label-text-dark) !important;
+  }
 }
 
 

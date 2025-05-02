@@ -1970,6 +1970,7 @@ export default class Tab {
       TabsStore.addNativelyGroupedTab(this.tab);
     }
 
+    this.setAttribute(Constants.kGROUP_ID, this.tab.groupId);
     //const win = TabsStore.windows.get(this.tab.windowId);
     //const group = win.tabGroups.get(this.tab.groupId);
   }

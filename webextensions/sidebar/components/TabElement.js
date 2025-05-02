@@ -207,7 +207,7 @@ export class TabElement extends HTMLElement {
   get raw() {
     return this._raw || (
       this._raw = (this.getAttribute('type') == 'group' ?
-        TabsStore.windows.get(parseInt(this.getAttribute(Constants.kAPI_GROUP_ID))) :
+        TabsStore.windows.get(parseInt(this.getAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID))) :
         Tab.get(parseInt(this.getAttribute(Constants.kAPI_TAB_ID)))
       )
     );
@@ -762,6 +762,13 @@ windowId = ${raw.windowId}
     else {
       if (classList.contains(Constants.kTAB_STATE_SUBTREE_COLLAPSED))
         classList.remove(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
+    }
+
+    const group = this.$TST.nativeTabGroup || this.$TST.rawGroup;
+    if (group) {
+      this.style.setProperty('--tab-group-color', `var(--tab-group-color-${group.color})`);
+      this.style.setProperty('--tab-group-color-pale', `var(--tab-group-color-${group.color}-pale)`);
+      this.style.setProperty('--tab-group-color-invert', `var(--tab-group-color-${group.color}-invert)`);
     }
   }
 
