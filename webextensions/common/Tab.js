@@ -307,14 +307,14 @@ export default class Tab {
   }
 
   get tab() {
-    if ('color' in this.raw) { // native tab group
+    if (this.type == 'group') {
       return null;
     }
     return this.raw;
   }
 
   get rawGroup() {
-    if ('color' in this.raw) {
+    if (this.type == 'group') {
       return this.raw;
     }
     return null;
@@ -933,6 +933,14 @@ export default class Tab {
   //===================================================================
   // tree relations
   //===================================================================
+
+  get nativeTabGroup() {
+    if (this.type != 'tab' ||
+        this.tab.groupId == -1) {
+      return null;
+    }
+    return TabsStore.windows.get(this.tab.windowId).tabGroups.get(this.tab.groupId);
+  }
 
   set parent(tab) {
     const newParentId = tab && (typeof tab == 'number' ? tab : tab.id);
