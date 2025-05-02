@@ -1304,6 +1304,12 @@ async function onGroupCreated(group) {
     throw new Error('tabGroups.onCreated is called before the owner window is tracked');
   }
   win.tabGroups.set(group.id, group);
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
+    windowId: group.windowId,
+    group,
+  });
 }
 
 async function onGroupUpdated(group) {
@@ -1318,6 +1324,12 @@ async function onGroupUpdated(group) {
     ...win.tabGroups.get(group.id),
     ...group,
   });
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED,
+    windowId: group.windowId,
+    group,
+  });
 }
 
 async function onGroupRemoved(group) {
@@ -1329,5 +1341,11 @@ async function onGroupRemoved(group) {
     throw new Error('tabGroups.onRemoved is called before the owner window is tracked');
   }
   win.tabGroups.delete(group.id);
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
+    windowId: group.windowId,
+    group,
+  });
 }
 

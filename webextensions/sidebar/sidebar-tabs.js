@@ -1320,5 +1320,23 @@ BackgroundConnection.onMessage.addListener(async message => {
         Tab.unregisterAutoStickyState(message.providerId, message.remove);
       onNormalTabsChanged.dispatch();
       break;
+
+    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED: {
+      const win = TabsStore.windows.get(message.windowId);
+      win.tabGroups.set(message.group.id, message.group);
+    }; break;
+
+    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED: {
+      const win = TabsStore.windows.get(message.windowId);
+      win.tabGroups.set(message.group.id, {
+        ...win.tabGroups.get(message.group.id),
+        ...message.group,
+      });
+    }; break;
+
+    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED: {
+      const win = TabsStore.windows.get(message.windowId);
+      win.tabGroups.delete(message.group.id);
+    }; break;
   }
 });
