@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -67,6 +67,8 @@ export function init() {
   browser.tabs.onDetached.addListener(onDetached);
   browser.windows.onCreated.addListener(onWindowCreated);
   browser.windows.onRemoved.addListener(onWindowRemoved);
+  browser.tabGroups.onCreated.addListener(onGroupCreated);
+  browser.tabGroups.onRemoved.addListener(onGroupRemoved);
 
   browser.windows.getAll({}).then(windows => {
     mAppIsActive = windows.some(win => win.focused);
@@ -91,6 +93,8 @@ export function destroy() {
   browser.tabs.onDetached.removeListener(onDetached);
   browser.windows.onCreated.removeListener(onWindowCreated);
   browser.windows.onRemoved.removeListener(onWindowRemoved);
+  browser.tabGroups.onCreated.removeListener(onGroupCreated);
+  browser.tabGroups.onRemoved.removeListener(onGroupRemoved);
 }
 
 export function start() {
@@ -1290,3 +1294,24 @@ async function onWindowRemoved(windowId) {
 browser.windows.onFocusChanged.addListener(windowId => {
   mAppIsActive = windowId > 0;
 });
+
+
+async function onGroupCreated(group) {
+  const win = TabsStore.windows.get(group.windowId);
+  if (!win) {
+    throw new Error('tabGroups.onCreated is called before the owner window is tracked');
+  }
+  win.tabGroups.set(group.id, group);
+}
+
+async function onGroupRemoved(group) {
+  if (mPromisedStarted)
+    await mPromisedStarted;
+
+  const win = TabsStore.windows.get(group.windowId);
+  if (!win) {
+    throw new Error('tabGroups.onRemoved is called before the owner window is tracked');
+  }
+  win.tabGroups.delete(group.id);
+}
+

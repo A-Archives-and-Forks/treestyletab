@@ -464,7 +464,7 @@ async function cacheTree(windowId, triggers) {
   log('cacheTree for window ', windowId, triggers/*{ stack: configs.debug && new Error().stack }*/);
   updateWindowCache(win.lastWindowCacheOwner, Constants.kWINDOW_STATE_CACHED_TABS, {
     version:         kCONTENTS_VERSION,
-    tabs:            TabsStore.windows.get(windowId).export(true),
+    tabs:            TabsStore.windows.get(windowId).export(true).tabs,
     pinnedTabsCount: Tab.getPinnedTabs(windowId).length,
     signature
   });

@@ -64,13 +64,29 @@ let mInitialized = false;
 const mPreloadedCaches = new Map();
 
 async function getAllWindows() {
-  return browser.windows.getAll({
-    populate:    true,
-    // We need to track all type windows because
-    // popup windows can be destination of tabs.move().
-    // See also: https://github.com/piroor/treestyletab/issues/3311
-    windowTypes: ['normal', 'panel', 'popup'],
-  }).catch(ApiTabs.createErrorHandler());
+  const [windows, tabGroups] = await Promise.all([
+    browser.windows.getAll({
+      populate:    true,
+      // We need to track all type windows because
+      // popup windows can be destination of tabs.move().
+      // See also: https://github.com/piroor/treestyletab/issues/3311
+      windowTypes: ['normal', 'panel', 'popup'],
+    }).catch(ApiTabs.createErrorHandler()),
+    browser.tabGroups.query({}),
+  ]);
+
+  const groupsByWindow = new Map();
+  for (const group of tabGroups) {
+    const groupsInWindow = groupsByWindow.has(group.windowId) || [];
+    groupsInWindow.push(group);
+    groupsByWindow.set(group.windowId, groupsInWindow)
+  }
+
+  for (const win of windows) {
+    win.tabGroups = groupsByWindow.get(win.id) || [];
+  }
+
+  return windows;
 }
 
 log('init: Start queuing of messages notified via WE APIs');
@@ -188,7 +204,7 @@ async function notifyReadyToSidebars() {
     promisedResults.push(browser.runtime.sendMessage({
       type:     Constants.kCOMMAND_NOTIFY_BACKGROUND_READY,
       windowId: win.id,
-      tabs:     win.export(true) // send tabs together to optimizie further initialization tasks in the sidebar
+      exported: win.export(true), // send tabs together to optimizie further initialization tasks in the sidebar
     }).catch(ApiTabs.createErrorSuppressor()));
   }
   return Promise.all(promisedResults);
@@ -284,7 +300,7 @@ async function rebuildAll(windows) {
     await MetricsData.addAsync(`rebuildAll: tabs in window ${win.id}`, async () => {
       let trackedWindow = TabsStore.windows.get(win.id);
       if (!trackedWindow)
-        trackedWindow = Window.init(win.id);
+        trackedWindow = Window.init(win.id, win.tabGroups);
 
       for (const tab of win.tabs) {
         Tab.track(tab);
@@ -310,7 +326,7 @@ async function rebuildAll(windows) {
       }
       try {
         log(`build tabs for ${win.id} from scratch`);
-        Window.init(win.id);
+        Window.init(win.id, win.tabGroups);
         const promises = [];
         for (let tab of win.tabs) {
           tab = Tab.get(tab.id);

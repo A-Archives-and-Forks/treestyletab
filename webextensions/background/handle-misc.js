@@ -565,10 +565,13 @@ function onMessage(message, sender) {
       return Promise.resolve(loadUserStyleRules());
 
     case Constants.kCOMMAND_PING_TO_BACKGROUND: // return tabs as the pong, to optimizie further initialization tasks in the sidebar
+      TabsUpdate.completeLoadingTabs(message.windowId); // don't wait here for better perfomance
+      return Promise.resolve(TabsStore.windows.get(message.windowId).export(true));
+
     case Constants.kCOMMAND_PULL_TABS:
       if (message.windowId) {
         TabsUpdate.completeLoadingTabs(message.windowId); // don't wait here for better perfomance
-        return Promise.resolve(TabsStore.windows.get(message.windowId).export(true));
+        return Promise.resolve(TabsStore.windows.get(message.windowId).export(true).tabs);
       }
       return Promise.resolve(message.tabIds.map(id => {
         const tab = Tab.get(id);

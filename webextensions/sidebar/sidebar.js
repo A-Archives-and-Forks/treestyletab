@@ -208,19 +208,19 @@ export async function init() {
 
   UserOperationBlocker.setProgress(16); // 1/6: wait background page
   const promisedResults = Promise.all([
-    MetricsData.addAsync('importTabsFromBackground()', importTabsFromBackground()),
+    MetricsData.addAsync('importWindowFromBackground()', importWindowFromBackground()),
     MetricsData.addAsync('promisedAllTabsTracked', promisedAllTabsTracked)
   ]);
   log('Start queuing of messages from the background page');
   BackgroundConnection.connect();
-  const [importedTabs] = await promisedResults;
+  const [importedWindow] = await promisedResults;
 
   // we don't need await for these features
   MetricsData.addAsync('API for other addons', TSTAPI.initAsFrontend());
 
   await Promise.all([
     MetricsData.addAsync('parallel initialization: main', async () => {
-      await MetricsData.addAsync('parallel initialization: main: rebuildAll', rebuildAll(importedTabs));
+      await MetricsData.addAsync('parallel initialization: main: rebuildAll', rebuildAll(importedWindow));
 
       TabsUpdate.completeLoadingTabs(mTargetWindow);
 
@@ -546,29 +546,29 @@ function updateContextualIdentitiesSelector() {
   range.detach();
 }
 
-async function rebuildAll(importedTabs) {
+async function rebuildAll(importedWindow) {
   MetricsData.add('rebuildAll: start');
   const trackedWindow = TabsStore.windows.get(mTargetWindow);
   if (!trackedWindow)
     Window.init(mTargetWindow);
 
-  if (!importedTabs)
-    importedTabs = await MetricsData.addAsync('rebuildAll: import tabs', browser.runtime.sendMessage({
+  if (!importedWindow)
+    importedWindow = await MetricsData.addAsync('rebuildAll: import tabs and groups', browser.runtime.sendMessage({
       type:     Constants.kCOMMAND_PING_TO_BACKGROUND,
       windowId: mTargetWindow
     }).catch(ApiTabs.createErrorHandler()));
 
   // Ignore tabs already closed. It can happen when the first tab is
   // immediately reopened by other addons like Temporary Container.
-  const importedTabIds = new Set(importedTabs.map(tab => tab.id));
+  const importedTabIds = new Set(importedWindow.tabs.map(tab => tab.id));
   for (const tab of Tab.getAllTabs()) {
     if (!importedTabIds.has(tab.id))
       Tab.untrack(tab.id);
   }
 
-  const tabs = importedTabs.map(importedTab => Tab.import(importedTab));
+  const tabs = importedWindow.tabs.map(importedTab => Tab.import(importedTab));
 
-  Window.init(mTargetWindow);
+  Window.init(mTargetWindow, importedWindow.tabGroups);
   let lastDraw = Date.now();
   let count = 0;
   const maxCount = tabs.length;
@@ -590,61 +590,61 @@ async function rebuildAll(importedTabs) {
   document.documentElement.classList.toggle(Constants.kTABBAR_STATE_MULTIPLE_HIGHLIGHTED, Tab.getHighlightedTabs(mTargetWindow).length > 1);
   SidebarTabs.reserveToUpdateLoadingState();
 
-  importedTabs = null; // wipe it out from the RAM.
+  importedWindow = null; // wipe it out from the RAM.
   return false;
 }
 
-let mGiveUpImportTabs = false;
-const mImportedTabs = new Promise((resolve, _reject) => {
-  log('preparing mImportedTabs');
+let mGiveUpImportWindow = false;
+const mImportedWindow = new Promise((resolve, _reject) => {
+  log('preparing mImportedWindow');
   // This must be synchronous , to avoid blocking to other listeners.
   const onBackgroundIsReady = message => {
-    if (mGiveUpImportTabs) {
-      log('mImportedTabs (${windowId}): give up to import, unregister onBackgroundIsReady listener');
+    if (mGiveUpImportWindow) {
+      log('mImportedWindow (${windowId}): give up to import, unregister onBackgroundIsReady listener');
       browser.runtime.onMessage.removeListener(onBackgroundIsReady);
-      resolve([]);
+      resolve({ tabs: [], tabGroups: [] });
       return;
     }
     // This handler may be called before mTargetWindow is initialized, so
     // we need to wait until it is resolved.
     // See also: https://github.com/piroor/treestyletab/issues/2200
     mPromisedTargetWindow.then(windowId => {
-      if (mGiveUpImportTabs) {
-        log('mImportedTabs (${windowId}): give up to import, unregister onBackgroundIsReady listener (with promised target window)');
+      if (mGiveUpImportWindow) {
+        log('mImportedWindow (${windowId}): give up to import, unregister onBackgroundIsReady listener (with promised target window)');
         browser.runtime.onMessage.removeListener(onBackgroundIsReady);
-        resolve([]);
+        resolve({ tabs: [], tabGroups: [] });
         return;
       }
-      log(`mImportedTabs (${windowId}): onBackgroundIsReady `, message?.type, message?.windowId);
+      log(`mImportedWindow (${windowId}): onBackgroundIsReady `, message?.type, message?.windowId);
       if (message?.type != Constants.kCOMMAND_NOTIFY_BACKGROUND_READY ||
           message?.windowId != windowId)
         return;
       browser.runtime.onMessage.removeListener(onBackgroundIsReady);
-      log(`mImportedTabs is resolved with ${message.tabs.length} tabs`);
-      resolve(message.tabs);
+      log(`mImportedWindow is resolved with ${message.tabs.length} tabs`);
+      resolve(message.exported);
     });
   };
   browser.runtime.onMessage.addListener(onBackgroundIsReady);
 });
 
-async function importTabsFromBackground() {
-  log('importTabsFromBackground: start');
+async function importWindowFromBackground() {
+  log('importWindowFromBackground: start');
   try {
-    const importedTabs = await MetricsData.addAsync('importTabsFromBackground: kCOMMAND_PING_TO_BACKGROUND', browser.runtime.sendMessage({
+    const importedWin = await MetricsData.addAsync('importWindowFromBackground: kCOMMAND_PING_TO_BACKGROUND', browser.runtime.sendMessage({
       type:     Constants.kCOMMAND_PING_TO_BACKGROUND,
       windowId: mTargetWindow
     }).catch(ApiTabs.createErrorHandler()));
-    if (importedTabs) {
-      log('importTabsFromBackground: use response of kCOMMAND_PING_TO_BACKGROUND');
-      mGiveUpImportTabs = true;
-      return importedTabs;
+    if (importedWin) {
+      log('importWindowFromBackground: use response of kCOMMAND_PING_TO_BACKGROUND');
+      mGiveUpImportWindow = true;
+      return importedWin;
     }
   }
   catch(e) {
-    log('importTabsFromBackground: error: ', e);
+    log('importWindowFromBackground: error: ', e);
   }
-  log('importTabsFromBackground: waiting for mImportedTabs');
-  return MetricsData.addAsync('importTabsFromBackground: kCOMMAND_PING_TO_SIDEBAR', mImportedTabs);
+  log('importWindowFromBackground: waiting for mImportedWindow');
+  return MetricsData.addAsync('importWindowFromBackground: kCOMMAND_PING_TO_SIDEBAR', mImportedWindow);
 }
 
 
