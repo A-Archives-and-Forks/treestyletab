@@ -304,16 +304,19 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
 
   if (skipRefreshTabs) {
     log('renderVirtualScrollViewport: skip re-rendering of tabs, rendered = ', renderableTabs);
-    if (mLastRenderedVirtualScrollTabIds.length != renderableTabs.length)
-      mLastRenderedVirtualScrollTabIds = renderableTabs.map(tab => tab.id);
+    if (mLastRenderedVirtualScrollTabIds.length != renderableTabs.length) {
+      mLastRenderedVirtualScrollTabIds = renderableTabs.map(tab => tab.$TST.renderingId);
+    }
   }
   else {
     const toBeRenderedTabs = renderableTabs.slice(firstRenderableIndex, lastRenderableIndex + 1);
     const toBeRenderedTabIds = toBeRenderedTabs.map(tab => tab.$TST.renderingId);
     const toBeRenderedTabIdsSet = new Set(toBeRenderedTabIds);
     for (const stickyTab of stickyTabs) {
-      if (toBeRenderedTabIdsSet.has(stickyTab.id))
-        toBeRenderedTabIds.splice(toBeRenderedTabIds.indexOf(stickyTab.id), 1, `${stickyTab.id}:sticky`);
+      const id = stickyTab.$TST.renderingId;
+      if (toBeRenderedTabIdsSet.has(id)) {
+        toBeRenderedTabIds.splice(toBeRenderedTabIds.indexOf(id), 1, `${id}:sticky`);
+      }
     }
 
     const renderOperations = (new SequenceMatcher(mLastRenderedVirtualScrollTabIds, toBeRenderedTabIds)).operations();
