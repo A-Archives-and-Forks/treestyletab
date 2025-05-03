@@ -3096,6 +3096,7 @@ Tab.getNativeGroupMemberTabs = (windowId = null, groupId, options = {}) => {
     tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
     living: true,
     groupId,
+    ordered: true,
     ...options
   });
 };
@@ -3107,6 +3108,7 @@ Tab.getFirstNativeGroupMemberTab = (windowId = null, groupId, options = {}) => {
     living: true,
     groupId,
     ...options,
+    ordered: true,
     first: true,
   });
 };
