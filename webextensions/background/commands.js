@@ -490,6 +490,23 @@ async function performTabsDragDrop(params = {}) {
     return;
   }
 
+  const nativeTabGroupId = params.attachTo ?
+    params.attachTo.groupId :
+    (params.insertAfter && params.insertAfter.groupId != -1) ?
+      params.insertAfter.groupId :
+      params.insertBefore ?
+        params.insertBefore.groupId :
+        -1;
+  if (nativeTabGroupId == -1) {
+    await browser.tabs.ungroup(params.tabs.map(tab => tab.id));
+  }
+  else {
+    await browser.tabs.group({
+      groupId: nativeTabGroupId,
+      tabIds:  params.tabs.map(tab => tab.id),
+    });
+  }
+
   const movedTabs = await moveTabsWithStructure(params.tabs, {
     ...params,
     windowId, destinationWindowId,
