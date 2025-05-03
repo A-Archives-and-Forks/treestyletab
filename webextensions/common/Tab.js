@@ -1976,6 +1976,9 @@ export default class Tab {
     }
     else {
       TabsStore.addNativelyGroupedTab(this.tab);
+      const group = TabsStore.windows.get(this.tab.windowId).tabGroups.get(this.tab.groupId);
+      const firstMember = Tab.getFirstNativeGroupMemberTab(this.tab.windowId, this.tab.groupId);
+      group.index = firstMember ? firstMember.index : -1;
     }
 
     this.setAttribute(Constants.kGROUP_ID, this.tab.groupId);
@@ -2612,6 +2615,9 @@ Tab.initNativeTabGroup = group => {
   if (group.$TST instanceof Tab) {
     return group;
   }
+  if ('index' in group) {
+    group.index = -1;
+  }
   group.$TST = new Tab(group);
   return group;
 };
@@ -3006,15 +3012,16 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
   const mixedTabs = [...tabs];
   for (const group of win.tabGroups.values()) {
     const firstMember = Tab.getFirstNativeGroupMemberTab(windowId, group.id);
-    if (!firstMember) {
+    if (group.index == -1 ||
+        !firstMember) {
       continue;
     }
-    const nextTabIndex = mixedTabs.findIndex(tab => tab.index >= firstMember.index);
-    if (nextTabIndex == -1) {
+    const nextItemIndex = mixedTabs.findIndex(tab => tab.index >= group.index);
+    if (nextItemIndex == -1) {
       mixedTabs.unshift(group);
     }
     else {
-      mixedTabs.splice(nextTabIndex, 0, group);
+      mixedTabs.splice(nextItemIndex, 0, group);
     }
   }
   log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
