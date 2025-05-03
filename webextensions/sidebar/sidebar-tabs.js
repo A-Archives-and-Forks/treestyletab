@@ -334,6 +334,9 @@ function reserveToNotifyTabsRendered() {
     const ids = [...mRenderedTabIds];
     mRenderedTabIds.clear();
     const tabs =  mapAndFilter(ids, id => Tab.get(id));
+    if (tabs.length == 0) {
+      return;
+    }
 
     if (hasInternalListener)
       onTabsRendered.dispatch(tabs);
