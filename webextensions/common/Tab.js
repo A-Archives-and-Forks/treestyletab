@@ -1977,8 +1977,9 @@ export default class Tab {
     else {
       TabsStore.addNativelyGroupedTab(this.tab);
       const group = TabsStore.windows.get(this.tab.windowId).tabGroups.get(this.tab.groupId);
-      const firstMember = Tab.getFirstNativeGroupMemberTab(this.tab.windowId, this.tab.groupId);
+      const firstMember = Tab.getFirstNativeGroupMemberTab(this.tab);
       group.index = firstMember ? firstMember.index : -1;
+      //console.log('first member of ', group.id, ' is ', firstMember?.id, ', all = ', Tab.getNativeGroupMemberTabs(this.tab).map(tab => tab.id));
     }
 
     this.setAttribute(Constants.kGROUP_ID, this.tab.groupId);
@@ -3011,7 +3012,7 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
   const win = TabsStore.windows.get(windowId);
   const mixedTabs = [...tabs];
   for (const group of win.tabGroups.values()) {
-    const firstMember = Tab.getFirstNativeGroupMemberTab(windowId, group.id);
+    const firstMember = Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id });
     if (group.index == -1 ||
         !firstMember) {
       continue;
@@ -3103,7 +3104,7 @@ Tab.getRecycledTabs = (windowId = null, options = {}) => {
   });
 };
 
-Tab.getNativeGroupMemberTabs = (windowId = null, groupId, options = {}) => {
+Tab.getNativeGroupMemberTabs = ({ windowId, groupId }, options = {}) => {
   return TabsStore.queryAll({
     windowId,
     tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
@@ -3114,7 +3115,7 @@ Tab.getNativeGroupMemberTabs = (windowId = null, groupId, options = {}) => {
   });
 };
 
-Tab.getFirstNativeGroupMemberTab = (windowId = null, groupId, options = {}) => {
+Tab.getFirstNativeGroupMemberTab = ({ windowId, groupId }, options = {}) => {
   return TabsStore.query({
     windowId,
     tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
