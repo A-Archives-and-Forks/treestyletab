@@ -105,7 +105,7 @@ export function init(scrollPosition) {
   SidebarTabs.onNormalTabsChanged.addListener(_tab => {
     reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
   });
-  SidebarTabs.onNativeTabGroupChanged.addListener(_tab => {
+  Tab.onNativeGroupModified.addListener(_tab => {
     reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
   });
   Size.onUpdated.addListener(() => {

@@ -50,7 +50,6 @@ export const normalContainer = document.querySelector('#normal-tabs-container');
 
 export const onPinnedTabsChanged = new EventListenerManager();
 export const onNormalTabsChanged = new EventListenerManager();
-export const onNativeTabGroupChanged = new EventListenerManager();
 export const onTabsRendered   = new EventListenerManager();
 export const onTabsUnrendered = new EventListenerManager();
 export const onSyncFailed = new EventListenerManager();
@@ -583,7 +582,6 @@ function tryApplyUpdate(update) {
     if ('groupId' in update.updatedProperties) {
       tab.$TST.onNativeGroupModified();
       tab.$TST.updateElement(TabUpdateTarget.TabProperties);
-      onNativeTabGroupChanged.dispatch();
     }
   }
 

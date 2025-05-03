@@ -1979,6 +1979,8 @@ export default class Tab {
     }
 
     this.setAttribute(Constants.kGROUP_ID, this.tab.groupId);
+
+    Tab.onNativeGroupModified.dispatch(this.tab);
   }
 
 
@@ -2294,6 +2296,7 @@ Tab.onDestroyed    = new EventListenerManager();
 Tab.onInitialized  = new EventListenerManager();
 Tab.onStateChanged  = new EventListenerManager();
 Tab.onElementBound = new EventListenerManager();
+Tab.onNativeGroupModified = new EventListenerManager();
 
 Tab.track = tab => {
   const trackedTab = Tab.get(tab.id);
@@ -3003,6 +3006,9 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
   const mixedTabs = [...tabs];
   for (const group of win.tabGroups.values()) {
     const firstMember = Tab.getFirstNativeGroupMemberTab(windowId, group.id);
+    if (!firstMember) {
+      continue;
+    }
     const nextTabIndex = mixedTabs.findIndex(tab => tab.index >= firstMember.index);
     if (nextTabIndex == -1) {
       mixedTabs.unshift(group);
