@@ -45,6 +45,7 @@ export default class Window {
     this.keepDescendantsTabs = new Set();
     this.highlightingTabs    = new Set();
     this.tabsToBeHighlightedAlone = new Set();
+    this.internallyMovingTabsForUpdatedNativeTabGroups = new Set();
 
     this.subTreeMovingCount =
       this.subTreeChildrenMovingCount =

@@ -2144,6 +2144,85 @@ export function detectTabActionFromNewPosition(tab, moveInfo = {}) {
 }
 
 
+function maintainTreeForUpdatedNativeTabGroups({ windowId, groupId }, options = {}) {
+  let timer = maintainTreeForUpdatedNativeTabGroups.delayed.get(groupId);
+  if (timer)
+    clearTimeout(timer);
+  if (options.justNow || !shouldApplyAnimation()) {
+    return maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId });
+  }
+  timer = setTimeout(() => {
+    maintainTreeForUpdatedNativeTabGroups.delayed.delete(groupId);
+    maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId });
+  }, 100);
+  maintainTreeForUpdatedNativeTabGroups.delayed.set(groupId, timer);
+}
+maintainTreeForUpdatedNativeTabGroups.delayed = new Map();
+
+async function maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId }) {
+  const win = TabsStore.windows.get(windowId);
+
+  const members = Tab.getNativeGroupMemberTabs({ windowId, groupId });
+  const rootTabs = Tab.collectRootTabs(members);
+  const wholeTree = [...new Set(Tab.sort([...members.map(tab => tab.$TST.rootTab), ...getWholeTree(rootTabs)]))];
+  if (members.length == wholeTree.length) {
+    return;
+  }
+
+  log('maintainTreeForUpdatedNativeTabGroupsNow: wholeTree = ', wholeTree);
+
+  const membersStructure = TreeBehavior.getTreeStructureFromTabs(members);
+  await detachTabsFromTree(members, {
+    partial: true,
+  });
+
+  const membersSet = new Set(members);
+  const others = wholeTree.filter(tab => !membersSet.has(tab));
+  log('maintainTreeForUpdatedNativeTabGroupsNow: others = ', others);
+  for (const other of others) {
+    win.internallyMovingTabsForUpdatedNativeTabGroups.add(other.id);
+  }
+  const othersStructure = TreeBehavior.getTreeStructureFromTabs(others);
+  await moveTabs(others, {
+    insertAfter: members[members.length - 1],
+    insertBefore: others[others.length - 1].unsafeNextTab,
+  });
+
+  await Promise.race([
+    new Promise((resolve, _reject) => {
+      const resolvers = maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.get(windowId) || [];
+      resolvers.push(resolve);
+      maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.set(windowId, resolvers);
+    }),
+    wait(500),
+  ]);
+  maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.delete(windowId);
+
+  for (const other of others) {
+    win.internallyMovingTabsForUpdatedNativeTabGroups.delete(other.id);
+  }
+  applyTreeStructureToTabs(members, membersStructure);
+  applyTreeStructureToTabs(others, othersStructure);
+  browser.tabs.ungroup(others.map(tab => tab.id));
+}
+maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow = new Map();
+
+Tab.onNativeGroupModified.addListener(tab => {
+  const win = TabsStore.windows.get(tab.windowId);
+  if (win.internallyMovingTabsForUpdatedNativeTabGroups.has(tab.id)) {
+    window.requestAnimationFrame(() => {
+      const resolvers = maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.get(tab.windowId) || [];
+      maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.delete(tab.windowId);
+      for (const resolver of resolvers) {
+        resolver();
+      }
+    });
+    return;
+  }
+  maintainTreeForUpdatedNativeTabGroups(tab);
+});
+
+
 //===================================================================
 // Take snapshot
 //===================================================================
