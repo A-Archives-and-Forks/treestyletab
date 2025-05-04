@@ -55,7 +55,10 @@ export async function setCollapsed(tab, info = {}) {
   if (!TabsStore.ensureLivingTab(tab)) // do nothing for closed tab!
     return;
 
-  const changed = info.collapsed != tab.$TST.collapsed;
+  const changed = (
+    info.collapsed != tab.$TST.collapsed ||
+    info.collapsed != tab.$TST.collapsedCompletely
+  );
 
   tab.$TST.shouldExpandLater = false; // clear flag
 
