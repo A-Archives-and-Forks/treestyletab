@@ -2144,21 +2144,6 @@ export function detectTabActionFromNewPosition(tab, moveInfo = {}) {
 }
 
 
-function maintainTreeForUpdatedNativeTabGroups({ windowId, groupId }, options = {}) {
-  let timer = maintainTreeForUpdatedNativeTabGroups.delayed.get(groupId);
-  if (timer)
-    clearTimeout(timer);
-  if (options.justNow || !shouldApplyAnimation()) {
-    return maintainTreeForNativeTabGroups({ windowId, groupId });
-  }
-  timer = setTimeout(() => {
-    maintainTreeForUpdatedNativeTabGroups.delayed.delete(groupId);
-    maintainTreeForNativeTabGroups({ windowId, groupId });
-  }, 100);
-  maintainTreeForUpdatedNativeTabGroups.delayed.set(groupId, timer);
-}
-maintainTreeForUpdatedNativeTabGroups.delayed = new Map();
-
 /*
 *************************************************************************
 Logic to maintain tree structure based on modified native tab groups
@@ -2183,7 +2168,8 @@ Firefox's native tab groups feature's basics:
 * When some of already grouped tabs are moved to another group, they will
   be moved AFTER existing members of the destination group.
 
-TST should imitate Firefox's behavior, and should do more:
+TST should imitate Firefox's behavior, and should do more with the method
+maintainTreeForNativeTabGroup():
 
 * A tree should not be separated with multiple groups.
   All member tabs in a tree should be grouped with a same tab group,
@@ -2197,14 +2183,22 @@ TST should imitate Firefox's behavior, and should do more:
     they will be moved by Firefox. TST should DO NOTHING EXTRA ON THIS
     CASE, because tree structure of moved tabs are automatically
     maintained.
-  * When TST is activated and detects a tree is separated to multiple
-    groups,
-    TST should separate the tree to multiple parts for each group.
-    This operation will be done based on native tab groups.
-    Member tabs of each group will be detached from the source tree, and
-    this operation will be done for all groups repeatedly.
+
+And, what we should do when TST is activated and detects a tree is
+separated to multiple groups? For example:
+
+* tab1
+  * tab2 [group1]
+  * tab3 [group1]
+  * tab4
+  * tab5 [group2]
+  * tab6 [group2]
+
+On this case we need to move only tab1 and tab4, otherwise moving of
+already grouped tabs will break those groups. The method
+maintainTreeForNativeTabGroup() does that too.
 */
-async function maintainTreeForNativeTabGroups({ windowId, groupId }) {
+async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
   const win = TabsStore.windows.get(windowId);
 
   const members = Tab.getNativeGroupMemberTabs({ windowId, groupId });
@@ -2214,18 +2208,36 @@ async function maintainTreeForNativeTabGroups({ windowId, groupId }) {
     return;
   }
 
-  log('maintainTreeForNativeTabGroups: wholeTree = ', wholeTree);
+  log(`maintainTreeForNativeTabGroup: groupId = ${groupId}, wholeTree = `, () => wholeTree.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
 
-  const membersStructure = TreeBehavior.getTreeStructureFromTabs(members);
-  await detachTabsFromTree(members, {
-    partial: true,
-  });
+  const membersAndStructures = new Map();
+  const groupedTabs = new Set();
+  const others = [];
+  let lastMember = null;
+  for (const tab of wholeTree) {
+    if (tab.groupId == -1) {
+      others.push(tab);
+    }
+    else {
+      groupedTabs.add(tab);
+      const membersAndStructure = membersAndStructures.get(tab.groupId) || { members: [] };
+      membersAndStructure.members.push(tab);
+      membersAndStructures.set(tab.groupId, membersAndStructure);
+      lastMember = tab;
+    }
+  }
+  for (const [groupId, membersAndStructure] of membersAndStructures.entries()) {
+    log(`maintainTreeForNativeTabGroup:   groupId = ${groupId}, members = `, () => membersAndStructure.members.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
+    membersAndStructure.structure = TreeBehavior.getTreeStructureFromTabs(membersAndStructure.members),
+    await detachTabsFromTree(members, {
+      partial: true,
+    });
+  }
 
-  const membersSet = new Set(members);
-  const others = wholeTree.filter(tab => !membersSet.has(tab));
-  log('maintainTreeForNativeTabGroups: others = ', others);
-  if (others.some(other => other.groupId != -1)) {
-    log('maintainTreeForNativeTabGroups: others are already grouped and moved by Firefox, so we need to do nothing anymore.');
+  log('maintainTreeForNativeTabGroup: others = ', () => others.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`), `, lastMember = #${lastMember.id}(@${lastMember.index})`);
+
+  if (others.length == 0) {
+    log('maintainTreeForNativeTabGroup: there is no other tabs need to be moved, so we do nothing.');
     return;
   }
 
@@ -2233,44 +2245,77 @@ async function maintainTreeForNativeTabGroups({ windowId, groupId }) {
     win.internallyMovingTabsForUpdatedNativeTabGroups.add(other.id);
   }
   const othersStructure = TreeBehavior.getTreeStructureFromTabs(others);
+  log('maintainTreeForNativeTabGroup: othersStructure = ', othersStructure);
+  await detachTabsFromTree(others);
   await moveTabs(others, {
-    insertAfter: members[members.length - 1],
+    insertAfter: lastMember,
     insertBefore: others[others.length - 1].unsafeNextTab,
   });
+  log('maintainTreeForNativeTabGroup: moved others = ', others.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
 
   await Promise.race([
     new Promise((resolve, _reject) => {
-      const resolvers = maintainTreeForNativeTabGroups.resolversForWindow.get(windowId) || [];
+      const resolvers = maintainTreeForNativeTabGroup.resolversForWindow.get(windowId) || [];
       resolvers.push(resolve);
-      maintainTreeForNativeTabGroups.resolversForWindow.set(windowId, resolvers);
+      maintainTreeForNativeTabGroup.resolversForWindow.set(windowId, resolvers);
     }),
     wait(500),
   ]);
-  maintainTreeForNativeTabGroups.resolversForWindow.delete(windowId);
+  maintainTreeForNativeTabGroup.resolversForWindow.delete(windowId);
 
   for (const other of others) {
     win.internallyMovingTabsForUpdatedNativeTabGroups.delete(other.id);
   }
-  applyTreeStructureToTabs(members, membersStructure);
+  for (const { members, structure } of membersAndStructures.values()) {
+    applyTreeStructureToTabs(members, structure);
+  }
   applyTreeStructureToTabs(others, othersStructure);
   browser.tabs.ungroup(others.map(tab => tab.id));
 }
-maintainTreeForNativeTabGroups.resolversForWindow = new Map();
+maintainTreeForNativeTabGroup.resolversForWindow = new Map();
 
-Tab.onNativeGroupModified.addListener(tab => {
-  const win = TabsStore.windows.get(tab.windowId);
-  if (win.internallyMovingTabsForUpdatedNativeTabGroups.has(tab.id)) {
-    window.requestAnimationFrame(() => {
-      const resolvers = maintainTreeForNativeTabGroups.resolversForWindow.get(tab.windowId) || [];
-      maintainTreeForNativeTabGroups.resolversForWindow.delete(tab.windowId);
-      for (const resolver of resolvers) {
-        resolver();
-      }
-    });
-    return;
+function reserveToMaintainTreeForUpdatedNativeTabGroup({ windowId, groupId }, options = {}) {
+  let timer = reserveToMaintainTreeForUpdatedNativeTabGroup.delayed.get(groupId);
+  if (timer)
+    clearTimeout(timer);
+  if (options.justNow || !shouldApplyAnimation()) {
+    return maintainTreeForNativeTabGroup({ windowId, groupId });
   }
-  maintainTreeForUpdatedNativeTabGroups(tab);
-});
+  timer = setTimeout(() => {
+    reserveToMaintainTreeForUpdatedNativeTabGroup.delayed.delete(groupId);
+    maintainTreeForNativeTabGroup({ windowId, groupId });
+  }, 100);
+  reserveToMaintainTreeForUpdatedNativeTabGroup.delayed.set(groupId, timer);
+}
+reserveToMaintainTreeForUpdatedNativeTabGroup.delayed = new Map();
+
+export async function startToMaintainTreeForNativeTabGroups() {
+  // fixup mismatched tree structure and tab groups constructed while TST is disabled
+  const groups = await browser.tabGroups.query({});
+  for (const group of groups) {
+    await maintainTreeForNativeTabGroup({
+      windowId: group.windowId,
+      groupId: group.id,
+    });
+  }
+
+  // after all we start tracking of dynamic changes of tab groups
+  Tab.onNativeGroupModified.addListener(tab => {
+    const win = TabsStore.windows.get(tab.windowId);
+    if (win.internallyMovingTabsForUpdatedNativeTabGroups.has(tab.id)) {
+      window.requestAnimationFrame(() => {
+        const resolvers = maintainTreeForNativeTabGroup.resolversForWindow.get(tab.windowId) || [];
+        maintainTreeForNativeTabGroup.resolversForWindow.delete(tab.windowId);
+        for (const resolver of resolvers) {
+          resolver();
+        }
+      });
+      return;
+    }
+    reserveToMaintainTreeForUpdatedNativeTabGroup(tab);
+  });
+}
+
 
 
 //===================================================================

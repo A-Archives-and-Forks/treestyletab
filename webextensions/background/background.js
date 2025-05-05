@@ -186,6 +186,8 @@ export async function init() {
 
   Sync.init();
 
+  await Tree.startToMaintainTreeForNativeTabGroups();
+
   await MetricsData.addAsync('init: exporting tabs to sidebars', notifyReadyToSidebars());
 
   log(`Startup metrics for ${TabsStore.tabs.size} tabs: `, MetricsData.toString());
