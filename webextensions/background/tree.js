@@ -2228,7 +2228,7 @@ async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
   }
   for (const [groupId, membersAndStructure] of membersAndStructures.entries()) {
     log(`maintainTreeForNativeTabGroup:   groupId = ${groupId}, members = `, () => membersAndStructure.members.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
-    membersAndStructure.structure = TreeBehavior.getTreeStructureFromTabs(membersAndStructure.members),
+    membersAndStructure.structure = TreeBehavior.getTreeStructureFromTabs(membersAndStructure.members);
     await detachTabsFromTree(members, {
       partial: true,
     });
