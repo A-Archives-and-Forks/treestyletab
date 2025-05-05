@@ -626,7 +626,7 @@ const mImportedWindow = new Promise((resolve, _reject) => {
           message?.windowId != windowId)
         return;
       browser.runtime.onMessage.removeListener(onBackgroundIsReady);
-      log(`mImportedWindow is resolved with ${message.tabs.length} tabs`);
+      log(`mImportedWindow is resolved with ${message.exported.tabs.length} tabs`);
       resolve(message.exported);
     });
   };

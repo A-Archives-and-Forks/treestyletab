@@ -2149,17 +2149,62 @@ function maintainTreeForUpdatedNativeTabGroups({ windowId, groupId }, options = 
   if (timer)
     clearTimeout(timer);
   if (options.justNow || !shouldApplyAnimation()) {
-    return maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId });
+    return maintainTreeForNativeTabGroups({ windowId, groupId });
   }
   timer = setTimeout(() => {
     maintainTreeForUpdatedNativeTabGroups.delayed.delete(groupId);
-    maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId });
+    maintainTreeForNativeTabGroups({ windowId, groupId });
   }, 100);
   maintainTreeForUpdatedNativeTabGroups.delayed.set(groupId, timer);
 }
 maintainTreeForUpdatedNativeTabGroups.delayed = new Map();
 
-async function maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId }) {
+/*
+*************************************************************************
+Logic to maintain tree structure based on modified native tab groups
+*************************************************************************
+
+Firefox's native tab groups feature's basics:
+
+* When tabs are newly grouped, they are gathered to THE PLACE OF THE TAB
+  YOU OPENED THE CONTEXT MENU ON.
+* When some of already grouped tabs are grouped with another new group,
+  a new group will be placed BEFORE THE SOURCE GROUP OF THE CONTEXT TAB
+  and all member tabs will be gathered there.
+  * When tabs in different groups are grouped with another new group, the
+    new group will be placed BEFORE THE SOURCE GROUP OF THE CONTEXT TAB.
+* When some of already grouped tabs are ungrouped, they will be moved
+  AFTER the source group.
+  * When all member tabs are ungrouped, they will be there and just
+    ungrouped.
+  * When tabs in different groups are ungrouped, ungrouped tabs will be
+    placed AFTER EACH SOURCE GROUP. In other words, ungrouped tabs won't
+    be gathered.
+* When some of already grouped tabs are moved to another group, they will
+  be moved AFTER existing members of the destination group.
+
+TST should imitate Firefox's behavior, and should do more:
+
+* A tree should not be separated with multiple groups.
+  All member tabs in a tree should be grouped with a same tab group,
+  otherwise all members are ungrouped.
+  * When some member tabs in a tree are grouped, they need to be DETACHED
+    FROM THE ORIGINAL TREE and PLACED BEFORE THE SOURCE TREE.
+    Thus TST need to REARRANGE INVOLVED TABS.
+    * However, moving grouped tabs may break the native tab group,
+      so TST need to move OTHER TABS.
+  * When already grouped tabs are newly grouped to another new group,
+    they will be moved by Firefox. TST should DO NOTHING EXTRA ON THIS
+    CASE, because tree structure of moved tabs are automatically
+    maintained.
+  * When TST is activated and detects a tree is separated to multiple
+    groups,
+    TST should separate the tree to multiple parts for each group.
+    This operation will be done based on native tab groups.
+    Member tabs of each group will be detached from the source tree, and
+    this operation will be done for all groups repeatedly.
+*/
+async function maintainTreeForNativeTabGroups({ windowId, groupId }) {
   const win = TabsStore.windows.get(windowId);
 
   const members = Tab.getNativeGroupMemberTabs({ windowId, groupId });
@@ -2169,7 +2214,7 @@ async function maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId }) {
     return;
   }
 
-  log('maintainTreeForUpdatedNativeTabGroupsNow: wholeTree = ', wholeTree);
+  log('maintainTreeForNativeTabGroups: wholeTree = ', wholeTree);
 
   const membersStructure = TreeBehavior.getTreeStructureFromTabs(members);
   await detachTabsFromTree(members, {
@@ -2178,7 +2223,12 @@ async function maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId }) {
 
   const membersSet = new Set(members);
   const others = wholeTree.filter(tab => !membersSet.has(tab));
-  log('maintainTreeForUpdatedNativeTabGroupsNow: others = ', others);
+  log('maintainTreeForNativeTabGroups: others = ', others);
+  if (others.some(other => other.groupId != -1)) {
+    log('maintainTreeForNativeTabGroups: others are already grouped and moved by Firefox, so we need to do nothing anymore.');
+    return;
+  }
+
   for (const other of others) {
     win.internallyMovingTabsForUpdatedNativeTabGroups.add(other.id);
   }
@@ -2190,13 +2240,13 @@ async function maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId }) {
 
   await Promise.race([
     new Promise((resolve, _reject) => {
-      const resolvers = maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.get(windowId) || [];
+      const resolvers = maintainTreeForNativeTabGroups.resolversForWindow.get(windowId) || [];
       resolvers.push(resolve);
-      maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.set(windowId, resolvers);
+      maintainTreeForNativeTabGroups.resolversForWindow.set(windowId, resolvers);
     }),
     wait(500),
   ]);
-  maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.delete(windowId);
+  maintainTreeForNativeTabGroups.resolversForWindow.delete(windowId);
 
   for (const other of others) {
     win.internallyMovingTabsForUpdatedNativeTabGroups.delete(other.id);
@@ -2205,14 +2255,14 @@ async function maintainTreeForUpdatedNativeTabGroupsNow({ windowId, groupId }) {
   applyTreeStructureToTabs(others, othersStructure);
   browser.tabs.ungroup(others.map(tab => tab.id));
 }
-maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow = new Map();
+maintainTreeForNativeTabGroups.resolversForWindow = new Map();
 
 Tab.onNativeGroupModified.addListener(tab => {
   const win = TabsStore.windows.get(tab.windowId);
   if (win.internallyMovingTabsForUpdatedNativeTabGroups.has(tab.id)) {
     window.requestAnimationFrame(() => {
-      const resolvers = maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.get(tab.windowId) || [];
-      maintainTreeForUpdatedNativeTabGroupsNow.resolversForWindow.delete(tab.windowId);
+      const resolvers = maintainTreeForNativeTabGroups.resolversForWindow.get(tab.windowId) || [];
+      maintainTreeForNativeTabGroups.resolversForWindow.delete(tab.windowId);
       for (const resolver of resolvers) {
         resolver();
       }

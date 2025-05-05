@@ -1970,16 +1970,25 @@ export default class Tab {
   }
 
 
-  onNativeGroupModified() {
+  onNativeGroupModified(oldGroupId) {
     if (this.tab.groupId == -1) {
       TabsStore.removeNativelyGroupedTab(this.tab);
     }
     else {
       TabsStore.addNativelyGroupedTab(this.tab);
-      const group = TabsStore.windows.get(this.tab.windowId).tabGroups.get(this.tab.groupId);
-      const firstMember = Tab.getFirstNativeGroupMemberTab(this.tab);
+    }
+    for (const groupId of [oldGroupId, this.tab.groupId]) {
+      if (groupId == -1) {
+        continue;
+      }
+      const windowId = this.tab.windowId;
+      const group = TabsStore.windows.get(this.tab.windowId).tabGroups.get(groupId);
+      if (!group) {
+        continue;
+      }
+      const firstMember = Tab.getFirstNativeGroupMemberTab({ windowId, groupId });
       group.index = firstMember ? firstMember.index : -1;
-      //console.log('first member of ', group.id, ' is ', firstMember?.id, ', all = ', Tab.getNativeGroupMemberTabs(this.tab).map(tab => tab.id));
+      log('onNativeGroupModified: first member of ', group.id, ' is ', firstMember?.id, ', all = ', Tab.getNativeGroupMemberTabs({ windowId, groupId }).map(tab => tab.id));
     }
 
     this.setAttribute(Constants.kGROUP_ID, this.tab.groupId);
