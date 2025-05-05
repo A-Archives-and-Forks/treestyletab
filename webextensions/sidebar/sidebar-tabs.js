@@ -672,6 +672,9 @@ function reserveToRefreshNativeTabGroup(id) {
 
     const windowId = TabsStore.getCurrentWindowId();
     const group = TabsStore.windows.get(windowId).tabGroups.get(id);
+    if (!group) {
+      return;
+    }
     group.$TST.updateElement(TabUpdateTarget.TabProperties);
     for (const tab of Tab.getNativeGroupMemberTabs({ windowId, groupId: id })) {
       CollapseExpand.setCollapsed(tab, {
@@ -682,6 +685,15 @@ function reserveToRefreshNativeTabGroup(id) {
   });
 }
 reserveToRefreshNativeTabGroup.invoked = new Set();
+
+Tab.onNativeGroupModified.addListener(tab => {
+  if (tab.groupId != -1) {
+    return;
+  }
+  CollapseExpand.setCollapsed(tab, {
+    collapsed: !!tab.$TST.topmostSubtreeCollapsedAncestor,
+  });
+});
 
 
 const BUFFER_KEY_PREFIX = 'sidebar-tab-';
