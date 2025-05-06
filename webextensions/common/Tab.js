@@ -3054,19 +3054,22 @@ Tab.getSelectedTabs = (windowId = null, options = {}) => {
 };
 
 Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
-  const tabs = TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
-    skipMatching: true,
-    ordered: true,
-  });
   if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
     log('Tab.getVirtualScrollRenderableTabs: no native tab group');
-    return tabs;
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
+      skipMatching: true,
+      ordered: true,
+    });
   }
 
   const mixedTabs = Tab.sort([
-    ...tabs,
+    ...TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
+      skipMatching: true,
+    }),
     ...TabsStore.windows.get(windowId).tabGroups.values(),
   ]);
   log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
