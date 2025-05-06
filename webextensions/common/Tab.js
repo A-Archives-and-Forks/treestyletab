@@ -219,7 +219,7 @@ export default class Tab {
 
   bindElement(element) {
     element.$TST   = this;
-    element.apiTab = this.tab;
+    element.apiRaw = this.raw;
     this.element = element;
     this.classList = element.classList;
     // wait until initialization processes are completed
@@ -249,7 +249,7 @@ export default class Tab {
         this.element.removeAttribute(name);
       }
       this.element.$TST = null;
-      this.element.apiTab = null;
+      this.element.apiRaw = null;
     }
     this.element = null;
     this.classList = null;
@@ -299,7 +299,7 @@ export default class Tab {
   }
 
   get type() {
-    return 'color' in this.raw ? 'group' : 'tab';
+    return Tab.isNativeTabGroup(this.raw) ? 'group' : 'tab';
   }
 
   get renderingId() {
@@ -939,7 +939,7 @@ export default class Tab {
         this.tab.groupId == -1) {
       return null;
     }
-    return TabsStore.windows.get(this.tab.windowId).tabGroups.get(this.tab.groupId);
+    return Tab.getNativeTabGroup(this.tab);
   }
 
   set parent(tab) {
@@ -2028,7 +2028,7 @@ export default class Tab {
         continue;
       }
       const windowId = this.tab.windowId;
-      const group = TabsStore.windows.get(this.tab.windowId).tabGroups.get(groupId);
+      const group = Tab.getNativeTabGroup({ windowId: this.tab.windowId, groupId });
       if (!group) {
         continue;
       }
@@ -2185,40 +2185,41 @@ export default class Tab {
 
     let exportedTab = configs.cacheAPITreeItems && light ? this.$exportedForAPI : null;
     let favIconUrl;
+    const tab = this.tab;
     if (!exportedTab) {
       const [effectiveFavIconUrl, children] = await Promise.all([
         (light ||
          (!permissions ||
           (!permissions.has(kPERMISSION_TABS) &&
            (!permissions.has(kPERMISSION_ACTIVE_TAB) ||
-            !this.tab.active)))) ?
+            !tab?.active)))) ?
           null :
-          (this.tab.id in cache.effectiveFavIconUrls) ?
-            cache.effectiveFavIconUrls[this.tab.id] :
-            this.tab.favIconUrl?.startsWith('data:') ?
-              this.tab.favIconUrl :
-              TabFavIconHelper.getLastEffectiveFavIconURL(this.tab).catch(ApiTabs.handleMissingTabError),
+          (tab?.id in cache.effectiveFavIconUrls) ?
+            cache.effectiveFavIconUrls[tab?.id] :
+            tab?.favIconUrl?.startsWith('data:') ?
+              tab?.favIconUrl :
+              TabFavIconHelper.getLastEffectiveFavIconURL(tab).catch(ApiTabs.handleMissingTabError),
         doProgressively(
-          this.tab.$TST.children,
+          this.raw.$TST.children,
           child => child.$TST.exportForAPI({ addonId, light, isContextTab, interval, permissions, cache, cacheKey }),
           interval
         ),
       ]);
       favIconUrl = effectiveFavIconUrl;
 
-      if (!(this.tab.id in cache.effectiveFavIconUrls))
-        cache.effectiveFavIconUrls[this.tab.id] = effectiveFavIconUrl;
+      if (!(tab?.id in cache.effectiveFavIconUrls))
+        cache.effectiveFavIconUrls[tab?.id] = effectiveFavIconUrl;
 
-      const tabStates = this.tab.$TST.states;
+      const tabStates = tab?.$TST.states;
       exportedTab = {
-        id:             this.tab.id,
-        windowId:       this.tab.windowId,
+        id:             this.raw.id,
+        windowId:       this.raw.windowId,
         type:           this.type,
-        states:         this.type == 'group' ? [] : Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)),
-        indent:         parseInt(this.tab.$TST.getAttribute(Constants.kLEVEL) || 0),
+        states:         tabStates && Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)) || [],
+        indent:         parseInt(this.raw.$TST.getAttribute(Constants.kLEVEL) || 0),
         children,
-        ancestorTabIds: this.tab.$TST.ancestorIds,
-        bundledTabId:   this.tab.$TST.bundledTabId,
+        ancestorTabIds: tab?.$TST.ancestorIds || [],
+        bundledTabId:   tab?.$TST.bundledTabId,
       };
       if (this.stuck)
         exportedTab.states.push(Constants.kTAB_STATE_STUCK);
@@ -2261,8 +2262,8 @@ export default class Tab {
 
     if (permissions.has(kPERMISSION_TABS) ||
         (permissions.has(kPERMISSION_ACTIVE_TAB) &&
-         (this.tab.active ||
-          (this.tab == this.tab && this.isContextTab)))) {
+         (tab?.active ||
+          this.isContextTab))) {
       // specially allowed with "tabs" or "activeTab" permission
       allowedProperties.add('favIconUrl');
       allowedProperties.add('title');
@@ -2271,12 +2272,12 @@ export default class Tab {
     }
     if (permissions.has(kPERMISSION_COOKIES)) {
       allowedProperties.add('cookieStoreId');
-      fullExportedTab.cookieStoreName = this.tab.$TST.cookieStoreName;
+      fullExportedTab.cookieStoreName = tab?.$TST.cookieStoreName;
     }
 
     for (const property of allowedProperties) {
-      if (property in this.tab)
-        fullExportedTab[property] = this.tab[property];
+      if (property in this.raw)
+        fullExportedTab[property] = this.raw[property];
     }
 
     if (configs.cacheAPITreeItems)
@@ -2386,9 +2387,16 @@ Tab.isTracked = tabId =>  {
   return TabsStore.tabs.has(tabId);
 };
 
+Tab.isNativeTabGroup = tabOrGroup => typeof tabOrGroup?.color !== 'undefined';
+
 Tab.get = tabId =>  {
+  if (Tab.isNativeTabGroup(tabId)) {
+    return Tab.getNativeTabGroup({ windowId: tabId.windowId, groupId: tabId.id });
+  }
   return TabsStore.tabs.get(typeof tabId == 'number' ? tabId : tabId?.id);
 };
+
+Tab.getNativeTabGroup = ({ windowId, groupId }) => TabsStore.windows.get(windowId).tabGroups.get(groupId);
 
 Tab.getByUniqueId = id => {
   if (!id)

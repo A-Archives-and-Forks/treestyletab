@@ -77,9 +77,11 @@ export function getTabFromDOMNode(node, options = {}) {
     node = node.parentNode;
   const tabSubstance = node && node.closest(kTAB_SUBSTANCE_ELEMENT_NAME);
   const tab = tabSubstance && tabSubstance.closest(kTAB_ELEMENT_NAME);
-  if (options.force)
-    return tab && tab.apiTab;
-  return TabsStore.ensureLivingTab(tab && tab.apiTab);
+  if (options.force ||
+      tab?.apiRaw?.$TST.type == 'group') {
+    return tab.apiRaw;
+  }
+  return TabsStore.ensureLivingTab(tab?.apiRaw);
 }
 
 
@@ -673,7 +675,7 @@ function reserveToRefreshNativeTabGroup(id) {
     reserveToRefreshNativeTabGroup.invoked.delete(id);
 
     const windowId = TabsStore.getCurrentWindowId();
-    const group = TabsStore.windows.get(windowId).tabGroups.get(id);
+    const group = Tab.getNativeTabGroup({ windowId, groupId: id });
     if (!group) {
       return;
     }
@@ -1376,8 +1378,7 @@ BackgroundConnection.onMessage.addListener(async message => {
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED: {
-      const win = TabsStore.windows.get(message.windowId);
-      const group = win.tabGroups.get(message.group.id);
+      const group = Tab.getNativeTabGroup({ windowId: message.windowId, groupId: message.group.id });
       group.$TST.apply(message.group);
       reserveToRefreshNativeTabGroup(message.group.id);
     }; break;

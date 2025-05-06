@@ -240,8 +240,9 @@ export function getEventDetail(event) {
 export function getTabEventDetail(event, tab) {
   return {
     ...getEventDetail(event),
-    tab:   tab && tab.id,
-    tabId: tab && tab.id,
+    tab:   tab?.id,
+    tabId: tab?.id,
+    tabType: tab?.$TST.type,
   };
 }
 

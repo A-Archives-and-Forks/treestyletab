@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -381,7 +381,7 @@ function onMouseDown(event) {
     if (mousedown.detail.button == 0 &&
         onRegularArea &&
         !wasMultiselectionAction &&
-        tab) {
+        tab?.$TST.type == 'tab') {
       BackgroundConnection.sendMessage({
         type:  Constants.kCOMMAND_ACTIVATE_TAB,
         tabId: tab.id,
@@ -490,9 +490,12 @@ async function onMouseUp(event) {
   if (lastMousedown.tab && lastMousedown.detail.targetType == 'tab')
     promisedCanceled = lastMousedown.promisedMousedownNotified;
 
+  const lastMousedownTab = lastMousedown.detail.tabType == 'group' ?
+    Tab.getNativeTabGroup({ windowId: lastMousedown.detail.windowId, groupId: lastMousedown.detail.tabId }) :
+    Tab.get(lastMousedown.detail.tabId)
   if (lastMousedown.expired ||
       lastMousedown.detail.targetType != EventUtils.getEventTargetType(event) || // when the cursor was moved before mouseup
-      (tab && tab != Tab.get(lastMousedown.detail.tab))) { // when the tab was already removed
+      (tab && tab != lastMousedownTab)) { // when the tab was already removed
     log(' => expired, different type, or different tab');
     return;
   }
@@ -698,13 +701,22 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
   // we simulate the behavior.
   if (lastMousedown.detail.button == 0 &&
       onRegularArea &&
-      !wasMultiselectionAction)
-    BackgroundConnection.sendMessage({
-      type:  Constants.kCOMMAND_ACTIVATE_TAB,
-      tabId: tab.id,
-      byMouseOperation:   true,
-      keepMultiselection: false // tab.highlighted
-    });
+      !wasMultiselectionAction) {
+    switch (tab.$TST.type) {
+      case 'tab':
+        BackgroundConnection.sendMessage({
+          type:  Constants.kCOMMAND_ACTIVATE_TAB,
+          tabId: tab.id,
+          byMouseOperation:   true,
+          keepMultiselection: false // tab.highlighted
+        });
+        break;
+
+      case 'group':
+        await browser.tabGroups.update(tab.id, { collapsed: !tab.collapsed });
+        break;
+    }
+  }
 
   if (lastMousedown.detail.isMiddleClick) { // Ctrl-click doesn't close tab on Firefox's tab bar!
     log(`onMouseUp: middle click on the tab ${tab.id}: `, lastMousedown.detail.targetType);

@@ -430,7 +430,10 @@ function getRenderableItemById(id) {
   const [type, rawId] = id.split(':');
   switch (type) {
     case 'group':
-      return TabsStore.windows.get(TabsStore.getCurrentWindowId()).tabGroups.get(parseInt(rawId));
+      return Tab.getNativeTabGroup({
+        windowId: TabsStore.getCurrentWindowId(),
+        groupId: parseInt(rawId),
+      });
 
     case 'tab':
     default:
