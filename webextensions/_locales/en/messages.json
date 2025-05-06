@@ -892,6 +892,9 @@
 
 
   "tabContextMenu_newTab_label":      { "message": "Ne&w Tab" },
+  "tabContextMenu_newTabNext_label":  { "message": "Ne&w Tab Below" },
+  "tabContextMenu_newGroup_label":               { "message": "Add Tab to New &Group" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "Add Tabs to New &Group" },
 
   "tabContextMenu_reload_label":      { "message": "&Reload Tab" },
   "tabContextMenu_unblockAutoplay_label": { "message": "P&lay Tab" },

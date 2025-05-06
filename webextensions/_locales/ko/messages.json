@@ -2266,6 +2266,9 @@
         "message": "새 탭(&W)",
         "hash": "972407513d4d86d631c20a2cd3dc1d04"
     },
+    "tabContextMenu_newTabNext_label": { "message": "아래에 새 탭(&W)" },
+    "tabContextMenu_newGroup_label":               { "message": "새 그룹에 탭 추가(&G)" },
+    "tabContextMenu_newGroup_label_multiselected": { "message": "새 그룹에 탭 추가(&G)" },
     "tabContextMenu_reload_label": {
         "message": "탭 새로 고침(&R)",
         "hash": "b47f1ba4fa9f6689bd27124978684636"

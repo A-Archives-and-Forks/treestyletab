@@ -871,6 +871,9 @@
 
 
   "tabContextMenu_newTab_label":      { "message": "Нов&ая вкладка" },
+  "tabContextMenu_newTabNext_label":  { "message": "Новая вкладка ниже(&ц)" },
+  "tabContextMenu_newGroup_label":               { "message": "Добавить вкладку в новую гру&ппу" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "Добавить вкладки в новую гру&ппу" },
 
   "tabContextMenu_reload_label":      { "message": "&Обновить вкладку" },
   "tabContextMenu_unblockAutoplay_label": { "message": "П&роигрывать вкладку" },

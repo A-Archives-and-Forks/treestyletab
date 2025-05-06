@@ -1429,6 +1429,9 @@
     "message": "Nouvel &onglet",
     "hash": "972407513d4d86d631c20a2cd3dc1d04"
   },
+  "tabContextMenu_newTabNext_label": { "message": "&Nouvel onglet en dessous" },
+  "tabContextMenu_newGroup_label":               { "message": "&Ajouter l’onglet à un nouveau groupe" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "&Ajouter les onglets à un nouveau groupe" },
   "tabContextMenu_reload_label": {
     "message": "&Actualiser l'onglet",
     "hash": "b47f1ba4fa9f6689bd27124978684636"

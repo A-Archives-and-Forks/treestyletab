@@ -2734,6 +2734,9 @@
     "message": "Nieu&w tabblad",
     "hash": "972407513d4d86d631c20a2cd3dc1d04"
   },
+  "tabContextMenu_newTabNext_label": { "message": "Nieu&w tabblad hieronder" },
+  "tabContextMenu_newGroup_label":               { "message": "Tabblad aan nieuwe &groep toevoegen" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "Tabbladen aan nieuwe &groep toevoegen" },
   "tabContextMenu_reload_label": {
     "message": "Tabblad he&rladen",
     "hash": "b47f1ba4fa9f6689bd27124978684636"

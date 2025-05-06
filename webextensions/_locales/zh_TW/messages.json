@@ -763,6 +763,9 @@
     "config_terms_delimiter": { "message": "\u200b" },
 
     "tabContextMenu_newTab_label":      { "message": "新分頁 (&W)" },
+    "tabContextMenu_newTabNext_label":  { "message": "於下方開啟新分頁 (&W)" },
+    "tabContextMenu_newGroup_label":               { "message": "將分頁加入至新群組 (&G)" },
+    "tabContextMenu_newGroup_label_multiselected": { "message": "將分頁加入至新群組 (&G)" },
   
     "tabContextMenu_reload_label":      { "message": "重新載入分頁 (&R)" },
     "tabContextMenu_mute_label":        { "message": "分頁靜音 (&M)" },

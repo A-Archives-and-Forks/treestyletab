@@ -53,7 +53,8 @@ const SAFE_MENU_PROPERTIES = [
 
 const mItemsById = {
   'context_newTab': {
-    title: browser.i18n.getMessage('tabContextMenu_newTab_label'),
+    title:    browser.i18n.getMessage('tabContextMenu_newTab_label'),
+    titleTab: browser.i18n.getMessage('tabContextMenu_newTabNext_label'),
   },
   'context_separator:afterNewTab': {
     type: 'separator'
@@ -644,7 +645,12 @@ function updateItem(id, state = {}) {
   };
   if ('checked' in state)
     updateInfo.checked = state.checked;
-  const title = String(state.title || (state.multiselected && item.titleMultiselected) || item.title).replace(/%S/g, state.count || 0);
+  const title = String(
+    (state.tab && state.titleTab) ||
+    state.title ||
+    (state.multiselected && item.titleMultiselected) ||
+    item.title
+  ).replace(/%S/g, state.count || 0);
   if (title) {
     updateInfo.title = title;
     modified = title != item.lastTitle;
@@ -730,6 +736,7 @@ async function onShown(info, contextTab) {
 
     updateItem('context_newTab', {
       visible: emulate,
+      tab: contextTab,
     }) && modifiedItemsCount++;
     updateItem('context_separator:afterNewTab', {
       visible: emulate,

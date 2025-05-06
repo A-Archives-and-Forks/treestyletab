@@ -2139,6 +2139,9 @@
   "tabContextMenu_newTab_label": {
     "message": "新建标签页(&W)"
   },
+  "tabContextMenu_newTabNext_label": { "message": "在下方新建标签页(&W)" },
+  "tabContextMenu_newGroup_label":               { "message": "将标签页添加到新群组(&G)" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "将标签页添加到新群组(&G)" },
   "tabContextMenu_reload_label": {
     "message": "重新载入标签页(&R)"
   },

@@ -872,6 +872,9 @@
 
 
   "tabContextMenu_newTab_label":      { "message": "Neuer Ta&b" },
+  "tabContextMenu_newTabNext_label":  { "message": "Neue&r Tab unten" },
+  "tabContextMenu_newGroup_label":               { "message": "Tab zu neuer &Gruppe hinzufügen" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "Tabs zu neuer &Gruppe hinzufügen" },
 
   "tabContextMenu_reload_label":      { "message": "Tab neu la&den" },
   "tabContextMenu_unblockAutoplay_label": { "message": "Tab wiede&rgeben" },

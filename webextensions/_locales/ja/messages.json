@@ -275,7 +275,7 @@
   "message_startup_requestPermissions_allUrls":   { "message": "コンテンツ領域内のWebページ上でのスクリプトの実行" },
   "message_startup_requestPermissions_allUrls_tabPreviewPanel":   { "message": "ツールチップの代わりにタブのプレビュー画像を表示する" },
   "message_startup_requestPermissions_allUrls_skipCollapsedTabsWithCtrlTab":   { "message": "キーボードショートカットでのタブ切り替え中、折りたたまれた子孫タブにはフォーカスせず、折りたたまれたツリーも展開しない" },
-  "message_startup_requestPermissions_allUrls_preventBlankDialogRestoration":   { "message": "タブを開き直す操作でダイアログ用の空のウィンドウが復元されないようにする" },
+  "message_startup_requestPermissions_allUrls_preventBlankDialogRestoration":   { "message": "タブを開きなおす操作でダイアログ用の空のウィンドウが復元されないようにする" },
   "message_startup_requestPermissions_clipboardRead": { "message": "クリップボードの読み取り" },
   "message_startup_requestPermissions_clipboardRead_newTabButtonMiddleClick": { "message": "「新しいタブ」ボタンの中ボタンクリックでクリップボード内のURLを開く（※\"dom.events.asyncClipboard.clipboardItem\"の有効化が必要）" },
 
@@ -604,7 +604,7 @@
   "config_inheritContextualIdentityToTabsFromAnyOtherTriggerMode_parent": { "message": "ツリー上での親から継承" },
   "config_inheritContextualIdentityToTabsFromAnyOtherTriggerMode_lastActive": { "message": "現在のタブから継承" },
 
-  "config_inheritContextualIdentityToUnopenableURLTabs_label": { "message": "拡張機能の権限で開けないURLのタブを、コンテナーを継承するために安全なURLで強制的に開き直す" },
+  "config_inheritContextualIdentityToUnopenableURLTabs_label": { "message": "拡張機能の権限で開けないURLのタブを、コンテナーを継承するために安全なURLで強制的に開きなおす" },
 
   "config_groupTab_caption": { "message": "タブを自動的にグループ化する" },
 
@@ -888,6 +888,9 @@
 
 
   "tabContextMenu_newTab_label":      { "message": "新しいタブ(&W)" },
+  "tabContextMenu_newTabNext_label":  { "message": "新しいタブを下隣に開く(&W)" },
+  "tabContextMenu_newGroup_label":               { "message": "このタブを新しいグループに追加(&G)" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "選択したタブを新しいグループに追加(&G)" },
 
   "tabContextMenu_reload_label":      { "message": "タブを再読み込み(&R)" },
   "tabContextMenu_unblockAutoplay_label": { "message": "タブのメディアを再生(&L)" },
@@ -918,8 +921,8 @@
   "tabContextMenu_closeTabsToBottom_label":  { "message": "下のタブをすべて閉じる(&B)" },
   "tabContextMenu_closeOther_label":  { "message": "他のタブをすべて閉じる(&O)" },
 
-  "tabContextMenu_undoClose_label":   { "message": "閉じたタブを開き直す(&U)" },
-  "tabContextMenu_undoClose_label_multiple":  { "message": "閉じたタブを開き直す(&U)" },
+  "tabContextMenu_undoClose_label":   { "message": "閉じたタブを開きなおす(&U)" },
+  "tabContextMenu_undoClose_label_multiple":  { "message": "閉じたタブを開きなおす(&U)" },
   "tabContextMenu_close_label":       { "message": "タブを閉じる(&C)" },
 
   "tabContextMenu_reload_label_multiselected":      { "message": "タブを再読み込み(&R)" },

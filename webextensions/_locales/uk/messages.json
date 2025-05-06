@@ -357,6 +357,10 @@
   "config_all_caption": { "message": "Всі Конфігурації" },
 
 
+  "tabContextMenu_newTabNext_label":      { "message": "Нова вкладка ни&жче" },
+  "tabContextMenu_newGroup_label":               { "message": "Д&одати вкладку до нової групи" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "Д&одати вкладки до нової групи" },
+
   "tabContextMenu_reload_label":      { "message": "Оновити вкладку" },
   "tabContextMenu_mute_label":        { "message": "Вимкнути звук" },
   "tabContextMenu_unmute_label":      { "message": "Ввімкнути звук" },
