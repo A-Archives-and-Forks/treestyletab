@@ -1082,6 +1082,8 @@ tab-item[data-group-id]:not([data-group-id="-1"]) .native-tab-group-line {
   display: block;
   max-width: 2px;
   min-width: 2px;
+}
+tab-item[data-group-id]:not([data-group-id="-1"]).animation-ready .native-tab-group-line {
   transition: var(--tab-indent-positioning-animation);
 }
 :root:not(.rtl).left .native-tab-group-line,
