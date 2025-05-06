@@ -891,6 +891,11 @@
   "tabContextMenu_newTabNext_label":  { "message": "新しいタブを下隣に開く(&W)" },
   "tabContextMenu_newGroup_label":               { "message": "このタブを新しいグループに追加(&G)" },
   "tabContextMenu_newGroup_label_multiselected": { "message": "選択したタブを新しいグループに追加(&G)" },
+  "tabContextMenu_addToGroup_label":               { "message": "このタブをグループに追加(&G)" },
+  "tabContextMenu_addToGroup_label_multiselected": { "message": "選択したタブをグループに追加(&G)" },
+  "tabContextMenu_addToGroup_newGroup_label":      { "message": "新しいグループ(&G)" },
+  "tabContextMenu_removeFromGroup_label":               { "message": "このタブをグループから除外(&R)" },
+  "tabContextMenu_removeFromGroup_label_multiselected": { "message": "選択したタブを各グループから除外(&R)" },
 
   "tabContextMenu_reload_label":      { "message": "タブを再読み込み(&R)" },
   "tabContextMenu_unblockAutoplay_label": { "message": "タブのメディアを再生(&L)" },

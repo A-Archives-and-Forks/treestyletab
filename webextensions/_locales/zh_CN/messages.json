@@ -2142,6 +2142,11 @@
   "tabContextMenu_newTabNext_label": { "message": "在下方新建标签页(&W)" },
   "tabContextMenu_newGroup_label":               { "message": "将标签页添加到新群组(&G)" },
   "tabContextMenu_newGroup_label_multiselected": { "message": "将标签页添加到新群组(&G)" },
+  "tabContextMenu_addToGroup_label":               { "message": "将标签页添加到群组(&G)" },
+  "tabContextMenu_addToGroup_label_multiselected": { "message": "将标签页添加到群组(&G)" },
+  "tabContextMenu_addToGroup_newGroup_label":      { "message": "新建标签页群组(&G)" },
+  "tabContextMenu_removeFromGroup_label":               { "message": "从群组移除(&R)" },
+  "tabContextMenu_removeFromGroup_label_multiselected": { "message": "从群组移除(&R)" },
   "tabContextMenu_reload_label": {
     "message": "重新载入标签页(&R)"
   },

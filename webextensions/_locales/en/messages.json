@@ -895,6 +895,12 @@
   "tabContextMenu_newTabNext_label":  { "message": "Ne&w Tab Below" },
   "tabContextMenu_newGroup_label":               { "message": "Add Tab to New &Group" },
   "tabContextMenu_newGroup_label_multiselected": { "message": "Add Tabs to New &Group" },
+  "tabContextMenu_addToGroup_label":               { "message": "Add Tab to &Group" },
+  "tabContextMenu_addToGroup_label_multiselected": { "message": "Add Tabs to &Group" },
+  "tabContextMenu_addToGroup_newGroup_label":      { "message": "New &Group" },
+  "tabContextMenu_removeFromGroup_label":               { "message": "&Remove from Group" },
+  "tabContextMenu_removeFromGroup_label_multiselected": { "message": "&Remove from Groups" },
+
 
   "tabContextMenu_reload_label":      { "message": "&Reload Tab" },
   "tabContextMenu_unblockAutoplay_label": { "message": "P&lay Tab" },

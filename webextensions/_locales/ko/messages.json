@@ -2269,6 +2269,11 @@
     "tabContextMenu_newTabNext_label": { "message": "아래에 새 탭(&W)" },
     "tabContextMenu_newGroup_label":               { "message": "새 그룹에 탭 추가(&G)" },
     "tabContextMenu_newGroup_label_multiselected": { "message": "새 그룹에 탭 추가(&G)" },
+    "tabContextMenu_addToGroup_label":               { "message": "그룹에 탭 추가(&G)" },
+    "tabContextMenu_addToGroup_label_multiselected": { "message": "그룹에 탭 추가(&G)" },
+    "tabContextMenu_addToGroup_newGroup_label":      { "message": "새 그룹(&G)" },
+    "tabContextMenu_removeFromGroup_label":               { "message": "그룹에서 제거(&R)" },
+    "tabContextMenu_removeFromGroup_label_multiselected": { "message": "그룹에서 제거(&R)" },
     "tabContextMenu_reload_label": {
         "message": "탭 새로 고침(&R)",
         "hash": "b47f1ba4fa9f6689bd27124978684636"

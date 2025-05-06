@@ -875,6 +875,11 @@
   "tabContextMenu_newTabNext_label":  { "message": "Neue&r Tab unten" },
   "tabContextMenu_newGroup_label":               { "message": "Tab zu neuer &Gruppe hinzufügen" },
   "tabContextMenu_newGroup_label_multiselected": { "message": "Tabs zu neuer &Gruppe hinzufügen" },
+  "tabContextMenu_addToGroup_label":               { "message": "Tab zu &Gruppe hinzufügen" },
+  "tabContextMenu_addToGroup_label_multiselected": { "message": "Tabs zu &Gruppe hinzufügen" },
+  "tabContextMenu_addToGroup_newGroup_label":      { "message": "Neue &Gruppe" },
+  "tabContextMenu_removeFromGroup_label":               { "message": "Aus Grupp&e entfernen" },
+  "tabContextMenu_removeFromGroup_label_multiselected": { "message": "Aus Grupp&en entfernen" },
 
   "tabContextMenu_reload_label":      { "message": "Tab neu la&den" },
   "tabContextMenu_unblockAutoplay_label": { "message": "Tab wiede&rgeben" },

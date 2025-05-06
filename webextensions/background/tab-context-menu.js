@@ -56,6 +56,26 @@ const mItemsById = {
     title:    browser.i18n.getMessage('tabContextMenu_newTab_label'),
     titleTab: browser.i18n.getMessage('tabContextMenu_newTabNext_label'),
   },
+  'context_newGroup': {
+    title:              browser.i18n.getMessage('tabContextMenu_newGroup_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_newGroup_label_multiselected')
+  },
+  'context_addToGroup': {
+    title:              browser.i18n.getMessage('tabContextMenu_addToGroup_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_addToGroup_label_multiselected')
+  },
+  'context_addToGroup_newGroup': {
+    parentId: 'context_addToGroup',
+    title:    browser.i18n.getMessage('tabContextMenu_addToGroup_newGroup_label'),
+  },
+  'context_addToGroup_separator:afterNewGroup': {
+    parentId: 'context_addToGroup',
+    type:     'separator',
+  },
+  'context_removeFromGroup': {
+    title:              browser.i18n.getMessage('tabContextMenu_removeFromGroup_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_removeFromGroup_label_multiselected')
+  },
   'context_separator:afterNewTab': {
     type: 'separator'
   },
@@ -386,6 +406,17 @@ let mMultipleTabsRestorable = false;
 Tab.onChangeMultipleTabsRestorability.addListener(multipleTabsRestorable => {
   mMultipleTabsRestorable = multipleTabsRestorable;
 });
+
+function updateNativeTabGroups(contextTab) {
+/*
+    updateItem('context_addToGroup_newGroup', {
+      visible: emulate && hasNativeTabGroup,
+    }) && modifiedItemsCount++;
+    updateItem('context_addToGroup_separator:afterNewGroup', {
+      visible: emulate && hasNativeTabGroup,
+    }) && modifiedItemsCount++;
+*/
+}
 
 const mContextualIdentityItems = new Set();
 function updateContextualIdentities() {
@@ -721,6 +752,7 @@ async function onShown(info, contextTab) {
     const hasChild              = contextTab && contextTabs.some(tab => tab.$TST.hasChild);
     const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
     const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
+    const hasNativeTabGroup     = TabsStore.windows.get(windowId).tabGroups.size > 0;
 
     if (mOverriddenContext)
       return onOverriddenMenuShown(info, contextTab, windowId);
@@ -736,8 +768,22 @@ async function onShown(info, contextTab) {
 
     updateItem('context_newTab', {
       visible: emulate,
-      tab: contextTab,
+      tab: !!contextTab,
     }) && modifiedItemsCount++;
+
+    updateItem('context_newGroup', {
+      visible: emulate && !!contextTab && !hasNativeTabGroup,
+      multiselected
+    }) && modifiedItemsCount++;
+    updateItem('context_addToGroup', {
+      visible: emulate && !!contextTab && hasNativeTabGroup,
+      multiselected
+    }) && modifiedItemsCount++;
+    updateItem('context_removeFromGroup', {
+      visible: emulate && !!contextTab && contextTab.groupId != -1,
+      multiselected
+    }) && modifiedItemsCount++;
+
     updateItem('context_separator:afterNewTab', {
       visible: emulate,
     }) && modifiedItemsCount++;
@@ -1006,6 +1052,7 @@ async function onShown(info, contextTab) {
 
     // these items should be updated at the last to reduce flicking of showing context menu
     await Promise.all([
+      updateNativeTabGroups(contextTab),
       updateSendToDeviceItems('context_sendTabsToDevice', { manage: true }),
       mItemsById.context_topLevel_sendTreeToDevice.lastVisible && updateSendToDeviceItems('context_topLevel_sendTreeToDevice'),
       modifiedItemsCount > 0 && browser.menus.refresh().catch(ApiTabs.createErrorSuppressor()).then(_ => false),

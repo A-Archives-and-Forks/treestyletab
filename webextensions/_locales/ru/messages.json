@@ -874,6 +874,11 @@
   "tabContextMenu_newTabNext_label":  { "message": "Новая вкладка ниже(&ц)" },
   "tabContextMenu_newGroup_label":               { "message": "Добавить вкладку в новую гру&ппу" },
   "tabContextMenu_newGroup_label_multiselected": { "message": "Добавить вкладки в новую гру&ппу" },
+  "tabContextMenu_addToGroup_label":               { "message": "Добавить вкладку в гру&ппу" },
+  "tabContextMenu_addToGroup_label_multiselected": { "message": "Добавить вкладки в гру&ппу" },
+  "tabContextMenu_addToGroup_newGroup_label":      { "message": "Новая гру&ппа" },
+  "tabContextMenu_removeFromGroup_label":               { "message": "Удалить из группы(&к)" },
+  "tabContextMenu_removeFromGroup_label_multiselected": { "message": "Удалить из групп(&к)" },
 
   "tabContextMenu_reload_label":      { "message": "&Обновить вкладку" },
   "tabContextMenu_unblockAutoplay_label": { "message": "П&роигрывать вкладку" },

@@ -766,6 +766,11 @@
     "tabContextMenu_newTabNext_label":  { "message": "於下方開啟新分頁 (&W)" },
     "tabContextMenu_newGroup_label":               { "message": "將分頁加入至新群組 (&G)" },
     "tabContextMenu_newGroup_label_multiselected": { "message": "將分頁加入至新群組 (&G)" },
+    "tabContextMenu_addToGroup_label":               { "message": "將分頁加入至群組 (&G)" },
+    "tabContextMenu_addToGroup_label_multiselected": { "message": "將分頁加入至群組 (&G)" },
+    "tabContextMenu_addToGroup_newGroup_label":      { "message": "新增群組 (&G)" },
+    "tabContextMenu_removeFromGroup_label":               { "message": "從群組移除 (&R)" },
+    "tabContextMenu_removeFromGroup_label_multiselected": { "message": "從群組移除 (&R)" },
   
     "tabContextMenu_reload_label":      { "message": "重新載入分頁 (&R)" },
     "tabContextMenu_mute_label":        { "message": "分頁靜音 (&M)" },

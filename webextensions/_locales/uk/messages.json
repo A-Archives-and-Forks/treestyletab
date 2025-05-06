@@ -360,6 +360,11 @@
   "tabContextMenu_newTabNext_label":      { "message": "Нова вкладка ни&жче" },
   "tabContextMenu_newGroup_label":               { "message": "Д&одати вкладку до нової групи" },
   "tabContextMenu_newGroup_label_multiselected": { "message": "Д&одати вкладки до нової групи" },
+  "tabContextMenu_addToGroup_label":               { "message": "Дода&ти вкладку до групи" },
+  "tabContextMenu_addToGroup_label_multiselected": { "message": "Дода&ти вкладки до групи" },
+  "tabContextMenu_addToGroup_newGroup_label":      { "message": "&Нова група" },
+  "tabContextMenu_removeFromGroup_label":               { "message": "Ви&лучити з групи" },
+  "tabContextMenu_removeFromGroup_label_multiselected": { "message": "Ви&лучити з груп" },
 
   "tabContextMenu_reload_label":      { "message": "Оновити вкладку" },
   "tabContextMenu_mute_label":        { "message": "Вимкнути звук" },
