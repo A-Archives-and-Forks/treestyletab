@@ -1012,25 +1012,40 @@ export default class Tab {
     return tab;
   }
   get parent() {
+    if (this.type == 'group') {
+      return null;
+    }
     return this.tab && this.parentId && TabsStore.ensureLivingTab(Tab.get(this.parentId));
   }
 
   get hasParent() {
+    if (this.type == 'group') {
+      return false;
+    }
     return !!this.parentId;
   }
 
   get ancestorIds() {
+    if (this.type == 'group') {
+      return [];
+    }
     if (!this.cachedAncestorIds)
       this.updateAncestors();
     return this.cachedAncestorIds;
   }
 
   get ancestors() {
+    if (this.type == 'group') {
+      return [];
+    }
     return mapAndFilter(this.ancestorIds,
                         id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
   }
 
   updateAncestors() {
+    if (this.type == 'group') {
+      return [];
+    }
     const ancestors = [];
     this.cachedAncestorIds = [];
     if (!this.tab)
@@ -1048,6 +1063,9 @@ export default class Tab {
   }
 
   get level() {
+    if (this.type == 'group') {
+      return 0;
+    }
     return this.ancestorIds.length;
   }
 
@@ -1060,11 +1078,17 @@ export default class Tab {
   }
 
   get rootTab() {
+    if (this.type == 'group') {
+      return null;
+    }
     const ancestors = this.ancestors;
     return ancestors.length > 0 ? ancestors[ancestors.length-1] : this.tab ;
   }
 
   get topmostSubtreeCollapsedAncestor() {
+    if (this.type == 'group') {
+      return null;
+    }
     for (const ancestor of [...this.ancestors].reverse()) {
       if (ancestor.$TST.subtreeCollapsed)
         return ancestor;
@@ -1073,6 +1097,9 @@ export default class Tab {
   }
 
   get nearestVisibleAncestorOrSelf() {
+    if (this.type == 'group') {
+      return this.rawGroup;
+    }
     for (const ancestor of this.ancestors) {
       if (!ancestor.$TST.collapsed)
         return ancestor;
@@ -1107,6 +1134,7 @@ export default class Tab {
   set children(tabs) {
     if (!this.tab)
       return tabs;
+
     const ancestorIds = this.ancestorIds;
     const newChildIds = mapAndFilter(tabs, tab => {
       const id = typeof tab == 'number' ? tab : tab && tab.id;
@@ -1144,6 +1172,9 @@ export default class Tab {
     return tabs;
   }
   get children() {
+    if (this.type == 'group') {
+      return Tab.getNativeGroupMemberTabs({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id }).filter(tab => !tab.$TST.parentId);
+    }
     return mapAndFilter(this.childIds,
                         id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
   }
@@ -1164,6 +1195,9 @@ export default class Tab {
   }
 
   sortAndInvalidateChildren() {
+    if (this.type == 'group') {
+      return;
+    }
     // Tab.get(tabId) calls into TabsStore.tabs.get(tabId), which is just a
     // Map. This is acceptable to repeat in order to avoid two array copies,
     // especially on larger tab sets.
@@ -1172,10 +1206,16 @@ export default class Tab {
   }
 
   get hasChild() {
+    if (this.type == 'group') {
+      return !!Tab.getFirstNativeGroupMemberTab({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id });
+    }
     return this.childIds.length > 0;
   }
 
   get descendants() {
+    if (this.type == 'group') {
+      return Tab.getNativeGroupMemberTabs({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id });
+    }
     if (!this.cachedDescendantIds)
       return this.updateDescendants();
     return mapAndFilter(this.cachedDescendantIds,
@@ -1183,6 +1223,9 @@ export default class Tab {
   }
 
   updateDescendants() {
+    if (this.type == 'group') {
+      return;
+    }
     let descendants = [];
     this.cachedDescendantIds = [];
     for (const child of this.children) {
@@ -1195,6 +1238,9 @@ export default class Tab {
   }
 
   invalidateCachedDescendants() {
+    if (this.type == 'group') {
+      return;
+    }
     this.cachedDescendantIds = null;
     const parent = this.parent;
     if (parent)
@@ -2167,7 +2213,8 @@ export default class Tab {
       exportedTab = {
         id:             this.tab.id,
         windowId:       this.tab.windowId,
-        states:         Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)),
+        type:           this.type,
+        states:         this.type == 'group' ? [] : Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)),
         indent:         parseInt(this.tab.$TST.getAttribute(Constants.kLEVEL) || 0),
         children,
         ancestorTabIds: this.tab.$TST.ancestorIds,
