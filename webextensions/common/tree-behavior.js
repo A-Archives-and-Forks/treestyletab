@@ -117,6 +117,9 @@ export function getParentTabOperationBehavior(tab, { context, byInternalOperatio
 
 export function getClosingTabsFromParent(tab, removeInfo = {}) {
   log('getClosingTabsFromParent: ', tab, removeInfo);
+  if (tab?.$TST.isNativeTabGroup) {
+    return tab.$TST.descendants;
+  }
   const closeParentBehavior = getParentTabOperationBehavior(tab, {
     ...removeInfo,
     context: Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE,

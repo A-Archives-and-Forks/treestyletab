@@ -2092,11 +2092,11 @@ export default class Tab {
   }
 
   get sanitized() {
-    if (!this.tab)
+    if (!this.raw)
       return {};
 
     const sanitized = {
-      ...this.tab,
+      ...this.raw,
       '$possibleInitialUrl': null,
       '$TST': null,
       '$exportedForAPI': null,

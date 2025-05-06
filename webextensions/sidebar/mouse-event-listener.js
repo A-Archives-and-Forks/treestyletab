@@ -35,6 +35,7 @@ import {
   countMatched,
   configs,
   shouldApplyAnimation,
+  mapAndFilter,
   isMacOS,
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
@@ -719,17 +720,20 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
   }
 
   if (lastMousedown.detail.isMiddleClick) { // Ctrl-click doesn't close tab on Firefox's tab bar!
-    log(`onMouseUp: middle click on the tab ${tab.id}: `, lastMousedown.detail.targetType);
+    log(`onMouseUp: middle click on the tab ${tab.id}: targetType = `, lastMousedown.detail.targetType);
     if (lastMousedown.detail.targetType != 'tab') // ignore middle click on blank area
       return false;
     const tabs = TreeBehavior.getClosingTabsFromParent(tab, {
       byInternalOperation: true
     });
-    Sidebar.confirmToCloseTabs(tabs.map(tab => tab.$TST.sanitized))
+    log('tabs: ', tabs);
+    const sanitizedTabsToClose = mapAndFilter(tabs, tab => tab.$TST.isNativeTabGroup ? undefined : tab.$TST.sanitized);
+    log('sanitizedTabsToClose: ', sanitizedTabsToClose);
+    Sidebar.confirmToCloseTabs(sanitizedTabsToClose)
       .then(async confirmed => {
         if (!confirmed)
           return;
-        const tabIds = tabs.map(tab => tab.id);
+        const tabIds = sanitizedTabsToClose.map(tab => tab.id);
         await Scroll.tryLockPosition(tabIds, Scroll.LOCK_REASON_REMOVE);
         BackgroundConnection.sendMessage({
           type:   Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
