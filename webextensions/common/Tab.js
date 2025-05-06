@@ -2021,19 +2021,6 @@ export default class Tab {
     else {
       TabsStore.addNativelyGroupedTab(this.tab);
     }
-    for (const groupId of [oldGroupId, this.tab.groupId]) {
-      if (groupId == -1) {
-        continue;
-      }
-      const windowId = this.tab.windowId;
-      const group = Tab.getNativeTabGroup({ windowId: this.tab.windowId, groupId });
-      if (!group) {
-        continue;
-      }
-      const firstMember = Tab.getFirstNativeGroupMemberTab({ windowId, groupId });
-      group.index = firstMember ? firstMember.index : -1;
-      log('onNativeGroupModified: first member of ', group.id, ' is ', firstMember?.id, ', all = ', Tab.getNativeGroupMemberTabs({ windowId, groupId }).map(tab => tab.id));
-    }
 
     this.setAttribute(Constants.kGROUP_ID, this.tab.groupId);
 
@@ -3076,7 +3063,17 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
       tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
       skipMatching: true,
     }),
-    ...[...TabsStore.windows.get(windowId).tabGroups.values()].filter(group => !!Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id })),
+    ...mapAndFilter(
+      [...TabsStore.windows.get(windowId).tabGroups.values()],
+      group => {
+        const firstMember = Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id });
+        if (!firstMember) {
+          return null;
+        }
+        group.index = firstMember.index;
+        return group;
+      }
+    )
   ]);
   log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
 
