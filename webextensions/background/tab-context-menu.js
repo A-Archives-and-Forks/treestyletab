@@ -407,20 +407,23 @@ Tab.onChangeMultipleTabsRestorability.addListener(multipleTabsRestorable => {
   mMultipleTabsRestorable = multipleTabsRestorable;
 });
 
+const mNativeTabGroupItems = new Set();
 function updateNativeTabGroups(contextTab) {
   if (!contextTab) {
     return;
   }
 
-  const groups = Tab.sort([...TabsStore.windows.get(contextTab.windowId).tabGroups.values()]);
-  for (const group of groups) {
-    const id = `nativeTabGroup:${group.id}`;
+  for (const item of mNativeTabGroupItems) {
+    const id = item.id;
+    if (id in mItemsById)
+      delete mItemsById[id];
     browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
     onMessageExternal({
       type: TSTAPI.kCONTEXT_MENU_REMOVE,
       params: id
     }, browser.runtime);
   }
+  mNativeTabGroupItems.clear();
 
   updateItem('context_addToGroup_newGroup', {
     visible: true,
@@ -431,6 +434,7 @@ function updateNativeTabGroups(contextTab) {
 
   const defaultTitle = browser.i18n.getMessage('tabContextMenu_addToGroup_unnamed_label');
   const darkSuffix = window.matchMedia('(prefers-color-scheme: dark)').matches ? '-invert' : '';
+  const groups = getEffectiveTabGroups(contextTab.windowId);
   for (const group of groups) {
     if (contextTab.groupId == group.id) {
       continue;
@@ -450,8 +454,22 @@ function updateNativeTabGroups(contextTab) {
       type: TSTAPI.kCONTEXT_MENU_CREATE,
       params: item
     }, browser.runtime);
-    mContextualIdentityItems.add(item);
+    mNativeTabGroupItems.add(item);
+    mItemsById[item.id] = item;
+    item.lastVisible = true;
+    item.lastEnabled = true;
   }
+}
+
+function hasEffectiveTabGroup(windowId) {
+  return getEffectiveTabGroups(windowId).length > 0;
+}
+
+function getEffectiveTabGroups(windowId) {
+  return Tab.sort(
+    [...TabsStore.windows.get(windowId).tabGroups.values()]
+      .filter(group => !!Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id }))
+  );
 }
 
 const mContextualIdentityItems = new Set();
@@ -516,12 +534,10 @@ function updateContextualIdentities() {
       params: item
     }, browser.runtime);
     mContextualIdentityItems.add(item);
-  });
-  for (const item of mContextualIdentityItems) {
     mItemsById[item.id] = item;
     item.lastVisible = true;
     item.lastEnabled = true;
-  }
+  });
 }
 
 const mLastDevicesSignature = new Map();
@@ -706,6 +722,9 @@ async function updateSharingServiceItems(parentId, contextTab) {
 function updateItem(id, state = {}) {
   let modified = false;
   const item = mItemsById[id];
+  if (!item) {
+    return false;
+  }
   const updateInfo = {
     visible: 'visible' in state ? !!state.visible : true,
     enabled: 'enabled' in state ? !!state.enabled : true
@@ -788,7 +807,7 @@ async function onShown(info, contextTab) {
     const hasChild              = contextTab && contextTabs.some(tab => tab.$TST.hasChild);
     const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
     const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
-    const hasNativeTabGroup     = TabsStore.windows.get(windowId).tabGroups.size > 0;
+    const hasNativeTabGroup     = hasEffectiveTabGroup(windowId);
 
     if (mOverriddenContext)
       return onOverriddenMenuShown(info, contextTab, windowId);
