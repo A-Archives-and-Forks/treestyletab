@@ -369,7 +369,7 @@ export function updateTab(tab, newState = {}, options = {}) {
 
   if (options.forceApply ||
       'groupId' in newState) {
-    tab.$TST.onNativeGroupModified(oldState.groupId);
+    tab.$TST.onNativeGroupModified();
     update.attributes.added[Constants.kGROUP_ID] = newState.groupId;
   }
 

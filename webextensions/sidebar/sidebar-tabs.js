@@ -579,7 +579,6 @@ function tryApplyUpdate(update) {
   const highlightedChanged = update.updatedProperties && 'highlighted' in update.updatedProperties;
 
   if (update.updatedProperties) {
-    const oldGroupId = tab.groupId;
     for (const [key, value] of Object.entries(update.updatedProperties)) {
       if (Tab.UNSYNCHRONIZABLE_PROPERTIES.has(key))
         continue;
@@ -587,7 +586,7 @@ function tryApplyUpdate(update) {
     }
 
     if ('groupId' in update.updatedProperties) {
-      tab.$TST.onNativeGroupModified(oldGroupId);
+      tab.$TST.onNativeGroupModified();
       tab.$TST.updateElement(TabUpdateTarget.TabProperties);
     }
   }

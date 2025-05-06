@@ -2014,7 +2014,7 @@ export default class Tab {
   }
 
 
-  onNativeGroupModified(oldGroupId) {
+  onNativeGroupModified() {
     if (this.tab.groupId == -1) {
       TabsStore.removeNativelyGroupedTab(this.tab);
     }
