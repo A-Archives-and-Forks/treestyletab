@@ -242,9 +242,11 @@ export function renderTab(tab, { containerElement, insertBefore } = {}) {
     tab.$TST.setAttribute('type', tab.$TST.type);
     if (tab.$TST.type == 'group') {
       tab.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, tab.id || -1);
+      tab.$TST.removeAttribute(Constants.kGROUP_ID);
     }
     else {
       tab.$TST.setAttribute(Constants.kAPI_TAB_ID, tab.id || -1);
+      tab.$TST.setAttribute(Constants.kGROUP_ID, tab.groupId);
     }
     tab.$TST.setAttribute(Constants.kAPI_WINDOW_ID, tab.windowId || -1);
     tab.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
