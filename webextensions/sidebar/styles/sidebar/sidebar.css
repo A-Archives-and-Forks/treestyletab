@@ -135,6 +135,13 @@ tab-item-substance {
   z-index: 0;
 }
 
+tab-item[type="group"] tab-item-substance {
+  max-width: calc(max(var(--tab-label-width), var(--favicon-size)) +
+                  2px + 3px /* padding-inline of tab-item-substance */ +
+                  0.25em /* margin-inline of tab-label */ +
+                  0.25em /* margin-inline of tab-label-content */);
+}
+
 tab-item.active {
   --tab-surface: var(--tab-surface-active-gradient);
 }

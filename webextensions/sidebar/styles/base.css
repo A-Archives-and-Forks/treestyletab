@@ -1032,6 +1032,14 @@ tab-item[type="group"] .highlighter,
 tab-item[type="group"] .contextual-identity-marker {
   display: none;
 }
+tab-item[type="group"] .ui {
+  max-width: 100%;
+}
+
+tab-item[type="group"] tab-item-substance {
+  max-width: calc(max(var(--tab-label-width), var(--favicon-size)) +
+                  0.25em /* margin-inline of tab-label */);
+}
 
 tab-item[data-group-id]:not([data-group-id="-1"]) {
   --space-xsmall: 0.267rem; /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#273 */

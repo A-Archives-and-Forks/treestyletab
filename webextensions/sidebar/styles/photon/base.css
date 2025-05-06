@@ -22,6 +22,12 @@ tab-item,
   margin-block-end: -1px;
 }
 
+tab-item[type="group"] tab-item-substance {
+  max-width: calc(max(var(--tab-label-width), var(--favicon-size)) +
+                  0.25em /* margin-inline of tab-label */ +
+                  0.35em + 0.25em /* padding-inline */);
+}
+
 tab-item.pinned tab-item-substance {
   border-block-width: 0 1px;
   border-inline-width: 0 1px;
