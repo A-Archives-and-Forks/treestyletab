@@ -894,6 +894,7 @@
   "tabContextMenu_addToGroup_label":               { "message": "このタブをグループに追加(&G)" },
   "tabContextMenu_addToGroup_label_multiselected": { "message": "選択したタブをグループに追加(&G)" },
   "tabContextMenu_addToGroup_newGroup_label":      { "message": "新しいグループ(&G)" },
+  "tabContextMenu_addToGroup_unnamed_label":       { "message": "無名のグループ" },
   "tabContextMenu_removeFromGroup_label":               { "message": "このタブをグループから除外(&R)" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "選択したタブを各グループから除外(&R)" },
 

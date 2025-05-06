@@ -2740,6 +2740,7 @@
   "tabContextMenu_addToGroup_label":               { "message": "Tabblad aan &groep toevoegen" },
   "tabContextMenu_addToGroup_label_multiselected": { "message": "Tabbladen aan &groep toevoegen" },
   "tabContextMenu_addToGroup_newGroup_label":      { "message": "Nieuwe &groep" },
+  "tabContextMenu_addToGroup_unnamed_label":       { "message": "Naamloze groep" },
   "tabContextMenu_removeFromGroup_label":               { "message": "&Verwijderen uit groep" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "&Verwijderen uit groepen" },
   "tabContextMenu_reload_label": {

@@ -877,6 +877,7 @@
   "tabContextMenu_addToGroup_label":               { "message": "Добавить вкладку в гру&ппу" },
   "tabContextMenu_addToGroup_label_multiselected": { "message": "Добавить вкладки в гру&ппу" },
   "tabContextMenu_addToGroup_newGroup_label":      { "message": "Новая гру&ппа" },
+  "tabContextMenu_addToGroup_unnamed_label":       { "message": "Безымянная группа" },
   "tabContextMenu_removeFromGroup_label":               { "message": "Удалить из группы(&к)" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "Удалить из групп(&к)" },
 

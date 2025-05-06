@@ -408,14 +408,55 @@ Tab.onChangeMultipleTabsRestorability.addListener(multipleTabsRestorable => {
 });
 
 function updateNativeTabGroups(contextTab) {
-/*
-    updateItem('context_addToGroup_newGroup', {
-      visible: emulate && hasNativeTabGroup,
-    }) && modifiedItemsCount++;
-    updateItem('context_addToGroup_separator:afterNewGroup', {
-      visible: emulate && hasNativeTabGroup,
-    }) && modifiedItemsCount++;
-*/
+  if (!contextTab) {
+    return;
+  }
+
+  const groups = Tab.sort([...TabsStore.windows.get(contextTab.windowId).tabGroups.values()]);
+  for (const group of groups) {
+    const id = `nativeTabGroup:${group.id}`;
+    if (id in mItemsById)
+      delete mItemsById[id];
+    browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
+    onMessageExternal({
+      type: TSTAPI.kCONTEXT_MENU_REMOVE,
+      params: id
+    }, browser.runtime);
+  }
+
+  updateItem('context_addToGroup_newGroup', {
+    visible: true,
+  });
+  updateItem('context_addToGroup_separator:afterNewGroup', {
+    visible: true,
+  });
+
+  const defaultTitle = browser.i18n.getMessage('tabContextMenu_addToGroup_unnamed_label');
+  const darkSuffix = window.matchMedia('(prefers-color-scheme: dark)').matches ? '-invert' : '';
+  for (const group of groups) {
+    if (contextTab.groupId == group.id) {
+      continue;
+    }
+    const id = `nativeTabGroup:${group.id}`;
+    const item = {
+      id,
+      parentId:  'context_addToGroup',
+      title:     group.title || defaultTitle,
+      icons:     { 16: `/resources/icons/tab-group-chicklet.svg#${group.color}${darkSuffix}` },
+      contexts:  ['tab'],
+      viewTypes: ['sidebar', 'tab', 'popup'],
+      documentUrlPatterns: SIDEBAR_URL_PATTERN,
+    };
+    browser.menus.create(item);
+    onMessageExternal({
+      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      params: item
+    }, browser.runtime);
+    mContextualIdentityItems.add(item);
+    mItemsById[item.id] = item;
+    item.lastVisible = true;
+    item.lastEnabled = true;
+  }
 }
 
 const mContextualIdentityItems = new Set();

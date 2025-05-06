@@ -363,6 +363,7 @@
   "tabContextMenu_addToGroup_label":               { "message": "Дода&ти вкладку до групи" },
   "tabContextMenu_addToGroup_label_multiselected": { "message": "Дода&ти вкладки до групи" },
   "tabContextMenu_addToGroup_newGroup_label":      { "message": "&Нова група" },
+  "tabContextMenu_addToGroup_unnamed_label":       { "message": "Група без назви" },
   "tabContextMenu_removeFromGroup_label":               { "message": "Ви&лучити з групи" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "Ви&лучити з груп" },
 

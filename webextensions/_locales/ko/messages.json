@@ -2272,6 +2272,7 @@
     "tabContextMenu_addToGroup_label":               { "message": "그룹에 탭 추가(&G)" },
     "tabContextMenu_addToGroup_label_multiselected": { "message": "그룹에 탭 추가(&G)" },
     "tabContextMenu_addToGroup_newGroup_label":      { "message": "새 그룹(&G)" },
+    "tabContextMenu_addToGroup_unnamed_label":       { "message": "익명 그룹" },
     "tabContextMenu_removeFromGroup_label":               { "message": "그룹에서 제거(&R)" },
     "tabContextMenu_removeFromGroup_label_multiselected": { "message": "그룹에서 제거(&R)" },
     "tabContextMenu_reload_label": {

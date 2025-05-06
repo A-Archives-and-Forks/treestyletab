@@ -1435,6 +1435,7 @@
   "tabContextMenu_addToGroup_label":               { "message": "&Ajouter l’onglet au groupe" },
   "tabContextMenu_addToGroup_label_multiselected": { "message": "&Ajouter les onglets au groupe" },
   "tabContextMenu_addToGroup_newGroup_label":      { "message": "&Nouveau groupe" },
+  "tabContextMenu_addToGroup_unnamed_label":       { "message": "Groupe sans nom" },
   "tabContextMenu_removeFromGroup_label":               { "message": "&Retirer du groupe" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "&Retirer des groupes" },
   "tabContextMenu_reload_label": {

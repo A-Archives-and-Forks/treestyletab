@@ -898,6 +898,7 @@
   "tabContextMenu_addToGroup_label":               { "message": "Add Tab to &Group" },
   "tabContextMenu_addToGroup_label_multiselected": { "message": "Add Tabs to &Group" },
   "tabContextMenu_addToGroup_newGroup_label":      { "message": "New &Group" },
+  "tabContextMenu_addToGroup_unnamed_label":       { "message": "Unnamed group" },
   "tabContextMenu_removeFromGroup_label":               { "message": "&Remove from Group" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "&Remove from Groups" },
 

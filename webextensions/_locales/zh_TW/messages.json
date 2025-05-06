@@ -769,6 +769,7 @@
     "tabContextMenu_addToGroup_label":               { "message": "將分頁加入至群組 (&G)" },
     "tabContextMenu_addToGroup_label_multiselected": { "message": "將分頁加入至群組 (&G)" },
     "tabContextMenu_addToGroup_newGroup_label":      { "message": "新增群組 (&G)" },
+    "tabContextMenu_addToGroup_unnamed_label":       { "message": "未命名群組" },
     "tabContextMenu_removeFromGroup_label":               { "message": "從群組移除 (&R)" },
     "tabContextMenu_removeFromGroup_label_multiselected": { "message": "從群組移除 (&R)" },
   
