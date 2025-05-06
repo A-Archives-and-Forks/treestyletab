@@ -1,6 +1,9 @@
 # History
 
  - master/HEAD
+ - 4.1.6 (2025.5.7)
+   * Apply animation effect to expanding tree correctly.
+   * Open dialogs correctly even if the `<all_urls>` permission is granted. (regression at 4.1.5)
  - 4.1.5 (2025.5.2)
    * Suppress Ctrl-Tab/Ctrl-Shift-Tab specific reactions (redirection of tab focus to skip collapsed tabs through tab switchings), when a collapsed tab get focused by something outside of TST except Ctrl-Tab/Ctrl-Shift-Tab e.g. clicking on a native tab.
    * Cyclic focus of tabs with custom keyboard shortcuts for "focus to the next/previous sibling tab" commands.
@@ -13,7 +16,7 @@
    * [Add a mechanism to help collecting performance profile while initialization process.](https://github.com/piroor/treestyletab/discussions/3097#discussioncomment-12159391)
  - 4.1.3 (2025.1.16)
    * Show tab preview panel with visible background color on macOS.
-   * Size tab preview panel in the contents area correctly on macOS Retina display. (regression on 4.1.2)
+   * Size tab preview panel in the contents area correctly on macOS Retina display. (regression at 4.1.2)
  - 4.1.2 (2025.1.14)
    * Avoid unexpected white background in the content area, when the Dark theme of Firefox is chosen with activate tab preview panel.
    * Apply uniform styling of the "sound playing" button on all themes including Photon.
