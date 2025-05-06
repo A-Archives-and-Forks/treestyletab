@@ -79,7 +79,7 @@ export function getTabFromDOMNode(node, options = {}) {
   const tab = tabSubstance && tabSubstance.closest(kTAB_ELEMENT_NAME);
   if (options.force ||
       tab?.apiRaw?.$TST.type == 'group') {
-    return tab.apiRaw;
+    return tab?.apiRaw;
   }
   return TabsStore.ensureLivingTab(tab?.apiRaw);
 }
