@@ -439,7 +439,7 @@ function updateNativeTabGroups(contextTab) {
     if (contextTab.groupId == group.id) {
       continue;
     }
-    const id = `nativeTabGroup:${group.id}`;
+    const id = `context_addToGroup:group:${group.id}`;
     const item = {
       id,
       parentId:  'context_addToGroup',
@@ -1284,6 +1284,15 @@ async function onClick(info, contextTab) {
       });
     }; break;
 
+    case 'context_newGroup':
+    case 'context_addToGroup_newGroup':
+      Commands.addTabsToNativeTabGroup(multiselectedTabs || [contextTab]);
+      break;
+
+    case 'context_removeFromGroup':
+      Commands.removeTabsFromNativeTabGroup(multiselectedTabs || [contextTab]);
+      break;
+
     case 'context_reloadTab':
       if (multiselectedTabs) {
         for (const tab of multiselectedTabs) {
@@ -1506,6 +1515,11 @@ async function onClick(info, contextTab) {
     }; break;
 
     default: {
+      const nativeTabGroupMatch = info.menuItemId.match(/^context_addToGroup:group:(.+)$/);
+      if (contextTab &&
+          nativeTabGroupMatch)
+        Commands.addTabsToNativeTabGroup(multiselectedTabs || [contextTab], parseInt(nativeTabGroupMatch[1]));
+
       const contextualIdentityMatch = info.menuItemId.match(/^context_reopenInContainer:(.+)$/);
       if (contextTab &&
           contextualIdentityMatch)

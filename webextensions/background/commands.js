@@ -498,13 +498,10 @@ async function performTabsDragDrop(params = {}) {
         params.insertBefore.groupId :
         -1;
   if (nativeTabGroupId == -1) {
-    await browser.tabs.ungroup(params.tabs.map(tab => tab.id));
+    await removeTabsFromNativeTabGroup(params.tabs.map(tab => tab.id));
   }
   else {
-    await browser.tabs.group({
-      groupId: nativeTabGroupId,
-      tabIds:  params.tabs.map(tab => tab.id),
-    });
+    await addTabsToNativeTabGroup(params.tabs, nativeTabGroupId);
   }
 
   const movedTabs = await moveTabsWithStructure(params.tabs, {
@@ -1077,6 +1074,17 @@ export async function reopenInContainer(sourceTabOrTabs, cookieStoreId, options 
     broadcast: true
   });
   return tabs;
+}
+
+export async function addTabsToNativeTabGroup(tabs, groupId) {
+  return browser.tabs.group({
+    groupId,
+    tabIds: tabs.map(tab => tab.id),
+  });
+}
+
+export async function removeTabsFromNativeTabGroup(tabs) {
+  return browser.tabs.ungroup(tabs.map(tab => tab.id));
 }
 
 
