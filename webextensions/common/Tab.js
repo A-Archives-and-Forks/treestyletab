@@ -1029,7 +1029,7 @@ export default class Tab {
         return ancestor;
     }
     if (!this.collapsed)
-      return this;
+      return this.tab;
     return null;
   }
 
