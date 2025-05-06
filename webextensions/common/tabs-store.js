@@ -733,9 +733,10 @@ export function ensureLivingTab(tab) {
   if (!tab ||
       !tab.id ||
       !tab.$TST ||
-      !tabs.has(tab.id) ||
+      (tab.$TST.type == 'tab' && !tabs.has(tab.id)) ||
       tab.$TST.removing ||
-      !windows.get(tab.windowId))
+      !windows.get(tab.windowId) ||
+      (tab.$TST.type == 'group' && !windows.get(tab.windowId).tabGroups.has(tab.id)))
     return null;
   return tab;
 }

@@ -77,8 +77,7 @@ export function getTabFromDOMNode(node, options = {}) {
     node = node.parentNode;
   const tabSubstance = node && node.closest(kTAB_SUBSTANCE_ELEMENT_NAME);
   const tab = tabSubstance && tabSubstance.closest(kTAB_ELEMENT_NAME);
-  if (options.force ||
-      tab?.apiRaw?.$TST.type == 'group') {
+  if (options.force) {
     return tab?.apiRaw;
   }
   return TabsStore.ensureLivingTab(tab?.apiRaw);
