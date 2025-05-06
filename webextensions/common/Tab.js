@@ -3076,7 +3076,7 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
       tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
       skipMatching: true,
     }),
-    ...TabsStore.windows.get(windowId).tabGroups.values(),
+    ...[...TabsStore.windows.get(windowId).tabGroups.values()].filter(group => !!Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id })),
   ]);
   log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
 
