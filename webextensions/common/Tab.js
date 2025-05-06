@@ -3065,22 +3065,10 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
     return tabs;
   }
 
-  const win = TabsStore.windows.get(windowId);
-  const mixedTabs = [...tabs];
-  for (const group of win.tabGroups.values()) {
-    const firstMember = Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id });
-    if (group.index == -1 ||
-        !firstMember) {
-      continue;
-    }
-    const nextItemIndex = mixedTabs.findIndex(tab => tab.index >= group.index);
-    if (nextItemIndex == -1) {
-      mixedTabs.unshift(group);
-    }
-    else {
-      mixedTabs.splice(nextItemIndex, 0, group);
-    }
-  }
+  const mixedTabs = Tab.sort([
+    ...tabs,
+    ...TabsStore.windows.get(windowId).tabGroups.values(),
+  ]);
   log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
 
   return mixedTabs;
@@ -3404,7 +3392,17 @@ Tab.doAndGetNewTabs = async (asyncTask, windowId) => {
   return addedTabs;
 };
 
-Tab.compare = (a, b) => a.index - b.index;
+Tab.compare = (a, b) => {
+  const delta = a.index - b.index;
+  if (delta != 0 ||
+      a.$TST?.type == b.$TST?.type) {
+    return delta;
+  }
+  if (a.$TST?.type == 'group') {
+    return -1;
+  }
+  return 1;
+}
 
 Tab.sort = tabs => tabs.length == 0 ? tabs : tabs.sort(Tab.compare);
 
