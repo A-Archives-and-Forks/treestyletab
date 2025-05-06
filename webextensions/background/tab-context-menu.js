@@ -415,8 +415,6 @@ function updateNativeTabGroups(contextTab) {
   const groups = Tab.sort([...TabsStore.windows.get(contextTab.windowId).tabGroups.values()]);
   for (const group of groups) {
     const id = `nativeTabGroup:${group.id}`;
-    if (id in mItemsById)
-      delete mItemsById[id];
     browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
     onMessageExternal({
       type: TSTAPI.kCONTEXT_MENU_REMOVE,
@@ -453,9 +451,6 @@ function updateNativeTabGroups(contextTab) {
       params: item
     }, browser.runtime);
     mContextualIdentityItems.add(item);
-    mItemsById[item.id] = item;
-    item.lastVisible = true;
-    item.lastEnabled = true;
   }
 }
 
