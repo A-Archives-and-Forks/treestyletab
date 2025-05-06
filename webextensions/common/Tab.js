@@ -3068,7 +3068,7 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
       group => {
         const firstMember = Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id });
         if (!firstMember) {
-          return null;
+          return undefined;
         }
         group.index = firstMember.index;
         return group;
