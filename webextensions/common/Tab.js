@@ -299,7 +299,11 @@ export default class Tab {
   }
 
   get type() {
-    return Tab.isNativeTabGroup(this.raw) ? 'group' : 'tab';
+    return this.isNativeTabGroup ? 'group' : 'tab';
+  }
+
+  get isNativeTabGroup() {
+    return Tab.isNativeTabGroup(this.raw);
   }
 
   get renderingId() {
@@ -307,17 +311,11 @@ export default class Tab {
   }
 
   get tab() {
-    if (this.type == 'group') {
-      return null;
-    }
-    return this.raw;
+    return this.isNativeTabGroup ? null : this.raw;
   }
 
   get rawGroup() {
-    if (this.type == 'group') {
-      return this.raw;
-    }
-    return null;
+    return this.isNativeTabGroup ? this.raw : null;
   }
 
 
@@ -1012,21 +1010,21 @@ export default class Tab {
     return tab;
   }
   get parent() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return null;
     }
     return this.tab && this.parentId && TabsStore.ensureLivingTab(Tab.get(this.parentId));
   }
 
   get hasParent() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return false;
     }
     return !!this.parentId;
   }
 
   get ancestorIds() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return [];
     }
     if (!this.cachedAncestorIds)
@@ -1035,7 +1033,7 @@ export default class Tab {
   }
 
   get ancestors() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return [];
     }
     return mapAndFilter(this.ancestorIds,
@@ -1043,7 +1041,7 @@ export default class Tab {
   }
 
   updateAncestors() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return [];
     }
     const ancestors = [];
@@ -1063,7 +1061,7 @@ export default class Tab {
   }
 
   get level() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return 0;
     }
     return this.ancestorIds.length;
@@ -1078,7 +1076,7 @@ export default class Tab {
   }
 
   get rootTab() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return null;
     }
     const ancestors = this.ancestors;
@@ -1086,7 +1084,7 @@ export default class Tab {
   }
 
   get topmostSubtreeCollapsedAncestor() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return null;
     }
     for (const ancestor of [...this.ancestors].reverse()) {
@@ -1097,7 +1095,7 @@ export default class Tab {
   }
 
   get nearestVisibleAncestorOrSelf() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return this.rawGroup;
     }
     for (const ancestor of this.ancestors) {
@@ -1172,7 +1170,7 @@ export default class Tab {
     return tabs;
   }
   get children() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return Tab.getNativeGroupMemberTabs({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id }).filter(tab => !tab.$TST.parentId);
     }
     return mapAndFilter(this.childIds,
@@ -1195,7 +1193,7 @@ export default class Tab {
   }
 
   sortAndInvalidateChildren() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return;
     }
     // Tab.get(tabId) calls into TabsStore.tabs.get(tabId), which is just a
@@ -1206,14 +1204,14 @@ export default class Tab {
   }
 
   get hasChild() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return !!Tab.getFirstNativeGroupMemberTab({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id });
     }
     return this.childIds.length > 0;
   }
 
   get descendants() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return Tab.getNativeGroupMemberTabs({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id });
     }
     if (!this.cachedDescendantIds)
@@ -1223,7 +1221,7 @@ export default class Tab {
   }
 
   updateDescendants() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return;
     }
     let descendants = [];
@@ -1238,7 +1236,7 @@ export default class Tab {
   }
 
   invalidateCachedDescendants() {
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       return;
     }
     this.cachedDescendantIds = null;
@@ -2141,7 +2139,7 @@ export default class Tab {
   }
 
   apply(exported) { // not optimized and unsafe yet!
-    if (this.type == 'group') {
+    if (this.isNativeTabGroup) {
       this.raw.title = exported.title;
       this.raw.color = exported.color;
       this.raw.collapsed = exported.collapsed;
@@ -3405,11 +3403,12 @@ Tab.doAndGetNewTabs = async (asyncTask, windowId) => {
 
 Tab.compare = (a, b) => {
   const delta = a.index - b.index;
+  const aIsGroup = a.$TST?.isNativeTabGroup;
   if (delta != 0 ||
-      a.$TST?.type == b.$TST?.type) {
+      aIsGroup == b.$TST?.isNativeTabGroup) {
     return delta;
   }
-  if (a.$TST?.type == 'group') {
+  if (aIsGroup) {
     return -1;
   }
   return 1;

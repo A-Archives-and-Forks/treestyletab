@@ -730,13 +730,14 @@ export function assertValidTab(tab) {
 }
 
 export function ensureLivingTab(tab) {
+  const isNativeTabGroup = tab?.$TST?.isNativeTabGroup;
   if (!tab ||
       !tab.id ||
       !tab.$TST ||
-      (tab.$TST.type == 'tab' && !tabs.has(tab.id)) ||
+      (!isNativeTabGroup && !tabs.has(tab.id)) ||
       tab.$TST.removing ||
       !windows.get(tab.windowId) ||
-      (tab.$TST.type == 'group' && !windows.get(tab.windowId).tabGroups.has(tab.id)))
+      (isNativeTabGroup && !windows.get(tab.windowId).tabGroups.has(tab.id)))
     return null;
   return tab;
 }
