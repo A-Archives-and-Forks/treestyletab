@@ -136,7 +136,7 @@ export function isEventFiredOnTabbarBottom(event) {
 
 
 export function getTabFromEvent(event, options = {}) {
-  return SidebarItems.getTabFromDOMNode(event.target, options);
+  return SidebarItems.getItemFromDOMNode(event.target, options);
 }
 
 function getTabbarFromEvent(event) {
@@ -156,7 +156,7 @@ export function getTabFromTabbarEvent(event, options = {}) {
 }
 
 function getTabFromCoordinates(event, options = {}) {
-  const tab = SidebarItems.getTabFromDOMNode(document.elementFromPoint(event.clientX, event.clientY), options);
+  const tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(event.clientX, event.clientY), options);
   if (tab)
     return tab;
 
@@ -174,7 +174,7 @@ function getTabFromCoordinates(event, options = {}) {
     containerRect.width - Size.getFavIconSize()
   ];
   for (const x of trialPoints) {
-    const tab = SidebarItems.getTabFromDOMNode(document.elementFromPoint(x, event.clientY), options);
+    const tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY), options);
     if (tab)
       return tab;
   }
@@ -183,14 +183,14 @@ function getTabFromCoordinates(event, options = {}) {
   // so I try to find a tab from previous or next tab.
   const height = Size.getTabHeight();
   for (const x of trialPoints) {
-    let tab = SidebarItems.getTabFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
-    tab = SidebarItems.getTabFromDOMNode(tab && tab.$TST.element.nextSibling, options);
+    let tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
+    tab = SidebarItems.getItemFromDOMNode(tab && tab.$TST.element.nextSibling, options);
     if (tab)
       return tab;
   }
   for (const x of trialPoints) {
-    let tab = SidebarItems.getTabFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
-    tab = SidebarItems.getTabFromDOMNode(tab && tab.$TST.element.previousSibling, options);
+    let tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
+    tab = SidebarItems.getItemFromDOMNode(tab && tab.$TST.element.previousSibling, options);
     if (tab)
       return tab;
   }

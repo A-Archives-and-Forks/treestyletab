@@ -397,7 +397,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 !item ||
                 !mNormalScrollBox.contains(item.$TST.element))
               continue;
-            SidebarItems.unrenderTab(item);
+            SidebarItems.unrenderItem(item);
           }
         }; break;
 
@@ -422,7 +422,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 !item ||
                 !mNormalScrollBox.contains(item.$TST.element))
               continue;
-            SidebarItems.unrenderTab(item);
+            SidebarItems.unrenderItem(item);
           }
           const referenceItem = fromEnd < mLastRenderedVirtualScrollItemIds.length ?
             getRenderableItemById(mLastRenderedVirtualScrollItemIds[fromEnd]) :
@@ -443,7 +443,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
               continue;
             }
             const item = getRenderableItemById(id);
-            SidebarItems.renderTab(item, {
+            SidebarItems.renderItem(item, {
               insertBefore: referenceItemHasValidReferenceElement ? referenceItem :
                 (referenceItem && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceItem.id}"]`)) ||
                 null,
@@ -530,7 +530,7 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
     }
     if (item.$TST.element &&
         item.$TST.element.parentNode != TabsStore.windows.get(windowId).containerElement) {
-      SidebarItems.unrenderTab(item);
+      SidebarItems.unrenderItem(item);
       continue;
     }
   }
@@ -551,7 +551,7 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
           for (const id of ids) {
             if (!stickyItemIdsAbove.has(id) &&
                 !stickyItemIdsBelow.has(id))
-              SidebarItems.unrenderTab(Tab.get(id));
+              SidebarItems.unrenderItem(Tab.get(id));
           }
         }; break;
 
@@ -561,14 +561,14 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
           for (const id of deleteIds) {
             if (!stickyItemIdsAbove.has(id) &&
                 !stickyItemIdsBelow.has(id))
-              SidebarItems.unrenderTab(Tab.get(id));
+              SidebarItems.unrenderItem(Tab.get(id));
           }
           const insertIds = currentIds.slice(toStart, toEnd);
           const referenceItem = (fromEnd < lastIds.length && currentIds.includes(lastIds[fromEnd])) ?
             Tab.get(lastIds[fromEnd]) :
             null;
           for (const id of insertIds) {
-            SidebarItems.renderTab(Tab.get(id), {
+            SidebarItems.renderItem(Tab.get(id), {
               containerElement: document.querySelector(`.sticky-tabs-container.${place}`),
               insertBefore:     referenceItem,
             });

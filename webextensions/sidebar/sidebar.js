@@ -584,7 +584,7 @@ async function rebuildAll(importedWindow) {
     if (tab.active)
       TabsInternalOperation.setTabActive(trackedTab);
     if (trackedTab.pinned)
-      SidebarItems.renderTab(trackedTab);
+      SidebarItems.renderItem(trackedTab);
     if (Date.now() - lastDraw > configs.intervalToUpdateProgressForBlockedUserOperation) {
       UserOperationBlocker.setProgress(Math.round(++count / maxCount * 33) + 66); // 3/3: build tab elements
       await nextFrame();

@@ -64,23 +64,23 @@ export function init() {
   mPromisedInitialized = mPromisedInitializedResolver = null;
 }
 
-function getTabContainerElement(tab) {
-  return document.querySelector(`.tabs.${tab.pinned ? 'pinned' : 'normal'}`);
+function getItemContainerElement(item) {
+  return document.querySelector(`.tabs.${item.pinned ? 'pinned' : 'normal'}`);
 }
 
-export function getTabFromDOMNode(node, options = {}) {
+export function getItemFromDOMNode(node, options = {}) {
   if (typeof options != 'object')
     options = {};
   if (!node)
     return null;
   if (!(node instanceof Element))
     node = node.parentNode;
-  const tabSubstance = node && node.closest(kTAB_SUBSTANCE_ELEMENT_NAME);
-  const tab = tabSubstance && tabSubstance.closest(kTAB_ELEMENT_NAME);
+  const itemSubstance = node && node.closest(kTAB_SUBSTANCE_ELEMENT_NAME);
+  const item = itemSubstance && itemSubstance.closest(kTAB_ELEMENT_NAME);
   if (options.force) {
-    return tab?.apiRaw;
+    return item?.apiRaw;
   }
-  return TabsStore.ensureLivingItem(tab?.apiRaw);
+  return TabsStore.ensureLivingItem(item?.apiRaw);
 }
 
 
@@ -213,56 +213,56 @@ async function syncTabsOrder() {
   }
 }
 
-function getTabElementId(tab) {
-  return `tab-${tab.id}`;
+function getItemElementId(item) {
+  return `${item.$TST.type}-${item.id}`;
 }
 
-const mRenderedTabIds = new Set();
-const mUnrenderedTabIds = new Set();
-let mTabElementsPool = [];
+const mRenderedItemIds = new Set();
+const mUnrenderedItemIds = new Set();
+let mItemElementsPool = [];
 
-export function renderTab(tab, { containerElement, insertBefore } = {}) {
-  if (!tab) {
-    console.log('WARNING: Null tab has requested to be rendered! ', new Error().stack);
+export function renderItem(item, { containerElement, insertBefore } = {}) {
+  if (!item) {
+    console.log('WARNING: Null item has requested to be rendered! ', new Error().stack);
     return false;
   }
-  if (!tab.$TST) {
-    console.log('WARNING: Alerady destroyed tab has requested to be rendered! ', tab.id, new Error().stack);
+  if (!item.$TST) {
+    console.log('WARNING: Alerady destroyed item has requested to be rendered! ', item.id, new Error().stack);
     return false;
   }
 
   let created = false;
-  if (!tab.$TST.element ||
-      !tab.$TST.element.parentNode) {
-    const reuseFromPool = (mTabElementsPool.length > 0);
-    const tabElement = reuseFromPool ?
-      mTabElementsPool.pop() :
+  if (!item.$TST.element ||
+      !item.$TST.element.parentNode) {
+    const reuseFromPool = (mItemElementsPool.length > 0);
+    const itemElement = reuseFromPool ?
+      mItemElementsPool.pop() :
       document.createElement(kTAB_ELEMENT_NAME);
-    tab.$TST.bindElement(tabElement);
-    tab.$TST.setAttribute('id', getTabElementId(tab));
-    tab.$TST.setAttribute('type', tab.$TST.type);
-    if (tab.$TST.isNativeTabGroup) {
-      tab.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, tab.id || -1);
-      tab.$TST.removeAttribute(Constants.kGROUP_ID);
+    item.$TST.bindElement(itemElement);
+    item.$TST.setAttribute('id', getItemElementId(item));
+    item.$TST.setAttribute('type', item.$TST.type);
+    item.$TST.setAttribute(Constants.kAPI_WINDOW_ID, item.windowId || -1);
+    if (item.$TST.isNativeTabGroup) {
+      item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
+      item.$TST.removeAttribute(Constants.kGROUP_ID);
     }
     else {
-      tab.$TST.setAttribute(Constants.kAPI_TAB_ID, tab.id || -1);
-      tab.$TST.setAttribute(Constants.kGROUP_ID, tab.groupId);
+      item.$TST.setAttribute(Constants.kAPI_TAB_ID, item.id || -1);
+      item.$TST.setAttribute(Constants.kGROUP_ID, item.groupId);
+      item.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
+      TabsStore.addUnsynchronizedTab(item);
     }
-    tab.$TST.setAttribute(Constants.kAPI_WINDOW_ID, tab.windowId || -1);
-    tab.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
-    TabsStore.addUnsynchronizedTab(tab);
     if (reuseFromPool) {
-      tabElement.favIconUrl = null;
-      onReuseTabElement.dispatch(tabElement);
+      itemElement.favIconUrl = null;
+      onReuseTabElement.dispatch(itemElement);
     }
     created = true;
   }
 
-  const win = TabsStore.windows.get(tab.windowId);
-  const tabElement = tab.$TST.element;
+  const win = TabsStore.windows.get(item.windowId);
+  const itemElement = item.$TST.element;
   containerElement = containerElement || (
-    tab.pinned ?
+    item.pinned ?
       win.pinnedContainerElement :
       win.containerElement
   );
@@ -273,69 +273,69 @@ export function renderTab(tab, { containerElement, insertBefore } = {}) {
   if (nextElement === undefined &&
       (containerElement == win.containerElement ||
        containerElement == win.pinnedContainerElement)) {
-    const nextTab = tab.$TST.nearestSameTypeRenderedTab;
-    log(`render tab element for ${tab.id} (pinned=${tab.pinned}) before ${nextTab && nextTab.id}, tab, nextTab = `, tab, nextTab);
+    const nextTab = item.$TST.nearestSameTypeRenderedTab;
+    log(`render item element for ${item.id} (pinned=${item.pinned}) before ${nextTab && nextTab.id}, item, nextTab = `, item, nextTab);
     nextElement = nextTab && nextTab.$TST.element.parentNode == containerElement ?
       nextTab.$TST.element :
       null;
   }
 
-  if (tabElement.parentNode == containerElement &&
-      tabElement.nextSibling == nextElement)
+  if (itemElement.parentNode == containerElement &&
+      itemElement.nextSibling == nextElement)
     return false;
 
-  containerElement.insertBefore(tabElement, nextElement);
+  containerElement.insertBefore(itemElement, nextElement);
 
   if (created) {
-    if (!tab.active && tab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
-      console.log('WARNING: Inactive tab has invalid "active" state! ', tab.id)
-      tab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
+    if (!item.active && item.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
+      console.log('WARNING: Inactive item has invalid "active" state! ', item.id)
+      item.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
     }
 
-    tab.$TST.invalidateElement(TabInvalidationTarget.Twisty | TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
-    tab.$TST.updateElement(TabUpdateTarget.Counter | TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
-    tab.$TST.applyStatesToElement();
+    item.$TST.invalidateElement(TabInvalidationTarget.Twisty | TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
+    item.$TST.updateElement(TabUpdateTarget.Counter | TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
+    item.$TST.applyStatesToElement();
 
     // To apply animation effect, we need to set and remove
     // the "collapsed" state again.
     if (shouldApplyAnimation() &&
-        tab.$TST.states.has(Constants.kTAB_STATE_EXPANDING) &&
-        !tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED)) {
-      tabElement.classList.remove(Constants.kTAB_STATE_ANIMATION_READY);
-      tabElement.classList.add(Constants.kTAB_STATE_COLLAPSED);
+        item.$TST.states.has(Constants.kTAB_STATE_EXPANDING) &&
+        !item.$TST.states.has(Constants.kTAB_STATE_COLLAPSED)) {
+      itemElement.classList.remove(Constants.kTAB_STATE_ANIMATION_READY);
+      itemElement.classList.add(Constants.kTAB_STATE_COLLAPSED);
       window.requestAnimationFrame(() => {
-        tabElement.classList.add(Constants.kTAB_STATE_ANIMATION_READY);
-        tabElement.classList.remove(Constants.kTAB_STATE_COLLAPSED);
+        itemElement.classList.add(Constants.kTAB_STATE_ANIMATION_READY);
+        itemElement.classList.remove(Constants.kTAB_STATE_COLLAPSED);
       });
     }
     else {
-      tabElement.classList.add(Constants.kTAB_STATE_ANIMATION_READY);
+      itemElement.classList.add(Constants.kTAB_STATE_ANIMATION_READY);
     }
 
-    mRenderedTabIds.add(tab.id);
-    mUnrenderedTabIds.delete(tab.id);
-    reserveToNotifyTabsRendered();
+    mRenderedItemIds.add(item.id);
+    mUnrenderedItemIds.delete(item.id);
+    reserveToNotifyItemsRendered();
   }
 
   return true;
 }
 
-function reserveToNotifyTabsRendered() {
+function reserveToNotifyItemsRendered() {
   const hasInternalListener = onTabsRendered.hasListener();
   const hasExternalListener = TSTAPI.hasListenerForMessageType(TSTAPI.kNOTIFY_TABS_RENDERED);
   if (!hasInternalListener && !hasExternalListener) {
-    mRenderedTabIds.clear();
+    mRenderedItemIds.clear();
     return;
   }
 
-  if (reserveToNotifyTabsRendered.invoked)
+  if (reserveToNotifyItemsRendered.invoked)
     return;
-  reserveToNotifyTabsRendered.invoked = true;
+  reserveToNotifyItemsRendered.invoked = true;
   window.requestAnimationFrame(() => {
-    reserveToNotifyTabsRendered.invoked = false;
+    reserveToNotifyItemsRendered.invoked = false;
 
-    const ids = [...mRenderedTabIds];
-    mRenderedTabIds.clear();
+    const ids = [...mRenderedItemIds];
+    mRenderedItemIds.clear();
     const tabs =  mapAndFilter(ids, id => Tab.get(id));
     if (tabs.length == 0) {
       return;
@@ -357,30 +357,30 @@ function reserveToNotifyTabsRendered() {
 
 let mClearPoolTimer = null;
 
-export function unrenderTab(tab) {
-  if (!tab ||
-      !tab.$TST ||
-      !tab.$TST.element)
+export function unrenderItem(item) {
+  if (!item?.$TST?.element)
     return false;
 
-  mRenderedTabIds.delete(tab.id);
-  mUnrenderedTabIds.add(tab.id);
+  mRenderedItemIds.delete(item.id);
+  mUnrenderedItemIds.add(item.id);
 
-  const tabElement = tab.$TST.element;
+  const itemElement = item.$TST.element;
 
-  tab.$TST.removeState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
-  TabsStore.removeUnsynchronizedTab(tab);
+  if (!item.$TST.isNativeTabGroup) {
+    item.$TST.removeState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
+    TabsStore.removeUnsynchronizedTab(item);
+  }
 
   const hasInternalListener = onTabsUnrendered.hasListener();
   const hasExternalListener = TSTAPI.hasListenerForMessageType(TSTAPI.kNOTIFY_TABS_UNRENDERED);
   if (hasInternalListener || hasExternalListener) {
-    if (!unrenderTab.invoked) {
-      unrenderTab.invoked = true;
+    if (!unrenderItem.invoked) {
+      unrenderItem.invoked = true;
       window.requestAnimationFrame(() => {
-        unrenderTab.invoked = false;
+        unrenderItem.invoked = false;
 
-        const ids = [...mUnrenderedTabIds];
-        mUnrenderedTabIds.clear();
+        const ids = [...mUnrenderedItemIds];
+        mUnrenderedItemIds.clear();
         const tabs = mapAndFilter(ids, id => Tab.get(id));
 
         if (hasInternalListener)
@@ -398,23 +398,23 @@ export function unrenderTab(tab) {
     }
   }
   else {
-    mUnrenderedTabIds.clear();
+    mUnrenderedItemIds.clear();
   }
 
-  if (!tabElement ||
-      !tabElement.parentNode)
+  if (!itemElement ||
+      !itemElement.parentNode)
     return false;
 
-  tabElement.parentNode.removeChild(tabElement);
-  tab.$TST.unbindElement();
+  itemElement.parentNode.removeChild(itemElement);
+  item.$TST.unbindElement();
 
   // We reuse already generated elements for better performance.
   // See also: https://github.com/piroor/treestyletab/issues/3477
-  mTabElementsPool.push(tabElement);
+  mItemElementsPool.push(itemElement);
   if (mClearPoolTimer)
     clearTimeout(mClearPoolTimer);
   mClearPoolTimer = setTimeout(() => {
-    mTabElementsPool = [];
+    mItemElementsPool = [];
   }, configs.generatedTabElementsPoolLifetimeMsec);
 
   return true;
@@ -832,7 +832,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       if (message.maybeMoved)
         await waitUntilNewTabIsMoved(message.tabId);
       if (tab.pinned) {
-        renderTab(tab);
+        renderItem(tab);
         onPinnedTabsChanged.dispatch(tab);
       }
       else {
@@ -894,10 +894,10 @@ BackgroundConnection.onMessage.addListener(async message => {
         return;
       const lastActive = TabsStore.activeTabInWindow.get(lastMessage.windowId);
       if (lastActive)
-        getTabContainerElement(lastActive).removeAttribute('aria-activedescendant');
+        getItemContainerElement(lastActive).removeAttribute('aria-activedescendant');
       TabsStore.activeTabInWindow.set(lastMessage.windowId, tab);
       TabsInternalOperation.setTabActive(tab);
-      getTabContainerElement(tab).setAttribute('aria-activedescendant', getTabElementId(tab));
+      getItemContainerElement(tab).setAttribute('aria-activedescendant', getItemElementId(tab));
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_UPDATED: {
@@ -980,7 +980,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       reserveToUpdateTabsIndex();
 
       if (tab.pinned) {
-        renderTab(tab);
+        renderItem(tab);
         onPinnedTabsChanged.dispatch(tab);
       }
       else {
@@ -1019,7 +1019,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       reserveToUpdateTabsIndex();
 
       if (tab.pinned) {
-        renderTab(tab);
+        renderItem(tab);
         onPinnedTabsChanged.dispatch(tab);
       }
       else {
@@ -1121,7 +1121,7 @@ BackgroundConnection.onMessage.addListener(async message => {
         await wait(configs.collapseDuration);
       TabsStore.windows.get(message.windowId).detachTab(message.tabId);
       tab.$TST.destroy();
-      unrenderTab(tab);
+      unrenderItem(tab);
       if (tab.pinned)
         onPinnedTabsChanged.dispatch(tab);
       else
@@ -1201,13 +1201,13 @@ BackgroundConnection.onMessage.addListener(async message => {
         tab.pinned = true;
         TabsStore.removeUnpinnedTab(tab);
         TabsStore.addPinnedTab(tab);
-        renderTab(tab);
+        renderItem(tab);
       }
       else {
         tab.pinned = false;
         TabsStore.removePinnedTab(tab);
         TabsStore.addUnpinnedTab(tab);
-        unrenderTab(tab);
+        unrenderItem(tab);
       }
       TabsStore.updateVirtualScrollRenderabilityIndexForTab(tab);
       onPinnedTabsChanged.dispatch(tab.pinned && tab);
@@ -1295,7 +1295,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       TabsStore.addRemovedTab(tab);
       const win = TabsStore.windows.get(message.windowId);
       win.untrackTab(message.tabId);
-      unrenderTab(tab);
+      unrenderItem(tab);
       if (tab.pinned)
         onPinnedTabsChanged.dispatch(tab);
       else
