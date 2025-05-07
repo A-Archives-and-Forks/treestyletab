@@ -77,34 +77,6 @@ export class TreeItem {
     // We should not change the shape of the object, so temporary data should be held in this map.
     this.temporaryMetadata = new Map();
 
-    this.updatingOpenerTabIds = []; // this must be an array, because same opener tab id can appear multiple times.
-
-    this.newRelatedTabsCount = 0;
-
-    this.lastSoundStateCounts = {
-      soundPlaying: 0,
-      muted:        0,
-      autoPlayBlocked: 0,
-    };
-    this.soundPlayingChildrenIds = new Set();
-    this.maybeSoundPlayingChildrenIds = new Set();
-    this.mutedChildrenIds = new Set();
-    this.maybeMutedChildrenIds = new Set();
-    this.autoplayBlockedChildrenIds = new Set();
-    this.maybeAutoplayBlockedChildrenIds = new Set();
-
-    this.lastSharingStateCounts = {
-      camera:     0,
-      microphone: 0,
-      screen:     0,
-    };
-    this.sharingCameraChildrenIds = new Set();
-    this.maybeSharingCameraChildrenIds = new Set();
-    this.sharingMicrophoneChildrenIds = new Set();
-    this.maybeSharingMicrophoneChildrenIds = new Set();
-    this.sharingScreenChildrenIds = new Set();
-    this.maybeSharingScreenChildrenIds = new Set();
-
     this.highPriorityTooltipTexts = new Map();
     this.lowPriorityTooltipTexts  = new Map();
 
@@ -125,12 +97,7 @@ export class TreeItem {
       originalId:    null,
       originalTabId: null
     };
-    this.promisedUniqueId = new Promise((resolve, _reject) => {
-      this.onUniqueIdGenerated = resolve;
-    });
-
-    // We should initialize private properties with blank value for better performance with a fixed shape.
-    this.delayedInheritSoundStateFromChildren = null;
+    this.promisedUniqueId = Promise.resolve(null);
   }
 
   destroy() {
@@ -148,11 +115,6 @@ export class TreeItem {
   clear() {
     this.states.clear();
     this.attributes = {};
-
-    this.parentId = null;
-    this.childIds = [];
-    this.cachedAncestorIds   = null;
-    this.cachedDescendantIds = null;
   }
 
   bindElement(element) {
@@ -875,7 +837,39 @@ export class Tab extends TreeItem {
 
     super(raw);
 
+    this.promisedUniqueId = new Promise((resolve, _reject) => {
+      this.onUniqueIdGenerated = resolve;
+    });
+
     this.index = raw.index;
+
+    this.updatingOpenerTabIds = []; // this must be an array, because same opener tab id can appear multiple times.
+
+    this.newRelatedTabsCount = 0;
+
+    this.lastSoundStateCounts = {
+      soundPlaying: 0,
+      muted:        0,
+      autoPlayBlocked: 0,
+    };
+    this.soundPlayingChildrenIds = new Set();
+    this.maybeSoundPlayingChildrenIds = new Set();
+    this.mutedChildrenIds = new Set();
+    this.maybeMutedChildrenIds = new Set();
+    this.autoplayBlockedChildrenIds = new Set();
+    this.maybeAutoplayBlockedChildrenIds = new Set();
+
+    this.lastSharingStateCounts = {
+      camera:     0,
+      microphone: 0,
+      screen:     0,
+    };
+    this.sharingCameraChildrenIds = new Set();
+    this.maybeSharingCameraChildrenIds = new Set();
+    this.sharingMicrophoneChildrenIds = new Set();
+    this.maybeSharingMicrophoneChildrenIds = new Set();
+    this.sharingScreenChildrenIds = new Set();
+    this.maybeSharingScreenChildrenIds = new Set();
 
     this.opened = new Promise((resolve, reject) => {
       const resolvers = mOpenedResolvers.get(raw.id) || new Set();
@@ -907,6 +901,9 @@ export class Tab extends TreeItem {
       incompletelyTrackedTabsPerWindow.delete(raw);
       Tab.onTracked.dispatch(raw);
     });
+
+    // We should initialize private properties with blank value for better performance with a fixed shape.
+    this.delayedInheritSoundStateFromChildren = null;
   }
 
   destroy() {
@@ -928,6 +925,15 @@ export class Tab extends TreeItem {
     TabsStore.removeTabFromIndexes(this.raw);
 
     super.destroy();
+  }
+
+  clear() {
+    super.clear();
+
+    this.parentId = null;
+    this.childIds = [];
+    this.cachedAncestorIds   = null;
+    this.cachedDescendantIds = null;
   }
 
   startMoving() {
