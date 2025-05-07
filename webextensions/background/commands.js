@@ -15,6 +15,7 @@ import {
   configs,
   getWindowParamsFromSource,
   tryRevokeObjectURL,
+  mapAndFilterUniq,
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
 import * as Bookmark from '/common/bookmark.js';
@@ -486,7 +487,7 @@ async function performTabsDragDrop(params = {}) {
 
   if (!(params.allowedActions & Constants.kDRAG_BEHAVIOR_MOVE) &&
       !params.duplicate) {
-    log('not allowed action');
+    log(' => not allowed action');
     return;
   }
 
@@ -497,11 +498,12 @@ async function performTabsDragDrop(params = {}) {
       params.insertBefore ?
         params.insertBefore.groupId :
         -1;
+  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId);
   if (nativeTabGroupId == -1) {
-    await removeTabsFromNativeTabGroup(params.tabs.map(tab => tab.id));
+    await removeTabsFromNativeTabGroupInternal(params.tabs);
   }
   else {
-    await addTabsToNativeTabGroup(params.tabs, nativeTabGroupId);
+    await addTabsToNativeTabGroupInternal(params.tabs, nativeTabGroupId);
   }
 
   const movedTabs = await moveTabsWithStructure(params.tabs, {
@@ -509,6 +511,10 @@ async function performTabsDragDrop(params = {}) {
     windowId, destinationWindowId,
     broadcast: true
   });
+  log('performTabsDragDrop: movedTabs = ', movedTabs);
+  if (nativeTabGroupId != -1) {
+    await Tree.maintainTreeForNativeTabGroup({ windowId, groupId: nativeTabGroupId })
+  }
   if (movedTabs.length == 0)
     return;
   if (windowId != destinationWindowId) {
@@ -1077,14 +1083,91 @@ export async function reopenInContainer(sourceTabOrTabs, cookieStoreId, options 
 }
 
 export async function addTabsToNativeTabGroup(tabs, groupId) {
-  return browser.tabs.group({
-    groupId,
-    tabIds: tabs.map(tab => tab?.id || tab),
+  groupId = await addTabsToNativeTabGroupInternal(tabs, groupId);
+  await Tree.maintainTreeForNativeTabGroup({ windowId: tabs[0].windowId, groupId });
+}
+async function addTabsToNativeTabGroupInternal(tabs, groupId) {
+  const tabsToGrouped = tabs.filter(tab => tab.groupId != groupId);
+  if (tabsToGrouped.length == 0) {
+    return groupId;
+  }
+  const win = TabsStore.windows.get(tabsToGrouped[0].windowId);
+  for (const tab of tabsToGrouped) {
+    win.internallyMovingTabsForUpdatedNativeTabGroups.add(tab.id);
+    win.internalMovingTabs.set(tab.id, -1);
+  }
+  const toBeGroupedIds = tabsToGrouped.map(tab => tab.id);
+  let onUpdated = null;
+  await new Promise((resolve, _reject) => {
+    if (!groupId) {
+      const onGroupCreated = group => {
+        groupId = group.id;
+        browser.tabGroups.onCreated.removeListener(onGroupCreated);
+      };
+      browser.tabGroups.onCreated.addListener(onGroupCreated);
+    }
+    const toBeGroupedIdsSet = new Set(toBeGroupedIds);
+    onUpdated = (tabId, changeInfo, _tab) => {
+      if (changeInfo.groupId == groupId) {
+        toBeGroupedIdsSet.delete(tabId);
+        win.internallyMovingTabsForUpdatedNativeTabGroups.delete(tabId);
+      }
+      if (toBeGroupedIdsSet.size == 0) {
+        resolve();
+      }
+    };
+    browser.tabs.onUpdated.addListener(onUpdated, { properties: ['groupId'] });
+    browser.tabs.group({
+      groupId,
+      tabIds: toBeGroupedIds,
+    });
   });
+  for (const tab of tabsToGrouped) {
+    win.internalMovingTabs.delete(tab.id);
+  }
+  browser.tabs.onUpdated.removeListener(onUpdated);
+  return groupId;
 }
 
 export async function removeTabsFromNativeTabGroup(tabs) {
-  return browser.tabs.ungroup(tabs.map(tab => tab?.id || tab));
+  const gorupIds = mapAndFilterUniq(tabs, tab => tab.groupId);
+  await removeTabsFromNativeTabGroupInternal(tabs);
+  for (const groupId of gorupIds) {
+    if (groupId != -1) {
+      await Tree.maintainTreeForNativeTabGroup({ windowId: tabs[0].windowId, groupId });
+    }
+  }
+}
+async function removeTabsFromNativeTabGroupInternal(tabs) {
+  const tabsToBeUngrouped = tabs.filter(tab => tab.groupId != -1);
+  if (tabsToBeUngrouped.length == 0) {
+    return;
+  }
+  const win = TabsStore.windows.get(tabs[0].windowId);
+  for (const tab of tabs) {
+    win.internallyMovingTabsForUpdatedNativeTabGroups.add(tab.id);
+    win.internalMovingTabs.set(tab.id, -1);
+  }
+  const toBeUngroupedIds = tabsToBeUngrouped.map(tab => tab.id);
+  let onUpdated = null;
+  await new Promise((resolve, _reject) => {
+    const toBeUngroupedIdsSet = new Set(toBeUngroupedIds);
+    onUpdated = (tabId, changeInfo, _tab) => {
+      if (changeInfo.groupId == -1) {
+        toBeUngroupedIdsSet.delete(tabId);
+        win.internallyMovingTabsForUpdatedNativeTabGroups.delete(tabId);
+      }
+      if (toBeUngroupedIdsSet.size == 0) {
+        resolve();
+      }
+    };
+    browser.tabs.onUpdated.addListener(onUpdated, { properties: ['groupId'] });
+    browser.tabs.ungroup(toBeUngroupedIds);
+  });
+  for (const tab of tabsToBeUngrouped) {
+    win.internalMovingTabs.delete(tab.id);
+  }
+  browser.tabs.onUpdated.removeListener(onUpdated);
 }
 
 

@@ -627,15 +627,11 @@ export function detachTab(child, options = {}) {
 export function getWholeTree(rootTabs) {
   if (!Array.isArray(rootTabs))
     rootTabs = [rootTabs];
-  const wholeTree = [].concat(rootTabs);
-  for (const movedRoot of rootTabs) {
-    const descendants = movedRoot.$TST.descendants;
-    for (const descendant of descendants) {
-      if (!wholeTree.includes(descendant))
-        wholeTree.push(descendant);
-    }
+  const wholeTree = [...rootTabs];
+  for (const rootTab of rootTabs) {
+    wholeTree.push(...rootTab.$TST.descendants);
   }
-  return wholeTree;
+  return TreeItem.sort([...new Set(wholeTree)]);
 }
 
 export async function detachTabsFromTree(tabs, options = {}) {
@@ -2198,17 +2194,31 @@ On this case we need to move only tab1 and tab4, otherwise moving of
 already grouped tabs will break those groups. The method
 maintainTreeForNativeTabGroup() does that too.
 */
-async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
+export async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
   const win = TabsStore.windows.get(windowId);
 
   const members = TabGroup.getMemberTabs({ windowId, groupId });
   const rootTabs = Tab.collectRootTabs(members);
-  const wholeTree = [...new Set(TreeItem.sort([...members.map(tab => tab.$TST.rootTab), ...getWholeTree(rootTabs)]))];
+  const wholeTreeRootTabs = [...new Set(members.map(tab => tab.$TST.rootTab))];
+  const wholeTree = [
+    ...new Set(TreeItem.sort([
+      ...wholeTreeRootTabs,
+      ...getWholeTree(wholeTreeRootTabs),
+    ]))
+  ];
+
+  log(`maintainTreeForNativeTabGroup: groupId = ${groupId}, members = `,
+      () => members.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`),
+      ', rootTabs = ',
+      () => rootTabs.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`),
+      ', wholeTreeRootTabs = ',
+      () => wholeTreeRootTabs.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`),
+      ', wholeTree = ',
+      () => wholeTree.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
+
   if (members.length == wholeTree.length) {
     return;
   }
-
-  log(`maintainTreeForNativeTabGroup: groupId = ${groupId}, wholeTree = `, () => wholeTree.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
 
   const membersAndStructures = new Map();
   const groupedTabs = new Set();
@@ -2226,15 +2236,16 @@ async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
       lastMember = tab;
     }
   }
-  for (const [groupId, membersAndStructure] of membersAndStructures.entries()) {
-    log(`maintainTreeForNativeTabGroup:   groupId = ${groupId}, members = `, () => membersAndStructure.members.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
+  for (const membersAndStructure of membersAndStructures.values()) {
     membersAndStructure.structure = TreeBehavior.getTreeStructureFromTabs(membersAndStructure.members);
     await detachTabsFromTree(members, {
       partial: true,
     });
   }
 
-  log('maintainTreeForNativeTabGroup: others = ', () => others.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`), `, lastMember = #${lastMember.id}(@${lastMember.index})`);
+  log('maintainTreeForNativeTabGroup: others = ',
+      () => others.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`),
+      `, lastMember = #${lastMember.id}(@${lastMember.index})`);
 
   if (others.length == 0) {
     log('maintainTreeForNativeTabGroup: there is no other tabs need to be moved, so we do nothing.');
@@ -2247,21 +2258,28 @@ async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
   const othersStructure = TreeBehavior.getTreeStructureFromTabs(others);
   log('maintainTreeForNativeTabGroup: othersStructure = ', othersStructure);
   await detachTabsFromTree(others);
-  await moveTabs(others, {
-    insertAfter: lastMember,
-    insertBefore: others[others.length - 1].unsafeNextTab,
-  });
-  log('maintainTreeForNativeTabGroup: moved others = ', others.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
+  const groupIds = wholeTree.map(tab => tab.groupId);
+  if (groupIds.join('\n') != groupIds.sort().join('\n')) {
+    // Newly grouped tabs are in middle of other trees, so we need to gather grouped tabs.
+    // We move other tabs because to avoid breakage of tab groups.
+    await moveTabs(others, {
+      insertAfter: lastMember,
+      insertBefore: others[others.length - 1].unsafeNextTab,
+      doNotOptimize: true,
+    });
+    log('maintainTreeForNativeTabGroup: moved others = ',
+        others.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
 
-  await Promise.race([
-    new Promise((resolve, _reject) => {
-      const resolvers = maintainTreeForNativeTabGroup.resolversForWindow.get(windowId) || [];
-      resolvers.push(resolve);
-      maintainTreeForNativeTabGroup.resolversForWindow.set(windowId, resolvers);
-    }),
-    wait(500),
-  ]);
-  maintainTreeForNativeTabGroup.resolversForWindow.delete(windowId);
+    await Promise.race([
+      new Promise((resolve, _reject) => {
+        const resolvers = maintainTreeForNativeTabGroup.resolversForWindow.get(windowId) || [];
+        resolvers.push(resolve);
+        maintainTreeForNativeTabGroup.resolversForWindow.set(windowId, resolvers);
+      }),
+      wait(500),
+    ]);
+    maintainTreeForNativeTabGroup.resolversForWindow.delete(windowId);
+  }
 
   for (const other of others) {
     win.internallyMovingTabsForUpdatedNativeTabGroups.delete(other.id);

@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -38,7 +38,7 @@ import { SequenceMatcher } from '/extlib/diff.js';
 import * as SidebarConnection from '/common/sidebar-connection.js';
 import * as TabsStore from '/common/tabs-store.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('background/tabs-move', ...args);
@@ -128,6 +128,13 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
         nextTabId:   referenceTab && referenceTab.id,
         broadcasted: !!options.broadcasted
       });
+      if (options.doNotOptimize) {
+        win.internalMovingTabs.set(tab.id, tab.index);
+        win.alreadyMovedTabs.set(tab.id, tab.index);
+        await browser.tabs.move(tab.id, { index: tab.index });
+        win.internalMovingTabs.delete(tab.id);
+        win.alreadyMovedTabs.delete(tab.id);
+      }
     }
     if (movedTabs.length == 0) {
       log(' => actually nothing moved');
@@ -141,9 +148,12 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
       );
     }
     if (SidebarConnection.isInitialized()) { // only on the background page
-      if (options.delayedMove) // Wait until opening animation is finished.
+      if (options.delayedMove) { // Wait until opening animation is finished.
         await wait(configs.newTabAnimationDuration);
-      syncToNativeTabs(tabs);
+      }
+      if (!options.doNotOptimize) {
+        syncToNativeTabs(tabs);
+      }
     }
   }
   catch(e) {
@@ -243,6 +253,13 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
         nextTabId:   nextTab && nextTab.id,
         broadcasted: !!options.broadcasted
       });
+      if (options.doNotOptimize) {
+        win.internalMovingTabs.set(tab.id, tab.index);
+        win.alreadyMovedTabs.set(tab.id, tab.index);
+        await browser.tabs.move(tab.id, { index: tab.index });
+        win.internalMovingTabs.delete(tab.id);
+        win.alreadyMovedTabs.delete(tab.id);
+      }
     }
     if (movedTabs.length == 0) {
       log(' => actually nothing moved');
@@ -256,9 +273,12 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
       );
     }
     if (SidebarConnection.isInitialized()) { // only on the background page
-      if (options.delayedMove) // Wait until opening animation is finished.
+      if (options.delayedMove) { // Wait until opening animation is finished.
         await wait(configs.newTabAnimationDuration);
-      syncToNativeTabs(tabs);
+      }
+      if (!options.doNotOptimize) {
+        syncToNativeTabs(tabs);
+      }
     }
   }
   catch(e) {

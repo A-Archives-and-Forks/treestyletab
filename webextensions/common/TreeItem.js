@@ -3181,11 +3181,12 @@ Tab.getLastRootTab = (windowId, options = {}) => {
 };
 
 Tab.collectRootTabs = tabs => {
+  const tabsSet = new Set(tabs);
   return tabs.filter(tab => {
     if (!TabsStore.ensureLivingItem(tab))
       return false;
     const parent = tab.$TST.parent;
-    return !parent || !tabs.includes(parent);
+    return !parent || !tabsSet.has(parent);
   });
 };
 
