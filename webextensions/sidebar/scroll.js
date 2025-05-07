@@ -215,15 +215,15 @@ export function reserveToRenderVirtualScrollViewport({ trigger, force } = {}) {
   window.requestAnimationFrame(() => renderVirtualScrollViewport());
 }
 
-let mLastRenderableTabs;
-let mLastDisappearingTabs;
-let mLastRenderedVirtualScrollTabIds = [];
+let mLastRenderableItems;
+let mLastDisappearingItems;
+let mLastRenderedVirtualScrollItemIds = [];
 const STICKY_SPACER_MATCHER = /^tab:(\d+):sticky$/;
 let mScrollPosition = 0;
 
-function getRenderableTabs(windowId = null) {
+function getRenderableTreeItems(windowId = null) {
   if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
-    log('getRenderableTabs: no native tab group');
+    log('getRenderableTreeItems: no native tab group');
     return TabsStore.queryAll({
       windowId,
       tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
@@ -232,7 +232,7 @@ function getRenderableTabs(windowId = null) {
     });
   }
 
-  const mixedTabs = TreeItem.sort([
+  const mixedItems = TreeItem.sort([
     ...TabsStore.queryAll({
       windowId,
       tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
@@ -250,9 +250,9 @@ function getRenderableTabs(windowId = null) {
       }
     )
   ]);
-  log('getRenderableTabs: mixedTabs = ', mixedTabs);
+  log('getRenderableTreeItems: mixedItems = ', mixedItems);
 
-  return mixedTabs;
+  return mixedItems;
 };
 
 renderVirtualScrollViewport.triggers = new Set();
@@ -273,39 +273,39 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
 
   const outOfScreenPages = configs.outOfScreenTabsRenderingPages;
   const staticRendering  = outOfScreenPages < 0;
-  const skipRefreshTabs  = staticRendering && triggers.size == 1 && triggers.has('scroll');
+  const skipRefreshItems = staticRendering && triggers.size == 1 && triggers.has('scroll');
 
-  const tabSize               = Size.getRenderedTabHeight();
-  const renderableTabs        = skipRefreshTabs && mLastRenderableTabs || getRenderableTabs(windowId);
-  const disappearingTabs      = skipRefreshTabs && mLastDisappearingTabs || renderableTabs.filter(tab => tab.$TST.removing || tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSING));
-  const allRenderableTabsSize = Size.getTabMarginBlockStart() + (tabSize * (renderableTabs.length - disappearingTabs.length)) + Size.getTabMarginBlockEnd();
+  const itemSize           = Size.getRenderedTabHeight();
+  const renderableItems   = skipRefreshItems && mLastRenderableItems || getRenderableTreeItems(windowId);
+  const disappearingItems = skipRefreshItems && mLastDisappearingItems || renderableItems.filter(item => item.$TST.removing || item.$TST.states.has(Constants.kTAB_STATE_COLLAPSING));
+  const totalRenderableItemsSize = Size.getTabMarginBlockStart() + (itemSize * (renderableItems.length - disappearingItems.length)) + Size.getTabMarginBlockEnd();
   const viewPortSize = Size.getNormalTabsViewPortSize();
 
   if (staticRendering) {
-    mLastRenderableTabs = renderableTabs;
-    mLastDisappearingTabs = disappearingTabs;
+    mLastRenderableItems = renderableItems;
+    mLastDisappearingItems = disappearingItems;
   }
 
   // For underflow case, we need to unset min-height to put the "new tab"
   // button next to the last tab immediately.
   // We need to set the style value directly instead of using custom properties, to reduce needless style computation.
-  mNormalScrollBox.querySelector('.virtual-scroll-container').style.minHeight = `${viewPortSize < allRenderableTabsSize ? allRenderableTabsSize : 0}px`;
+  mNormalScrollBox.querySelector('.virtual-scroll-container').style.minHeight = `${viewPortSize < totalRenderableItemsSize ? totalRenderableItemsSize : 0}px`;
 
-  const allTabsSizeHolder = win.containerElement.parentNode;
-  const resized           = allTabsSizeHolder.$lastHeight != allRenderableTabsSize;
-  allTabsSizeHolder.$lastHeight = allRenderableTabsSize;
+  const totalItemsSizeHolder = win.containerElement.parentNode;
+  const resized              = totalItemsSizeHolder.$lastHeight != totalRenderableItemsSize;
+  totalItemsSizeHolder.$lastHeight = totalRenderableItemsSize;
   if (resized) {
     mNormalScrollBox.$offsetHeight = mNormalScrollBox.offsetHeight;
-    mNormalScrollBox.$scrollTopMax = /*mNormalScrollBox.scrollTopMax*/Math.max(0, allRenderableTabsSize - viewPortSize);
+    mNormalScrollBox.$scrollTopMax = /*mNormalScrollBox.scrollTopMax*/Math.max(0, totalRenderableItemsSize - viewPortSize);
   }
 
   const renderablePaddingSize = staticRendering ?
-    allRenderableTabsSize :
+    totalRenderableItemsSize :
     viewPortSize * outOfScreenPages;
   scrollPosition = Math.max(
     0,
     Math.min(
-      allRenderableTabsSize + mTabbarSpacerSize - viewPortSize,
+      totalRenderableItemsSize + mTabbarSpacerSize - viewPortSize,
       typeof scrollPosition == 'number' ?
         scrollPosition :
         restoreScrollPosition.scrollPosition > -1 ?
@@ -317,16 +317,16 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
 
   const firstRenderableIndex = Math.max(
     0,
-    Math.floor((scrollPosition - renderablePaddingSize) / tabSize)
+    Math.floor((scrollPosition - renderablePaddingSize) / itemSize)
   );
   const lastRenderableIndex = Math.max(
     0,
     Math.min(
-      renderableTabs.length - 1,
-      Math.ceil((scrollPosition + viewPortSize + renderablePaddingSize) / tabSize)
+      renderableItems.length - 1,
+      Math.ceil((scrollPosition + viewPortSize + renderablePaddingSize) / itemSize)
     )
   );
-  const renderedOffset = tabSize * firstRenderableIndex;
+  const renderedOffset = itemSize * firstRenderableIndex;
   // We need to set the style value directly instead of using custom properties, to reduce needless style computation.
   mNormalScrollBox.querySelector('.tabs').style.transform = staticRendering ?
     '' :
@@ -338,40 +338,40 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
     onVirtualScrollViewportUpdated.dispatch(resized);
   }
 
-  const stickyTabs = updateStickyTabs(renderableTabs, { staticRendering, skipRefreshTabs });
+  const stickyItems = updateStickyItems(renderableItems, { staticRendering, skipRefreshItems });
 
-  if (skipRefreshTabs) {
-    log('renderVirtualScrollViewport: skip re-rendering of tabs, rendered = ', renderableTabs);
-    if (mLastRenderedVirtualScrollTabIds.length != renderableTabs.length) {
-      mLastRenderedVirtualScrollTabIds = renderableTabs.map(tab => tab.$TST.renderingId);
+  if (skipRefreshItems) {
+    log('renderVirtualScrollViewport: skip re-rendering of tabs, rendered = ', renderableItems);
+    if (mLastRenderedVirtualScrollItemIds.length != renderableItems.length) {
+      mLastRenderedVirtualScrollItemIds = renderableItems.map(tab => tab.$TST.renderingId);
     }
   }
   else {
-    const toBeRenderedTabs = renderableTabs.slice(firstRenderableIndex, lastRenderableIndex + 1);
-    const toBeRenderedTabIds = toBeRenderedTabs.map(tab => tab.$TST.renderingId);
-    const toBeRenderedTabIdsSet = new Set(toBeRenderedTabIds);
-    for (const stickyTab of stickyTabs) {
-      const id = stickyTab.$TST.renderingId;
-      if (toBeRenderedTabIdsSet.has(id)) {
-        toBeRenderedTabIds.splice(toBeRenderedTabIds.indexOf(id), 1, `${id}:sticky`);
+    const toBeRenderedItems = renderableItems.slice(firstRenderableIndex, lastRenderableIndex + 1);
+    const toBeRenderedItemIds = toBeRenderedItems.map(item => item.$TST.renderingId);
+    const toBeRenderedItemIdsSet = new Set(toBeRenderedItemIds);
+    for (const stickyItem of stickyItems) {
+      const id = stickyItem.$TST.renderingId;
+      if (toBeRenderedItemIdsSet.has(id)) {
+        toBeRenderedItemIds.splice(toBeRenderedItemIds.indexOf(id), 1, `${id}:sticky`);
       }
     }
 
-    const renderOperations = (new SequenceMatcher(mLastRenderedVirtualScrollTabIds, toBeRenderedTabIds)).operations();
+    const renderOperations = (new SequenceMatcher(mLastRenderedVirtualScrollItemIds, toBeRenderedItemIds)).operations();
     log('renderVirtualScrollViewport ', {
       firstRenderableIndex,
-      firstRenderableTabIndex: renderableTabs[firstRenderableIndex]?.index,
+      firstRenderableItemIndex: renderableItems[firstRenderableIndex]?.index,
       lastRenderableIndex,
-      lastRenderableTabIndex: renderableTabs[lastRenderableIndex]?.index,
-      old: mLastRenderedVirtualScrollTabIds.slice(0),
-      new: toBeRenderedTabIds.slice(0),
+      lastRenderableItemIndex: renderableItems[lastRenderableIndex]?.index,
+      old: mLastRenderedVirtualScrollItemIds.slice(0),
+      new: toBeRenderedItemIds.slice(0),
       renderOperations,
       scrollPosition,
       viewPortSize,
-      allRenderableTabsSize,
+      totalRenderableItemsSize,
     });
 
-    const toBeRenderedTabIdSet = new Set(toBeRenderedTabIds);
+    const toBeRenderedItemIdSet = new Set(toBeRenderedItemIds);
     for (const operation of renderOperations) {
       const [tag, fromStart, fromEnd, toStart, toEnd] = operation;
       switch (tag) {
@@ -379,7 +379,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
           break;
 
         case 'delete': {
-          const ids = mLastRenderedVirtualScrollTabIds.slice(fromStart, fromEnd);
+          const ids = mLastRenderedVirtualScrollItemIds.slice(fromStart, fromEnd);
           //log('delete: ', { fromStart, fromEnd, toStart, toEnd }, ids);
           for (const id of ids) {
             if (STICKY_SPACER_MATCHER.test(id)) {
@@ -388,23 +388,23 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 spacer.parentNode.removeChild(spacer);
               continue;
             }
-            const tab = getRenderableItemById(id);
-            if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
+            const item = getRenderableItemById(id);
+            if (item?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
-            // We don't need to remove already rendered tab,
+            // We don't need to remove already rendered item,
             // because it is automatically moved by insertBefore().
-            if (toBeRenderedTabIdSet.has(id) ||
-                !tab ||
-                !mNormalScrollBox.contains(tab.$TST.element))
+            if (toBeRenderedItemIdSet.has(id) ||
+                !item ||
+                !mNormalScrollBox.contains(item.$TST.element))
               continue;
-            SidebarTabs.unrenderTab(tab);
+            SidebarTabs.unrenderTab(item);
           }
         }; break;
 
         case 'insert':
         case 'replace': {
-          const deleteIds = mLastRenderedVirtualScrollTabIds.slice(fromStart, fromEnd);
-          const insertIds = toBeRenderedTabIds.slice(toStart, toEnd);
+          const deleteIds = mLastRenderedVirtualScrollItemIds.slice(fromStart, fromEnd);
+          const insertIds = toBeRenderedItemIds.slice(toStart, toEnd);
           //log('insert or replace: ', { fromStart, fromEnd, toStart, toEnd }, deleteIds, ' => ', insertIds);
           for (const id of deleteIds) {
             if (STICKY_SPACER_MATCHER.test(id)) {
@@ -413,21 +413,21 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 spacer.parentNode.removeChild(spacer);
               continue;
             }
-            const tab = getRenderableItemById(id);
-            if (tab?.$TST.element?.parentNode != win.containerElement) // already sticky
+            const item = getRenderableItemById(id);
+            if (item?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
             // We don't need to remove already rendered tab,
             // because it is automatically moved by insertBefore().
-            if (toBeRenderedTabIdSet.has(id) ||
-                !tab ||
-                !mNormalScrollBox.contains(tab.$TST.element))
+            if (toBeRenderedItemIdSet.has(id) ||
+                !item ||
+                !mNormalScrollBox.contains(item.$TST.element))
               continue;
-            SidebarTabs.unrenderTab(tab);
+            SidebarTabs.unrenderTab(item);
           }
-          const referenceTab = fromEnd < mLastRenderedVirtualScrollTabIds.length ?
-            getRenderableItemById(mLastRenderedVirtualScrollTabIds[fromEnd]) :
+          const referenceItem = fromEnd < mLastRenderedVirtualScrollItemIds.length ?
+            getRenderableItemById(mLastRenderedVirtualScrollItemIds[fromEnd]) :
             null;
-          const referenceTabHasValidReferenceElement = referenceTab?.$TST.element?.parentNode == win.containerElement;
+          const referenceItemHasValidReferenceElement = referenceItem?.$TST.element?.parentNode == win.containerElement;
           for (const id of insertIds) {
             if (STICKY_SPACER_MATCHER.test(id)) {
               const spacer = document.createElement('li');
@@ -435,24 +435,24 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
               spacer.setAttribute('data-tab-id', RegExp.$1);
               win.containerElement.insertBefore(
                 spacer,
-                (referenceTab && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceTab.id}"]`)) ||
-                (referenceTabHasValidReferenceElement &&
-                 referenceTab.$TST.element) ||
+                (referenceItem && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceItem.id}"]`)) ||
+                (referenceItemHasValidReferenceElement &&
+                 referenceItem.$TST.element) ||
                 null
               );
               continue;
             }
-            const tab = getRenderableItemById(id);
-            SidebarTabs.renderTab(tab, {
-              insertBefore: referenceTabHasValidReferenceElement ? referenceTab :
-                (referenceTab && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceTab.id}"]`)) ||
+            const item = getRenderableItemById(id);
+            SidebarTabs.renderTab(item, {
+              insertBefore: referenceItemHasValidReferenceElement ? referenceItem :
+                (referenceItem && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceItem.id}"]`)) ||
                 null,
             });
           }
         }; break;
       }
     }
-    mLastRenderedVirtualScrollTabIds = toBeRenderedTabIds;
+    mLastRenderedVirtualScrollItemIds = toBeRenderedItemIds;
   }
 
   log(`${Date.now() - startAt} msec, offset = ${renderedOffset}`);
@@ -478,66 +478,66 @@ function getRenderableItemById(id) {
   return null;
 }
 
-let mLastStickyTabIdsAbove = new Set();
-let mLastStickyTabIdsBelow = new Set();
-let mLastCanBeStickyTabs;
+let mLastStickyItemIdsAbove = new Set();
+let mLastStickyItemIdsBelow = new Set();
+let mLastCanBeStickyItems;
 
-function updateStickyTabs(renderableTabs, { staticRendering, skipRefreshTabs } = {}) {
-  const tabSize        = Size.getRenderedTabHeight();
+function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems } = {}) {
+  const itemSize       = Size.getRenderedTabHeight();
   const windowId       = TabsStore.getCurrentWindowId();
   const scrollPosition = mScrollPosition;
   const viewPortSize   = Size.getNormalTabsViewPortSize();
 
-  const firstInViewportIndex = Math.ceil(scrollPosition / tabSize);
-  const lastInViewportIndex  = Math.floor((scrollPosition + viewPortSize - tabSize) / tabSize);
+  const firstInViewportIndex = Math.ceil(scrollPosition / itemSize);
+  const lastInViewportIndex  = Math.floor((scrollPosition + viewPortSize - itemSize) / itemSize);
 
-  const stickyTabIdsAbove = new Set();
-  const stickyTabIdsBelow = new Set();
-  const stickyTabs = [];
+  const stickyItemIdsAbove = new Set();
+  const stickyItemIdsBelow = new Set();
+  const stickyItems = [];
 
-  const canBeStickyTabs = skipRefreshTabs && mLastCanBeStickyTabs || renderableTabs.filter(tab => tab.$TST.canBecomeSticky);
-  log('canBeStickyTabs ', canBeStickyTabs);
+  const canBeStickyItems = skipRefreshItems && mLastCanBeStickyItems || renderableItems.filter(item => item.$TST.canBecomeSticky);
+  log('canBeStickyItems ', canBeStickyItems);
   if (staticRendering)
-    mLastCanBeStickyTabs = canBeStickyTabs;
+    mLastCanBeStickyItems = canBeStickyItems;
 
   const removedOrCollapsedTabsCount = parseInt(mNormalScrollBox.querySelector(`.${Constants.kTABBAR_SPACER}`).dataset.removedOrCollapsedTabsCount || 0);
-  for (const tab of canBeStickyTabs.slice(0).reverse()) { // first try: find bottom sticky tabs from bottom
-    const index = renderableTabs.indexOf(tab);
+  for (const item of canBeStickyItems.slice(0).reverse()) { // first try: find bottom sticky tabs from bottom
+    const index = renderableItems.indexOf(item);
     if (index > -1 &&
-        index > (lastInViewportIndex - stickyTabIdsBelow.size) &&
+        index > (lastInViewportIndex - stickyItemIdsBelow.size) &&
         mNormalScrollBox.$scrollTop < mNormalScrollBox.$scrollTopMax &&
-        (index - (lastInViewportIndex - stickyTabIdsBelow.size) > 1 ||
+        (index - (lastInViewportIndex - stickyItemIdsBelow.size) > 1 ||
          removedOrCollapsedTabsCount == 0)) {
-      stickyTabIdsBelow.add(tab.id);
+      stickyItemIdsBelow.add(item.id);
       continue;
     }
-    if (stickyTabIdsBelow.size > 0)
+    if (stickyItemIdsBelow.size > 0)
       break;
   }
 
-  for (const tab of canBeStickyTabs) { // second try: find top sticky tabs and set bottom sticky tabs
-    const index = renderableTabs.indexOf(tab);
+  for (const item of canBeStickyItems) { // second try: find top sticky tabs and set bottom sticky tabs
+    const index = renderableItems.indexOf(item);
     if (index > -1 &&
-        index < (firstInViewportIndex + stickyTabIdsAbove.size) &&
+        index < (firstInViewportIndex + stickyItemIdsAbove.size) &&
         mNormalScrollBox.$scrollTop > 0) {
-      stickyTabs.push(tab);
-      stickyTabIdsAbove.add(tab.id);
+      stickyItems.push(item);
+      stickyItemIdsAbove.add(item.id);
       continue;
     }
-    if (stickyTabIdsBelow.has(tab.id)) {
-      stickyTabs.push(tab);
+    if (stickyItemIdsBelow.has(item.id)) {
+      stickyItems.push(item);
       continue;
     }
-    if (tab.$TST.element &&
-        tab.$TST.element.parentNode != TabsStore.windows.get(windowId).containerElement) {
-      SidebarTabs.unrenderTab(tab);
+    if (item.$TST.element &&
+        item.$TST.element.parentNode != TabsStore.windows.get(windowId).containerElement) {
+      SidebarTabs.unrenderTab(item);
       continue;
     }
   }
 
   for (const [lastIds, currentIds, place] of [
-    [[...mLastStickyTabIdsAbove], [...stickyTabIdsAbove], 'above'],
-    [[...mLastStickyTabIdsBelow].reverse(), [...stickyTabIdsBelow].reverse(), 'below'],
+    [[...mLastStickyItemIdsAbove], [...stickyItemIdsAbove], 'above'],
+    [[...mLastStickyItemIdsBelow].reverse(), [...stickyItemIdsBelow].reverse(), 'below'],
   ]) {
     const renderOperations = (new SequenceMatcher(lastIds, currentIds)).operations();
     for (const operation of renderOperations) {
@@ -549,8 +549,8 @@ function updateStickyTabs(renderableTabs, { staticRendering, skipRefreshTabs } =
         case 'delete': {
           const ids = lastIds.slice(fromStart, fromEnd);
           for (const id of ids) {
-            if (!stickyTabIdsAbove.has(id) &&
-                !stickyTabIdsBelow.has(id))
+            if (!stickyItemIdsAbove.has(id) &&
+                !stickyItemIdsBelow.has(id))
               SidebarTabs.unrenderTab(Tab.get(id));
           }
         }; break;
@@ -559,18 +559,18 @@ function updateStickyTabs(renderableTabs, { staticRendering, skipRefreshTabs } =
         case 'replace': {
           const deleteIds = lastIds.slice(fromStart, fromEnd);
           for (const id of deleteIds) {
-            if (!stickyTabIdsAbove.has(id) &&
-                !stickyTabIdsBelow.has(id))
+            if (!stickyItemIdsAbove.has(id) &&
+                !stickyItemIdsBelow.has(id))
               SidebarTabs.unrenderTab(Tab.get(id));
           }
           const insertIds = currentIds.slice(toStart, toEnd);
-          const referenceTab = (fromEnd < lastIds.length && currentIds.includes(lastIds[fromEnd])) ?
+          const referenceItem = (fromEnd < lastIds.length && currentIds.includes(lastIds[fromEnd])) ?
             Tab.get(lastIds[fromEnd]) :
             null;
           for (const id of insertIds) {
             SidebarTabs.renderTab(Tab.get(id), {
               containerElement: document.querySelector(`.sticky-tabs-container.${place}`),
-              insertBefore:     referenceTab,
+              insertBefore:     referenceItem,
             });
           }
         }; break;
@@ -578,15 +578,15 @@ function updateStickyTabs(renderableTabs, { staticRendering, skipRefreshTabs } =
     }
   }
 
-  log('updateStickyTab ', stickyTabs, { above: [...stickyTabIdsAbove], below: [...stickyTabIdsBelow] });
-  mLastStickyTabIdsAbove = stickyTabIdsAbove;
-  mLastStickyTabIdsBelow = stickyTabIdsBelow;
+  log('updateStickyItems ', stickyItems, { above: [...stickyItemIdsAbove], below: [...stickyItemIdsBelow] });
+  mLastStickyItemIdsAbove = stickyItemIdsAbove;
+  mLastStickyItemIdsBelow = stickyItemIdsBelow;
 
-  return stickyTabs;
+  return stickyItems;
 }
 
-function getScrollBoxFor(tab, { allowFallback } = {}) {
-  if (!tab || !tab.pinned)
+function getScrollBoxFor(item, { allowFallback } = {}) {
+  if (!item || !item.pinned)
     return mNormalScrollBox; // the default
   if (allowFallback &&
       mPinnedScrollBox.$scrollTopMax == 0) {
@@ -596,54 +596,54 @@ function getScrollBoxFor(tab, { allowFallback } = {}) {
   return mPinnedScrollBox;
 }
 
-export function getTabRect(tab) {
-  if (tab.pinned)
-    return tab.$TST.element.getBoundingClientRect();
+export function getItemRect(item) {
+  if (item.pinned)
+    return item.$TST.element.getBoundingClientRect();
 
-  const renderableTabs = getRenderableTabs(tab.windowId).map(tab => tab.id);
-  const tabSize        = Size.getTabHeight();
-  const scrollBox      = getScrollBoxFor(tab);
+  const renderableItems = getRenderableTreeItems(item.windowId).map(item => item.id);
+  const itemSize       = Size.getTabHeight();
+  const scrollBox      = getScrollBoxFor(item);
   const scrollBoxRect  = Size.getScrollBoxRect(scrollBox);
 
-  let index = renderableTabs.indexOf(tab.id);
-  if (index < 0) { // the tab is not renderable yet, so we calculate the index based on other tabs.
-    const following = tab.$TST.nearestVisibleFollowingTab;
+  let index = renderableItems.indexOf(item.id);
+  if (index < 0) { // the item is not renderable yet, so we calculate the index based on other items.
+    const following = item.$TST.nearestVisibleFollowingTab;
     if (following) {
-      index = renderableTabs.indexOf(following.id);
+      index = renderableItems.indexOf(following.id);
     }
     else {
-      const preceding = tab.$TST.nearestVisiblePrecedingTab;
+      const preceding = item.$TST.nearestVisiblePrecedingTab;
       if (preceding) {
-        index = renderableTabs.indexOf(preceding.id);
+        index = renderableItems.indexOf(preceding.id);
         if (index > -1)
           index++;
       }
     }
-    if (index < -1) // no nearest visible tab: treat as a last tab
-      index = renderableTabs.length;
+    if (index < -1) // no nearest visible item: treat as a last item
+      index = renderableItems.length;
   }
-  const tabTop = Size.getRenderedTabHeight() * index + scrollBoxRect.top - scrollBox.$scrollTop;
+  const itemTop = Size.getRenderedTabHeight() * index + scrollBoxRect.top - scrollBox.$scrollTop;
   /*
   console.log('coordinates of tab rect ', {
     index,
-    renderableTabHeight: Size.getRenderedTabHeight(),
+    renderableItemHeight: Size.getRenderedTabHeight(),
     scrollBox_rectTop: scrollBoxRect.top,
     scrollBox_$scrollTop: scrollBox.$scrollTop,
   });
   */
   return {
-    top:    tabTop,
-    bottom: tabTop + tabSize,
-    height: tabSize,
+    top:    itemTop,
+    bottom: itemTop + itemSize,
+    height: itemSize,
   };
 }
 
 configs.$addObserver(key => {
   switch (key) {
     case 'outOfScreenTabsRenderingPages':
-      mLastRenderableTabs   = null;
-      mLastDisappearingTabs = null;
-      mLastCanBeStickyTabs  = null;
+      mLastRenderableItems   = null;
+      mLastDisappearingItems = null;
+      mLastCanBeStickyItems  = null;
       break;
   }
 });
@@ -696,7 +696,7 @@ function calculateScrollDeltaForTab(tab, { over } = {}) {
 
   tab = tab.$TST.collapsed && tab.$TST.nearestVisibleAncestorOrSelf || tab;
 
-  const tabRect       = getTabRect(tab);
+  const tabRect       = getItemRect(tab);
   const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(tab, { allowFallback: true }));
   const overScrollOffset = over === false ?
     0 :
@@ -704,19 +704,19 @@ function calculateScrollDeltaForTab(tab, { over } = {}) {
   let delta = 0;
   if (scrollBoxRect.bottom < tabRect.bottom) { // should scroll down
     delta = tabRect.bottom - scrollBoxRect.bottom + overScrollOffset;
-    if (mLastStickyTabIdsBelow.has(tab.id) &&
-        mLastStickyTabIdsBelow.size > 0)
-      delta += tabRect.height * (mLastStickyTabIdsBelow.size - 1);
+    if (mLastStickyItemIdsBelow.has(tab.id) &&
+        mLastStickyItemIdsBelow.size > 0)
+      delta += tabRect.height * (mLastStickyItemIdsBelow.size - 1);
     else
-      delta += tabRect.height * mLastStickyTabIdsBelow.size;
+      delta += tabRect.height * mLastStickyItemIdsBelow.size;
   }
   else if (scrollBoxRect.top > tabRect.top) { // should scroll up
     delta = tabRect.top - scrollBoxRect.top - overScrollOffset;
-    if (mLastStickyTabIdsAbove.has(tab.id) &&
-        mLastStickyTabIdsAbove.size > 0)
-      delta -= tabRect.height * (mLastStickyTabIdsAbove.size - 1);
+    if (mLastStickyItemIdsAbove.has(tab.id) &&
+        mLastStickyItemIdsAbove.size > 0)
+      delta -= tabRect.height * (mLastStickyItemIdsAbove.size - 1);
     else
-      delta -= tabRect.height * mLastStickyTabIdsAbove.size;
+      delta -= tabRect.height * mLastStickyItemIdsAbove.size;
   }
   log('calculateScrollDeltaForTab ', tab.id, {
     delta,
@@ -735,7 +735,7 @@ export function isTabInViewport(tab, { allowPartial } = {}) {
   if (tab.pinned)
     return true;
 
-  const tabRect       = getTabRect(tab);
+  const tabRect       = getItemRect(tab);
   const allowedOffset = allowPartial ? (tabRect.height / 2) : 0;
   const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(tab));
   log('isTabInViewport ', tab.id, {
@@ -897,27 +897,27 @@ export async function scrollToTab(tab, options = {}) {
   const scrollBox = getScrollBoxFor(tab);
   if (hasAnchor &&
       !anchorTab.pinned) {
-    const targetTabRect = getTabRect(tab);
-    const anchorTabRect = getTabRect(anchorTab);
+    const targetItemRect = getItemRect(tab);
+    const anchorItemRect = getItemRect(anchorTab);
     const scrollBoxRect = Size.getScrollBoxRect(scrollBox);
     let delta = calculateScrollDeltaForTab(tab, { over: false });
 
-    let topStickyTabsAreaSize, bottomStickyTabsAreaSize;
-    if (mLastStickyTabIdsAbove.has(anchorTab.id) &&
-        mLastStickyTabIdsAbove.size > 0)
-      topStickyTabsAreaSize = Size.getRenderedTabHeight() * (mLastStickyTabIdsAbove.size - 1);
+    let topStickyItemsAreaSize, bottomStickyItemsAreaSize;
+    if (mLastStickyItemIdsAbove.has(anchorTab.id) &&
+        mLastStickyItemIdsAbove.size > 0)
+      topStickyItemsAreaSize = Size.getRenderedTabHeight() * (mLastStickyItemIdsAbove.size - 1);
     else
-      topStickyTabsAreaSize = Size.getRenderedTabHeight() * mLastStickyTabIdsAbove.size;
+      topStickyItemsAreaSize = Size.getRenderedTabHeight() * mLastStickyItemIdsAbove.size;
 
-    if (mLastStickyTabIdsBelow.has(tab.id) &&
-        mLastStickyTabIdsBelow.size > 0)
-      bottomStickyTabsAreaSize = Size.getRenderedTabHeight() * (mLastStickyTabIdsBelow.size - 1);
+    if (mLastStickyItemIdsBelow.has(tab.id) &&
+        mLastStickyItemIdsBelow.size > 0)
+      bottomStickyItemsAreaSize = Size.getRenderedTabHeight() * (mLastStickyItemIdsBelow.size - 1);
     else
-      bottomStickyTabsAreaSize = Size.getRenderedTabHeight() * mLastStickyTabIdsBelow.size;
+      bottomStickyItemsAreaSize = Size.getRenderedTabHeight() * mLastStickyItemIdsBelow.size;
 
-    if (targetTabRect.top > anchorTabRect.top) {
+    if (targetItemRect.top > anchorItemRect.top) {
       log('=> will scroll down');
-      const boundingHeight = (targetTabRect.bottom + bottomStickyTabsAreaSize) - (anchorTabRect.top - topStickyTabsAreaSize);
+      const boundingHeight = (targetItemRect.bottom + bottomStickyItemsAreaSize) - (anchorItemRect.top - topStickyItemsAreaSize);
       const overHeight     = boundingHeight - scrollBoxRect.height;
       if (overHeight > 0) {
         delta -= overHeight;
@@ -929,9 +929,9 @@ export async function scrollToTab(tab, options = {}) {
         container:      scrollBoxRect.height
       });
     }
-    else if (targetTabRect.bottom < anchorTabRect.bottom) {
+    else if (targetItemRect.bottom < anchorItemRect.bottom) {
       log('=> will scroll up');
-      const boundingHeight = anchorTabRect.bottom - targetTabRect.top;
+      const boundingHeight = anchorItemRect.bottom - targetItemRect.top;
       const overHeight     = boundingHeight - scrollBoxRect.height;
       if (overHeight > 0)
         delta += overHeight;
@@ -1212,7 +1212,7 @@ function onMessage(message, _sender, _respond) {
     case Constants.kCOMMAND_GET_RENDERED_TAB_IDS:
       return Promise.resolve([...new Set([
         ...Tab.getPinnedTabs(message.windowId).map(tab => tab.id),
-        ...mLastRenderedVirtualScrollTabIds,
+        ...mLastRenderedVirtualScrollItemIds,
       ])]);
 
     case Constants.kCOMMAND_ASK_TAB_IS_IN_VIEWPORT:

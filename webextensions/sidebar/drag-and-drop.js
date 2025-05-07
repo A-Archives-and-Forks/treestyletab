@@ -309,7 +309,7 @@ function getDropAction(event) {
   if (!targetTab) {
     //log('dragging on non-tab element');
     const action = Constants.kACTION_MOVE | Constants.kACTION_DETACH;
-    if (event.clientY < Scroll.getTabRect(info.firstTargetTab).top) {
+    if (event.clientY < Scroll.getItemRect(info.firstTargetTab).top) {
       //log('dragging above the first tab');
       info.targetTab    = info.insertBefore = info.firstTargetTab;
       info.dropPosition = kDROP_BEFORE;
@@ -321,7 +321,7 @@ function getDropAction(event) {
         info.dropPosition = kDROP_IMPOSSIBLE;
       }
     }
-    else if (event.clientY > Scroll.getTabRect(info.lastTargetTab).bottom) {
+    else if (event.clientY > Scroll.getItemRect(info.lastTargetTab).bottom) {
       //log('dragging below the last tab');
       info.targetTab    = info.insertAfter = info.lastTargetTab;
       info.dropPosition = kDROP_AFTER;
@@ -344,35 +344,35 @@ function getDropAction(event) {
    */
   const onFaviconizedTab    = targetTab.pinned && configs.faviconizePinnedTabs;
   const dropAreasCount      = (info.draggedTab && onFaviconizedTab && !info.substanceTargetTab) ? 2 : 3 ;
-  const targetTabRect       = Scroll.getTabRect(targetTab);
-  const targetTabCoordinate = onFaviconizedTab ? targetTabRect.left : targetTabRect.top ;
-  const targetTabSize       = onFaviconizedTab ? targetTabRect.width : targetTabRect.height ;
+  const targetItemRect        = Scroll.getItemRect(targetTab);
+  const targetItemCoordinate = onFaviconizedTab ? targetItemRect.left : targetItemRect.top ;
+  const targetItemSize       = onFaviconizedTab ? targetItemRect.width : targetItemRect.height ;
   let beforeOrAfterDropAreaSize;
   if (dropAreasCount == 2) {
-    beforeOrAfterDropAreaSize = Math.round(targetTabSize / dropAreasCount);
+    beforeOrAfterDropAreaSize = Math.round(targetItemSize / dropAreasCount);
   }
   else { // enlarge the area to dop something on the tab itself
-    beforeOrAfterDropAreaSize = Math.round(targetTabSize / 4);
+    beforeOrAfterDropAreaSize = Math.round(targetItemSize / 4);
   }
   const eventCoordinate = onFaviconizedTab ? event.clientX : event.clientY;
   /*
   log('coordinates: ', {
     event: eventCoordinate,
-    targetTab: targetTabCoordinate,
+    targetTab: targetItemCoordinate,
     targetTabActual: configs.debug && (targetTab?.$TST.element?.offsetTop + Size.getScrollBoxRect().top),
-    targetTabSize,
+    targetItemSize,
     area: beforeOrAfterDropAreaSize,
-    before: `< ${targetTabCoordinate + beforeOrAfterDropAreaSize}`,
-    after: `> ${targetTabCoordinate + targetTabSize - beforeOrAfterDropAreaSize}`,
+    before: `< ${targetItemCoordinate + beforeOrAfterDropAreaSize}`,
+    after: `> ${targetItemCoordinate + targetItemSize - beforeOrAfterDropAreaSize}`,
   });
   */
   const shouldInvertArea = onFaviconizedTab && isRTL();
-  if (eventCoordinate < targetTabCoordinate + beforeOrAfterDropAreaSize) {
+  if (eventCoordinate < targetItemCoordinate + beforeOrAfterDropAreaSize) {
     info.dropPosition = shouldInvertArea ? kDROP_AFTER : kDROP_BEFORE;
     info.insertBefore = info.firstTargetTab;
   }
   else if (dropAreasCount == 2 ||
-           eventCoordinate > targetTabCoordinate + targetTabSize - beforeOrAfterDropAreaSize) {
+           eventCoordinate > targetItemCoordinate + targetItemSize - beforeOrAfterDropAreaSize) {
     info.dropPosition = shouldInvertArea ? kDROP_BEFORE : kDROP_AFTER;
     info.insertAfter  = info.lastTargetTab;
   }
@@ -1452,7 +1452,7 @@ async function onDragEnd(event) {
     const windowY = window.mozInnerScreenY;
     const windowW = window.innerWidth;
     const windowH = window.innerHeight;
-    const offset  = Scroll.getTabRect(dragData.tab).height / 2;
+    const offset  = Scroll.getItemRect(dragData.tab).height / 2;
     const now = Date.now();
     log('dragend at: ', {
       windowX,
