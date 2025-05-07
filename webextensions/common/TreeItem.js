@@ -65,28 +65,14 @@ browser.windows.onRemoved.addListener(windowId => {
   mMovingTabs.delete(windowId);
 });
 
-export class Tab {
+export class TreeItem {
   constructor(raw) {
-    const alreadyTracked = Tab.get(raw.id);
-    if (alreadyTracked)
-      return alreadyTracked.$TST;
-
-    log(`tab ${dumpTab(raw)} is newly tracked: `, raw);
-
     raw.$TST = this;
     this.raw = raw;
     this.id  = raw.id;
 
-    const tab = this.tab;
-
     this.trackedAt = Date.now();
-    this.opened = tab ?
-      new Promise((resolve, reject) => {
-        const resolvers = mOpenedResolvers.get(tab.id) || new Set();
-        resolvers.add({ resolve, reject });
-        mOpenedResolvers.set(tab.id, resolvers);
-      }) :
-      Promise.resolve(true);
+    this.opened = Promise.resolve(true);
 
     // We should not change the shape of the object, so temporary data should be held in this map.
     this.temporaryMetadata = new Map();
@@ -143,59 +129,11 @@ export class Tab {
       this.onUniqueIdGenerated = resolve;
     });
 
-    if (tab) {
-      this.index = tab.index;
-
-      TabsStore.tabs.set(tab.id, tab);
-
-      const win = TabsStore.windows.get(tab.windowId) || new Window(tab.windowId);
-      win.trackTab(tab);
-
-      // Don't update indexes here, instead Window.prototype.trackTab()
-      // updates indexes because indexes are bound to windows.
-      // TabsStore.updateIndexesForTab(tab);
-
-      if (tab.active) {
-        TabsStore.activeTabInWindow.set(tab.windowId, tab);
-        TabsStore.activeTabsInWindow.get(tab.windowId).add(tab);
-      }
-      else {
-        TabsStore.activeTabsInWindow.get(tab.windowId).delete(tab);
-      }
-
-      const incompletelyTrackedTabsPerWindow = mIncompletelyTrackedTabs.get(tab.windowId) || new Set();
-      incompletelyTrackedTabsPerWindow.add(tab);
-      mIncompletelyTrackedTabs.set(tab.windowId, incompletelyTrackedTabsPerWindow);
-      this.promisedUniqueId.then(() => {
-        incompletelyTrackedTabsPerWindow.delete(tab);
-        Tab.onTracked.dispatch(tab);
-      });
-    }
-
     // We should initialize private properties with blank value for better performance with a fixed shape.
     this.delayedInheritSoundStateFromChildren = null;
   }
 
   destroy() {
-    if (this.tab) {
-      mPromisedTrackedTabs.delete(`${this.id}:true`);
-      mPromisedTrackedTabs.delete(`${this.id}:false`);
-
-      Tab.onDestroyed.dispatch(this.tab);
-      this.detach();
-
-      if (this.temporaryMetadata.has('reservedCleanupNeedlessGroupTab')) {
-        clearTimeout(this.temporaryMetadata.get('reservedCleanupNeedlessGroupTab'));
-        this.temporaryMetadata.delete('reservedCleanupNeedlessGroupTab');
-      }
-
-      TabsStore.tabs.delete(this.id);
-      if (this.uniqueId)
-        TabsStore.tabsByUniqueId.delete(this.uniqueId.id);
-
-      TabsStore.removeTabFromIndexes(this.tab);
-    }
-
     if (this.element &&
         this.element.parentNode)
       this.element.parentNode.removeChild(this.element);
@@ -232,9 +170,9 @@ export class Tab {
           this._promisedElementResolver = resolve;
         });
       }
-      if (!this.tab) // unbound while waiting!
+      if (!this.raw) // unbound while waiting!
         return;
-      Tab.onElementBound.dispatch(this.tab);
+      TreeItem.onElementBound.dispatch(this.raw);
     }, 0);
   }
 
@@ -256,126 +194,24 @@ export class Tab {
   }
 
   startMoving() {
-    if (!this.tab)
-      return Promise.resolve();
-    let onTabMoved;
-    const promisedMoved = new Promise((resolve, _reject) => {
-      onTabMoved = resolve;
-    });
-    const movingTabs = mMovingTabs.get(this.tab.windowId) || new Set();
-    movingTabs.add(promisedMoved);
-    mMovingTabs.set(this.tab.windowId, movingTabs);
-    promisedMoved.then(() => {
-      movingTabs.delete(promisedMoved);
-    });
-    return onTabMoved;
+    return Promise.resolve();
   }
 
-  updateUniqueId(options = {}) {
-    if (!this.tab) {
-      const error = new Error('FATAL ERROR: updateUniqueId() is unavailable for an invalid tab');
-      console.log(error);
-      throw error;
-    }
-    if (options.id) {
-      if (this.uniqueId.id)
-        TabsStore.tabsByUniqueId.delete(this.uniqueId.id);
-      this.uniqueId.id = options.id;
-      TabsStore.tabsByUniqueId.set(options.id, this.tab);
-      this.setAttribute(Constants.kPERSISTENT_ID, options.id);
-      return Promise.resolve(this.uniqueId);
-    }
-    return UniqueId.request(this.tab, options).then(uniqueId => {
-      if (uniqueId && TabsStore.ensureLivingTab(this.tab)) { // possibly removed from document while waiting
-        this.uniqueId = uniqueId;
-        TabsStore.tabsByUniqueId.set(uniqueId.id, this.tab);
-        this.setAttribute(Constants.kPERSISTENT_ID, uniqueId.id);
-      }
-      return uniqueId || {};
-    }).catch(error => {
-      console.log(`FATAL ERROR: Failed to get unique id for a tab ${this.id}: `, error);
-      return {};
-    });
+  updateUniqueId(_options = {}) {
+    return Promise.resolve(null);
   }
 
   get type() {
-    return this.isNativeTabGroup ? 'group' : 'tab';
-  }
-
-  get isNativeTabGroup() {
-    return Tab.isNativeTabGroup(this.raw);
+    return null;
   }
 
   get renderingId() {
     return `${this.type}:${this.id}`;
   }
 
-  get tab() {
-    return this.isNativeTabGroup ? null : this.raw;
-  }
-
-  get rawGroup() {
-    return this.isNativeTabGroup ? this.raw : null;
-  }
-
-
   //===================================================================
-  // status of tab
+  // status of tree item
   //===================================================================
-
-  get soundPlaying() {
-    return !!(this.tab?.audible && !this.tab.mutedInfo.muted);
-  }
-  get maybeSoundPlaying() {
-    return (this.soundPlaying ||
-            (this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER) &&
-             this.hasChild));
-  }
-
-  get muted() {
-    return !!(this.tab?.mutedInfo?.muted);
-  }
-  get maybeMuted() {
-    return (this.muted ||
-            (this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER) &&
-             this.hasChild));
-  }
-
-  get autoplayBlocked() {
-    return this.states.has(Constants.kTAB_STATE_AUTOPLAY_BLOCKED);
-  }
-  get maybeAutoplayBlocked() {
-    return (this.autoplayBlocked ||
-            (this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER) &&
-             this.hasChild));
-  }
-
-  get sharingCamera() {
-    return !!(this.tab && this.tab.sharingState && this.tab.sharingState.camera);
-  }
-  get maybeSharingCamera() {
-    return (this.sharingCamera ||
-            (this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER) &&
-             this.hasChild));
-  }
-
-  get sharingMicrophone() {
-    return !!(this.tab && this.tab.sharingState && this.tab.sharingState.microphone);
-  }
-  get maybeSharingMicrophone() {
-    return (this.sharingMicrophone ||
-            (this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER) &&
-             this.hasChild));
-  }
-
-  get sharingScreen() {
-    return !!(this.tab && this.tab.sharingState && this.tab.sharingState.screen);
-  }
-  get maybeSharingScreen() {
-    return (this.sharingScreen ||
-            (this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER) &&
-             this.hasChild));
-  }
 
   get collapsed() {
     return this.states.has(Constants.kTAB_STATE_COLLAPSED);
@@ -399,16 +235,6 @@ export class Tab {
     return this.hasChild && this.subtreeCollapsed;
   }
 
-  get precedesPinnedTab() {
-    const following = this.nearestVisibleFollowingTab;
-    return following && following.pinned;
-  }
-
-  get followsUnpinnedTab() {
-    const preceding = this.nearestVisiblePrecedingTab;
-    return preceding && !preceding.pinned;
-  }
-
   get duplicating() {
     return this.states.has(Constants.kTAB_STATE_DUPLICATING);
   }
@@ -425,135 +251,8 @@ export class Tab {
     return this.element?.parentNode?.classList.contains('sticky-tabs-container');
   }
 
-  get isNewTabCommandTab() {
-    if (!this.tab ||
-        !configs.guessNewOrphanTabAsOpenedByNewTabCommand)
-      return false;
-
-    if (this.tab.$isNewTabCommandTab)
-      return true;
-
-    // Firefox sets "New Tab" title to a new tab command tab, even if
-    // "Blank Page" is chosen as the new tab page. So we can detect the case
-    // safely here.
-    // (confirmed on Firefox 124)
-    if (isNewTabCommandTab(this.tab))
-      return true;
-
-    // Firefox always opens a blank tab as the placeholder, when trying to
-    // open a bookmark in a new tab. So, we cannot determine the tab is
-    // "really opened as a new blank tab" or "just as a placeholder for an
-    // Open in New Tab operation", when the user choose the "Blank Page"
-    // as the new tab page and the new tab page is opened without the title
-    // "New Tab" due to any reason.
-    // But, when "Blank Page" is chosen as the new tab page, Firefox loads
-    // "about:blank" into a newly opened blank tab. As the result both current
-    // URL and the previous URL become "about:blank". This is an important
-    // difference between "a new blank tab" and "a blank tab opened for an
-    // Open in New Tab command".
-    // (confirmed on Firefox 124)
-    if (this.tab.url == 'about:blank' &&
-        this.tab.previousUrl != 'about:blank')
-      return false;
-
-    return false;
-  }
-
-  get isGroupTab() {
-    return this.states.has(Constants.kTAB_STATE_GROUP_TAB) ||
-           this.hasGroupTabURL;
-  }
-
-  get hasGroupTabURL() {
-    return !!(this.tab && this.tab.url.indexOf(Constants.kGROUP_TAB_URI) == 0);
-  }
-
-  get isTemporaryGroupTab() {
-    if (!this.tab || !this.isGroupTab)
-      return false;
-    return (new URL(this.tab.url)).searchParams.get('temporary') == 'true';
-  }
-
-  get isTemporaryAggressiveGroupTab() {
-    if (!this.tab || !this.isGroupTab)
-      return false;
-    return (new URL(this.tab.url)).searchParams.get('temporaryAggressive') == 'true';
-  }
-
-  get replacedParentGroupTabCount() {
-    if (!this.tab || !this.isGroupTab)
-      return 0;
-    const count = parseInt((new URL(this.tab.url)).searchParams.get('replacedParentCount'));
-    return isNaN(count) ? 0 : count;
-  }
-
-  // Firefox Multi-Account Containers
-  // https://addons.mozilla.org/firefox/addon/multi-account-containers/
-  // Temporary Containers
-  // https://addons.mozilla.org/firefox/addon/temporary-containers/
-  get mayBeReplacedWithContainer() {
-    return !!(
-      this.$possiblePredecessorPreviousTab ||
-      this.$possiblePredecessorNextTab
-    );
-  }
-  get $possiblePredecessorPreviousTab() {
-    const prevTab = this.unsafePreviousTab;
-    return (
-      prevTab &&
-      this.tab &&
-      this.tab.cookieStoreId != prevTab.cookieStoreId &&
-      this.tab.url == prevTab.url
-    ) ? prevTab : null;
-  }
-  get $possiblePredecessorNextTab() {
-    const nextTab = this.unsafeNextTab;
-    return (
-      nextTab &&
-      this.tab &&
-      this.tab.cookieStoreId != nextTab.cookieStoreId &&
-      this.tab.url == nextTab.url
-    ) ? nextTab : null;
-  }
-  get possibleSuccessorWithDifferentContainer() {
-    const firstChild = this.firstChild;
-    const nextTab = this.nextTab;
-    const prevTab = this.previousTab;
-    return (
-      (firstChild &&
-       firstChild.$TST.$possiblePredecessorPreviousTab == this.tab &&
-       firstChild) ||
-      (nextTab &&
-       !nextTab.$TST.temporaryMetadata.has('openedCompletely') &&
-       nextTab.$TST.$possiblePredecessorPreviousTab == this.tab &&
-       nextTab) ||
-      (prevTab &&
-       !prevTab.$TST.temporaryMetadata.has('openedCompletely') &&
-       prevTab.$TST.$possiblePredecessorNextTab == this.tab &&
-       prevTab)
-    );
-  }
-
-  get selected() {
-    return this.states.has(Constants.kTAB_STATE_SELECTED) ||
-             (this.hasOtherHighlighted && !!(this.tab && this.tab.highlighted));
-  }
-
-  get multiselected() {
-    return this.tab &&
-             this.selected &&
-             (this.hasOtherHighlighted ||
-              TabsStore.selectedTabsInWindow.get(this.tab.windowId).size > 1);
-  }
-
-  get hasOtherHighlighted() {
-    const highlightedTabs = this.tab && TabsStore.highlightedTabsInWindow.get(this.tab.windowId);
-    return !!(highlightedTabs && highlightedTabs.size > 1);
-  }
-
   get canBecomeSticky() {
-    if (this.tab?.pinned ||
-        this.collapsed ||
+    if (this.collapsed ||
         this.states.has(Constants.kTAB_STATE_EXPANDING) ||
         this.states.has(Constants.kTAB_STATE_COLLAPSING))
       return false;
@@ -561,7 +260,7 @@ export class Tab {
     if (this.sticky)
       return true;
 
-    for (const states of Tab.autoStickyStates.values()) {
+    for (const states of TreeItem.autoStickyStates.values()) {
       if ((new Set([...this.states, ...states])).size < this.states.size + states.size)
         return true;
     }
@@ -570,102 +269,39 @@ export class Tab {
   }
 
   get promisedPossibleOpenerBookmarks() {
-    if ('possibleOpenerBookmarks' in this)
-      return Promise.resolve(this.possibleOpenerBookmarks);
-    return new Promise(async (resolve, _reject) => {
-      if (!browser.bookmarks || !this.tab)
-        return resolve(this.possibleOpenerBookmarks = []);
-      // A new tab from bookmark is opened with a title: its URL without the scheme part.
-      const url = this.tab.$possibleInitialUrl;
-      try {
-        const possibleBookmarks = await Promise.all([
-          this._safeSearchBookmstksWithUrl(`http://${url}`),
-          this._safeSearchBookmstksWithUrl(`http://www.${url}`),
-          this._safeSearchBookmstksWithUrl(`https://${url}`),
-          this._safeSearchBookmstksWithUrl(`https://www.${url}`),
-          this._safeSearchBookmstksWithUrl(`ftp://${url}`),
-          this._safeSearchBookmstksWithUrl(`moz-extension://${url}`),
-          this._safeSearchBookmstksWithUrl(url), // about:* and so on
-        ]);
-        log(`promisedPossibleOpenerBookmarks for tab ${this.id} (${url}): `, possibleBookmarks);
-        resolve(this.possibleOpenerBookmarks = possibleBookmarks.flat());
-      }
-      catch(error) {
-        log(`promisedPossibleOpenerBookmarks for the tab {this.id} (${url}): `, error);
-        // If it is detected as "not a valid URL", then
-        // it cannot be a tab opened from a bookmark.
-        resolve(this.possibleOpenerBookmarks = []);
-      }
-    });
-  }
-  async _safeSearchBookmstksWithUrl(url) {
-    try {
-      return await browser.bookmarks.search({ url });
-    }
-    catch(error) {
-      log(`_searchBookmstksWithUrl failed: tab ${this.id} (${url}): `, error);
-      try {
-        // bookmarks.search() does not accept "moz-extension:" URL
-        // via a queyr with "url" on Firefox 105 and later - it raises an error as
-        // "Uncaught Error: Type error for parameter query (Value must either:
-        // be a string value, or .url must match the format "url") for bookmarks.search."
-        // Thus we use a query with "query" to avoid the error.
-        // See also: https://github.com/piroor/treestyletab/issues/3203
-        //           https://bugzilla.mozilla.org/show_bug.cgi?id=1791313
-        const bookmarks = await browser.bookmarks.search({ query: url }).catch(_error => []);
-        return bookmarks.filter(bookmark => bookmark.url == url);
-      }
-      catch(_error) {
-        return [];
-      }
-    }
-  }
-
-  get cookieStoreName() {
-    const identity = this.tab && this.tab.cookieStoreId && ContextualIdentities.get(this.tab.cookieStoreId);
-    return identity ? identity.name : null;
+    return Promise.resolve(null);
   }
 
   get defaultTooltipText() {
-    return this.cookieStoreName ? `${this.raw.title} - ${this.cookieStoreName}` : this.raw.title;
+    return this.raw.title;
   }
 
-  generateTooltipText() {
-    return this.defaultTooltipText;
-  }
-
-  generateTooltipTextWithDescendants() {
-    const tooltip = [`* ${this.generateTooltipText()}`];
+  get tooltipTextWithDescendants() {
+    const tooltip = [`* ${this.defaultTooltipText}`];
     for (const child of this.children) {
       if (!child)
         continue;
-      tooltip.push(child.$TST.generateTooltipTextWithDescendants().replace(/^/gm, '  '));
+      tooltip.push(child.$TST.tooltipTextWithDescendants.replace(/^/gm, '  '));
     }
     return tooltip.join('\n');
   }
 
-  generateTooltipHtml() {
-    return this.cookieStoreName ?
-      `<span class="title-line"
-            ><span class="title"
-                  >${sanitizeForHTMLText(this.raw.title)}</span
-            ><span class="cookieStoreName"
-                  >${sanitizeForHTMLText(this.cookieStoreName)}</span></span>` :
-      `<span class="title-line"
-            ><span class="title"
-                  >${sanitizeForHTMLText(this.raw.title)}</span></span>`;
+  get tooltipHtml() {
+    return `<span class="title-line"
+                 ><span class="title"
+                       >${sanitizeForHTMLText(this.raw.title)}</span></span>`;
   }
 
-  generateTooltipHtmlWithDescendants() {
-    return `<ul>${this.generateTooltipHtmlWithDescendantsInternal()}</ul>`;
+  get tooltipHtmlWithDescendants() {
+    return `<ul>${this._generateTooltipHtmlWithDescendants()}</ul>`;
   }
-  generateTooltipHtmlWithDescendantsInternal() {
-    let tooltip = `<li>${this.generateTooltipHtml()}`;
+  _generateTooltipHtmlWithDescendants() {
+    let tooltip = `<li>${this.tooltipHtml}`;
     const children = [];
     for (const child of this.children) {
       if (!child)
         continue;
-      children.push(child.$TST.generateTooltipHtmlWithDescendantsInternal());
+      children.push(child.$TST.tooltipHtmlWithDescendantsInternal);
     }
     if (children.length > 0)
       tooltip += `<ul>${children.join('')}</ul>`;
@@ -681,24 +317,20 @@ export class Tab {
       this.highPriorityTooltipTexts.delete(ownerId);
       this.lowPriorityTooltipTexts.set(ownerId, text);
     }
-    if (Constants.IS_BACKGROUND)
-      Tab.broadcastTooltipText(this.tab);
   }
 
   unregisterTooltipText(ownerId) {
     this.highPriorityTooltipTexts.delete(ownerId);
     this.lowPriorityTooltipTexts.delete(ownerId);
-    if (Constants.IS_BACKGROUND)
-      Tab.broadcastTooltipText(this.tab);
   }
 
-  getHighPriorityTooltipText() {
+  get highPriorityTooltipText() {
     if (this.highPriorityTooltipTexts.size == 0)
       return null;
     return [...this.highPriorityTooltipTexts.values()][this.highPriorityTooltipTexts.size - 1];
   }
 
-  getLowPriorityTooltipText() {
+  get lowPriorityTooltipText() {
     if (this.lowPriorityTooltipTexts.size == 0)
       return null;
     return [...this.lowPriorityTooltipTexts.values()][this.lowPriorityTooltipTexts.size - 1];
@@ -708,474 +340,52 @@ export class Tab {
   // neighbor tabs
   //===================================================================
 
-  get nextTab() {
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.controllableTabsInWindow.get(this.tab.windowId),
-      fromId:   this.id,
-      controllable: true,
-      index:    (index => index > this.tab.index)
-    });
-  }
-
-  get previousTab() {
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.controllableTabsInWindow.get(this.tab.windowId),
-      fromId:   this.id,
-      controllable: true,
-      index:    (index => index < this.tab.index),
-      last:     true
-    });
-  }
-
-  get unsafeNextTab() {
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      fromId:   this.id,
-      index:    (index => index > this.tab.index)
-    });
-  }
-
-  get unsafePreviousTab() {
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      fromId:   this.id,
-      index:    (index => index < this.tab.index),
-      last:     true
-    });
-  }
-
-  get nearestCompletelyOpenedNormalFollowingTab() { // including hidden tabs!
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.unpinnedTabsInWindow.get(this.tab.windowId),
-      states:   [Constants.kTAB_STATE_CREATING, false],
-      fromId:   this.id,
-      living:   true,
-      index:    (index => index > this.tab.index)
-    });
-  }
-
-  get nearestCompletelyOpenedNormalPrecedingTab() { // including hidden tabs!
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.unpinnedTabsInWindow.get(this.tab.windowId),
-      states:   [Constants.kTAB_STATE_CREATING, false],
-      fromId:   this.id,
-      living:   true,
-      index:    (index => index < this.tab.index),
-      last:     true
-    });
-  }
-
-  get nearestVisibleFollowingTab() { // visible, not-collapsed
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.visibleTabsInWindow.get(this.tab.windowId),
-      fromId:   this.id,
-      visible:  true,
-      index:    (index => index > this.tab.index)
-    });
-  }
-
-  get unsafeNearestExpandedFollowingTab() { // not-collapsed, possibly hidden
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.expandedTabsInWindow.get(this.tab.windowId),
-      fromId:   this.id,
-      index:    (index => index > this.tab.index)
-    });
-  }
-
-  get nearestVisiblePrecedingTab() { // visible, not-collapsed
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.visibleTabsInWindow.get(this.tab.windowId),
-      fromId:   this.id,
-      visible:  true,
-      index:    (index => index < this.tab.index),
-      last:     true
-    });
-  }
-
-  get unsafeNearestExpandedPrecedingTab() { // not-collapsed, possibly hidden
-    return this.tab && TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.expandedTabsInWindow.get(this.tab.windowId),
-      fromId:   this.id,
-      index:    (index => index < this.tab.index),
-      last:     true
-    });
-  }
-
-  get nearestLoadedTab() {
-    const tabs = this.tab && TabsStore.visibleTabsInWindow.get(this.tab.windowId);
-    return this.tab && (
-      // nearest following tab
-      TabsStore.query({
-        windowId:  this.tab.windowId,
-        tabs,
-        discarded: false,
-        fromId:    this.id,
-        visible:   true,
-        index:     (index => index > this.tab.index)
-      }) ||
-      // nearest preceding tab
-      TabsStore.query({
-        windowId:  this.tab.windowId,
-        tabs,
-        discarded: false,
-        fromId:    this.id,
-        visible:   true,
-        index:     (index => index < this.tab.index),
-        last:      true
-      })
-    );
-  }
-
-  get nearestLoadedTabInTree() {
-    if (!this.tab)
-      return null;
-    let tab = this.tab;
-    const tabs = TabsStore.visibleTabsInWindow.get(tab.windowId);
-    let lastLastDescendant;
-    while (tab) {
-      const parent = tab.$TST.parent;
-      if (!parent)
-        return null;
-      const lastDescendant = parent.$TST.lastDescendant;
-      const loadedTab = (
-        // nearest following tab
-        TabsStore.query({
-          windowId:     tab.windowId,
-          tabs,
-          descendantOf: parent.id,
-          discarded:    false,
-          '!id':        this.id,
-          fromId:       (lastLastDescendant || this.tab).id,
-          toId:         lastDescendant.id,
-          visible:      true,
-          index:        (index => index > this.tab.index)
-        }) ||
-        // nearest preceding tab
-        TabsStore.query({
-          windowId:     tab.windowId,
-          tabs,
-          descendantOf: parent.id,
-          discarded:    false,
-          '!id':        this.id,
-          fromId:       tab.id,
-          toId:         parent.$TST.firstChild.id,
-          visible:      true,
-          index:        (index => index < tab.index),
-          last:         true
-        })
-      );
-      if (loadedTab)
-        return loadedTab;
-      if (!parent.discarded)
-        return parent;
-      lastLastDescendant = lastDescendant;
-      tab = tab.$TST.parent;
-    }
-    return null;
-  }
-
-  get nearestLoadedSiblingTab() {
-    const parent = this.parent;
-    if (!parent || !this.tab)
-      return null;
-    const tabs = TabsStore.visibleTabsInWindow.get(this.tab.windowId);
-    return (
-      // nearest following tab
-      TabsStore.query({
-        windowId:  this.tab.windowId,
-        tabs,
-        childOf:   parent.id,
-        discarded: false,
-        fromId:    this.id,
-        toId:      parent.$TST.lastChild.id,
-        visible:   true,
-        index:     (index => index > this.tab.index)
-      }) ||
-      // nearest preceding tab
-      TabsStore.query({
-        windowId:  this.tab.windowId,
-        tabs,
-        childOf:   parent.id,
-        discarded: false,
-        fromId:    this.id,
-        toId:      parent.$TST.firstChild.id,
-        visible:   true,
-        index:     (index => index < this.tab.index),
-        last:      true
-      })
-    );
-  }
-
-  get nearestSameTypeRenderedTab() {
-    let tab = this.tab;
-    const pinned = tab.pinned;
-    while (tab.$TST.unsafeNextTab) {
-      tab = tab.$TST.unsafeNextTab;
-      if (tab.pinned != pinned)
-        return null;
-      if (tab.$TST.element &&
-          tab.$TST.element.parentNode)
-        return tab;
-    }
-    return null;
-  }
+  get nextTab() { return null; }
+  get previousTab() { return null; }
+  get unsafeNextTab() { return null; }
+  get unsafePreviousTab() { return null; }
+  get nearestCompletelyOpenedNormalFollowingTab() { return null; }
+  get nearestCompletelyOpenedNormalPrecedingTab() { return null; }
+  get nearestVisibleFollowingTab() { return null; }
+  get unsafeNearestExpandedFollowingTab() { return null; }
+  get nearestVisiblePrecedingTab() { return null; }
+  get unsafeNearestExpandedPrecedingTab() { return null; }
+  get nearestLoadedTab() { return null; }
+  get nearestLoadedTabInTree() { return null; }
+  get nearestLoadedSiblingTab() { return null; }
+  get nearestSameTypeRenderedTab() { return null; }
 
   //===================================================================
   // tree relations
   //===================================================================
 
-  get nativeTabGroup() {
-    if (this.type != 'tab' ||
-        this.tab.groupId == -1) {
-      return null;
-    }
-    return Tab.getNativeTabGroup(this.tab);
-  }
+  get parent() { return null; }
+  get hasParent() { return false; }
 
-  set parent(tab) {
-    const newParentId = tab && (typeof tab == 'number' ? tab : tab.id);
-    if (!this.tab ||
-        newParentId == this.parentId)
-      return tab;
+  get ancestorIds() { return []; }
+  get ancestors() { return []; }
 
-    const oldParent = this.parent;
-    this.parentId = newParentId;
-    this.invalidateCachedAncestors();
-    const parent = this.parent;
-    if (parent) {
-      this.setAttribute(Constants.kPARENT, parent.id);
-      parent.$TST.invalidateCachedDescendants();
+  get level() { return 0; }
 
-      if (this.states.has(Constants.kTAB_STATE_SOUND_PLAYING))
-        parent.$TST.soundPlayingChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER))
-        parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_MUTED))
-        parent.$TST.mutedChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER))
-        parent.$TST.maybeMutedChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_AUTOPLAY_BLOCKED))
-        parent.$TST.autoplayBlockedChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER))
-        parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
-      parent.$TST.inheritSoundStateFromChildren();
+  get rootTab() { return null; }
 
-      if (this.states.has(Constants.kTAB_STATE_SHARING_CAMERA))
-        parent.$TST.sharingCameraChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER))
-        parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_SHARING_MICROPHONE))
-        parent.$TST.sharingMicrophoneChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER))
-        parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_SHARING_SCREEN))
-        parent.$TST.sharingScreenChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER))
-        parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
-      parent.$TST.inheritSharingStateFromChildren();
+  get topmostSubtreeCollapsedAncestor() { return null; }
 
-      TabsStore.removeRootTab(this.tab);
-    }
-    else {
-      this.removeAttribute(Constants.kPARENT);
-      TabsStore.addRootTab(this.tab);
-    }
-    if (oldParent && oldParent.id != this.parentId) {
-      oldParent.$TST.soundPlayingChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
-      oldParent.$TST.mutedChildrenIds.delete(this.id);
-      oldParent.$TST.maybeMutedChildrenIds.delete(this.id);
-      oldParent.$TST.autoplayBlockedChildrenIds.delete(this.id);
-      oldParent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
-      oldParent.$TST.inheritSoundStateFromChildren();
+  get nearestVisibleAncestorOrSelf() { return null; }
 
-      oldParent.$TST.sharingCameraChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
-      oldParent.$TST.sharingMicrophoneChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
-      oldParent.$TST.inheritSharingStateFromChildren();
-
-      oldParent.$TST.children = oldParent.$TST.childIds.filter(id => id != this.id);
-    }
-    return tab;
-  }
-  get parent() {
-    if (this.isNativeTabGroup) {
-      return null;
-    }
-    return this.tab && this.parentId && TabsStore.ensureLivingTab(Tab.get(this.parentId));
-  }
-
-  get hasParent() {
-    if (this.isNativeTabGroup) {
-      return false;
-    }
-    return !!this.parentId;
-  }
-
-  get ancestorIds() {
-    if (this.isNativeTabGroup) {
-      return [];
-    }
-    if (!this.cachedAncestorIds)
-      this.updateAncestors();
-    return this.cachedAncestorIds;
-  }
-
-  get ancestors() {
-    if (this.isNativeTabGroup) {
-      return [];
-    }
-    return mapAndFilter(this.ancestorIds,
-                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
-  }
-
-  updateAncestors() {
-    if (this.isNativeTabGroup) {
-      return [];
-    }
-    const ancestors = [];
-    this.cachedAncestorIds = [];
-    if (!this.tab)
-      return ancestors;
-    let descendant = this.tab;
-    while (true) {
-      const parent = Tab.get(descendant.$TST.parentId);
-      if (!parent)
-        break;
-      ancestors.push(parent);
-      this.cachedAncestorIds.push(parent.id);
-      descendant = parent;
-    }
-    return ancestors;
-  }
-
-  get level() {
-    if (this.isNativeTabGroup) {
-      return 0;
-    }
-    return this.ancestorIds.length;
-  }
-
-  invalidateCachedAncestors() {
-    this.cachedAncestorIds = null;
-    for (const child of this.children) {
-      child.$TST.invalidateCachedAncestors();
-    }
-    this.invalidateCache();
-  }
-
-  get rootTab() {
-    if (this.isNativeTabGroup) {
-      return null;
-    }
-    const ancestors = this.ancestors;
-    return ancestors.length > 0 ? ancestors[ancestors.length-1] : this.tab ;
-  }
-
-  get topmostSubtreeCollapsedAncestor() {
-    if (this.isNativeTabGroup) {
-      return null;
-    }
-    for (const ancestor of [...this.ancestors].reverse()) {
-      if (ancestor.$TST.subtreeCollapsed)
-        return ancestor;
-    }
-    return null;
-  }
-
-  get nearestVisibleAncestorOrSelf() {
-    if (this.isNativeTabGroup) {
-      return this.rawGroup;
-    }
-    for (const ancestor of this.ancestors) {
-      if (!ancestor.$TST.collapsed)
-        return ancestor;
-    }
-    if (!this.collapsed)
-      return this.tab;
-    return null;
-  }
-
-  get nearestFollowingRootTab() {
-    return TabsStore.query({
-      windowId:  this.tab.windowId,
-      tabs:      TabsStore.rootTabsInWindow.get(this.tab.windowId),
-      fromId:    this.id,
-      living:    true,
-      index:     (index => index > this.tab.index),
-      hasParent: false,
-      first:     true
-    });
-  }
+  get nearestFollowingRootTab() { return null; }
 
   get nearestFollowingForeignerTab() {
-    const base = this.lastDescendant || this.tab;
+    const base = this.lastDescendant || this.raw;
     return base && base.$TST.nextTab;
   }
 
   get unsafeNearestFollowingForeignerTab() {
-    const base = this.lastDescendant || this.tab;
+    const base = this.lastDescendant || this.raw;
     return base && base.$TST.unsafeNextTab;
   }
 
-  set children(tabs) {
-    if (!this.tab)
-      return tabs;
-
-    const ancestorIds = this.ancestorIds;
-    const newChildIds = mapAndFilter(tabs, tab => {
-      const id = typeof tab == 'number' ? tab : tab && tab.id;
-      if (!ancestorIds.includes(id))
-        return TabsStore.ensureLivingTab(Tab.get(id)) ? id : undefined;
-      console.log('FATAL ERROR: Cyclic tree structure has detected and prevented. ', {
-        ancestorsOfSelf: this.ancestors,
-        tabs,
-        tab,
-        stack: new Error().stack
-      });
-      return undefined;
-    });
-    if (newChildIds.join('|') == this.childIds.join('|'))
-      return tabs;
-
-    const oldChildren = this.children;
-    this.childIds = newChildIds;
-    this.sortAndInvalidateChildren();
-    if (this.childIds.length > 0) {
-      this.setAttribute(Constants.kCHILDREN, `|${this.childIds.join('|')}|`);
-      if (this.isSubtreeCollapsable)
-        TabsStore.addSubtreeCollapsableTab(this.tab);
-    }
-    else {
-      this.removeAttribute(Constants.kCHILDREN);
-      TabsStore.removeSubtreeCollapsableTab(this.tab);
-    }
-    for (const child of Array.from(new Set(this.children.concat(oldChildren)))) {
-      if (this.childIds.includes(child.id))
-        child.$TST.parent = this.id;
-      else
-        child.$TST.parent = null;
-    }
-    return tabs;
-  }
-  get children() {
-    if (this.isNativeTabGroup) {
-      return Tab.getNativeGroupMemberTabs({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id }).filter(tab => !tab.$TST.parentId);
-    }
-    return mapAndFilter(this.childIds,
-                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
-  }
+  get children() { return []; }
 
   get firstChild() {
     const children = this.children;
@@ -1192,300 +402,58 @@ export class Tab {
     return children.length > 0 ? children[children.length - 1] : null ;
   }
 
-  sortAndInvalidateChildren() {
-    if (this.isNativeTabGroup) {
-      return;
-    }
-    // Tab.get(tabId) calls into TabsStore.tabs.get(tabId), which is just a
-    // Map. This is acceptable to repeat in order to avoid two array copies,
-    // especially on larger tab sets.
-    this.childIds.sort((a, b) => Tab.compare(Tab.get(a), Tab.get(b)));
-    this.invalidateCachedDescendants();
-  }
+  get hasChild() { return false; }
 
-  get hasChild() {
-    if (this.isNativeTabGroup) {
-      return !!Tab.getFirstNativeGroupMemberTab({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id });
-    }
-    return this.childIds.length > 0;
-  }
-
-  get descendants() {
-    if (this.isNativeTabGroup) {
-      return Tab.getNativeGroupMemberTabs({ windowId: this.rawGroup.windowId, groupId: this.rawGroup.id });
-    }
-    if (!this.cachedDescendantIds)
-      return this.updateDescendants();
-    return mapAndFilter(this.cachedDescendantIds,
-                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
-  }
-
-  updateDescendants() {
-    if (this.isNativeTabGroup) {
-      return;
-    }
-    let descendants = [];
-    this.cachedDescendantIds = [];
-    for (const child of this.children) {
-      descendants.push(child);
-      descendants = descendants.concat(child.$TST.descendants);
-      this.cachedDescendantIds.push(child.id);
-      this.cachedDescendantIds = this.cachedDescendantIds.concat(child.$TST.cachedDescendantIds);
-    }
-    return descendants;
-  }
-
-  invalidateCachedDescendants() {
-    if (this.isNativeTabGroup) {
-      return;
-    }
-    this.cachedDescendantIds = null;
-    const parent = this.parent;
-    if (parent)
-      parent.$TST.invalidateCachedDescendants();
-    this.invalidateCache();
-  }
+  get descendants() { return []; }
 
   get lastDescendant() {
     const descendants = this.descendants;
     return descendants.length ? descendants[descendants.length-1] : null ;
   }
 
-  get nextSiblingTab() {
-    if (!this.tab)
-      return null;
-    const parent = this.parent;
-    if (parent) {
-      const siblingIds = parent.$TST.childIds;
-      const index = siblingIds.indexOf(this.id);
-      const siblingId = index < siblingIds.length - 1 ? siblingIds[index + 1] : null ;
-      if (!siblingId)
-        return null;
-      return Tab.get(siblingId);
-    }
-    else {
-      const nextSibling = TabsStore.query({
-        windowId:  this.tab.windowId,
-        tabs:      TabsStore.rootTabsInWindow.get(this.tab.windowId),
-        fromId:    this.id,
-        living:    true,
-        index:     (index => index > this.tab.index),
-        hasParent: false,
-        first:     true
-      });
-      // We should treat only pinned tab as the next sibling tab of a pinned
-      // tab. For example, if the last pinned tab is closed, Firefox moves
-      // focus to the first normal tab. But the previous pinned tab looks
-      // natural on TST because pinned tabs are visually grouped.
-      if (nextSibling &&
-          nextSibling.pinned != this.tab.pinned)
-        return null;
-      return nextSibling;
-    }
-  }
+  get nextSiblingTab() { return null; }
 
   get nextVisibleSiblingTab() {
     const nextSibling = this.nextSiblingTab;
     return nextSibling && !nextSibling.$TST.collapsed && !nextSibling.hidden && nextSibling;
   }
 
-  get previousSiblingTab() {
-    if (!this.tab)
-      return null;
-    const parent = this.parent;
-    if (parent) {
-      const siblingIds = parent.$TST.childIds;
-      const index = siblingIds.indexOf(this.id);
-      const siblingId = index > 0 ? siblingIds[index - 1] : null ;
-      if (!siblingId)
-        return null;
-      return Tab.get(siblingId);
-    }
-    else {
-      return TabsStore.query({
-        windowId:  this.tab.windowId,
-        tabs:      TabsStore.rootTabsInWindow.get(this.tab.windowId),
-        fromId:    this.id,
-        living:    true,
-        index:     (index => index < this.tab.index),
-        hasParent: false,
-        last:      true
-      });
-    }
-  }
+  get previousSiblingTab() { return null; }
 
-  get needToBeGroupedSiblings() {
-    if (!this.tab)
-      return [];
-    const openerTabUniqueId = this.getAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID);
-    if (!openerTabUniqueId)
-      return [];
-    return TabsStore.queryAll({
-      windowId:   this.tab.windowId,
-      tabs:       TabsStore.toBeGroupedTabsInWindow.get(this.tab.windowId),
-      normal:     true,
-      '!id':      this.id,
-      attributes: [
-        Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID, openerTabUniqueId,
-        Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER, ''
-      ],
-      ordered:    true
-    });
-  }
+  get needToBeGroupedSiblings() { return []; }
 
   //===================================================================
   // other relations
   //===================================================================
 
-  get openerTab() {
-    if (this.tab?.openerTabId == this.id)
-      return null;
-
-    if (!this.tab ||
-        !this.tab.openerTabId)
-      return Tab.getOpenerFromGroupTab(this.tab);
-
-    return TabsStore.query({
-      windowId: this.tab.windowId,
-      tabs:     TabsStore.livingTabsInWindow.get(this.tab.windowId),
-      id:       this.tab.openerTabId,
-      living:   true
-    });
-  }
-
-  get hasPinnedOpener() {
-    return this.openerTab?.pinned;
-  }
-
-  get hasFirefoxViewOpener() {
-    return isFirefoxViewTab(this.openerTab);
-  }
-
-  get bundledTab() {
-    if (!this.tab)
-      return null;
-    const substance = Tab.getSubstanceFromAliasGroupTab(this.tab);
-    if (substance)
-      return substance;
-    if (this.tab.pinned)
-      return Tab.getGroupTabForOpener(this.tab);
-    if (this.isGroupTab)
-      return Tab.getOpenerFromGroupTab(this.tab);
+  findSuccessor(_options = {}) {
     return null;
   }
 
-  get bundledTabId() {
-    const tab = this.bundledTab;
-    return tab ? tab.id : -1;
-  }
-
-  findSuccessor(options = {}) {
-    if (!this.tab)
-      return null;
-    if (typeof options != 'object')
-      options = {};
-    const ignoredTabs = (options.ignoredTabs || []).slice(0);
-    let foundTab = this.tab;
-    do {
-      ignoredTabs.push(foundTab);
-      foundTab = foundTab.$TST.nextTab;
-    } while (foundTab && ignoredTabs.includes(foundTab));
-    if (!foundTab) {
-      foundTab = this.tab;
-      do {
-        ignoredTabs.push(foundTab);
-        foundTab = foundTab.$TST.nearestVisiblePrecedingTab;
-      } while (foundTab && ignoredTabs.includes(foundTab));
-    }
-    return foundTab;
-  }
-
-  get lastRelatedTab() {
-    return Tab.get(this.lastRelatedTabId) || null;
-  }
-  set lastRelatedTab(relatedTab) {
-    if (!this.tab)
-      return relatedTab;
-    const previousLastRelatedTabId = this.lastRelatedTabId;
-    const win = TabsStore.windows.get(this.tab.windowId);
-    if (relatedTab) {
-      win.lastRelatedTabs.set(this.id, relatedTab.id);
-      this.newRelatedTabsCount++;
-      successorTabLog(`set lastRelatedTab for ${this.id}: ${previousLastRelatedTabId} => ${relatedTab.id} (${this.newRelatedTabsCount})`);
-    }
-    else {
-      win.lastRelatedTabs.delete(this.id);
-      this.newRelatedTabsCount = 0;
-      successorTabLog(`clear lastRelatedTab for ${this.id} (${previousLastRelatedTabId})`);
-    }
-    win.previousLastRelatedTabs.set(this.id, previousLastRelatedTabId);
-    return relatedTab;
-  }
-
-  get lastRelatedTabId() {
-    if (!this.tab)
-      return 0;
-    const win = TabsStore.windows.get(this.tab.windowId);
-    return win.lastRelatedTabs.get(this.id) || 0;
-  }
-
-  get previousLastRelatedTab() {
-    if (!this.tab)
-      return null;
-    const win = TabsStore.windows.get(this.tab.windowId);
-    return Tab.get(win.previousLastRelatedTabs.get(this.id)) || null;
-  }
-
-  // if all tabs are aldeardy placed at there, we don't need to move them.
-  isAllPlacedBeforeSelf(tabs) {
-    if (!this.tab ||
-        tabs.length == 0)
+  // if all items are aldeardy placed at there, we don't need to move them.
+  isAllPlacedBeforeSelf(items) {
+    if (!this.raw ||
+        items.length == 0)
       return true;
-    let nextTab = this.tab;
-    if (tabs[tabs.length - 1] == nextTab)
-      nextTab = nextTab.$TST.unsafeNextTab;
-    if (!nextTab && !tabs[tabs.length - 1].$TST.unsafeNextTab)
+    let nextItem = this.raw;
+    if (items[items.length - 1] == nextItem)
+      nextItem = nextItem.$TST.unsafeNextTab;
+    if (!nextItem && !items[items.length - 1].$TST.unsafeNextTab)
       return true;
 
-    tabs = Array.from(tabs);
-    let previousTab = tabs.shift();
-    for (const tab of tabs) {
-      if (tab.$TST.unsafePreviousTab != previousTab)
+    items = Array.from(items);
+    let previousItem = items.shift();
+    for (const item of items) {
+      if (item.$TST.unsafePreviousTab != previousItem)
         return false;
-      previousTab = tab;
+      previousItem = item;
     }
-    return !nextTab ||
-           !previousTab ||
-           previousTab.$TST.unsafeNextTab == nextTab;
+    return !nextItem ||
+           !previousItem ||
+           previousItem.$TST.unsafeNextTab == nextItem;
   }
 
-  isAllPlacedAfterSelf(tabs) {
-    if (!this.tab ||
-        tabs.length == 0)
-      return true;
-    let previousTab = this.tab;
-    if (tabs[0] == previousTab)
-      previousTab = previousTab.$TST.unsafePreviousTab;
-    if (!previousTab && !tabs[0].$TST.unsafePreviousTab)
-      return true;
-
-    tabs = Array.from(tabs).reverse();
-    let nextTab = tabs.shift();
-    for (const tab of tabs) {
-      if (tab.$TST.unsafeNextTab != nextTab)
-        return false;
-      nextTab = tab;
-    }
-    return !previousTab ||
-           !nextTab ||
-           nextTab.$TST.unsafePreviousTab == previousTab;
-  }
-
-  detach() {
-    this.parent   = null;
-    this.children = [];
-  }
-
+  detach() {}
 
   //===================================================================
   // State
@@ -1498,541 +466,46 @@ export class Tab {
       return this.removeState(state, { permanently, toTab, broadcast });
   }
 
-  async addState(state, { permanently, toTab, broadcast } = {}) {
+  async addState(state) {
     state = state && String(state) || undefined;
-    if (!this.tab || !state)
+    if (!this.raw || !state)
       return;
 
-    const modified = this.states && !this.states.has(state);
-
-    if (this.classList)
+    if (this.classList) {
       this.classList.add(state);
-    if (this.states)
+    }
+    if (this.states) {
       this.states.add(state);
-
-    switch (state) {
-      case Constants.kTAB_STATE_HIGHLIGHTED:
-        TabsStore.addHighlightedTab(this.tab);
-        if (this.element)
-          this.element.setAttribute('aria-selected', 'true');
-        if (toTab)
-          this.tab.highlighted = true;
-        break;
-
-      case Constants.kTAB_STATE_SELECTED:
-        TabsStore.addSelectedTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_COLLAPSED:
-      case Constants.kTAB_STATE_SUBTREE_COLLAPSED:
-        if (this.isSubtreeCollapsable)
-          TabsStore.addSubtreeCollapsableTab(this.tab);
-        else
-          TabsStore.removeSubtreeCollapsableTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_HIDDEN:
-        TabsStore.removeVisibleTab(this.tab);
-        TabsStore.removeControllableTab(this.tab);
-        if (toTab)
-          this.tab.hidden = true;
-        break;
-
-      case Constants.kTAB_STATE_PINNED:
-        TabsStore.addPinnedTab(this.tab);
-        TabsStore.removeUnpinnedTab(this.tab);
-        if (toTab)
-          this.tab.pinned = true;
-        break;
-
-      case Constants.kTAB_STATE_BUNDLED_ACTIVE:
-        TabsStore.addBundledActiveTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_SOUND_PLAYING: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.soundPlayingChildrenIds.add(this.id);
-      } break;
-      case Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_AUDIBLE:
-        if (toTab)
-          this.tab.audible = true;
-        break;
-
-      case Constants.kTAB_STATE_MUTED: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.mutedChildrenIds.add(this.id);
-        if (toTab)
-          this.tab.mutedInfo.muted = true;
-      } break;
-      case Constants.kTAB_STATE_HAS_MUTED_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeMutedChildrenIds.add(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_AUTOPLAY_BLOCKED: {
-        const parent = this.parent;
-        if (parent) {
-          parent.$TST.autoplayBlockedChildrenIds.add(this.id);
-          parent.$TST.inheritSoundStateFromChildren();
-        }
-      } break;
-      case Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER: {
-        const parent = this.parent;
-        if (parent) {
-          parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
-          parent.$TST.inheritSoundStateFromChildren();
-        }
-      } break;
-
-      case Constants.kTAB_STATE_SHARING_CAMERA: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.sharingCameraChildrenIds.add(this.id);
-        if (toTab && this.tab.sharingState)
-          this.tab.sharingState.camera = true;
-      } break;
-      case Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_SHARING_MICROPHONE: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.sharingMicrophoneChildrenIds.add(this.id);
-        if (toTab && this.tab.sharingState)
-          this.tab.sharingState.microphone = true;
-      } break;
-      case Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_SHARING_SCREEN: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.sharingScreenChildrenIds.add(this.id);
-        if (toTab && this.tab.sharingState)
-          this.tab.sharingState.screen = 'Something';
-      } break;
-      case Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_GROUP_TAB:
-        TabsStore.addGroupTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_PRIVATE_BROWSING:
-        if (toTab)
-          this.tab.incognito = true;
-        break;
-
-      case Constants.kTAB_STATE_ATTENTION:
-        if (toTab)
-          this.tab.attention = true;
-        break;
-
-      case Constants.kTAB_STATE_DISCARDED:
-        if (toTab)
-          this.tab.discarded = true;
-        break;
-
-      case 'loading':
-        TabsStore.addLoadingTab(this.tab);
-        if (toTab)
-          this.tab.status = state;
-        break;
-
-      case 'complete':
-        TabsStore.removeLoadingTab(this.tab);
-        if (toTab)
-          this.tab.status = state;
-        break;
-    }
-
-    if (this.tab &&
-        modified &&
-        state != Constants.kTAB_STATE_ACTIVE &&
-        Constants.IS_BACKGROUND &&
-        broadcast !== false)
-      Tab.broadcastState(this.tab, {
-        add: [state],
-      });
-    if (permanently) {
-      const states = await this.getPermanentStates();
-      if (!states.includes(state)) {
-        states.push(state);
-        await browser.sessions.setTabValue(this.id, Constants.kPERSISTENT_STATES, states).catch(ApiTabs.createErrorSuppressor());
-      }
-    }
-    if (modified) {
-      this.invalidateCache();
-      if (this.tab)
-        Tab.onStateChanged.dispatch(this.tab, state, true);
     }
   }
 
-  async removeState(state, { permanently, toTab, broadcast } = {}) {
+  async removeState(state) {
     state = state && String(state) || undefined;
-    if (!this.tab || !state)
+    if (!this.raw || !state)
       return;
 
-    const modified = this.states && this.states.has(state);
-
-    if (this.classList)
+    if (this.classList) {
       this.classList.remove(state);
-    if (this.states)
+    }
+    if (this.states) {
       this.states.delete(state);
-
-    switch (state) {
-      case Constants.kTAB_STATE_HIGHLIGHTED:
-        TabsStore.removeHighlightedTab(this.tab);
-        if (this.element)
-          this.element.setAttribute('aria-selected', 'false');
-        if (toTab)
-          this.tab.highlighted = false;
-        break;
-
-      case Constants.kTAB_STATE_SELECTED:
-        TabsStore.removeSelectedTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_COLLAPSED:
-      case Constants.kTAB_STATE_SUBTREE_COLLAPSED:
-        if (this.isSubtreeCollapsable)
-          TabsStore.addSubtreeCollapsableTab(this.tab);
-        else
-          TabsStore.removeSubtreeCollapsableTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_HIDDEN:
-        if (!this.collapsed)
-          TabsStore.addVisibleTab(this.tab);
-        TabsStore.addControllableTab(this.tab);
-        if (toTab)
-          this.tab.hidden = false;
-        break;
-
-      case Constants.kTAB_STATE_PINNED:
-        TabsStore.removePinnedTab(this.tab);
-        TabsStore.addUnpinnedTab(this.tab);
-        if (toTab)
-          this.tab.pinned = false;
-        break;
-
-      case Constants.kTAB_STATE_BUNDLED_ACTIVE:
-        TabsStore.removeBundledActiveTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_SOUND_PLAYING: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.soundPlayingChildrenIds.delete(this.id);
-      } break;
-      case Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_AUDIBLE:
-        if (toTab)
-          this.tab.audible = false;
-        break;
-
-      case Constants.kTAB_STATE_MUTED: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.mutedChildrenIds.delete(this.id);
-        if (toTab)
-          this.tab.mutedInfo.muted = false;
-      } break;
-      case Constants.kTAB_STATE_HAS_MUTED_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeMutedChildrenIds.delete(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_AUTOPLAY_BLOCKED: {
-        const parent = this.parent;
-        if (parent) {
-          parent.$TST.autoplayBlockedChildrenIds.delete(this.id);
-          parent.$TST.inheritSoundStateFromChildren();
-        }
-      } break;
-      case Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER: {
-        const parent = this.parent;
-        if (parent) {
-          parent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
-          parent.$TST.inheritSoundStateFromChildren();
-        }
-      } break;
-
-      case Constants.kTAB_STATE_SHARING_CAMERA: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.sharingCameraChildrenIds.delete(this.id);
-        if (toTab && this.tab.sharingState)
-          this.tab.sharingState.camera = false;
-      } break;
-      case Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_SHARING_MICROPHONE: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.sharingMicrophoneChildrenIds.delete(this.id);
-        if (toTab && this.tab.sharingState)
-          this.tab.sharingState.microphone = false;
-      } break;
-      case Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_SHARING_SCREEN: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.sharingScreenChildrenIds.delete(this.id);
-        if (toTab && this.tab.sharingState)
-          this.tab.sharingState.screen = undefined;
-      } break;
-      case Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER: {
-        const parent = this.parent;
-        if (parent)
-          parent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
-      } break;
-
-      case Constants.kTAB_STATE_GROUP_TAB:
-        TabsStore.removeGroupTab(this.tab);
-        break;
-
-      case Constants.kTAB_STATE_PRIVATE_BROWSING:
-        if (toTab)
-          this.tab.incognito = false;
-        break;
-
-      case Constants.kTAB_STATE_ATTENTION:
-        if (toTab)
-          this.tab.attention = false;
-        break;
-
-      case Constants.kTAB_STATE_DISCARDED:
-        if (toTab)
-          this.tab.discarded = false;
-        break;
-    }
-
-    if (modified &&
-        state != Constants.kTAB_STATE_ACTIVE &&
-        Constants.IS_BACKGROUND &&
-        broadcast !== false)
-      Tab.broadcastState(this.tab, {
-        remove: [state],
-      });
-    if (permanently) {
-      const states = await this.getPermanentStates();
-      const index = states.indexOf(state);
-      if (index > -1) {
-        states.splice(index, 1);
-        await browser.sessions.setTabValue(this.id, Constants.kPERSISTENT_STATES, states).catch(ApiTabs.createErrorSuppressor());
-      }
-    }
-    if (modified) {
-      this.invalidateCache();
-      Tab.onStateChanged.dispatch(this.tab, state, false);
     }
   }
 
   async getPermanentStates() {
-    const states = this.tab && await browser.sessions.getTabValue(this.id, Constants.kPERSISTENT_STATES).catch(ApiTabs.handleMissingTabError);
-    // We need to cleanup invalid values stored accidentally.
-    // See also: https://github.com/piroor/treestyletab/issues/2882
-    return states && mapAndFilterUniq(states, state => state && String(state) || undefined) || [];
+    return Promise.resolve([]);
   }
 
-  inheritSoundStateFromChildren() {
-    if (!this.tab)
-      return;
+  inheritSoundStateFromChildren() {}
 
-    // this is called too many times on a session restoration, so this should be throttled for better performance
-    if (this.delayedInheritSoundStateFromChildren)
-      clearTimeout(this.delayedInheritSoundStateFromChildren);
+  inheritSharingStateFromChildren() {}
 
-    this.delayedInheritSoundStateFromChildren = setTimeout(() => {
-      this.delayedInheritSoundStateFromChildren = null;
-      if (!TabsStore.ensureLivingTab(this.tab))
-        return;
-
-      const parent = this.parent;
-      let modifiedCount = 0;
-
-      const soundPlayingCount = this.soundPlayingChildrenIds.size + this.maybeSoundPlayingChildrenIds.size;
-      if (soundPlayingCount != this.lastSoundStateCounts.soundPlaying) {
-        this.lastSoundStateCounts.soundPlaying = soundPlayingCount;
-        this.toggleState(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER, soundPlayingCount > 0);
-        if (parent) {
-          if (soundPlayingCount > 0)
-            parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
-          else
-            parent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
-        }
-        modifiedCount++;
-      }
-
-      const mutedCount = this.mutedChildrenIds.size + this.maybeMutedChildrenIds.size;
-      if (mutedCount != this.lastSoundStateCounts.muted) {
-        this.lastSoundStateCounts.muted = mutedCount;
-        this.toggleState(Constants.kTAB_STATE_HAS_MUTED_MEMBER, mutedCount > 0);
-        if (parent) {
-          if (mutedCount > 0)
-            parent.$TST.maybeMutedChildrenIds.add(this.id);
-          else
-            parent.$TST.maybeMutedChildrenIds.delete(this.id);
-        }
-        modifiedCount++;
-      }
-
-      const autoplayBlockedCount = this.autoplayBlockedChildrenIds.size + this.maybeAutoplayBlockedChildrenIds.size;
-      if (autoplayBlockedCount != this.lastSoundStateCounts.autoplayBlocked) {
-        this.lastSoundStateCounts.autoplayBlocked = autoplayBlockedCount;
-        this.toggleState(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER, autoplayBlockedCount > 0);
-        if (parent) {
-          if (autoplayBlockedCount > 0)
-            parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
-          else
-            parent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
-        }
-        modifiedCount++;
-      }
-
-      if (modifiedCount == 0)
-        return;
-
-      if (parent)
-        parent.$TST.inheritSoundStateFromChildren();
-
-      SidebarConnection.sendMessage({
-        type:                  Constants.kCOMMAND_NOTIFY_TAB_SOUND_STATE_UPDATED,
-        windowId:              this.tab.windowId,
-        tabId:                 this.id,
-        hasSoundPlayingMember: this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER),
-        hasMutedMember:        this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER),
-        hasAutoplayBlockedMember: this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER),
-      });
-    }, 100);
-  }
-
-  inheritSharingStateFromChildren() {
-    if (!this.tab)
-      return;
-
-    // this is called too many times on a session restoration, so this should be throttled for better performance
-    if (this.delayedInheritSharingStateFromChildren)
-      clearTimeout(this.delayedInheritSharingStateFromChildren);
-
-    this.delayedInheritSharingStateFromChildren = setTimeout(() => {
-      this.delayedInheritSharingStateFromChildren = null;
-      if (!TabsStore.ensureLivingTab(this.tab))
-        return;
-
-      const parent = this.parent;
-      let modifiedCount = 0;
-
-      const sharingCameraCount = this.sharingCameraChildrenIds.size + this.maybeSharingCameraChildrenIds.size;
-      if (sharingCameraCount != this.lastSharingStateCounts.sharingCamera) {
-        this.lastSharingStateCounts.sharingCamera = sharingCameraCount;
-        this.toggleState(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER, sharingCameraCount > 0);
-        if (parent) {
-          if (sharingCameraCount > 0)
-            parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
-          else
-            parent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
-        }
-        modifiedCount++;
-      }
-
-      const sharingMicrophoneCount = this.sharingMicrophoneChildrenIds.size + this.maybeSharingMicrophoneChildrenIds.size;
-      if (sharingMicrophoneCount != this.lastSharingStateCounts.sharingMicrophone) {
-        this.lastSharingStateCounts.sharingMicrophone = sharingMicrophoneCount;
-        this.toggleState(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER, sharingMicrophoneCount > 0);
-        if (parent) {
-          if (sharingMicrophoneCount > 0)
-            parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
-          else
-            parent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
-        }
-        modifiedCount++;
-      }
-
-      const sharingScreenCount = this.sharingScreenChildrenIds.size + this.maybeSharingScreenChildrenIds.size;
-      if (sharingScreenCount != this.lastSharingStateCounts.sharingScreen) {
-        this.lastSharingStateCounts.sharingScreen = sharingScreenCount;
-        this.toggleState(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER, sharingScreenCount > 0);
-        if (parent) {
-          if (sharingScreenCount > 0)
-            parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
-          else
-            parent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
-        }
-        modifiedCount++;
-      }
-
-      if (modifiedCount == 0)
-        return;
-
-      if (parent)
-        parent.$TST.inheritSharingStateFromChildren();
-
-      SidebarConnection.sendMessage({
-        type:     Constants.kCOMMAND_NOTIFY_TAB_SHARING_STATE_UPDATED,
-        windowId: this.tab.windowId,
-        tabId:    this.id,
-        hasSharingCameraMember:     this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER),
-        hasSharingMicrophoneMember: this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER),
-        hasSharingScreenMember:     this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER),
-      });
-    }, 100);
-  }
-
-
-  onNativeGroupModified() {
-    if (this.tab.groupId == -1) {
-      TabsStore.removeNativelyGroupedTab(this.tab);
-    }
-    else {
-      TabsStore.addNativelyGroupedTab(this.tab);
-    }
-
-    this.setAttribute(Constants.kGROUP_ID, this.tab.groupId);
-
-    Tab.onNativeGroupModified.dispatch(this.tab);
-  }
-
+  onNativeGroupModified() {}
 
   setAttribute(attribute, value) {
     if (this.element)
       this.element.setAttribute(attribute, value);
     this.attributes[attribute] = value;
-    this.invalidateCache();
   }
 
   getAttribute(attribute) {
@@ -2043,31 +516,15 @@ export class Tab {
     if (this.element)
       this.element.removeAttribute(attribute);
     delete this.attributes[attribute];
-    this.invalidateCache();
   }
 
-
-  resolveOpened() {
-    if (!mOpenedResolvers.has(this.id))
-      return;
-    for (const resolver of mOpenedResolvers.get(this.id)) {
-      resolver.resolve();
-    }
-    mOpenedResolvers.delete(this.id);
-  }
-  rejectOpened() {
-    if (!mOpenedResolvers.has(this.id))
-      return;
-    for (const resolver of mOpenedResolvers.get(this.id)) {
-      resolver.reject();
-    }
-    mOpenedResolvers.delete(this.id);
-  }
+  resolveOpened() {}
+  rejectOpened() {}
 
   memorizeNeighbors(hint) {
-    if (!this.tab) // already closed tab
+    if (!this.raw) // already closed tab
       return;
-    log(`memorizeNeighbors ${this.tab.id} as ${hint}`);
+    log(`memorizeNeighbors ${this.raw.id} as ${hint}`);
     this.lastPreviousTabId = this.unsafePreviousTab?.id;
     this.lastNextTabId = this.unsafeNextTab?.id;
   }
@@ -2125,38 +582,9 @@ export class Tab {
     return exported;
   }
 
-  apply(exported) { // not optimized and unsafe yet!
-    if (this.isNativeTabGroup) {
-      this.raw.title = exported.title;
-      this.raw.color = exported.color;
-      this.raw.collapsed = exported.collapsed;
-      return;
-    }
-
-    if (!this.tab)
-      return;
-
-    TabsStore.removeTabFromIndexes(this.tab);
-
-    for (const key of Object.keys(exported)) {
-      if (key == '$TST')
-        continue;
-      if (key in this.tab)
-        this.tab[key] = exported[key];
-    }
-
-    this.uniqueId = exported.$TST.uniqueId;
-    this.promisedUniqueId = Promise.resolve(this.uniqueId);
-
-    this.states     = new Set(exported.$TST.states);
-    this.attributes = exported.$TST.attributes;
-
-    this.parent   = exported.$TST.parentId;
-    this.children = exported.$TST.childIds || [];
-
-    TabsStore.updateIndexesForTab(this.tab);
+  apply(exported) {
+    this.raw.title = exported.title;
   }
-
 
   // This function is complex a little, but we should not make a custom class for this purpose,
   // bacause instances of the class will be very short-life and increases RAM usage on
@@ -2168,54 +596,1904 @@ export class Tab {
         this.$exportedForAPIWithPermissions.has(permissionsKey))
       return this.$exportedForAPIWithPermissions.get(permissionsKey);
 
-    let exportedTab = configs.cacheAPITreeItems && light ? this.$exportedForAPI : null;
-    let favIconUrl;
-    const tab = this.tab;
-    if (!exportedTab) {
-      const [effectiveFavIconUrl, children] = await Promise.all([
-        (light ||
-         (!permissions ||
-          (!permissions.has(kPERMISSION_TABS) &&
-           (!permissions.has(kPERMISSION_ACTIVE_TAB) ||
-            !tab?.active)))) ?
-          null :
-          (tab?.id in cache.effectiveFavIconUrls) ?
-            cache.effectiveFavIconUrls[tab?.id] :
-            tab?.favIconUrl?.startsWith('data:') ?
-              tab?.favIconUrl :
-              TabFavIconHelper.getLastEffectiveFavIconURL(tab).catch(ApiTabs.handleMissingTabError),
-        doProgressively(
-          this.raw.$TST.children,
-          child => child.$TST.exportForAPI({ addonId, light, isContextTab, interval, permissions, cache, cacheKey }),
-          interval
-        ),
-      ]);
-      favIconUrl = effectiveFavIconUrl;
+    let exportedTreeItem = configs.cacheAPITreeItems && light ? this.$exportedForAPI : null;
+    if (!exportedTreeItem) {
+      const children = await doProgressively(
+        this.raw.$TST.children,
+        child => child.$TST.exportForAPI({ addonId, light, isContextTab, interval, permissions, cache, cacheKey }),
+        interval
+      );
 
-      if (!(tab?.id in cache.effectiveFavIconUrls))
-        cache.effectiveFavIconUrls[tab?.id] = effectiveFavIconUrl;
-
-      const tabStates = tab?.$TST.states;
-      exportedTab = {
+      const tabStates = this.raw.$TST.states;
+      exportedTreeItem = {
         id:             this.raw.id,
         windowId:       this.raw.windowId,
         type:           this.type,
-        states:         tabStates && Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)) || [],
+        states:         tabStates && tabStates.size > 0 &&Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)) || [],
         indent:         parseInt(this.raw.$TST.getAttribute(Constants.kLEVEL) || 0),
         children,
-        ancestorTabIds: tab?.$TST.ancestorIds || [],
-        bundledTabId:   tab?.$TST.bundledTabId,
+        ancestorTabIds: this.raw.$TST.ancestorIds || [],
+        bundledTabId:   this.raw.$TST.bundledTabId,
       };
       if (this.stuck)
-        exportedTab.states.push(Constants.kTAB_STATE_STUCK);
+        exportedTreeItem.states.push(Constants.kTAB_STATE_STUCK);
       if (configs.cacheAPITreeItems && light)
-        this.$exportedForAPI = exportedTab;
+        this.$exportedForAPI = exportedTreeItem;
     }
 
     if (light)
-      return exportedTab;
+      return exportedTreeItem;
 
-    const fullExportedTab = { ...exportedTab };
+    const fullExportedTreeItem = { ...exportedTreeItem };
+
+    await this.exportFullTreeItemProperties(fullExportedTreeItem, { isContextTab, interval, permissions, cache });
+
+    if (configs.cacheAPITreeItems)
+      this.$exportedForAPIWithPermissions.set(permissionsKey, fullExportedTreeItem)
+    return fullExportedTreeItem;
+  }
+
+  exportFullTreeItemProperties() {}
+
+  invalidateCache() {
+    this.$exportedForAPI = null;
+    this.$exportedForAPIWithPermissions.clear();
+  }
+
+  applyStatesToElement() {
+    if (!this.element)
+      return;
+
+    this.applyAttributesToElement();
+
+    for (const state of this.states) {
+      this.element.classList.add(state);
+    }
+
+    for (const [name, value] of Object.entries(this.attributes)) {
+      this.element.setAttribute(name, value);
+    }
+  }
+
+  applyAttributesToElement() {
+    if (!this.element)
+      return;
+
+    this.element.applyAttributes();
+  }
+
+  /* element utilities */
+
+  invalidateElement(targets) {
+    if (this.element?.invalidate)
+      this.element.invalidate(targets);
+  }
+
+  updateElement(targets) {
+    if (this.element?.update)
+      this.element.update(targets);
+  }
+}
+
+TreeItem.onElementBound = new EventListenerManager();
+
+// The list of properties which should be ignored when synchronization from the
+// background to sidebars.
+TreeItem.UNSYNCHRONIZABLE_PROPERTIES = new Set([
+  'id',
+  // Ignore "index" on synchronization, because it maybe wrong for the sidebar.
+  // Index of tabs are managed and fixed by other sections like handling of
+  // "kCOMMAND_NOTIFY_TAB_CREATING", Window.prototype.trackTab, and others.
+  // See also: https://github.com/piroor/treestyletab/issues/2119
+  'index',
+  'reindexedBy'
+]);
+
+// key = addon ID
+// value = Set of states
+TreeItem.autoStickyStates = new Map();
+
+TreeItem.registerAutoStickyState = (providerId, statesToAdd) => {
+  if (!statesToAdd) {
+    statesToAdd = providerId;
+    providerId = browser.runtime.id;
+  }
+  const states = TreeItem.autoStickyStates.get(providerId) || new Set();
+  if (!Array.isArray(statesToAdd))
+    statesToAdd = [statesToAdd];
+  for (const state of statesToAdd) {
+    states.add(state)
+  }
+  if (states.size == 0)
+    return;
+
+  TreeItem.autoStickyStates.set(providerId, states);
+
+  if (Constants.IS_BACKGROUND) {
+    SidebarConnection.sendMessage({
+      type: Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
+      providerId,
+      add:  [...statesToAdd],
+    });
+  }
+};
+
+TreeItem.unregisterAutoStickyState = (providerId, statesToRemove) => {
+  if (!statesToRemove) {
+    statesToRemove = providerId;
+    providerId = browser.runtime.id;
+  }
+  const states = TreeItem.autoStickyStates.get(providerId);
+  if (!states)
+    return;
+  if (!Array.isArray(statesToRemove))
+    statesToRemove = [statesToRemove];
+  for (const state of statesToRemove) {
+    states.delete(state)
+  }
+  if (states.size > 0)
+    TreeItem.autoStickyStates.set(providerId, states);
+  else
+    TreeItem.autoStickyStates.delete(providerId);
+
+  if (Constants.IS_BACKGROUND) {
+    SidebarConnection.sendMessage({
+      type:   Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
+      providerId,
+      remove: [...statesToRemove],
+    });
+  }
+};
+
+TreeItem.uniqTabsAndDescendantsSet = tabs => {
+  if (!Array.isArray(tabs))
+    tabs = [tabs];
+  return Array.from(new Set(tabs.map(tab => [tab].concat(tab.$TST.descendants)).flat())).sort(TreeItem.compare);
+}
+
+TreeItem.compare = (a, b) => {
+  const delta = a.index - b.index;
+  const aIsGroup = a.$TST?.isNativeTabGroup;
+  if (delta != 0 ||
+      aIsGroup == b.$TST?.isNativeTabGroup) {
+    return delta;
+  }
+  if (aIsGroup) {
+    return -1;
+  }
+  return 1;
+}
+
+TreeItem.sort = tabs => tabs.length == 0 ? tabs : tabs.sort(TreeItem.compare);
+
+
+
+export class TabGroup extends TreeItem {
+  constructor(raw) {
+    super(raw);
+
+    this.isNativeTabGroup = true;
+  }
+
+  get type() {
+    return 'group';
+  }
+
+  get rawGroup() {
+    return this.raw;
+  }
+
+  get nearestVisibleAncestorOrSelf() {
+    return this.raw;
+  }
+
+  get children() {
+    return TabGroup.getMemberTabs({ windowId: this.raw.windowId, groupId: this.raw.id }).filter(tab => !tab.$TST.parentId);
+  }
+
+  get hasChild() {
+    return !!TabGroup.getFirstMemberTab({ windowId: this.raw.windowId, groupId: this.raw.id });
+  }
+
+  get descendants() {
+    return TabGroup.getMemberTabs({ windowId: this.raw.windowId, groupId: this.raw.id });
+  }
+
+  apply(exported) {
+    super.apply(exported);
+    this.raw.color = exported.color;
+    this.raw.collapsed = exported.collapsed;
+  }
+}
+
+TabGroup.get = ({ windowId, groupId }) => TabsStore.windows.get(windowId).tabGroups.get(groupId);
+
+TabGroup.init = group => {
+  if (group.$TST instanceof TabGroup) {
+    return group;
+  }
+  if ('index' in group) {
+    group.index = -1;
+  }
+  group.$TST = new TabGroup(group);
+  return group;
+};
+
+TabGroup.getMemberTabs = ({ windowId, groupId }, options = {}) => {
+  return TabsStore.queryAll({
+    windowId,
+    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+    living: true,
+    groupId,
+    ordered: true,
+    ...options
+  });
+};
+
+TabGroup.getFirstMemberTab = ({ windowId, groupId }, options = {}) => {
+  return TabsStore.query({
+    windowId,
+    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+    living: true,
+    groupId,
+    ...options,
+    ordered: true,
+    first: true,
+  });
+};
+
+
+export class Tab extends TreeItem {
+  constructor(raw) {
+    const alreadyTracked = Tab.get(raw.id);
+    if (alreadyTracked)
+      return alreadyTracked.$TST;
+
+    log(`tab ${dumpTab(raw)} is newly tracked: `, raw);
+
+    super(raw);
+
+    this.index = raw.index;
+
+    this.opened = new Promise((resolve, reject) => {
+      const resolvers = mOpenedResolvers.get(raw.id) || new Set();
+      resolvers.add({ resolve, reject });
+      mOpenedResolvers.set(raw.id, resolvers);
+    });
+
+    TabsStore.tabs.set(raw.id, raw);
+
+    const win = TabsStore.windows.get(raw.windowId) || new Window(raw.windowId);
+    win.trackTab(raw);
+
+    // Don't update indexes here, instead Window.prototype.trackTab()
+    // updates indexes because indexes are bound to windows.
+    // TabsStore.updateIndexesForTab(raw);
+
+    if (raw.active) {
+      TabsStore.activeTabInWindow.set(raw.windowId, raw);
+      TabsStore.activeTabsInWindow.get(raw.windowId).add(raw);
+    }
+    else {
+      TabsStore.activeTabsInWindow.get(raw.windowId).delete(raw);
+    }
+
+    const incompletelyTrackedTabsPerWindow = mIncompletelyTrackedTabs.get(raw.windowId) || new Set();
+    incompletelyTrackedTabsPerWindow.add(raw);
+    mIncompletelyTrackedTabs.set(raw.windowId, incompletelyTrackedTabsPerWindow);
+    this.promisedUniqueId.then(() => {
+      incompletelyTrackedTabsPerWindow.delete(raw);
+      Tab.onTracked.dispatch(raw);
+    });
+  }
+
+  destroy() {
+    mPromisedTrackedTabs.delete(`${this.id}:true`);
+    mPromisedTrackedTabs.delete(`${this.id}:false`);
+
+    Tab.onDestroyed.dispatch(this.raw);
+    this.detach();
+
+    if (this.temporaryMetadata.has('reservedCleanupNeedlessGroupTab')) {
+      clearTimeout(this.temporaryMetadata.get('reservedCleanupNeedlessGroupTab'));
+      this.temporaryMetadata.delete('reservedCleanupNeedlessGroupTab');
+    }
+
+    TabsStore.tabs.delete(this.id);
+    if (this.uniqueId)
+      TabsStore.tabsByUniqueId.delete(this.uniqueId.id);
+
+    TabsStore.removeTabFromIndexes(this.raw);
+
+    super.destroy();
+  }
+
+  startMoving() {
+    let onTabMoved;
+    const promisedMoved = new Promise((resolve, _reject) => {
+      onTabMoved = resolve;
+    });
+    const movingTabs = mMovingTabs.get(this.raw.windowId) || new Set();
+    movingTabs.add(promisedMoved);
+    mMovingTabs.set(this.raw.windowId, movingTabs);
+    promisedMoved.then(() => {
+      movingTabs.delete(promisedMoved);
+    });
+    return onTabMoved;
+  }
+
+  updateUniqueId(options = {}) {
+    if (!this.raw) {
+      const error = new Error('FATAL ERROR: updateUniqueId() is unavailable for an invalid tab');
+      console.log(error);
+      throw error;
+    }
+    if (options.id) {
+      if (this.uniqueId.id)
+        TabsStore.tabsByUniqueId.delete(this.uniqueId.id);
+      this.uniqueId.id = options.id;
+      TabsStore.tabsByUniqueId.set(options.id, this.raw);
+      this.setAttribute(Constants.kPERSISTENT_ID, options.id);
+      return Promise.resolve(this.uniqueId);
+    }
+    return UniqueId.request(this.raw, options).then(uniqueId => {
+      if (uniqueId && TabsStore.ensureLivingTab(this.raw)) { // possibly removed from document while waiting
+        this.uniqueId = uniqueId;
+        TabsStore.tabsByUniqueId.set(uniqueId.id, this.raw);
+        this.setAttribute(Constants.kPERSISTENT_ID, uniqueId.id);
+      }
+      return uniqueId || {};
+    }).catch(error => {
+      console.log(`FATAL ERROR: Failed to get unique id for a tab ${this.id}: `, error);
+      return {};
+    });
+  }
+
+  get type() {
+    return 'tab';
+  }
+
+  get tab() {
+    return this.raw;
+  }
+
+  get nativeTabGroup() {
+    if (this.raw.groupId == -1) {
+      return null;
+    }
+    return TabGroup.get(this.raw);
+  }
+
+  //===================================================================
+  // status of tab
+  //===================================================================
+
+  get soundPlaying() {
+    return !!(this.raw?.audible && !this.raw?.mutedInfo.muted);
+  }
+  get maybeSoundPlaying() {
+    return (this.soundPlaying ||
+            (this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER) &&
+             this.hasChild));
+  }
+
+  get muted() {
+    return !!(this.raw?.mutedInfo?.muted);
+  }
+  get maybeMuted() {
+    return (this.muted ||
+            (this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER) &&
+             this.hasChild));
+  }
+
+  get autoplayBlocked() {
+    return this.states.has(Constants.kTAB_STATE_AUTOPLAY_BLOCKED);
+  }
+  get maybeAutoplayBlocked() {
+    return (this.autoplayBlocked ||
+            (this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER) &&
+             this.hasChild));
+  }
+
+  get sharingCamera() {
+    return !!(this.raw?.sharingState?.camera);
+  }
+  get maybeSharingCamera() {
+    return (this.sharingCamera ||
+            (this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER) &&
+             this.hasChild));
+  }
+
+  get sharingMicrophone() {
+    return !!(this.raw?.sharingState?.microphone);
+  }
+  get maybeSharingMicrophone() {
+    return (this.sharingMicrophone ||
+            (this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER) &&
+             this.hasChild));
+  }
+
+  get sharingScreen() {
+    return !!(this.raw?.sharingState?.screen);
+  }
+  get maybeSharingScreen() {
+    return (this.sharingScreen ||
+            (this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER) &&
+             this.hasChild));
+  }
+
+  get precedesPinnedTab() {
+    const following = this.nearestVisibleFollowingTab;
+    return following && following.pinned;
+  }
+
+  get followsUnpinnedTab() {
+    const preceding = this.nearestVisiblePrecedingTab;
+    return preceding && !preceding.pinned;
+  }
+
+  get isNewTabCommandTab() {
+    if (!this.raw ||
+        !configs.guessNewOrphanTabAsOpenedByNewTabCommand)
+      return false;
+
+    if (this.raw.$isNewTabCommandTab)
+      return true;
+
+    // Firefox sets "New Tab" title to a new tab command tab, even if
+    // "Blank Page" is chosen as the new tab page. So we can detect the case
+    // safely here.
+    // (confirmed on Firefox 124)
+    if (isNewTabCommandTab(this.raw))
+      return true;
+
+    // Firefox always opens a blank tab as the placeholder, when trying to
+    // open a bookmark in a new tab. So, we cannot determine the tab is
+    // "really opened as a new blank tab" or "just as a placeholder for an
+    // Open in New Tab operation", when the user choose the "Blank Page"
+    // as the new tab page and the new tab page is opened without the title
+    // "New Tab" due to any reason.
+    // But, when "Blank Page" is chosen as the new tab page, Firefox loads
+    // "about:blank" into a newly opened blank tab. As the result both current
+    // URL and the previous URL become "about:blank". This is an important
+    // difference between "a new blank tab" and "a blank tab opened for an
+    // Open in New Tab command".
+    // (confirmed on Firefox 124)
+    if (this.raw.url == 'about:blank' &&
+        this.raw.previousUrl != 'about:blank')
+      return false;
+
+    return false;
+  }
+
+  get isGroupTab() {
+    return this.states.has(Constants.kTAB_STATE_GROUP_TAB) ||
+           this.hasGroupTabURL;
+  }
+
+  get hasGroupTabURL() {
+    return !!(this.raw?.url?.indexOf(Constants.kGROUP_TAB_URI) == 0);
+  }
+
+  get isTemporaryGroupTab() {
+    if (!this.raw || !this.isGroupTab)
+      return false;
+    return (new URL(this.raw.url)).searchParams.get('temporary') == 'true';
+  }
+
+  get isTemporaryAggressiveGroupTab() {
+    if (!this.raw || !this.isGroupTab)
+      return false;
+    return (new URL(this.raw.url)).searchParams.get('temporaryAggressive') == 'true';
+  }
+
+  get replacedParentGroupTabCount() {
+    if (!this.raw || !this.isGroupTab)
+      return 0;
+    const count = parseInt((new URL(this.raw.url)).searchParams.get('replacedParentCount'));
+    return isNaN(count) ? 0 : count;
+  }
+
+  // Firefox Multi-Account Containers
+  // https://addons.mozilla.org/firefox/addon/multi-account-containers/
+  // Temporary Containers
+  // https://addons.mozilla.org/firefox/addon/temporary-containers/
+  get mayBeReplacedWithContainer() {
+    return !!(
+      this.$possiblePredecessorPreviousTab ||
+      this.$possiblePredecessorNextTab
+    );
+  }
+  get $possiblePredecessorPreviousTab() {
+    const prevTab = this.unsafePreviousTab;
+    return (
+      prevTab &&
+      this.raw &&
+      this.raw.cookieStoreId != prevTab.cookieStoreId &&
+      this.raw.url == prevTab.url
+    ) ? prevTab : null;
+  }
+  get $possiblePredecessorNextTab() {
+    const nextTab = this.unsafeNextTab;
+    return (
+      nextTab &&
+      this.raw &&
+      this.raw.cookieStoreId != nextTab.cookieStoreId &&
+      this.raw.url == nextTab.url
+    ) ? nextTab : null;
+  }
+  get possibleSuccessorWithDifferentContainer() {
+    const firstChild = this.firstChild;
+    const nextTab = this.nextTab;
+    const prevTab = this.previousTab;
+    return (
+      (firstChild &&
+       firstChild.$TST.$possiblePredecessorPreviousTab == this.raw &&
+       firstChild) ||
+      (nextTab &&
+       !nextTab.$TST.temporaryMetadata.has('openedCompletely') &&
+       nextTab.$TST.$possiblePredecessorPreviousTab == this.raw &&
+       nextTab) ||
+      (prevTab &&
+       !prevTab.$TST.temporaryMetadata.has('openedCompletely') &&
+       prevTab.$TST.$possiblePredecessorNextTab == this.raw &&
+       prevTab)
+    );
+  }
+
+  get selected() {
+    return this.states.has(Constants.kTAB_STATE_SELECTED) ||
+             (this.hasOtherHighlighted && !!(this.raw && this.raw.highlighted));
+  }
+
+  get multiselected() {
+    return this.raw &&
+             this.selected &&
+             (this.hasOtherHighlighted ||
+              TabsStore.selectedTabsInWindow.get(this.raw.windowId).size > 1);
+  }
+
+  get hasOtherHighlighted() {
+    const highlightedTabs = this.raw && TabsStore.highlightedTabsInWindow.get(this.raw.windowId);
+    return !!(highlightedTabs && highlightedTabs.size > 1);
+  }
+
+  get canBecomeSticky() {
+    if (this.raw?.pinned) {
+      return false;
+    }
+    return super.canBecomeSticky;
+  }
+
+  get promisedPossibleOpenerBookmarks() {
+    if ('possibleOpenerBookmarks' in this)
+      return Promise.resolve(this.possibleOpenerBookmarks);
+    return new Promise(async (resolve, _reject) => {
+      if (!browser.bookmarks || !this.raw)
+        return resolve(this.possibleOpenerBookmarks = []);
+      // A new tab from bookmark is opened with a title: its URL without the scheme part.
+      const url = this.raw.$possibleInitialUrl;
+      try {
+        const possibleBookmarks = await Promise.all([
+          this._safeSearchBookmstksWithUrl(`http://${url}`),
+          this._safeSearchBookmstksWithUrl(`http://www.${url}`),
+          this._safeSearchBookmstksWithUrl(`https://${url}`),
+          this._safeSearchBookmstksWithUrl(`https://www.${url}`),
+          this._safeSearchBookmstksWithUrl(`ftp://${url}`),
+          this._safeSearchBookmstksWithUrl(`moz-extension://${url}`),
+          this._safeSearchBookmstksWithUrl(url), // about:* and so on
+        ]);
+        log(`promisedPossibleOpenerBookmarks for tab ${this.id} (${url}): `, possibleBookmarks);
+        resolve(this.possibleOpenerBookmarks = possibleBookmarks.flat());
+      }
+      catch(error) {
+        log(`promisedPossibleOpenerBookmarks for the tab {this.id} (${url}): `, error);
+        // If it is detected as "not a valid URL", then
+        // it cannot be a tab opened from a bookmark.
+        resolve(this.possibleOpenerBookmarks = []);
+      }
+    });
+  }
+  async _safeSearchBookmstksWithUrl(url) {
+    try {
+      return await browser.bookmarks.search({ url });
+    }
+    catch(error) {
+      log(`_searchBookmstksWithUrl failed: tab ${this.id} (${url}): `, error);
+      try {
+        // bookmarks.search() does not accept "moz-extension:" URL
+        // via a queyr with "url" on Firefox 105 and later - it raises an error as
+        // "Uncaught Error: Type error for parameter query (Value must either:
+        // be a string value, or .url must match the format "url") for bookmarks.search."
+        // Thus we use a query with "query" to avoid the error.
+        // See also: https://github.com/piroor/treestyletab/issues/3203
+        //           https://bugzilla.mozilla.org/show_bug.cgi?id=1791313
+        const bookmarks = await browser.bookmarks.search({ query: url }).catch(_error => []);
+        return bookmarks.filter(bookmark => bookmark.url == url);
+      }
+      catch(_error) {
+        return [];
+      }
+    }
+  }
+
+  get cookieStoreName() {
+    const identity = this.raw?.cookieStoreId && ContextualIdentities.get(this.raw.cookieStoreId);
+    return identity ? identity.name : null;
+  }
+
+  get defaultTooltipText() {
+    return this.cookieStoreName ? `${this.raw.title} - ${this.cookieStoreName}` : super.title;
+  }
+
+  get tooltipHtml() {
+    return this.cookieStoreName ?
+      `<span class="title-line"
+            ><span class="title"
+                  >${sanitizeForHTMLText(this.raw.title)}</span
+            ><span class="cookieStoreName"
+                  >${sanitizeForHTMLText(this.cookieStoreName)}</span></span>` :
+      super.tooltipHtml;
+  }
+
+  registerTooltipText(ownerId, text, isHighPriority = false) {
+    super.registerTooltipText(ownerId, text, isHighPriority);
+    if (Constants.IS_BACKGROUND)
+      Tab.broadcastTooltipText(this.raw);
+  }
+
+  unregisterTooltipText(ownerId) {
+    super.unregisterTooltipText(ownerId);
+    if (Constants.IS_BACKGROUND)
+      Tab.broadcastTooltipText(this.raw);
+  }
+
+  //===================================================================
+  // neighbor tabs
+  //===================================================================
+
+  get nextTab() {
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.controllableTabsInWindow.get(this.raw.windowId),
+      fromId:   this.id,
+      controllable: true,
+      index:    (index => index > this.raw.index)
+    });
+  }
+
+  get previousTab() {
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.controllableTabsInWindow.get(this.raw.windowId),
+      fromId:   this.id,
+      controllable: true,
+      index:    (index => index < this.raw.index),
+      last:     true
+    });
+  }
+
+  get unsafeNextTab() {
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      fromId:   this.id,
+      index:    (index => index > this.raw.index)
+    });
+  }
+
+  get unsafePreviousTab() {
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      fromId:   this.id,
+      index:    (index => index < this.raw.index),
+      last:     true
+    });
+  }
+
+  get nearestCompletelyOpenedNormalFollowingTab() { // including hidden tabs!
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.unpinnedTabsInWindow.get(this.raw.windowId),
+      states:   [Constants.kTAB_STATE_CREATING, false],
+      fromId:   this.id,
+      living:   true,
+      index:    (index => index > this.raw.index)
+    });
+  }
+
+  get nearestCompletelyOpenedNormalPrecedingTab() { // including hidden tabs!
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.unpinnedTabsInWindow.get(this.raw.windowId),
+      states:   [Constants.kTAB_STATE_CREATING, false],
+      fromId:   this.id,
+      living:   true,
+      index:    (index => index < this.raw.index),
+      last:     true
+    });
+  }
+
+  get nearestVisibleFollowingTab() { // visible, not-collapsed
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.visibleTabsInWindow.get(this.raw.windowId),
+      fromId:   this.id,
+      visible:  true,
+      index:    (index => index > this.raw.index)
+    });
+  }
+
+  get unsafeNearestExpandedFollowingTab() { // not-collapsed, possibly hidden
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.expandedTabsInWindow.get(this.raw.windowId),
+      fromId:   this.id,
+      index:    (index => index > this.raw.index)
+    });
+  }
+
+  get nearestVisiblePrecedingTab() { // visible, not-collapsed
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.visibleTabsInWindow.get(this.raw.windowId),
+      fromId:   this.id,
+      visible:  true,
+      index:    (index => index < this.raw.index),
+      last:     true
+    });
+  }
+
+  get unsafeNearestExpandedPrecedingTab() { // not-collapsed, possibly hidden
+    return this.raw && TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.expandedTabsInWindow.get(this.raw.windowId),
+      fromId:   this.id,
+      index:    (index => index < this.raw.index),
+      last:     true
+    });
+  }
+
+  get nearestLoadedTab() {
+    const tabs = this.raw && TabsStore.visibleTabsInWindow.get(this.raw.windowId);
+    return this.raw && (
+      // nearest following tab
+      TabsStore.query({
+        windowId:  this.raw.windowId,
+        tabs,
+        discarded: false,
+        fromId:    this.id,
+        visible:   true,
+        index:     (index => index > this.raw.index)
+      }) ||
+      // nearest preceding tab
+      TabsStore.query({
+        windowId:  this.raw.windowId,
+        tabs,
+        discarded: false,
+        fromId:    this.id,
+        visible:   true,
+        index:     (index => index < this.raw.index),
+        last:      true
+      })
+    );
+  }
+
+  get nearestLoadedTabInTree() {
+    if (!this.raw)
+      return null;
+    let tab = this.raw;
+    const tabs = TabsStore.visibleTabsInWindow.get(tab.windowId);
+    let lastLastDescendant;
+    while (tab) {
+      const parent = tab.$TST.parent;
+      if (!parent)
+        return null;
+      const lastDescendant = parent.$TST.lastDescendant;
+      const loadedTab = (
+        // nearest following tab
+        TabsStore.query({
+          windowId:     tab.windowId,
+          tabs,
+          descendantOf: parent.id,
+          discarded:    false,
+          '!id':        this.id,
+          fromId:       (lastLastDescendant || this.raw).id,
+          toId:         lastDescendant.id,
+          visible:      true,
+          index:        (index => index > this.raw.index)
+        }) ||
+        // nearest preceding tab
+        TabsStore.query({
+          windowId:     tab.windowId,
+          tabs,
+          descendantOf: parent.id,
+          discarded:    false,
+          '!id':        this.id,
+          fromId:       tab.id,
+          toId:         parent.$TST.firstChild.id,
+          visible:      true,
+          index:        (index => index < tab.index),
+          last:         true
+        })
+      );
+      if (loadedTab)
+        return loadedTab;
+      if (!parent.discarded)
+        return parent;
+      lastLastDescendant = lastDescendant;
+      tab = tab.$TST.parent;
+    }
+    return null;
+  }
+
+  get nearestLoadedSiblingTab() {
+    const parent = this.parent;
+    if (!parent || !this.raw)
+      return null;
+    const tabs = TabsStore.visibleTabsInWindow.get(this.raw.windowId);
+    return (
+      // nearest following tab
+      TabsStore.query({
+        windowId:  this.raw.windowId,
+        tabs,
+        childOf:   parent.id,
+        discarded: false,
+        fromId:    this.id,
+        toId:      parent.$TST.lastChild.id,
+        visible:   true,
+        index:     (index => index > this.raw.index)
+      }) ||
+      // nearest preceding tab
+      TabsStore.query({
+        windowId:  this.raw.windowId,
+        tabs,
+        childOf:   parent.id,
+        discarded: false,
+        fromId:    this.id,
+        toId:      parent.$TST.firstChild.id,
+        visible:   true,
+        index:     (index => index < this.raw.index),
+        last:      true
+      })
+    );
+  }
+
+  get nearestSameTypeRenderedTab() {
+    let tab = this.raw;
+    const pinned = tab.pinned;
+    while (tab.$TST.unsafeNextTab) {
+      tab = tab.$TST.unsafeNextTab;
+      if (tab.pinned != pinned)
+        return null;
+      if (tab.$TST.element &&
+          tab.$TST.element.parentNode)
+        return tab;
+    }
+    return null;
+  }
+
+  //===================================================================
+  // tree relations
+  //===================================================================
+
+  set parent(tab) {
+    const newParentId = tab && (typeof tab == 'number' ? tab : tab.id);
+    if (!this.raw ||
+        newParentId == this.parentId)
+      return tab;
+
+    const oldParent = this.parent;
+    this.parentId = newParentId;
+    this.invalidateCachedAncestors();
+    const parent = this.parent;
+    if (parent) {
+      this.setAttribute(Constants.kPARENT, parent.id);
+      parent.$TST.invalidateCachedDescendants();
+
+      if (this.states.has(Constants.kTAB_STATE_SOUND_PLAYING))
+        parent.$TST.soundPlayingChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER))
+        parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_MUTED))
+        parent.$TST.mutedChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER))
+        parent.$TST.maybeMutedChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_AUTOPLAY_BLOCKED))
+        parent.$TST.autoplayBlockedChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER))
+        parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
+      parent.$TST.inheritSoundStateFromChildren();
+
+      if (this.states.has(Constants.kTAB_STATE_SHARING_CAMERA))
+        parent.$TST.sharingCameraChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER))
+        parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_SHARING_MICROPHONE))
+        parent.$TST.sharingMicrophoneChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER))
+        parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_SHARING_SCREEN))
+        parent.$TST.sharingScreenChildrenIds.add(this.id);
+      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER))
+        parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
+      parent.$TST.inheritSharingStateFromChildren();
+
+      TabsStore.removeRootTab(this.raw);
+    }
+    else {
+      this.removeAttribute(Constants.kPARENT);
+      TabsStore.addRootTab(this.raw);
+    }
+    if (oldParent && oldParent.id != this.parentId) {
+      oldParent.$TST.soundPlayingChildrenIds.delete(this.id);
+      oldParent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
+      oldParent.$TST.mutedChildrenIds.delete(this.id);
+      oldParent.$TST.maybeMutedChildrenIds.delete(this.id);
+      oldParent.$TST.autoplayBlockedChildrenIds.delete(this.id);
+      oldParent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
+      oldParent.$TST.inheritSoundStateFromChildren();
+
+      oldParent.$TST.sharingCameraChildrenIds.delete(this.id);
+      oldParent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
+      oldParent.$TST.sharingMicrophoneChildrenIds.delete(this.id);
+      oldParent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
+      oldParent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
+      oldParent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
+      oldParent.$TST.inheritSharingStateFromChildren();
+
+      oldParent.$TST.children = oldParent.$TST.childIds.filter(id => id != this.id);
+    }
+    return tab;
+  }
+  get parent() {
+    return this.raw && this.parentId && TabsStore.ensureLivingTab(Tab.get(this.parentId));
+  }
+
+  get hasParent() {
+    return !!this.parentId;
+  }
+
+  get ancestorIds() {
+    if (!this.cachedAncestorIds)
+      this.updateAncestors();
+    return this.cachedAncestorIds;
+  }
+
+  get ancestors() {
+    return mapAndFilter(this.ancestorIds,
+                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
+  }
+
+  updateAncestors() {
+    const ancestors = [];
+    this.cachedAncestorIds = [];
+    if (!this.raw)
+      return ancestors;
+    let descendant = this.raw;
+    while (true) {
+      const parent = Tab.get(descendant.$TST.parentId);
+      if (!parent)
+        break;
+      ancestors.push(parent);
+      this.cachedAncestorIds.push(parent.id);
+      descendant = parent;
+    }
+    return ancestors;
+  }
+
+  get level() {
+    return this.ancestorIds.length;
+  }
+
+  invalidateCachedAncestors() {
+    this.cachedAncestorIds = null;
+    for (const child of this.children) {
+      child.$TST.invalidateCachedAncestors();
+    }
+    this.invalidateCache();
+  }
+
+  get rootTab() {
+    const ancestors = this.ancestors;
+    return ancestors.length > 0 ? ancestors[ancestors.length-1] : this.raw ;
+  }
+
+  get topmostSubtreeCollapsedAncestor() {
+    for (const ancestor of [...this.ancestors].reverse()) {
+      if (ancestor.$TST.subtreeCollapsed)
+        return ancestor;
+    }
+    return null;
+  }
+
+  get nearestVisibleAncestorOrSelf() {
+    for (const ancestor of this.ancestors) {
+      if (!ancestor.$TST.collapsed)
+        return ancestor;
+    }
+    if (!this.collapsed)
+      return this.raw;
+    return null;
+  }
+
+  get nearestFollowingRootTab() {
+    return TabsStore.query({
+      windowId:  this.raw.windowId,
+      tabs:      TabsStore.rootTabsInWindow.get(this.raw.windowId),
+      fromId:    this.id,
+      living:    true,
+      index:     (index => index > this.raw.index),
+      hasParent: false,
+      first:     true
+    });
+  }
+
+  set children(tabs) {
+    if (!this.raw)
+      return tabs;
+
+    const ancestorIds = this.ancestorIds;
+    const newChildIds = mapAndFilter(tabs, tab => {
+      const id = typeof tab == 'number' ? tab : tab && tab.id;
+      if (!ancestorIds.includes(id))
+        return TabsStore.ensureLivingTab(Tab.get(id)) ? id : undefined;
+      console.log('FATAL ERROR: Cyclic tree structure has detected and prevented. ', {
+        ancestorsOfSelf: this.ancestors,
+        tabs,
+        tab,
+        stack: new Error().stack
+      });
+      return undefined;
+    });
+    if (newChildIds.join('|') == this.childIds.join('|'))
+      return tabs;
+
+    const oldChildren = this.children;
+    this.childIds = newChildIds;
+    this.sortAndInvalidateChildren();
+    if (this.childIds.length > 0) {
+      this.setAttribute(Constants.kCHILDREN, `|${this.childIds.join('|')}|`);
+      if (this.isSubtreeCollapsable)
+        TabsStore.addSubtreeCollapsableTab(this.raw);
+    }
+    else {
+      this.removeAttribute(Constants.kCHILDREN);
+      TabsStore.removeSubtreeCollapsableTab(this.raw);
+    }
+    for (const child of Array.from(new Set(this.children.concat(oldChildren)))) {
+      if (this.childIds.includes(child.id))
+        child.$TST.parent = this.id;
+      else
+        child.$TST.parent = null;
+    }
+    return tabs;
+  }
+  get children() {
+    return mapAndFilter(this.childIds,
+                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
+  }
+
+  sortAndInvalidateChildren() {
+    // Tab.get(tabId) calls into TabsStore.tabs.get(tabId), which is just a
+    // Map. This is acceptable to repeat in order to avoid two array copies,
+    // especially on larger tab sets.
+    this.childIds.sort((a, b) => TreeItem.compare(Tab.get(a), Tab.get(b)));
+    this.invalidateCachedDescendants();
+  }
+
+  get hasChild() {
+    return this.childIds.length > 0;
+  }
+
+  get descendants() {
+    if (!this.cachedDescendantIds)
+      return this.updateDescendants();
+    return mapAndFilter(this.cachedDescendantIds,
+                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
+  }
+
+  updateDescendants() {
+    let descendants = [];
+    this.cachedDescendantIds = [];
+    for (const child of this.children) {
+      descendants.push(child);
+      descendants = descendants.concat(child.$TST.descendants);
+      this.cachedDescendantIds.push(child.id);
+      this.cachedDescendantIds = this.cachedDescendantIds.concat(child.$TST.cachedDescendantIds);
+    }
+    return descendants;
+  }
+
+  invalidateCachedDescendants() {
+    this.cachedDescendantIds = null;
+    const parent = this.parent;
+    if (parent)
+      parent.$TST.invalidateCachedDescendants();
+    this.invalidateCache();
+  }
+
+  get nextSiblingTab() {
+    if (!this.raw)
+      return null;
+    const parent = this.parent;
+    if (parent) {
+      const siblingIds = parent.$TST.childIds;
+      const index = siblingIds.indexOf(this.id);
+      const siblingId = index < siblingIds.length - 1 ? siblingIds[index + 1] : null ;
+      if (!siblingId)
+        return null;
+      return Tab.get(siblingId);
+    }
+    else {
+      const nextSibling = TabsStore.query({
+        windowId:  this.raw.windowId,
+        tabs:      TabsStore.rootTabsInWindow.get(this.raw.windowId),
+        fromId:    this.id,
+        living:    true,
+        index:     (index => index > this.raw.index),
+        hasParent: false,
+        first:     true
+      });
+      // We should treat only pinned tab as the next sibling tab of a pinned
+      // tab. For example, if the last pinned tab is closed, Firefox moves
+      // focus to the first normal tab. But the previous pinned tab looks
+      // natural on TST because pinned tabs are visually grouped.
+      if (nextSibling &&
+          nextSibling.pinned != this.raw.pinned)
+        return null;
+      return nextSibling;
+    }
+  }
+
+  get previousSiblingTab() {
+    if (!this.raw)
+      return null;
+    const parent = this.parent;
+    if (parent) {
+      const siblingIds = parent.$TST.childIds;
+      const index = siblingIds.indexOf(this.id);
+      const siblingId = index > 0 ? siblingIds[index - 1] : null ;
+      if (!siblingId)
+        return null;
+      return Tab.get(siblingId);
+    }
+    else {
+      return TabsStore.query({
+        windowId:  this.raw.windowId,
+        tabs:      TabsStore.rootTabsInWindow.get(this.raw.windowId),
+        fromId:    this.id,
+        living:    true,
+        index:     (index => index < this.raw.index),
+        hasParent: false,
+        last:      true
+      });
+    }
+  }
+
+  get needToBeGroupedSiblings() {
+    if (!this.raw)
+      return [];
+    const openerTabUniqueId = this.getAttribute(Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID);
+    if (!openerTabUniqueId)
+      return [];
+    return TabsStore.queryAll({
+      windowId:   this.raw.windowId,
+      tabs:       TabsStore.toBeGroupedTabsInWindow.get(this.raw.windowId),
+      normal:     true,
+      '!id':      this.id,
+      attributes: [
+        Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID, openerTabUniqueId,
+        Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER, ''
+      ],
+      ordered:    true
+    });
+  }
+
+  //===================================================================
+  // other relations
+  //===================================================================
+
+  get openerTab() {
+    if (this.raw?.openerTabId == this.id)
+      return null;
+
+    if (!this.raw?.openerTabId)
+      return Tab.getOpenerFromGroupTab(this.raw);
+
+    return TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.livingTabsInWindow.get(this.raw.windowId),
+      id:       this.raw.openerTabId,
+      living:   true
+    });
+  }
+
+  get hasPinnedOpener() {
+    return this.openerTab?.pinned;
+  }
+
+  get hasFirefoxViewOpener() {
+    return isFirefoxViewTab(this.openerTab);
+  }
+
+  get bundledTab() {
+    if (!this.raw)
+      return null;
+    const substance = Tab.getSubstanceFromAliasGroupTab(this.raw);
+    if (substance)
+      return substance;
+    if (this.raw.pinned)
+      return Tab.getGroupTabForOpener(this.raw);
+    if (this.isGroupTab)
+      return Tab.getOpenerFromGroupTab(this.raw);
+    return null;
+  }
+
+  get bundledTabId() {
+    const tab = this.bundledTab;
+    return tab ? tab.id : -1;
+  }
+
+  findSuccessor(options = {}) {
+    if (!this.raw)
+      return null;
+    if (typeof options != 'object')
+      options = {};
+    const ignoredTabs = (options.ignoredTabs || []).slice(0);
+    let foundTab = this.raw;
+    do {
+      ignoredTabs.push(foundTab);
+      foundTab = foundTab.$TST.nextTab;
+    } while (foundTab && ignoredTabs.includes(foundTab));
+    if (!foundTab) {
+      foundTab = this.raw;
+      do {
+        ignoredTabs.push(foundTab);
+        foundTab = foundTab.$TST.nearestVisiblePrecedingTab;
+      } while (foundTab && ignoredTabs.includes(foundTab));
+    }
+    return foundTab;
+  }
+
+  get lastRelatedTab() {
+    return Tab.get(this.lastRelatedTabId) || null;
+  }
+  set lastRelatedTab(relatedTab) {
+    if (!this.raw)
+      return relatedTab;
+    const previousLastRelatedTabId = this.lastRelatedTabId;
+    const win = TabsStore.windows.get(this.raw.windowId);
+    if (relatedTab) {
+      win.lastRelatedTabs.set(this.id, relatedTab.id);
+      this.newRelatedTabsCount++;
+      successorTabLog(`set lastRelatedTab for ${this.id}: ${previousLastRelatedTabId} => ${relatedTab.id} (${this.newRelatedTabsCount})`);
+    }
+    else {
+      win.lastRelatedTabs.delete(this.id);
+      this.newRelatedTabsCount = 0;
+      successorTabLog(`clear lastRelatedTab for ${this.id} (${previousLastRelatedTabId})`);
+    }
+    win.previousLastRelatedTabs.set(this.id, previousLastRelatedTabId);
+    return relatedTab;
+  }
+
+  get lastRelatedTabId() {
+    if (!this.raw)
+      return 0;
+    const win = TabsStore.windows.get(this.raw.windowId);
+    return win.lastRelatedTabs.get(this.id) || 0;
+  }
+
+  get previousLastRelatedTab() {
+    if (!this.raw)
+      return null;
+    const win = TabsStore.windows.get(this.raw.windowId);
+    return Tab.get(win.previousLastRelatedTabs.get(this.id)) || null;
+  }
+
+  detach() {
+    this.parent   = null;
+    this.children = [];
+  }
+
+
+  //===================================================================
+  // State
+  //===================================================================
+
+  async addState(state, { permanently, toTab, broadcast } = {}) {
+    state = state && String(state) || undefined;
+    if (!this.raw || !state)
+      return;
+
+    super.addState(state);
+
+    const modified = this.states && !this.states.has(state);
+
+    switch (state) {
+      case Constants.kTAB_STATE_HIGHLIGHTED:
+        TabsStore.addHighlightedTab(this.raw);
+        if (this.element)
+          this.element.setAttribute('aria-selected', 'true');
+        if (toTab)
+          this.raw.highlighted = true;
+        break;
+
+      case Constants.kTAB_STATE_SELECTED:
+        TabsStore.addSelectedTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_COLLAPSED:
+      case Constants.kTAB_STATE_SUBTREE_COLLAPSED:
+        if (this.isSubtreeCollapsable)
+          TabsStore.addSubtreeCollapsableTab(this.raw);
+        else
+          TabsStore.removeSubtreeCollapsableTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_HIDDEN:
+        TabsStore.removeVisibleTab(this.raw);
+        TabsStore.removeControllableTab(this.raw);
+        if (toTab)
+          this.raw.hidden = true;
+        break;
+
+      case Constants.kTAB_STATE_PINNED:
+        TabsStore.addPinnedTab(this.raw);
+        TabsStore.removeUnpinnedTab(this.raw);
+        if (toTab)
+          this.raw.pinned = true;
+        break;
+
+      case Constants.kTAB_STATE_BUNDLED_ACTIVE:
+        TabsStore.addBundledActiveTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_SOUND_PLAYING: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.soundPlayingChildrenIds.add(this.id);
+      } break;
+      case Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_AUDIBLE:
+        if (toTab)
+          this.raw.audible = true;
+        break;
+
+      case Constants.kTAB_STATE_MUTED: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.mutedChildrenIds.add(this.id);
+        if (toTab)
+          this.raw.mutedInfo.muted = true;
+      } break;
+      case Constants.kTAB_STATE_HAS_MUTED_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeMutedChildrenIds.add(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_AUTOPLAY_BLOCKED: {
+        const parent = this.parent;
+        if (parent) {
+          parent.$TST.autoplayBlockedChildrenIds.add(this.id);
+          parent.$TST.inheritSoundStateFromChildren();
+        }
+      } break;
+      case Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER: {
+        const parent = this.parent;
+        if (parent) {
+          parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
+          parent.$TST.inheritSoundStateFromChildren();
+        }
+      } break;
+
+      case Constants.kTAB_STATE_SHARING_CAMERA: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.sharingCameraChildrenIds.add(this.id);
+        if (toTab && this.raw.sharingState)
+          this.raw.sharingState.camera = true;
+      } break;
+      case Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_SHARING_MICROPHONE: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.sharingMicrophoneChildrenIds.add(this.id);
+        if (toTab && this.raw.sharingState)
+          this.raw.sharingState.microphone = true;
+      } break;
+      case Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_SHARING_SCREEN: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.sharingScreenChildrenIds.add(this.id);
+        if (toTab && this.raw.sharingState)
+          this.raw.sharingState.screen = 'Something';
+      } break;
+      case Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_GROUP_TAB:
+        TabsStore.addGroupTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_PRIVATE_BROWSING:
+        if (toTab)
+          this.raw.incognito = true;
+        break;
+
+      case Constants.kTAB_STATE_ATTENTION:
+        if (toTab)
+          this.raw.attention = true;
+        break;
+
+      case Constants.kTAB_STATE_DISCARDED:
+        if (toTab)
+          this.raw.discarded = true;
+        break;
+
+      case 'loading':
+        TabsStore.addLoadingTab(this.raw);
+        if (toTab)
+          this.raw.status = state;
+        break;
+
+      case 'complete':
+        TabsStore.removeLoadingTab(this.raw);
+        if (toTab)
+          this.raw.status = state;
+        break;
+    }
+
+    if (this.raw &&
+        modified &&
+        state != Constants.kTAB_STATE_ACTIVE &&
+        Constants.IS_BACKGROUND &&
+        broadcast !== false)
+      Tab.broadcastState(this.raw, {
+        add: [state],
+      });
+    if (permanently) {
+      const states = await this.getPermanentStates();
+      if (!states.includes(state)) {
+        states.push(state);
+        await browser.sessions.setTabValue(this.id, Constants.kPERSISTENT_STATES, states).catch(ApiTabs.createErrorSuppressor());
+      }
+    }
+    if (modified) {
+      this.invalidateCache();
+      if (this.raw)
+        Tab.onStateChanged.dispatch(this.raw, state, true);
+    }
+  }
+
+  async removeState(state, { permanently, toTab, broadcast } = {}) {
+    state = state && String(state) || undefined;
+    if (!this.raw || !state)
+      return;
+
+    super.removeState(state);
+
+    const modified = this.states && this.states.has(state);
+
+    switch (state) {
+      case Constants.kTAB_STATE_HIGHLIGHTED:
+        TabsStore.removeHighlightedTab(this.raw);
+        if (this.element)
+          this.element.setAttribute('aria-selected', 'false');
+        if (toTab)
+          this.raw.highlighted = false;
+        break;
+
+      case Constants.kTAB_STATE_SELECTED:
+        TabsStore.removeSelectedTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_COLLAPSED:
+      case Constants.kTAB_STATE_SUBTREE_COLLAPSED:
+        if (this.isSubtreeCollapsable)
+          TabsStore.addSubtreeCollapsableTab(this.raw);
+        else
+          TabsStore.removeSubtreeCollapsableTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_HIDDEN:
+        if (!this.collapsed)
+          TabsStore.addVisibleTab(this.raw);
+        TabsStore.addControllableTab(this.raw);
+        if (toTab)
+          this.raw.hidden = false;
+        break;
+
+      case Constants.kTAB_STATE_PINNED:
+        TabsStore.removePinnedTab(this.raw);
+        TabsStore.addUnpinnedTab(this.raw);
+        if (toTab)
+          this.raw.pinned = false;
+        break;
+
+      case Constants.kTAB_STATE_BUNDLED_ACTIVE:
+        TabsStore.removeBundledActiveTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_SOUND_PLAYING: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.soundPlayingChildrenIds.delete(this.id);
+      } break;
+      case Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_AUDIBLE:
+        if (toTab)
+          this.raw.audible = false;
+        break;
+
+      case Constants.kTAB_STATE_MUTED: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.mutedChildrenIds.delete(this.id);
+        if (toTab)
+          this.raw.mutedInfo.muted = false;
+      } break;
+      case Constants.kTAB_STATE_HAS_MUTED_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeMutedChildrenIds.delete(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_AUTOPLAY_BLOCKED: {
+        const parent = this.parent;
+        if (parent) {
+          parent.$TST.autoplayBlockedChildrenIds.delete(this.id);
+          parent.$TST.inheritSoundStateFromChildren();
+        }
+      } break;
+      case Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER: {
+        const parent = this.parent;
+        if (parent) {
+          parent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
+          parent.$TST.inheritSoundStateFromChildren();
+        }
+      } break;
+
+      case Constants.kTAB_STATE_SHARING_CAMERA: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.sharingCameraChildrenIds.delete(this.id);
+        if (toTab && this.raw.sharingState)
+          this.raw.sharingState.camera = false;
+      } break;
+      case Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_SHARING_MICROPHONE: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.sharingMicrophoneChildrenIds.delete(this.id);
+        if (toTab && this.raw.sharingState)
+          this.raw.sharingState.microphone = false;
+      } break;
+      case Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_SHARING_SCREEN: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.sharingScreenChildrenIds.delete(this.id);
+        if (toTab && this.raw.sharingState)
+          this.raw.sharingState.screen = undefined;
+      } break;
+      case Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER: {
+        const parent = this.parent;
+        if (parent)
+          parent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
+      } break;
+
+      case Constants.kTAB_STATE_GROUP_TAB:
+        TabsStore.removeGroupTab(this.raw);
+        break;
+
+      case Constants.kTAB_STATE_PRIVATE_BROWSING:
+        if (toTab)
+          this.raw.incognito = false;
+        break;
+
+      case Constants.kTAB_STATE_ATTENTION:
+        if (toTab)
+          this.raw.attention = false;
+        break;
+
+      case Constants.kTAB_STATE_DISCARDED:
+        if (toTab)
+          this.raw.discarded = false;
+        break;
+    }
+
+    if (modified &&
+        state != Constants.kTAB_STATE_ACTIVE &&
+        Constants.IS_BACKGROUND &&
+        broadcast !== false)
+      Tab.broadcastState(this.raw, {
+        remove: [state],
+      });
+    if (permanently) {
+      const states = await this.getPermanentStates();
+      const index = states.indexOf(state);
+      if (index > -1) {
+        states.splice(index, 1);
+        await browser.sessions.setTabValue(this.id, Constants.kPERSISTENT_STATES, states).catch(ApiTabs.createErrorSuppressor());
+      }
+    }
+    if (modified) {
+      this.invalidateCache();
+      Tab.onStateChanged.dispatch(this.raw, state, false);
+    }
+  }
+
+  async getPermanentStates() {
+    const states = this.raw && await browser.sessions.getTabValue(this.id, Constants.kPERSISTENT_STATES).catch(ApiTabs.handleMissingTabError);
+    // We need to cleanup invalid values stored accidentally.
+    // See also: https://github.com/piroor/treestyletab/issues/2882
+    return states && mapAndFilterUniq(states, state => state && String(state) || undefined) || [];
+  }
+
+  inheritSoundStateFromChildren() {
+    if (!this.raw)
+      return;
+
+    // this is called too many times on a session restoration, so this should be throttled for better performance
+    if (this.delayedInheritSoundStateFromChildren)
+      clearTimeout(this.delayedInheritSoundStateFromChildren);
+
+    this.delayedInheritSoundStateFromChildren = setTimeout(() => {
+      this.delayedInheritSoundStateFromChildren = null;
+      if (!TabsStore.ensureLivingTab(this.raw))
+        return;
+
+      const parent = this.parent;
+      let modifiedCount = 0;
+
+      const soundPlayingCount = this.soundPlayingChildrenIds.size + this.maybeSoundPlayingChildrenIds.size;
+      if (soundPlayingCount != this.lastSoundStateCounts.soundPlaying) {
+        this.lastSoundStateCounts.soundPlaying = soundPlayingCount;
+        this.toggleState(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER, soundPlayingCount > 0);
+        if (parent) {
+          if (soundPlayingCount > 0)
+            parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
+          else
+            parent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
+        }
+        modifiedCount++;
+      }
+
+      const mutedCount = this.mutedChildrenIds.size + this.maybeMutedChildrenIds.size;
+      if (mutedCount != this.lastSoundStateCounts.muted) {
+        this.lastSoundStateCounts.muted = mutedCount;
+        this.toggleState(Constants.kTAB_STATE_HAS_MUTED_MEMBER, mutedCount > 0);
+        if (parent) {
+          if (mutedCount > 0)
+            parent.$TST.maybeMutedChildrenIds.add(this.id);
+          else
+            parent.$TST.maybeMutedChildrenIds.delete(this.id);
+        }
+        modifiedCount++;
+      }
+
+      const autoplayBlockedCount = this.autoplayBlockedChildrenIds.size + this.maybeAutoplayBlockedChildrenIds.size;
+      if (autoplayBlockedCount != this.lastSoundStateCounts.autoplayBlocked) {
+        this.lastSoundStateCounts.autoplayBlocked = autoplayBlockedCount;
+        this.toggleState(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER, autoplayBlockedCount > 0);
+        if (parent) {
+          if (autoplayBlockedCount > 0)
+            parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
+          else
+            parent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
+        }
+        modifiedCount++;
+      }
+
+      if (modifiedCount == 0)
+        return;
+
+      if (parent)
+        parent.$TST.inheritSoundStateFromChildren();
+
+      SidebarConnection.sendMessage({
+        type:                  Constants.kCOMMAND_NOTIFY_TAB_SOUND_STATE_UPDATED,
+        windowId:              this.raw.windowId,
+        tabId:                 this.id,
+        hasSoundPlayingMember: this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER),
+        hasMutedMember:        this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER),
+        hasAutoplayBlockedMember: this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER),
+      });
+    }, 100);
+  }
+
+  inheritSharingStateFromChildren() {
+    if (!this.raw)
+      return;
+
+    // this is called too many times on a session restoration, so this should be throttled for better performance
+    if (this.delayedInheritSharingStateFromChildren)
+      clearTimeout(this.delayedInheritSharingStateFromChildren);
+
+    this.delayedInheritSharingStateFromChildren = setTimeout(() => {
+      this.delayedInheritSharingStateFromChildren = null;
+      if (!TabsStore.ensureLivingTab(this.raw))
+        return;
+
+      const parent = this.parent;
+      let modifiedCount = 0;
+
+      const sharingCameraCount = this.sharingCameraChildrenIds.size + this.maybeSharingCameraChildrenIds.size;
+      if (sharingCameraCount != this.lastSharingStateCounts.sharingCamera) {
+        this.lastSharingStateCounts.sharingCamera = sharingCameraCount;
+        this.toggleState(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER, sharingCameraCount > 0);
+        if (parent) {
+          if (sharingCameraCount > 0)
+            parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
+          else
+            parent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
+        }
+        modifiedCount++;
+      }
+
+      const sharingMicrophoneCount = this.sharingMicrophoneChildrenIds.size + this.maybeSharingMicrophoneChildrenIds.size;
+      if (sharingMicrophoneCount != this.lastSharingStateCounts.sharingMicrophone) {
+        this.lastSharingStateCounts.sharingMicrophone = sharingMicrophoneCount;
+        this.toggleState(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER, sharingMicrophoneCount > 0);
+        if (parent) {
+          if (sharingMicrophoneCount > 0)
+            parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
+          else
+            parent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
+        }
+        modifiedCount++;
+      }
+
+      const sharingScreenCount = this.sharingScreenChildrenIds.size + this.maybeSharingScreenChildrenIds.size;
+      if (sharingScreenCount != this.lastSharingStateCounts.sharingScreen) {
+        this.lastSharingStateCounts.sharingScreen = sharingScreenCount;
+        this.toggleState(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER, sharingScreenCount > 0);
+        if (parent) {
+          if (sharingScreenCount > 0)
+            parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
+          else
+            parent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
+        }
+        modifiedCount++;
+      }
+
+      if (modifiedCount == 0)
+        return;
+
+      if (parent)
+        parent.$TST.inheritSharingStateFromChildren();
+
+      SidebarConnection.sendMessage({
+        type:     Constants.kCOMMAND_NOTIFY_TAB_SHARING_STATE_UPDATED,
+        windowId: this.raw.windowId,
+        tabId:    this.id,
+        hasSharingCameraMember:     this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER),
+        hasSharingMicrophoneMember: this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER),
+        hasSharingScreenMember:     this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER),
+      });
+    }, 100);
+  }
+
+
+  onNativeGroupModified() {
+    if (this.raw.groupId == -1) {
+      TabsStore.removeNativelyGroupedTab(this.raw);
+    }
+    else {
+      TabsStore.addNativelyGroupedTab(this.raw);
+    }
+
+    this.setAttribute(Constants.kGROUP_ID, this.raw.groupId);
+
+    Tab.onNativeGroupModified.dispatch(this.raw);
+  }
+
+
+  setAttribute(attribute, value) {
+    super.setAttribute(attribute, value);
+    this.invalidateCache();
+  }
+
+  removeAttribute(attribute) {
+    super.removeAttribute(attribute);
+    this.invalidateCache();
+  }
+
+
+  resolveOpened() {
+    if (!mOpenedResolvers.has(this.id))
+      return;
+    for (const resolver of mOpenedResolvers.get(this.id)) {
+      resolver.resolve();
+    }
+    mOpenedResolvers.delete(this.id);
+  }
+  rejectOpened() {
+    if (!mOpenedResolvers.has(this.id))
+      return;
+    for (const resolver of mOpenedResolvers.get(this.id)) {
+      resolver.reject();
+    }
+    mOpenedResolvers.delete(this.id);
+  }
+
+  apply(exported) { // not optimized and unsafe yet!
+    if (!this.raw)
+      return;
+
+    TabsStore.removeTabFromIndexes(this.raw);
+
+    for (const key of Object.keys(exported)) {
+      if (key == '$TST')
+        continue;
+      if (key in this.raw)
+        this.raw[key] = exported[key];
+    }
+
+    this.uniqueId = exported.$TST.uniqueId;
+    this.promisedUniqueId = Promise.resolve(this.uniqueId);
+
+    this.states     = new Set(exported.$TST.states);
+    this.attributes = exported.$TST.attributes;
+
+    this.parent   = exported.$TST.parentId;
+    this.children = exported.$TST.childIds || [];
+
+    TabsStore.updateIndexesForTab(this.raw);
+  }
+
+  async exportFullTreeItemProperties(fullExportedTreeItem, { isContextTab, permissions, cache } = {}) {
+    const favIconUrl = await (
+      (!permissions ||
+       (!permissions.has(kPERMISSION_TABS) &&
+        (!permissions.has(kPERMISSION_ACTIVE_TAB) ||
+         !this.raw?.active))) ?
+        null :
+        (this.raw?.id in cache.effectiveFavIconUrls) ?
+          cache.effectiveFavIconUrls[this.raw?.id] :
+          this.raw?.favIconUrl?.startsWith('data:') ?
+            this.raw?.favIconUrl :
+            TabFavIconHelper.getLastEffectiveFavIconURL(this.raw).catch(ApiTabs.handleMissingTabError)
+    );
+
+    if (!(this.raw.id in cache.effectiveFavIconUrls))
+      cache.effectiveFavIconUrls[this.raw.id] = favIconUrl;
 
     const allowedProperties = new Set([
       // basic tabs.Tab properties
@@ -2247,32 +2525,23 @@ export class Tab {
 
     if (permissions.has(kPERMISSION_TABS) ||
         (permissions.has(kPERMISSION_ACTIVE_TAB) &&
-         (tab?.active ||
-          this.isContextTab))) {
+         (this.raw.active ||
+          isContextTab))) {
       // specially allowed with "tabs" or "activeTab" permission
       allowedProperties.add('favIconUrl');
       allowedProperties.add('title');
       allowedProperties.add('url');
-      fullExportedTab.effectiveFavIconUrl = favIconUrl;
+      fullExportedTreeItem.effectiveFavIconUrl = favIconUrl;
     }
     if (permissions.has(kPERMISSION_COOKIES)) {
       allowedProperties.add('cookieStoreId');
-      fullExportedTab.cookieStoreName = tab?.$TST.cookieStoreName;
+      fullExportedTreeItem.cookieStoreName = this.raw.$TST.cookieStoreName;
     }
 
     for (const property of allowedProperties) {
       if (property in this.raw)
-        fullExportedTab[property] = this.raw[property];
+        fullExportedTreeItem[property] = this.raw[property];
     }
-
-    if (configs.cacheAPITreeItems)
-      this.$exportedForAPIWithPermissions.set(permissionsKey, fullExportedTab)
-    return fullExportedTab;
-  }
-
-  invalidateCache() {
-    this.$exportedForAPI = null;
-    this.$exportedForAPIWithPermissions.clear();
   }
 
 
@@ -2280,37 +2549,11 @@ export class Tab {
     if (!this.element)
       return;
 
-    this.applyAttributesToElement();
+    super.applyStatesToElement();
 
-    for (const state of this.states) {
-      this.element.classList.add(state);
-      if (state == Constants.kTAB_STATE_HIGHLIGHTED)
-        this.element.setAttribute('aria-selected', 'true');
+    if (this.states.has(Constants.kTAB_STATE_HIGHLIGHTED)) {
+      this.element.setAttribute('aria-selected', 'true');
     }
-
-    for (const [name, value] of Object.entries(this.attributes)) {
-      this.element.setAttribute(name, value);
-    }
-  }
-
-  applyAttributesToElement() {
-    if (!this.element)
-      return;
-
-    this.element.applyAttributes();
-  }
-
-
-  /* element utilities */
-
-  invalidateElement(targets) {
-    if (this.element?.invalidate)
-      this.element.invalidate(targets);
-  }
-
-  updateElement(targets) {
-    if (this.element?.update)
-      this.element.update(targets);
   }
 
   set favIconUrl(url) {
@@ -2319,18 +2562,6 @@ export class Tab {
     this.invalidateCache();
   }
 }
-
-// The list of properties which should be ignored when synchronization from the
-// background to sidebars.
-Tab.UNSYNCHRONIZABLE_PROPERTIES = new Set([
-  'id',
-  // Ignore "index" on synchronization, because it maybe wrong for the sidebar.
-  // Index of tabs are managed and fixed by other sections like handling of
-  // "kCOMMAND_NOTIFY_TAB_CREATING", Window.prototype.trackTab, and others.
-  // See also: https://github.com/piroor/treestyletab/issues/2119
-  'index',
-  'reindexedBy'
-]);
 
 
 //===================================================================
@@ -2341,7 +2572,6 @@ Tab.onTracked      = new EventListenerManager();
 Tab.onDestroyed    = new EventListenerManager();
 Tab.onInitialized  = new EventListenerManager();
 Tab.onStateChanged  = new EventListenerManager();
-Tab.onElementBound = new EventListenerManager();
 Tab.onNativeGroupModified = new EventListenerManager();
 
 Tab.track = tab => {
@@ -2372,16 +2602,12 @@ Tab.isTracked = tabId =>  {
   return TabsStore.tabs.has(tabId);
 };
 
-Tab.isNativeTabGroup = tabOrGroup => typeof tabOrGroup?.color !== 'undefined';
-
 Tab.get = tabId =>  {
-  if (Tab.isNativeTabGroup(tabId)) {
-    return Tab.getNativeTabGroup({ windowId: tabId.windowId, groupId: tabId.id });
+  if (typeof tabId?.color !== 'undefined') { // for backward compatibility
+    return TabGroup.get({ windowId: tabId.windowId, groupId: tabId.id });
   }
   return TabsStore.tabs.get(typeof tabId == 'number' ? tabId : tabId?.id);
 };
-
-Tab.getNativeTabGroup = ({ windowId, groupId }) => TabsStore.windows.get(windowId).tabGroups.get(groupId);
 
 Tab.getByUniqueId = id => {
   if (!id)
@@ -2454,7 +2680,7 @@ function onWaitingTabTracked(tab) {
     resolve(tab);
   }
 }
-Tab.onElementBound.addListener(onWaitingTabTracked);
+TreeItem.onElementBound.addListener(onWaitingTabTracked);
 Tab.onTracked.addListener(onWaitingTabTracked);
 
 function onWaitingTabDestroyed(tab) {
@@ -2659,17 +2885,6 @@ Tab.import = tab => {
   }
   existingTab.$TST.apply(tab);
   return existingTab;
-};
-
-Tab.initNativeTabGroup = group => {
-  if (group.$TST instanceof Tab) {
-    return group;
-  }
-  if ('index' in group) {
-    group.index = -1;
-  }
-  group.$TST = new Tab(group);
-  return group;
 };
 
 
@@ -3043,7 +3258,7 @@ Tab.getSelectedTabs = (windowId = null, options = {}) => {
       }
     })();
   else
-    return Tab.sort(Array.from(new Set([...selectedTabs, ...Array.from(highlightedTabs.values())])));
+    return TreeItem.sort(Array.from(new Set([...selectedTabs, ...Array.from(highlightedTabs.values())])));
 };
 
 Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
@@ -3057,7 +3272,7 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
     });
   }
 
-  const mixedTabs = Tab.sort([
+  const mixedTabs = TreeItem.sort([
     ...TabsStore.queryAll({
       windowId,
       tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
@@ -3066,7 +3281,7 @@ Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
     ...mapAndFilter(
       [...TabsStore.windows.get(windowId).tabGroups.values()],
       group => {
-        const firstMember = Tab.getFirstNativeGroupMemberTab({ windowId, groupId: group.id });
+        const firstMember = TabGroup.getFirstMemberTab({ windowId, groupId: group.id });
         if (!firstMember) {
           return undefined;
         }
@@ -3154,29 +3369,6 @@ Tab.getRecycledTabs = (windowId = null, options = {}) => {
   });
 };
 
-Tab.getNativeGroupMemberTabs = ({ windowId, groupId }, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-    living: true,
-    groupId,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getFirstNativeGroupMemberTab = ({ windowId, groupId }, options = {}) => {
-  return TabsStore.query({
-    windowId,
-    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-    living: true,
-    groupId,
-    ...options,
-    ordered: true,
-    first: true,
-  });
-};
-
 
 //===================================================================
 // general tab events
@@ -3235,8 +3427,8 @@ Tab.broadcastTooltipText = tabs => {
     Tab.bufferedTooltipTextChanges.set(tab.id, {
       windowId: tab.windowId,
       tabId:    tab.id,
-      high:     tab.$TST.getHighPriorityTooltipText(),
-      low:      tab.$TST.getLowPriorityTooltipText(),
+      high:     tab.$TST.highPriorityTooltipText,
+      low:      tab.$TST.lowPriorityTooltipText,
     });
   }
 
@@ -3398,27 +3590,6 @@ Tab.doAndGetNewTabs = async (asyncTask, windowId) => {
   return addedTabs;
 };
 
-Tab.compare = (a, b) => {
-  const delta = a.index - b.index;
-  const aIsGroup = a.$TST?.isNativeTabGroup;
-  if (delta != 0 ||
-      aIsGroup == b.$TST?.isNativeTabGroup) {
-    return delta;
-  }
-  if (aIsGroup) {
-    return -1;
-  }
-  return 1;
-}
-
-Tab.sort = tabs => tabs.length == 0 ? tabs : tabs.sort(Tab.compare);
-
-Tab.uniqTabsAndDescendantsSet = tabs => {
-  if (!Array.isArray(tabs))
-    tabs = [tabs];
-  return Array.from(new Set(tabs.map(tab => [tab].concat(tab.$TST.descendants)).flat())).sort(Tab.compare);
-}
-
 Tab.dumpAll = windowId => {
   if (!configs.debug)
     return;
@@ -3429,61 +3600,4 @@ Tab.dumpAll = windowId => {
                              ' => ');
   }
   log(output);
-};
-
-
-// key = addon ID
-// value = Set of states
-Tab.autoStickyStates = new Map();
-
-Tab.registerAutoStickyState = (providerId, statesToAdd) => {
-  if (!statesToAdd) {
-    statesToAdd = providerId;
-    providerId = browser.runtime.id;
-  }
-  const states = Tab.autoStickyStates.get(providerId) || new Set();
-  if (!Array.isArray(statesToAdd))
-    statesToAdd = [statesToAdd];
-  for (const state of statesToAdd) {
-    states.add(state)
-  }
-  if (states.size == 0)
-    return;
-
-  Tab.autoStickyStates.set(providerId, states);
-
-  if (Constants.IS_BACKGROUND) {
-    SidebarConnection.sendMessage({
-      type: Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
-      providerId,
-      add:  [...statesToAdd],
-    });
-  }
-};
-
-Tab.unregisterAutoStickyState = (providerId, statesToRemove) => {
-  if (!statesToRemove) {
-    statesToRemove = providerId;
-    providerId = browser.runtime.id;
-  }
-  const states = Tab.autoStickyStates.get(providerId);
-  if (!states)
-    return;
-  if (!Array.isArray(statesToRemove))
-    statesToRemove = [statesToRemove];
-  for (const state of statesToRemove) {
-    states.delete(state)
-  }
-  if (states.size > 0)
-    Tab.autoStickyStates.set(providerId, states);
-  else
-    Tab.autoStickyStates.delete(providerId);
-
-  if (Constants.IS_BACKGROUND) {
-    SidebarConnection.sendMessage({
-      type:   Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
-      providerId,
-      remove: [...statesToRemove],
-    });
-  }
 };

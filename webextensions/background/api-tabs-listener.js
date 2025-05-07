@@ -42,7 +42,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
 import MetricsData from '/common/MetricsData.js';
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as Tree from './tree.js';
@@ -1304,7 +1304,7 @@ async function onGroupCreated(group) {
   if (!win) {
     throw new Error('tabGroups.onCreated is called before the owner window is tracked');
   }
-  win.tabGroups.set(group.id, Tab.initNativeTabGroup(group));
+  win.tabGroups.set(group.id, TabGroup.init(group));
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,

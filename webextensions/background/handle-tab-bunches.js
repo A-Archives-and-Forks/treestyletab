@@ -21,7 +21,7 @@ import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as TabsGroup from './tabs-group.js';
 import * as TabsOpen from './tabs-open.js';
@@ -180,7 +180,7 @@ async function tryGroupTabBunches() {
     if (fromPinned.length > 0 &&
         (configs.autoGroupNewTabsFromPinned ||
          configs.autoGroupNewTabsFromFirefoxView)) {
-      const newRootTabs = Tab.collectRootTabs(Tab.sort(fromPinned));
+      const newRootTabs = Tab.collectRootTabs(TreeItem.sort(fromPinned));
       if (newRootTabs.length > 0) {
         await tryGroupTabBunchesFromPinnedOpener(newRootTabs);
       }
@@ -190,7 +190,7 @@ async function tryGroupTabBunches() {
     // sources won't be mixed.
     const openedFromBookmarkFolder = fromOthers.length > 0 && await detectBookmarkFolderFromTabs(fromOthers, tabReferences.length);
     log(' => tryGroupTabBunches:openedFromBookmarkFolder: ', !!openedFromBookmarkFolder);
-    const newRootTabs = Tab.collectRootTabs(Tab.sort(openedFromBookmarkFolder ? openedFromBookmarkFolder.tabs : fromOthers));
+    const newRootTabs = Tab.collectRootTabs(TreeItem.sort(openedFromBookmarkFolder ? openedFromBookmarkFolder.tabs : fromOthers));
     log(' newRootTabs: ', newRootTabs);
     if (newRootTabs.length > 1 &&
         !openedFromBookmarkFolder && // we should ignore tabs from bookmark folder: they should be handled by tryHandlTabBunchesFromBookmarks
@@ -442,7 +442,7 @@ async function tryHandlTabBunchesFromBookmarks() {
         }
       }
 
-      const newRootTabs = Tab.collectRootTabs(Tab.sort(openedFromBookmarkFolder.tabs));
+      const newRootTabs = Tab.collectRootTabs(TreeItem.sort(openedFromBookmarkFolder.tabs));
       if (newRootTabs.length > 1 &&
           configs.autoGroupNewTabsFromBookmarks &&
           tabReferences.every(tabReference => !tabReference.shouldNotGrouped)) {

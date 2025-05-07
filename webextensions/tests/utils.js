@@ -13,7 +13,7 @@ import { is /*, ok, ng*/ } from './assert.js';
 
 import * as Constants from '/common/constants.js';
 //import * as Tree from '/background/tree.js';
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 export async function prepareTabsInWindow(definition, windowId, expectedStructure) {
   let tabs = await createTabs(definition, { windowId });
@@ -150,7 +150,7 @@ export async function tabsOrder(tabs) {
       type:   Constants.kCOMMAND_PULL_TABS,
       tabIds: tabs.map(tab => tab.id || tab)
     });
-    return Tab.sort(tabs).map(tab => tab.id);
+    return TreeItem.sort(tabs).map(tab => tab.id);
   }
 
   if (typeof tabs == 'object') {
@@ -158,7 +158,7 @@ export async function tabsOrder(tabs) {
       type:   Constants.kCOMMAND_PULL_TABS,
       tabIds: Object.values(tabs).map(tab => tab.id)
     });
-    return Tab.sort(refreshedTabsArray).map(tab => tab.id);
+    return TreeItem.sort(refreshedTabsArray).map(tab => tab.id);
   }
 
   throw new Error('Invalid tab collection: ', tabs);

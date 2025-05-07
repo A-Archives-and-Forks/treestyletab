@@ -22,7 +22,7 @@ import * as SidebarConnection from './sidebar-connection.js';
 import * as TabsStore from './tabs-store.js';
 import * as TabsUpdate from './tabs-update.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('common/tabs-internal-operation', ...args);
@@ -181,7 +181,7 @@ export async function removeTabs(tabs, { keepDescendants, byMouseOperation, orig
     }
   }
 
-  const sortedTabs = Tab.sort(Array.from(tabs));
+  const sortedTabs = TreeItem.sort(Array.from(tabs));
   Tab.onMultipleTabsRemoving.dispatch(sortedTabs, { triggerTab, originalStructure });
 
   const promisedRemoved = browser.tabs.remove(tabIds).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));

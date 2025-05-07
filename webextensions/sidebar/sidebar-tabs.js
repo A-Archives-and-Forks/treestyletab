@@ -23,7 +23,7 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TabsUpdate from '/common/tabs-update.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as BackgroundConnection from './background-connection.js';
@@ -673,12 +673,12 @@ function reserveToRefreshNativeTabGroup(id) {
     reserveToRefreshNativeTabGroup.invoked.delete(id);
 
     const windowId = TabsStore.getCurrentWindowId();
-    const group = Tab.getNativeTabGroup({ windowId, groupId: id });
+    const group = TabGroup.get({ windowId, groupId: id });
     if (!group) {
       return;
     }
     group.$TST.updateElement(TabUpdateTarget.TabProperties);
-    for (const tab of Tab.getNativeGroupMemberTabs({ windowId, groupId: id })) {
+    for (const tab of TabGroup.getMemberTabs({ windowId, groupId: id })) {
       CollapseExpand.setCollapsed(tab, {
         collapsed: group.collapsed || !!tab.$TST.topmostSubtreeCollapsedAncestor,
       });
@@ -741,7 +741,7 @@ BackgroundConnection.onMessage.addListener(async message => {
           stickyStateChanged = true;
       }
       if (stickyStateChanged ||
-          [...Tab.autoStickyStates.values()].some(states => (new Set([...states, ...modified])).size < states.size + modified.size))
+          [...TreeItem.autoStickyStates.values()].some(states => (new Set([...states, ...modified])).size < states.size + modified.size))
         onNormalTabsChanged.dispatch();
     }; break;
 
@@ -1364,19 +1364,19 @@ BackgroundConnection.onMessage.addListener(async message => {
 
     case Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE:
       if (message.add)
-        Tab.registerAutoStickyState(message.providerId, message.add);
+        TreeItem.registerAutoStickyState(message.providerId, message.add);
       if (message.remove)
-        Tab.unregisterAutoStickyState(message.providerId, message.remove);
+        TreeItem.unregisterAutoStickyState(message.providerId, message.remove);
       onNormalTabsChanged.dispatch();
       break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED: {
       const win = TabsStore.windows.get(message.windowId);
-      win.tabGroups.set(message.group.id, Tab.initNativeTabGroup(message.group));
+      win.tabGroups.set(message.group.id, TabGroup.init(message.group));
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED: {
-      const group = Tab.getNativeTabGroup({ windowId: message.windowId, groupId: message.group.id });
+      const group = TabGroup.get({ windowId: message.windowId, groupId: message.group.id });
       group.$TST.apply(message.group);
       reserveToRefreshNativeTabGroup(message.group.id);
     }; break;

@@ -26,7 +26,7 @@ import * as TabsUpdate from '/common/tabs-update.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as Background from './background.js';
 import * as Commands from './commands.js';
@@ -1137,11 +1137,11 @@ function onMessageExternal(message, sender) {
       })();
 
     case TSTAPI.kREGISTER_AUTO_STICKY_STATES:
-      Tab.registerAutoStickyState(sender.id, message.state || message.states);
+      TreeItem.registerAutoStickyState(sender.id, message.state || message.states);
       break;
 
     case TSTAPI.kUNREGISTER_AUTO_STICKY_STATES:
-      Tab.unregisterAutoStickyState(sender.id, message.state || message.states);
+      TreeItem.unregisterAutoStickyState(sender.id, message.state || message.states);
       break;
   }
 }

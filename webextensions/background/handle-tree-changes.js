@@ -13,7 +13,7 @@ import * as Constants from '/common/constants.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as Background from './background.js';
 import * as BackgroundCache from './background-cache.js';
@@ -32,7 +32,7 @@ function reserveDetachHiddenTab(tab) {
     clearTimeout(reserveDetachHiddenTab.reserved);
   reserveDetachHiddenTab.reserved = setTimeout(async () => {
     delete reserveDetachHiddenTab.reserved;
-    const tabs = new Set(Tab.sort(Array.from(reserveDetachHiddenTab.tabs)));
+    const tabs = new Set(TreeItem.sort(Array.from(reserveDetachHiddenTab.tabs)));
     reserveDetachHiddenTab.tabs.clear();
     log('try to detach hidden tabs: ', tabs);
     for (const tab of tabs) {
@@ -94,7 +94,7 @@ function reserveAttachShownTab(tab) {
     clearTimeout(reserveAttachShownTab.reserved);
   reserveAttachShownTab.reserved = setTimeout(async () => {
     delete reserveAttachShownTab.reserved;
-    const tabs = new Set(Tab.sort(Array.from(reserveAttachShownTab.tabs)));
+    const tabs = new Set(TreeItem.sort(Array.from(reserveAttachShownTab.tabs)));
     reserveAttachShownTab.tabs.clear();
     log('try to attach shown tabs: ', tabs);
     for (const tab of tabs) {

@@ -28,7 +28,7 @@ import * as UniqueId from '/common/unique-id.js';
 import '/common/bookmark.js'; // we need to load this once in the background page to register the global listener
 
 import MetricsData from '/common/MetricsData.js';
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as ApiTabsListener from './api-tabs-listener.js';
@@ -302,7 +302,7 @@ async function rebuildAll(windows) {
     await MetricsData.addAsync(`rebuildAll: tabs in window ${win.id}`, async () => {
       let trackedWindow = TabsStore.windows.get(win.id);
       if (!trackedWindow)
-        trackedWindow = Window.init(win.id, win.tabGroups.map(Tab.initNativeTabGroup));
+        trackedWindow = Window.init(win.id, win.tabGroups.map(TabGroup.init));
 
       for (const tab of win.tabs) {
         Tab.track(tab);
@@ -328,7 +328,7 @@ async function rebuildAll(windows) {
       }
       try {
         log(`build tabs for ${win.id} from scratch`);
-        Window.init(win.id, win.tabGroups.map(Tab.initNativeTabGroup));
+        Window.init(win.id, win.tabGroups.map(TabGroup.init));
         const promises = [];
         for (let tab of win.tabs) {
           tab = Tab.get(tab.id);

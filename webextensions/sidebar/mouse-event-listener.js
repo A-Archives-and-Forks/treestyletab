@@ -46,7 +46,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
 import MetricsData from '/common/MetricsData.js';
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 import * as EventUtils from './event-utils.js';
@@ -492,8 +492,8 @@ async function onMouseUp(event) {
     promisedCanceled = lastMousedown.promisedMousedownNotified;
 
   const lastMousedownTab = lastMousedown.detail.tabType == 'group' ?
-    Tab.getNativeTabGroup({ windowId: lastMousedown.detail.windowId, groupId: lastMousedown.detail.tabId }) :
-    Tab.get(lastMousedown.detail.tabId)
+    TabGroup.get({ windowId: lastMousedown.detail.windowId, groupId: lastMousedown.detail.tabId }) :
+    Tab.get(lastMousedown.detail.tabId);
   if (lastMousedown.expired ||
       lastMousedown.detail.targetType != EventUtils.getEventTargetType(event) || // when the cursor was moved before mouseup
       (tab && tab != lastMousedownTab)) { // when the tab was already removed

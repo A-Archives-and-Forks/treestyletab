@@ -412,10 +412,10 @@ windowId = ${raw.windowId}
       }
     }
 
-    this.tooltip                = this.$TST.generateTooltipText();
-    this.tooltipWithDescendants = this.$TST.generateTooltipTextWithDescendants();
-    this.tooltipHtml            = this.$TST.generateTooltipHtml();
-    this.tooltipHtmlWithDescendants = this.$TST.generateTooltipHtmlWithDescendants();
+    this.tooltip                = this.$TST.defaultTooltipText;
+    this.tooltipWithDescendants = this.$TST.tooltipTextWithDescendants;
+    this.tooltipHtml            = this.$TST.tooltipHtml;
+    this.tooltipHtmlWithDescendants = this.$TST.tooltipHtmlWithDescendants;
 
     const appliedTooltipText = this.appliedTooltipText;
     this.hasCustomTooltip = (
@@ -444,7 +444,7 @@ windowId = ${raw.windowId}
       return this.tooltipWithDescendants;
     }
 
-    const highPriorityTooltipText = this.$TST.getHighPriorityTooltipText();
+    const highPriorityTooltipText = this.$TST.highPriorityTooltipText;
     if (typeof highPriorityTooltipText == 'string') {
       if (highPriorityTooltipText)
         return highPriorityTooltipText;
@@ -462,7 +462,7 @@ windowId = ${raw.windowId}
     else
       tooltip = null;
 
-    const lowPriorityTooltipText = this.$TST.getLowPriorityTooltipText();
+    const lowPriorityTooltipText = this.$TST.lowPriorityTooltipText;
     if (typeof lowPriorityTooltipText == 'string' &&
         !this.getAttribute('title')) {
       if (lowPriorityTooltipText)
@@ -480,7 +480,7 @@ windowId = ${raw.windowId}
       return this.tooltipHtmlWithDescendants;
     }
 
-    const highPriorityTooltipText = this.$TST.getHighPriorityTooltipText();
+    const highPriorityTooltipText = this.$TST.highPriorityTooltipText;
     if (typeof highPriorityTooltipText == 'string') {
       if (highPriorityTooltipText)
         return sanitizeForHTMLText(highPriorityTooltipText);
@@ -498,7 +498,7 @@ windowId = ${raw.windowId}
     else
       tooltip = null;
 
-    const lowPriorityTooltipText = this.$TST.getLowPriorityTooltipText();
+    const lowPriorityTooltipText = this.$TST.lowPriorityTooltipText;
     if (typeof lowPriorityTooltipText == 'string' &&
         !this.getAttribute('title')) {
       if (lowPriorityTooltipText)

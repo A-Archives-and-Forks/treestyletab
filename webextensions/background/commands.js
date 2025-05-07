@@ -25,7 +25,7 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as TabsGroup from './tabs-group.js';
 import * as TabsMove from './tabs-move.js';
@@ -1011,7 +1011,7 @@ export async function restoreTabs(count) {
       await TabsInternalOperation.setTabActive(activeTab);
   }
 
-  return Tab.sort(restoredTabs);
+  return TreeItem.sort(restoredTabs);
 }
 
 
@@ -1079,12 +1079,12 @@ export async function reopenInContainer(sourceTabOrTabs, cookieStoreId, options 
 export async function addTabsToNativeTabGroup(tabs, groupId) {
   return browser.tabs.group({
     groupId,
-    tabIds: tabs.map(tab => tab.id),
+    tabIds: tabs.map(tab => tab?.id || tab),
   });
 }
 
 export async function removeTabsFromNativeTabGroup(tabs) {
-  return browser.tabs.ungroup(tabs.map(tab => tab.id));
+  return browser.tabs.ungroup(tabs.map(tab => tab?.id || tab));
 }
 
 

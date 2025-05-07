@@ -34,7 +34,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import MetricsData from '/common/MetricsData.js';
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as BackgroundConnection from './background-connection.js';
@@ -568,7 +568,7 @@ async function rebuildAll(importedWindow) {
 
   const tabs = importedWindow.tabs.map(importedTab => Tab.import(importedTab));
 
-  Window.init(mTargetWindow, importedWindow.tabGroups.map(Tab.initNativeTabGroup));
+  Window.init(mTargetWindow, importedWindow.tabGroups.map(TabGroup.init));
   let lastDraw = Date.now();
   let count = 0;
   const maxCount = tabs.length;

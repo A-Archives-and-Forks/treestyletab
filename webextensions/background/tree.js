@@ -48,7 +48,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import MetricsData from '/common/MetricsData.js';
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as TabsMove from './tabs-move.js';
@@ -2201,9 +2201,9 @@ maintainTreeForNativeTabGroup() does that too.
 async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
   const win = TabsStore.windows.get(windowId);
 
-  const members = Tab.getNativeGroupMemberTabs({ windowId, groupId });
+  const members = TabGroup.getMemberTabs({ windowId, groupId });
   const rootTabs = Tab.collectRootTabs(members);
-  const wholeTree = [...new Set(Tab.sort([...members.map(tab => tab.$TST.rootTab), ...getWholeTree(rootTabs)]))];
+  const wholeTree = [...new Set(TreeItem.sort([...members.map(tab => tab.$TST.rootTab), ...getWholeTree(rootTabs)]))];
   if (members.length == wholeTree.length) {
     return;
   }

@@ -53,7 +53,7 @@ import * as Constants from '/common/constants.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 import * as CollapseExpand from './collapse-expand.js';
@@ -430,9 +430,9 @@ function getRenderableItemById(id) {
   const [type, rawId] = id.split(':');
   switch (type) {
     case 'group':
-      return Tab.getNativeTabGroup({
+      return TabGroup.get({
         windowId: TabsStore.getCurrentWindowId(),
-        groupId: parseInt(rawId),
+        groupId:  parseInt(rawId),
       });
 
     case 'tab':
