@@ -651,7 +651,9 @@ function updateItem(id, state = {}) {
                  updateInfo.enabled != item.lastEnabled;
   item.lastVisible = updateInfo.visible;
   item.lastEnabled = updateInfo.enabled;
-  browser.menus.update(id, updateInfo).catch(ApiTabs.createErrorSuppressor());
+  if (!item.fakeMenu) {
+    browser.menus.update(id, updateInfo).catch(ApiTabs.createErrorSuppressor());
+  }
   onMessageExternal({
     type: TSTAPI.kCONTEXT_MENU_UPDATE,
     params: [id, updateInfo]
