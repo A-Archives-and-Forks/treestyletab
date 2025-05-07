@@ -15,7 +15,7 @@ import * as Bookmark from '/common/bookmark.js';
 import * as Sync from '/common/sync.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
 import * as TabContextMenu from './tab-context-menu.js';

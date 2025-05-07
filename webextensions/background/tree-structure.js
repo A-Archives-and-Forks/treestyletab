@@ -23,7 +23,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
 import * as TabsMove from './tabs-move.js';

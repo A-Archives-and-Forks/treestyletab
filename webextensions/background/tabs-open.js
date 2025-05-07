@@ -38,7 +38,7 @@ import * as Constants from '/common/constants.js';
 import * as SidebarConnection from '/common/sidebar-connection.js';
 import * as TabsStore from '/common/tabs-store.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as TabsMove from './tabs-move.js';
 import * as Tree from './tree.js';

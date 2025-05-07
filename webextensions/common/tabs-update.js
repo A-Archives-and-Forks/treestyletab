@@ -38,7 +38,7 @@ import * as ContextualIdentities from './contextual-identities.js';
 import * as SidebarConnection from './sidebar-connection.js';
 import * as TabsStore from './tabs-store.js';
 
-import Tab from './Tab.js';
+import { Tab } from './TreeItem.js';
 
 function log(...args) {
   internalLogger('common/tabs-update', ...args);

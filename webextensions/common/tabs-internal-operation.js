@@ -22,7 +22,7 @@ import * as SidebarConnection from './sidebar-connection.js';
 import * as TabsStore from './tabs-store.js';
 import * as TabsUpdate from './tabs-update.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('common/tabs-internal-operation', ...args);

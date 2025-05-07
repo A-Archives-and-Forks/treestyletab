@@ -15,7 +15,7 @@ import {
 import * as TabsStore from '/common/tabs-store.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 import * as Sidebar from './sidebar.js';

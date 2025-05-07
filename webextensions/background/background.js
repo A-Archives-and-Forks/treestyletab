@@ -28,7 +28,7 @@ import * as UniqueId from '/common/unique-id.js';
 import '/common/bookmark.js'; // we need to load this once in the background page to register the global listener
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as ApiTabsListener from './api-tabs-listener.js';

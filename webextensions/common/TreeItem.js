@@ -65,7 +65,7 @@ browser.windows.onRemoved.addListener(windowId => {
   mMovingTabs.delete(windowId);
 });
 
-export default class Tab {
+export class Tab {
   constructor(raw) {
     const alreadyTracked = Tab.get(raw.id);
     if (alreadyTracked)

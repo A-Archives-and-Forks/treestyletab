@@ -40,10 +40,10 @@ import * as SidebarConnection from './sidebar-connection.js';
 import * as TabsStore from './tabs-store.js';
 
 import {
-  default as Tab,
+  Tab,
   kPERMISSION_INCOGNITO,
   kPERMISSIONS_ALL,
-} from './Tab.js';
+} from './TreeItem.js';
 
 function log(...args) {
   internalLogger('common/tst-api', ...args);

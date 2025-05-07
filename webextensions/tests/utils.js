@@ -13,7 +13,7 @@ import { is /*, ok, ng*/ } from './assert.js';
 
 import * as Constants from '/common/constants.js';
 //import * as Tree from '/background/tree.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 export async function prepareTabsInWindow(definition, windowId, expectedStructure) {
   let tabs = await createTabs(definition, { windowId });

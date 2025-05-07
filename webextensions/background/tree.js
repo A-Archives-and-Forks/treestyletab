@@ -48,7 +48,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as TabsMove from './tabs-move.js';

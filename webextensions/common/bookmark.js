@@ -26,7 +26,7 @@ import * as Dialog from './dialog.js';
 import * as Permissions from './permissions.js';
 import * as UserOperationBlocker from './user-operation-blocker.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('common/bookmarks', ...args);

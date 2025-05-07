@@ -19,7 +19,7 @@ import {
 import * as Constants from '/common/constants.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('common/sync', ...args);

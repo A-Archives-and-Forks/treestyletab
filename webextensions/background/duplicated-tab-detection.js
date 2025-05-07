@@ -10,7 +10,7 @@ import {
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 async function doTest() {
   const win = await browser.windows.getLastFocused({ populate: true });

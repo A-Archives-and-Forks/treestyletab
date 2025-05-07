@@ -10,7 +10,7 @@ import {
 } from '/common/common.js';
 import { is /*, ok, ng*/ } from '/tests/assert.js';
 import * as TSTAPI from '/common/tst-api.js';
-//import Tab from '/common/Tab.js';
+//import { Tab } from '/common/TreeItem.js';
 
 import * as Constants from '/common/constants.js';
 import * as Utils from './utils.js';

@@ -60,7 +60,7 @@ import {
 import * as Constants from '/common/constants.js';
 import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import TabPreviewPanel from '/resources/module/TabPreviewPanel.js'; // the IMPL
 

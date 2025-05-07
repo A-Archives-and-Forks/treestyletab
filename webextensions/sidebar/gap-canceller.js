@@ -15,7 +15,7 @@ import {
 import * as Constants from '/common/constants.js';
 import * as TabsStore from '/common/tabs-store.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 

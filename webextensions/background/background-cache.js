@@ -23,7 +23,7 @@ import * as TabsUpdate from '/common/tabs-update.js';
 import * as UniqueId from '/common/unique-id.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as Tree from './tree.js';
 
