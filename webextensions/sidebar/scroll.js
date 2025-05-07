@@ -757,12 +757,12 @@ async function smoothScrollTo(params = {}) {
 
   smoothScrollTo.stopped = false;
 
-  const scrollBox = params.scrollBox || getScrollBoxFor(params.tab, { allowFallback: true });
+  const scrollBox = params.scrollBox || getScrollBoxFor(params.item, { allowFallback: true });
 
   let delta, startPosition, endPosition;
-  if (params.tab) {
+  if (params.item) {
     startPosition = scrollBox.$scrollTop;
-    delta       = calculateScrollDeltaForItem(params.tab);
+    delta       = calculateScrollDeltaForItem(params.item);
     endPosition = startPosition + delta;
   }
   else if (typeof params.position == 'number') {
