@@ -462,7 +462,7 @@ export const configs = new Configs({
   avoidDiscardedTabToBeActivatedIfPossible: false,
   provressiveHighlightingStep: Number.MAX_SAFE_INTEGER,
   progressievHighlightingInterval: 100,
-  generatedTabElementsPoolLifetimeMsec: 5 * 1000,
+  generatedTreeItemElementsPoolLifetimeMsec: 5 * 1000,
   undoMultipleTabsClose: true,
   allowDragNewTabButton: true,
   newTabButtonDragGestureModifiers: 'shift',

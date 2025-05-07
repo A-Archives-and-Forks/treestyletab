@@ -9,7 +9,7 @@ import {
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
 
-export const kTAB_LABEL_ELEMENT_NAME = 'tab-label';
+export const kTREE_ITEM_LABEL_ELEMENT_NAME = 'tab-label';
 
 const KLABEL_CLASS_NAME   = 'label';
 const kCONTENT_CLASS_NAME = `${KLABEL_CLASS_NAME}-content`;
@@ -43,9 +43,9 @@ function isRTL(text) {
 };
 //****************************************************************************
 
-export class TabLabelElement extends HTMLElement {
+export class TreeItemLabelElement extends HTMLElement {
   static define() {
-    window.customElements.define(kTAB_LABEL_ELEMENT_NAME, TabLabelElement);
+    window.customElements.define(kTREE_ITEM_LABEL_ELEMENT_NAME, TreeItemLabelElement);
   }
 
   static get observedAttributes() {

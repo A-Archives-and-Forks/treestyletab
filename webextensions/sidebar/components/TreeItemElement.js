@@ -17,17 +17,17 @@ import TabFavIconHelper from '/extlib/TabFavIconHelper.js';
 
 import { kTAB_TWISTY_ELEMENT_NAME } from './TabTwistyElement.js';
 import { kTAB_FAVICON_ELEMENT_NAME } from './TabFaviconElement.js';
-import { kTAB_LABEL_ELEMENT_NAME } from './TabLabelElement.js';
+import { kTREE_ITEM_LABEL_ELEMENT_NAME } from './TreeItemLabelElement.js';
 import { kTAB_COUNTER_ELEMENT_NAME } from './TabCounterElement.js';
 import { kTAB_SOUND_BUTTON_ELEMENT_NAME } from './TabSoundButtonElement.js';
 import { kTAB_SHARING_STATE_ELEMENT_NAME } from './TabSharingStateElement.js';
 import { kTAB_CLOSE_BOX_ELEMENT_NAME } from './TabCloseBoxElement.js';
 
-export const kTAB_ELEMENT_NAME = 'tab-item';
-export const kTAB_SUBSTANCE_ELEMENT_NAME = 'tab-item-substance';
+export const kTREE_ITEM_ELEMENT_NAME = 'tab-item';
+export const kTREE_ITEM_SUBSTANCE_ELEMENT_NAME = 'tab-item-substance';
 
-export const kEVENT_TAB_SUBSTANCE_ENTER = 'tab-item-substance-enter';
-export const kEVENT_TAB_SUBSTANCE_LEAVE = 'tab-item-substance-leave';
+export const kEVENT_TREE_ITEM_SUBSTANCE_ENTER = 'tab-item-substance-enter';
+export const kEVENT_TREE_ITEM_SUBSTANCE_LEAVE = 'tab-item-substance-leave';
 
 export const TabInvalidationTarget = Object.freeze({
   Twisty:      1 << 0,
@@ -65,9 +65,9 @@ const IGNORE_CLASSES = new Set([
   Constants.kTAB_STATE_SUBTREE_COLLAPSED
 ]);
 
-export class TabElement extends HTMLElement {
+export class TreeItemElement extends HTMLElement {
   static define() {
-    window.customElements.define(kTAB_ELEMENT_NAME, TabElement);
+    window.customElements.define(kTREE_ITEM_ELEMENT_NAME, TreeItemElement);
   }
 
   constructor() {
@@ -120,7 +120,7 @@ export class TabElement extends HTMLElement {
     const panelFragment = range.createContextualFragment(`
       <span class="native-tab-group-line"></span>
       <span class="${Constants.kEXTRA_ITEMS_CONTAINER} indent"></span>
-      <${kTAB_SUBSTANCE_ELEMENT_NAME} draggable="true">
+      <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true">
         <span class="${Constants.kBACKGROUND} base"></span>
         <span class="${Constants.kBACKGROUND}">
           <span class="${Constants.kBURSTER}"></span>
@@ -130,7 +130,7 @@ export class TabElement extends HTMLElement {
           <span class="${Constants.kEXTRA_ITEMS_CONTAINER} above"></span>
           <span class="caption">
             <${kTAB_FAVICON_ELEMENT_NAME}></${kTAB_FAVICON_ELEMENT_NAME}>
-            <${kTAB_LABEL_ELEMENT_NAME}></${kTAB_LABEL_ELEMENT_NAME}>
+            <${kTREE_ITEM_LABEL_ELEMENT_NAME}></${kTREE_ITEM_LABEL_ELEMENT_NAME}>
             <${kTAB_COUNTER_ELEMENT_NAME}></${kTAB_COUNTER_ELEMENT_NAME}>
             <${kTAB_SHARING_STATE_ELEMENT_NAME}></${kTAB_SHARING_STATE_ELEMENT_NAME}>
             <${kTAB_SOUND_BUTTON_ELEMENT_NAME}></${kTAB_SOUND_BUTTON_ELEMENT_NAME}>
@@ -142,7 +142,7 @@ export class TabElement extends HTMLElement {
         </span>
         <span class="${Constants.kHIGHLIGHTER}"></span>
         <span class="${Constants.kCONTEXTUAL_IDENTITY_MARKER}"></span>
-      </${kTAB_SUBSTANCE_ELEMENT_NAME}>
+      </${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
     `.trim().replace(/>\s+</g, '><'));
     range.detach();
     this.appendChild(panelFragment);
@@ -231,7 +231,7 @@ export class TabElement extends HTMLElement {
   }
 
   get substanceElement() {
-    return this.querySelector(kTAB_SUBSTANCE_ELEMENT_NAME);
+    return this.querySelector(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
   }
 
   get twisty() {
@@ -243,7 +243,7 @@ export class TabElement extends HTMLElement {
   }
 
   get _labelElement() {
-    return this.querySelector(kTAB_LABEL_ELEMENT_NAME);
+    return this.querySelector(kTREE_ITEM_LABEL_ELEMENT_NAME);
   }
 
   get _sharingStateElement() {
@@ -572,7 +572,7 @@ windowId = ${raw.windowId}
       this.removeEventListener('mouseover', this._reservedUpdateTooltip);
       this._updateTooltip();
     }
-    const tabSubstanceEnterEvent = new MouseEvent(kEVENT_TAB_SUBSTANCE_ENTER, {
+    const tabSubstanceEnterEvent = new MouseEvent(kEVENT_TREE_ITEM_SUBSTANCE_ENTER, {
       ...event,
       clientX: event.clientX,
       clientY: event.clientY,
@@ -587,7 +587,7 @@ windowId = ${raw.windowId}
   _onMouseLeave(event) {
     if (this.classList.contains('faviconized') != (event.target == this))
       return;
-    const tabSubstanceLeaveEvent = new UIEvent(kEVENT_TAB_SUBSTANCE_LEAVE, {
+    const tabSubstanceLeaveEvent = new UIEvent(kEVENT_TREE_ITEM_SUBSTANCE_LEAVE, {
       ...event,
       bubbles: true,
       composed: true,

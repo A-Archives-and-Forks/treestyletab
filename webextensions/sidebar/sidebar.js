@@ -55,11 +55,11 @@ import * as TabContextMenu from './tab-context-menu.js';
 import { TabCloseBoxElement } from './components/TabCloseBoxElement.js';
 import { TabCounterElement } from './components/TabCounterElement.js';
 import {
-  TabElement,
+  TreeItemElement,
   TabInvalidationTarget,
-} from './components/TabElement.js';
+} from './components/TreeItemElement.js';
 import { TabFaviconElement } from './components/TabFaviconElement.js';
-import { TabLabelElement } from './components/TabLabelElement.js';
+import { TreeItemLabelElement } from './components/TreeItemLabelElement.js';
 import { TabSharingStateElement } from './components/TabSharingStateElement.js';
 import { TabSoundButtonElement } from './components/TabSoundButtonElement.js';
 import { TabTwistyElement } from './components/TabTwistyElement.js';
@@ -138,11 +138,11 @@ export async function init() {
   TabTwistyElement.define();
   TabCloseBoxElement.define();
   TabFaviconElement.define();
-  TabLabelElement.define();
+  TreeItemLabelElement.define();
   TabCounterElement.define();
   TabSharingStateElement.define();
   TabSoundButtonElement.define();
-  TabElement.define();
+  TreeItemElement.define();
 
   let promisedAllTabsTracked;
   UserOperationBlocker.setProgress(0);

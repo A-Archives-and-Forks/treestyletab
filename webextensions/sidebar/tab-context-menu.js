@@ -701,9 +701,9 @@ async function onContextMenu(event) {
     return;
   }
 
-  const originalTargetTabElement = originalTarget && originalTarget.closest('[data-tab-id]');
-  const tab = originalTargetTabElement ?
-    TabsStore.ensureLivingItem(Tab.get(parseInt(originalTargetTabElement.dataset.tabId))) :
+  const originalTargetTreeItemElement = originalTarget && originalTarget.closest('[data-tab-id]');
+  const tab = originalTargetTreeItemElement ?
+    TabsStore.ensureLivingItem(Tab.get(parseInt(originalTargetTreeItemElement.dataset.tabId))) :
     EventUtils.getTabFromEvent(event);
   if (tab &&
       !modifierKeyPressed &&

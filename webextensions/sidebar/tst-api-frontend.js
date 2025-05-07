@@ -23,8 +23,8 @@ import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
 import {
-  kTAB_ELEMENT_NAME,
-} from './components/TabElement.js';
+  kTREE_ITEM_ELEMENT_NAME,
+} from './components/TreeItemElement.js';
 
 function log(...args) {
   internalLogger('sidebar/tst-api-frontend', ...args);
@@ -44,7 +44,7 @@ Sidebar.onInit.addListener(() => {
   mTargetWindow = TabsStore.getCurrentWindowId();
 });
 
-SidebarItems.onReuseTabElement.addListener(tabElement => {
+SidebarItems.onReuseTreeItemElement.addListener(tabElement => {
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-indent' });
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-front' });
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-behind' });
@@ -395,7 +395,7 @@ function setExtraContentsToContainer(container, id, params = {}) {
   let cacheHolder, cacheKey;
   const place = String(params.place).toLowerCase();
   if (AUTO_REINSERT_PLACES.has(place)) {
-    const cacheHolderElement = container?.host?.closest(kTAB_ELEMENT_NAME) || container;
+    const cacheHolderElement = container?.host?.closest(kTREE_ITEM_ELEMENT_NAME) || container;
     cacheHolder = cacheHolderElement.$TST || cacheHolderElement;
     cacheKey = `$$lastContentsSourceFor_${id}`;
     params = {
@@ -621,7 +621,7 @@ export function clearAllExtraTabContents(id) {
   if (!mAddonsWithExtraContents.has(id))
     return;
 
-  for (const tabElement of document.querySelectorAll(kTAB_ELEMENT_NAME)) {
+  for (const tabElement of document.querySelectorAll(kTREE_ITEM_ELEMENT_NAME)) {
     clearExtraTabContentsInElement(tabElement, id);
   }
   setExtraNewTabButtonContents(id);

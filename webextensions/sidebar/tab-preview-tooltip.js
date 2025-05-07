@@ -67,14 +67,14 @@ import TabPreviewPanel from '/resources/module/TabPreviewPanel.js'; // the IMPL
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
 
-import { kEVENT_TAB_SUBSTANCE_ENTER, kEVENT_TAB_SUBSTANCE_LEAVE } from './components/TabElement.js';
+import { kEVENT_TREE_ITEM_SUBSTANCE_ENTER, kEVENT_TREE_ITEM_SUBSTANCE_LEAVE } from './components/TreeItemElement.js';
 
 const CAPTURABLE_URLS_MATCHER         = /^(https?|data):/;
 const PREVIEW_WITH_HOST_URLS_MATCHER  = /^(https?|moz-extension):/;
 const PREVIEW_WITH_TITLE_URLS_MATCHER = /^file:/;
 
-document.addEventListener(kEVENT_TAB_SUBSTANCE_ENTER, onTabSubstanceEnter);
-document.addEventListener(kEVENT_TAB_SUBSTANCE_LEAVE, onTabSubstanceLeave);
+document.addEventListener(kEVENT_TREE_ITEM_SUBSTANCE_ENTER, onTabSubstanceEnter);
+document.addEventListener(kEVENT_TREE_ITEM_SUBSTANCE_LEAVE, onTabSubstanceLeave);
 
 function log(...args) {
   internalLogger('sidebar/tab-preview-tooltip', ...args);

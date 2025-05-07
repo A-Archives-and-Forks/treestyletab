@@ -40,7 +40,7 @@ import { Tab } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 
-import { TabInvalidationTarget } from './components/TabElement.js';
+import { TabInvalidationTarget } from './components/TreeItemElement.js';
 
 function log(...args) {
   internalLogger('sidebar/collapse-expand', ...args);

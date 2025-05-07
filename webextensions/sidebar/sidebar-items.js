@@ -30,11 +30,11 @@ import * as BackgroundConnection from './background-connection.js';
 import * as CollapseExpand from './collapse-expand.js';
 
 import {
-  kTAB_ELEMENT_NAME,
-  kTAB_SUBSTANCE_ELEMENT_NAME,
+  kTREE_ITEM_ELEMENT_NAME,
+  kTREE_ITEM_SUBSTANCE_ELEMENT_NAME,
   TabInvalidationTarget,
   TabUpdateTarget,
-} from './components/TabElement.js';
+} from './components/TreeItemElement.js';
 
 function log(...args) {
   internalLogger('sidebar/sidebar-items', ...args);
@@ -53,7 +53,7 @@ export const onNormalTabsChanged = new EventListenerManager();
 export const onTabsRendered   = new EventListenerManager();
 export const onTabsUnrendered = new EventListenerManager();
 export const onSyncFailed = new EventListenerManager();
-export const onReuseTabElement = new EventListenerManager();
+export const onReuseTreeItemElement = new EventListenerManager();
 
 export function init() {
   document.querySelector('#sync-throbber').addEventListener('animationiteration', synchronizeThrobberAnimation);
@@ -75,8 +75,8 @@ export function getItemFromDOMNode(node, options = {}) {
     return null;
   if (!(node instanceof Element))
     node = node.parentNode;
-  const itemSubstance = node && node.closest(kTAB_SUBSTANCE_ELEMENT_NAME);
-  const item = itemSubstance && itemSubstance.closest(kTAB_ELEMENT_NAME);
+  const itemSubstance = node && node.closest(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
+  const item = itemSubstance && itemSubstance.closest(kTREE_ITEM_ELEMENT_NAME);
   if (options.force) {
     return item?.apiRaw;
   }
@@ -237,7 +237,7 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     const reuseFromPool = (mItemElementsPool.length > 0);
     const itemElement = reuseFromPool ?
       mItemElementsPool.pop() :
-      document.createElement(kTAB_ELEMENT_NAME);
+      document.createElement(kTREE_ITEM_ELEMENT_NAME);
     item.$TST.bindElement(itemElement);
     item.$TST.setAttribute('id', getItemElementId(item));
     item.$TST.setAttribute('type', item.$TST.type);
@@ -254,7 +254,7 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     }
     if (reuseFromPool) {
       itemElement.favIconUrl = null;
-      onReuseTabElement.dispatch(itemElement);
+      onReuseTreeItemElement.dispatch(itemElement);
     }
     created = true;
   }
@@ -415,7 +415,7 @@ export function unrenderItem(item) {
     clearTimeout(mClearPoolTimer);
   mClearPoolTimer = setTimeout(() => {
     mItemElementsPool = [];
-  }, configs.generatedTabElementsPoolLifetimeMsec);
+  }, configs.generatedTreeItemElementsPoolLifetimeMsec);
 
   return true;
 }
@@ -1128,7 +1128,7 @@ BackgroundConnection.onMessage.addListener(async message => {
         onNormalTabsChanged.dispatch(tab);
     }; break;
 
-    case Constants.kCOMMAND_NOTIFY_TAB_LABEL_UPDATED: {
+    case Constants.kCOMMAND_NOTIFY_TREE_ITEM_LABEL_UPDATED: {
       if (BackgroundConnection.handleBufferedMessage(message, `${BUFFER_KEY_PREFIX}${message.tabId}`))
         return;
       await Tab.waitUntilTracked(message.tabId);

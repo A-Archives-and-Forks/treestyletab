@@ -121,7 +121,7 @@ function flushBufferedUpdates() {
         });
       if (update.updatedTitle !== undefined)
         SidebarConnection.sendMessage({
-          type:     Constants.kCOMMAND_NOTIFY_TAB_LABEL_UPDATED,
+          type:     Constants.kCOMMAND_NOTIFY_TREE_ITEM_LABEL_UPDATED,
           windowId: update.windowId,
           tabId:    update.tabId,
           title:    update.updatedTitle,
