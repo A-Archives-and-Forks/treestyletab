@@ -461,10 +461,6 @@ function updateNativeTabGroups(contextTab) {
   }
 }
 
-function hasEffectiveTabGroup(windowId) {
-  return getEffectiveTabGroups(windowId).length > 0;
-}
-
 function getEffectiveTabGroups(windowId) {
   return Tab.sort(
     [...TabsStore.windows.get(windowId).tabGroups.values()]
@@ -807,7 +803,7 @@ async function onShown(info, contextTab) {
     const hasChild              = contextTab && contextTabs.some(tab => tab.$TST.hasChild);
     const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
     const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
-    const hasNativeTabGroup     = hasEffectiveTabGroup(windowId);
+    const hasChoosableNativeTabGroup = contextTab && getEffectiveTabGroups(windowId).filter(group => group.id != contextTab.groupId).length > 0;
 
     if (mOverriddenContext)
       return onOverriddenMenuShown(info, contextTab, windowId);
@@ -827,11 +823,11 @@ async function onShown(info, contextTab) {
     }) && modifiedItemsCount++;
 
     updateItem('context_newGroup', {
-      visible: emulate && !!contextTab && !hasNativeTabGroup,
+      visible: emulate && !!contextTab && !hasChoosableNativeTabGroup,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_addToGroup', {
-      visible: emulate && !!contextTab && hasNativeTabGroup,
+      visible: emulate && !!contextTab && hasChoosableNativeTabGroup,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_removeFromGroup', {
