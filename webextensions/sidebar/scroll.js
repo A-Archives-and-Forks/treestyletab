@@ -53,7 +53,7 @@ import * as Constants from '/common/constants.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab, TabGroup } from '/common/TreeItem.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 import * as CollapseExpand from './collapse-expand.js';
@@ -220,6 +220,40 @@ let mLastRenderedVirtualScrollTabIds = [];
 const STICKY_SPACER_MATCHER = /^tab:(\d+):sticky$/;
 let mScrollPosition = 0;
 
+function getRenderableTabs(windowId = null) {
+  if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
+    log('getRenderableTabs: no native tab group');
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
+      skipMatching: true,
+      ordered: true,
+    });
+  }
+
+  const mixedTabs = TreeItem.sort([
+    ...TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
+      skipMatching: true,
+    }),
+    ...mapAndFilter(
+      [...TabsStore.windows.get(windowId).tabGroups.values()],
+      group => {
+        const firstMember = TabGroup.getFirstMemberTab({ windowId, groupId: group.id });
+        if (!firstMember) {
+          return undefined;
+        }
+        group.index = firstMember.index;
+        return group;
+      }
+    )
+  ]);
+  log('getRenderableTabs: mixedTabs = ', mixedTabs);
+
+  return mixedTabs;
+};
+
 renderVirtualScrollViewport.triggers = new Set();
 
 function renderVirtualScrollViewport(scrollPosition = undefined) {
@@ -241,7 +275,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
   const skipRefreshTabs  = staticRendering && triggers.size == 1 && triggers.has('scroll');
 
   const tabSize               = Size.getRenderedTabHeight();
-  const renderableTabs        = skipRefreshTabs && mLastRenderableTabs || Tab.getVirtualScrollRenderableTabs(windowId);
+  const renderableTabs        = skipRefreshTabs && mLastRenderableTabs || getRenderableTabs(windowId);
   const disappearingTabs      = skipRefreshTabs && mLastDisappearingTabs || renderableTabs.filter(tab => tab.$TST.removing || tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSING));
   const allRenderableTabsSize = Size.getTabMarginBlockStart() + (tabSize * (renderableTabs.length - disappearingTabs.length)) + Size.getTabMarginBlockEnd();
   const viewPortSize = Size.getNormalTabsViewPortSize();
@@ -565,7 +599,7 @@ export function getTabRect(tab) {
   if (tab.pinned)
     return tab.$TST.element.getBoundingClientRect();
 
-  const renderableTabs = Tab.getVirtualScrollRenderableTabs(tab.windowId).map(tab => tab.id);
+  const renderableTabs = getRenderableTabs(tab.windowId).map(tab => tab.id);
   const tabSize        = Size.getTabHeight();
   const scrollBox      = getScrollBoxFor(tab);
   const scrollBoxRect  = Size.getScrollBoxRect(scrollBox);

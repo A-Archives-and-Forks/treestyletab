@@ -3283,40 +3283,6 @@ Tab.getSelectedTabs = (windowId = null, options = {}) => {
     return TreeItem.sort(Array.from(new Set([...selectedTabs, ...Array.from(highlightedTabs.values())])));
 };
 
-Tab.getVirtualScrollRenderableTabs = (windowId = null) => {
-  if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
-    log('Tab.getVirtualScrollRenderableTabs: no native tab group');
-    return TabsStore.queryAll({
-      windowId,
-      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
-      skipMatching: true,
-      ordered: true,
-    });
-  }
-
-  const mixedTabs = TreeItem.sort([
-    ...TabsStore.queryAll({
-      windowId,
-      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
-      skipMatching: true,
-    }),
-    ...mapAndFilter(
-      [...TabsStore.windows.get(windowId).tabGroups.values()],
-      group => {
-        const firstMember = TabGroup.getFirstMemberTab({ windowId, groupId: group.id });
-        if (!firstMember) {
-          return undefined;
-        }
-        group.index = firstMember.index;
-        return group;
-      }
-    )
-  ]);
-  log('Tab.getVirtualScrollRenderableTabs: mixedTabs = ', mixedTabs);
-
-  return mixedTabs;
-};
-
 Tab.getNeedToBeSynchronizedTabs = (windowId = null, options = {}) => {
   return TabsStore.queryAll({
     windowId,
