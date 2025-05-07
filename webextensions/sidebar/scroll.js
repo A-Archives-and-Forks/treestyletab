@@ -60,7 +60,7 @@ import * as BackgroundConnection from './background-connection.js';
 import * as CollapseExpand from './collapse-expand.js';
 import * as EventUtils from './event-utils.js';
 import * as RestoringTabCount from './restoring-tab-count.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
 export const onPositionUnlocked = new EventListenerManager();
@@ -103,7 +103,7 @@ export function init(scrollPosition) {
   browser.runtime.onMessage.addListener(onMessage);
   BackgroundConnection.onMessage.addListener(onBackgroundMessage);
   TSTAPI.onMessageExternal.addListener(onMessageExternal);
-  SidebarTabs.onNormalTabsChanged.addListener(_tab => {
+  SidebarItems.onNormalTabsChanged.addListener(_tab => {
     reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
   });
   Tab.onNativeGroupModified.addListener(_tab => {
@@ -397,7 +397,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 !item ||
                 !mNormalScrollBox.contains(item.$TST.element))
               continue;
-            SidebarTabs.unrenderTab(item);
+            SidebarItems.unrenderTab(item);
           }
         }; break;
 
@@ -422,7 +422,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
                 !item ||
                 !mNormalScrollBox.contains(item.$TST.element))
               continue;
-            SidebarTabs.unrenderTab(item);
+            SidebarItems.unrenderTab(item);
           }
           const referenceItem = fromEnd < mLastRenderedVirtualScrollItemIds.length ?
             getRenderableItemById(mLastRenderedVirtualScrollItemIds[fromEnd]) :
@@ -443,7 +443,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
               continue;
             }
             const item = getRenderableItemById(id);
-            SidebarTabs.renderTab(item, {
+            SidebarItems.renderTab(item, {
               insertBefore: referenceItemHasValidReferenceElement ? referenceItem :
                 (referenceItem && win.containerElement.querySelector(`.sticky-tab-spacer[data-tab-id="${referenceItem.id}"]`)) ||
                 null,
@@ -530,7 +530,7 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
     }
     if (item.$TST.element &&
         item.$TST.element.parentNode != TabsStore.windows.get(windowId).containerElement) {
-      SidebarTabs.unrenderTab(item);
+      SidebarItems.unrenderTab(item);
       continue;
     }
   }
@@ -551,7 +551,7 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
           for (const id of ids) {
             if (!stickyItemIdsAbove.has(id) &&
                 !stickyItemIdsBelow.has(id))
-              SidebarTabs.unrenderTab(Tab.get(id));
+              SidebarItems.unrenderTab(Tab.get(id));
           }
         }; break;
 
@@ -561,14 +561,14 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
           for (const id of deleteIds) {
             if (!stickyItemIdsAbove.has(id) &&
                 !stickyItemIdsBelow.has(id))
-              SidebarTabs.unrenderTab(Tab.get(id));
+              SidebarItems.unrenderTab(Tab.get(id));
           }
           const insertIds = currentIds.slice(toStart, toEnd);
           const referenceItem = (fromEnd < lastIds.length && currentIds.includes(lastIds[fromEnd])) ?
             Tab.get(lastIds[fromEnd]) :
             null;
           for (const id of insertIds) {
-            SidebarTabs.renderTab(Tab.get(id), {
+            SidebarItems.renderTab(Tab.get(id), {
               containerElement: document.querySelector(`.sticky-tabs-container.${place}`),
               insertBefore:     referenceItem,
             });
@@ -1274,7 +1274,7 @@ async function onBackgroundMessage(message) {
     case Constants.kCOMMAND_NOTIFY_TAB_CREATED: {
       await Tab.waitUntilTracked(message.tabId);
       if (message.maybeMoved)
-        await SidebarTabs.waitUntilNewTabIsMoved(message.tabId);
+        await SidebarItems.waitUntilNewTabIsMoved(message.tabId);
       const item = Tab.get(message.tabId);
       if (!item) // it can be closed while waiting
         break;

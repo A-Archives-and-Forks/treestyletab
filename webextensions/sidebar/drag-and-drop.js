@@ -45,7 +45,7 @@ import * as Constants from '/common/constants.js';
 import * as EventUtils from './event-utils.js';
 import * as RetrieveURL from '/common/retrieve-url.js';
 import * as Scroll from './scroll.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
@@ -1062,7 +1062,7 @@ function onDragEnter(event) {
   const info = getDropAction(event);
   try {
     const enteredTab = EventUtils.getTabFromEvent(event);
-    const leftTab    = SidebarTabs.getTabFromDOMNode(event.relatedTarget);
+    const leftTab    = SidebarItems.getTabFromDOMNode(event.relatedTarget);
     if (leftTab != enteredTab) {
       mDraggingOnDraggedTabs = (
         info.dragData &&
@@ -1173,7 +1173,7 @@ function onDragLeave(event) {
   try {
     const info       = getDropAction(event);
     const leftTab    = EventUtils.getTabFromEvent(event);
-    const enteredTab = SidebarTabs.getTabFromDOMNode(event.relatedTarget);
+    const enteredTab = SidebarItems.getTabFromDOMNode(event.relatedTarget);
     if (leftTab != enteredTab) {
       if (info.dragData &&
           info.dragData.tabs.some(tab => tab.id == leftTab.id) &&

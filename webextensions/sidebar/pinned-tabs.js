@@ -39,7 +39,7 @@ import { Tab } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 import * as GapCanceller from './gap-canceller.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
 function log(...args) {
@@ -152,7 +152,7 @@ export function reposition(options = {}) {
   }
   log('reposition: ', { maxWidth, faviconized, width, height, maxCol, maxRow, pinnedTabsAreaRatio, allTabsAreaHeight, xOffset, yOffset, mMaxVisibleRows, mAreaHeight });
   log('overflow: contentsHeight > mAreaHeight : ', contentsHeight > mAreaHeight);
-  SidebarTabs.pinnedContainer.classList.toggle('overflow', contentsHeight > mAreaHeight);
+  SidebarItems.pinnedContainer.classList.toggle('overflow', contentsHeight > mAreaHeight);
 }
 
 export function reserveToReposition(options = {}) {

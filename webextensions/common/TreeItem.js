@@ -32,7 +32,7 @@ import * as UniqueId from './unique-id.js';
 import Window from './Window.js';
 
 function log(...args) {
-  internalLogger('common/Tab', ...args);
+  internalLogger('common/TreeItem', ...args);
 }
 
 function successorTabLog(...args) {

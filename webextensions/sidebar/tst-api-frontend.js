@@ -19,7 +19,7 @@ import { Tab } from '/common/TreeItem.js';
 
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
 import {
@@ -44,7 +44,7 @@ Sidebar.onInit.addListener(() => {
   mTargetWindow = TabsStore.getCurrentWindowId();
 });
 
-SidebarTabs.onReuseTabElement.addListener(tabElement => {
+SidebarItems.onReuseTabElement.addListener(tabElement => {
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-indent' });
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-front' });
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-behind' });

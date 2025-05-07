@@ -37,7 +37,7 @@ import {
 } from './components/TabElement.js';
 
 function log(...args) {
-  internalLogger('sidebar/sidebar-tabs', ...args);
+  internalLogger('sidebar/sidebar-items', ...args);
 }
 
 let mPromisedInitializedResolver;

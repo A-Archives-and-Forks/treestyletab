@@ -47,7 +47,7 @@ import * as Notifications from './notifications.js';
 import * as PinnedTabs from './pinned-tabs.js';
 import * as RestoringTabCount from './restoring-tab-count.js';
 import * as Scroll from './scroll.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 import * as SubPanel from './subpanel.js';
 import * as TabContextMenu from './tab-context-menu.js';
@@ -274,14 +274,14 @@ export async function init() {
   await MetricsData.addAsync('parallel initialization: post process', Promise.all([
     MetricsData.addAsync('parallel initialization: post process: main', async () => {
       Indent.updateRestoredTree();
-      SidebarTabs.updateAll();
+      SidebarItems.updateAll();
       updateTabbarLayout({ justNow: true });
       SubPanel.onResized.addListener(() => {
         reserveToUpdateTabbarLayout();
       });
       SubPanel.init();
 
-      SidebarTabs.init();
+      SidebarItems.init();
       Indent.tryUpdateVisualMaxTreeLevel();
 
       shouldApplyAnimation.onChanged.addListener(applyAnimationState);
@@ -310,10 +310,10 @@ export async function init() {
   TabsUpdate.completeLoadingTabs(mTargetWindow); // failsafe
 
   // Failsafe. If the sync operation fail after retryings,
-  // SidebarTabs.onSyncFailed is notified then this sidebar page will be
+  // SidebarItems.onSyncFailed is notified then this sidebar page will be
   // reloaded for complete retry.
-  SidebarTabs.onSyncFailed.addListener(() => rebuildAll());
-  SidebarTabs.reserveToSyncTabsOrder();
+  SidebarItems.onSyncFailed.addListener(() => rebuildAll());
+  SidebarItems.reserveToSyncTabsOrder();
 
   Size.onUpdated.addListener(() => {
     updateTabbarLayout({
@@ -584,7 +584,7 @@ async function rebuildAll(importedWindow) {
     if (tab.active)
       TabsInternalOperation.setTabActive(trackedTab);
     if (trackedTab.pinned)
-      SidebarTabs.renderTab(trackedTab);
+      SidebarItems.renderTab(trackedTab);
     if (Date.now() - lastDraw > configs.intervalToUpdateProgressForBlockedUserOperation) {
       UserOperationBlocker.setProgress(Math.round(++count / maxCount * 33) + 66); // 3/3: build tab elements
       await nextFrame();
@@ -594,7 +594,7 @@ async function rebuildAll(importedWindow) {
   MetricsData.add('rebuildAll: end (from scratch)');
 
   document.documentElement.classList.toggle(Constants.kTABBAR_STATE_MULTIPLE_HIGHLIGHTED, Tab.getHighlightedTabs(mTargetWindow).length > 1);
-  SidebarTabs.reserveToUpdateLoadingState();
+  SidebarItems.reserveToUpdateLoadingState();
 
   importedWindow = null; // wipe it out from the RAM.
   return false;
@@ -807,11 +807,11 @@ function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
   if (!(reasons & Constants.kTABBAR_UPDATE_REASON_VIRTUAL_SCROLL_VIEWPORT_UPDATE))
     Scroll.reserveToRenderVirtualScrollViewport({ trigger: 'resized' });
 
-  if (SidebarTabs.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW)) {
+  if (SidebarItems.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW)) {
     const updatedAt = updateTabbarLayout.lastScrollbarAutohideUpdatedAt = Date.now();
     window.requestAnimationFrame(() => {
       if (updatedAt != updateTabbarLayout.lastScrollbarAutohideUpdatedAt ||
-          !SidebarTabs.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW))
+          !SidebarItems.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW))
         return;
 
       // scrollbar is shown only when hover on Windows 11, Linux, and macOS.
@@ -840,7 +840,7 @@ updateTabbarLayout.lastScrollbarAutohideUpdatedAt = 0;
 Scroll.onNormalTabsOverflow.addListener(() => {
   log('Normal Tabs Overflow');
   const windowId = TabsStore.getCurrentWindowId();
-  SidebarTabs.normalContainer.classList.add(Constants.kTABBAR_STATE_OVERFLOW);
+  SidebarItems.normalContainer.classList.add(Constants.kTABBAR_STATE_OVERFLOW);
   mTabBar.classList.add(Constants.kTABBAR_STATE_OVERFLOW);
   TSTAPI.broadcastMessage({
     type: TSTAPI.kNOTIFY_TABBAR_OVERFLOW,
@@ -872,7 +872,7 @@ Scroll.onNormalTabsOverflow.addListener(() => {
 
 Scroll.onNormalTabsUnderflow.addListener(() => {
   log('Normal Tabs Underflow');
-  SidebarTabs.normalContainer.classList.remove(Constants.kTABBAR_STATE_OVERFLOW);
+  SidebarItems.normalContainer.classList.remove(Constants.kTABBAR_STATE_OVERFLOW);
   mTabBar.classList.remove(Constants.kTABBAR_STATE_OVERFLOW);
   TSTAPI.broadcastMessage({
     type:     TSTAPI.kNOTIFY_TABBAR_UNDERFLOW,
