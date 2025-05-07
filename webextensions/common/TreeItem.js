@@ -453,6 +453,28 @@ export class TreeItem {
            previousItem.$TST.unsafeNextTab == nextItem;
   }
 
+  isAllPlacedAfterSelf(items) {
+    if (!this.raw ||
+        items.length == 0)
+      return true;
+    let previousItem = this.raw;
+    if (items[0] == previousItem)
+      previousItem = previousItem.$TST.unsafePreviousTab;
+    if (!previousItem && !items[0].$TST.unsafePreviousTab)
+      return true;
+
+    items = Array.from(items).reverse();
+    let nextItem = items.shift();
+    for (const item of items) {
+      if (item.$TST.unsafeNextTab != nextItem)
+        return false;
+      nextItem = item;
+    }
+    return !previousItem ||
+           !nextItem ||
+           nextItem.$TST.unsafePreviousTab == previousItem;
+  }
+
   detach() {}
 
   //===================================================================
