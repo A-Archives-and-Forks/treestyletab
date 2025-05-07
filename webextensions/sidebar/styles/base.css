@@ -141,6 +141,7 @@ tab-item {
                                                      var(--tab-highlighted-glow) 10%,
                                                      rgba(255, 255, 255, 0) 23%);
   */
+  --tab-label-width: 100%;
 }
 tab-item.faviconized {
   --attention-marker-x-offset: calc(0px - ((var(--tab-current-size) - var(--favicon-size)) / 2) + ((var(--tab-current-size) - var(--faviconized-tab-size)) / 2));
