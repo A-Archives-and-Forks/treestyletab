@@ -851,17 +851,17 @@ Scroll.onNormalTabsOverflow.addListener(() => {
     // partially (newly opened in small tab bar, or scrolled out when
     // the window is shrunken), so we need to scroll to it explicitely.
     const activeTab = Tab.getActiveTab(windowId);
-    if (activeTab && !Scroll.isTabInViewport(activeTab)) {
+    if (activeTab && !Scroll.isItemInViewport(activeTab)) {
       log('scroll to active tab on updateTabbarLayout');
-      Scroll.scrollToTab(activeTab);
+      Scroll.scrollToItem(activeTab);
       onLayoutUpdated.dispatch()
       return;
     }
     const lastOpenedTab = Tab.getLastOpenedTab(windowId);
     if (updateTabbarLayout.lastUpdateReasons & Constants.kTABBAR_UPDATE_REASON_TAB_OPEN &&
-        !Scroll.isTabInViewport(lastOpenedTab)) {
+        !Scroll.isItemInViewport(lastOpenedTab)) {
       log('scroll to last opened tab on updateTabbarLayout ', updateTabbarLayout.lastUpdateReasons);
-      Scroll.scrollToTab(lastOpenedTab, {
+      Scroll.scrollToItem(lastOpenedTab, {
         anchor:            activeTab,
         notifyOnOutOfView: true
       });

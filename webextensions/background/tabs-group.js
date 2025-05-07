@@ -122,7 +122,7 @@ export async function groupTabs(tabs, { broadcast, parent, withDescendants, ...g
 function reserveToCleanupNeedlessGroupTab(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     if (tab.$TST.temporaryMetadata.has('reservedCleanupNeedlessGroupTab'))
       clearTimeout(tab.$TST.temporaryMetadata.get('reservedCleanupNeedlessGroupTab'));
@@ -382,7 +382,7 @@ function reserveToUpdateRelatedGroupTabs(tab, changedInfo) {
 }
 
 async function updateRelatedGroupTab(groupTab, changedInfo = []) {
-  if (!TabsStore.ensureLivingTab(groupTab))
+  if (!TabsStore.ensureLivingItem(groupTab))
     return;
 
   await tryInitGroupTab(groupTab);
@@ -567,8 +567,8 @@ Tab.onPinned.addListener(async tab => {
     tab.$TST.temporaryMetadata.has('childIdsBeforeMoved') ?
       tab.$TST.temporaryMetadata.get('childIdsBeforeMoved').map(id => Tab.get(id)) :
       tab.$TST.children
-  ).filter(tab => TabsStore.ensureLivingTab(tab));
-  const parent = TabsStore.ensureLivingTab(
+  ).filter(tab => TabsStore.ensureLivingItem(tab));
+  const parent = TabsStore.ensureLivingItem(
     tab.$TST.temporaryMetadata.has('parentIdBeforeMoved') ?
       Tab.get(tab.$TST.temporaryMetadata.get('parentIdBeforeMoved')) :
       tab.$TST.parent

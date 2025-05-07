@@ -681,7 +681,7 @@ export async function moveTabsWithStructure(tabs, params = {}) {
   }, windowId);
   log('=> opened group tabs: ', replacedGroupTabs);
   params.draggedTab.ownerDocument.defaultView.setTimeout(() => {
-    if (!TabsStore.ensureLivingTab(tab)) // it was removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) // it was removed while waiting
       return;
     log('closing needless group tabs');
     replacedGroupTabs.reverse().forEach(function(tab) {

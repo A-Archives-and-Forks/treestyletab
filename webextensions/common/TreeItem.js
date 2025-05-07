@@ -959,7 +959,7 @@ export class Tab extends TreeItem {
       return Promise.resolve(this.uniqueId);
     }
     return UniqueId.request(this.raw, options).then(uniqueId => {
-      if (uniqueId && TabsStore.ensureLivingTab(this.raw)) { // possibly removed from document while waiting
+      if (uniqueId && TabsStore.ensureLivingItem(this.raw)) { // possibly removed from document while waiting
         this.uniqueId = uniqueId;
         TabsStore.tabsByUniqueId.set(uniqueId.id, this.raw);
         this.setAttribute(Constants.kPERSISTENT_ID, uniqueId.id);
@@ -1568,7 +1568,7 @@ export class Tab extends TreeItem {
     return tab;
   }
   get parent() {
-    return this.raw && this.parentId && TabsStore.ensureLivingTab(Tab.get(this.parentId));
+    return this.raw && this.parentId && TabsStore.ensureLivingItem(Tab.get(this.parentId));
   }
 
   get hasParent() {
@@ -1583,7 +1583,7 @@ export class Tab extends TreeItem {
 
   get ancestors() {
     return mapAndFilter(this.ancestorIds,
-                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
+                        id => TabsStore.ensureLivingItem(Tab.get(id)) || undefined);
   }
 
   updateAncestors() {
@@ -1658,7 +1658,7 @@ export class Tab extends TreeItem {
     const newChildIds = mapAndFilter(tabs, tab => {
       const id = typeof tab == 'number' ? tab : tab && tab.id;
       if (!ancestorIds.includes(id))
-        return TabsStore.ensureLivingTab(Tab.get(id)) ? id : undefined;
+        return TabsStore.ensureLivingItem(Tab.get(id)) ? id : undefined;
       console.log('FATAL ERROR: Cyclic tree structure has detected and prevented. ', {
         ancestorsOfSelf: this.ancestors,
         tabs,
@@ -1692,7 +1692,7 @@ export class Tab extends TreeItem {
   }
   get children() {
     return mapAndFilter(this.childIds,
-                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
+                        id => TabsStore.ensureLivingItem(Tab.get(id)) || undefined);
   }
 
   sortAndInvalidateChildren() {
@@ -1711,7 +1711,7 @@ export class Tab extends TreeItem {
     if (!this.cachedDescendantIds)
       return this.updateDescendants();
     return mapAndFilter(this.cachedDescendantIds,
-                        id => TabsStore.ensureLivingTab(Tab.get(id)) || undefined);
+                        id => TabsStore.ensureLivingItem(Tab.get(id)) || undefined);
   }
 
   updateDescendants() {
@@ -2298,7 +2298,7 @@ export class Tab extends TreeItem {
 
     this.delayedInheritSoundStateFromChildren = setTimeout(() => {
       this.delayedInheritSoundStateFromChildren = null;
-      if (!TabsStore.ensureLivingTab(this.raw))
+      if (!TabsStore.ensureLivingItem(this.raw))
         return;
 
       const parent = this.parent;
@@ -2370,7 +2370,7 @@ export class Tab extends TreeItem {
 
     this.delayedInheritSharingStateFromChildren = setTimeout(() => {
       this.delayedInheritSharingStateFromChildren = null;
-      if (!TabsStore.ensureLivingTab(this.raw))
+      if (!TabsStore.ensureLivingItem(this.raw))
         return;
 
       const parent = this.parent;
@@ -2634,7 +2634,7 @@ Tab.get = tabId =>  {
 Tab.getByUniqueId = id => {
   if (!id)
     return null;
-  return TabsStore.ensureLivingTab(TabsStore.tabsByUniqueId.get(id));
+  return TabsStore.ensureLivingItem(TabsStore.tabsByUniqueId.get(id));
 };
 
 Tab.needToWaitTracked = (windowId) => {
@@ -2917,7 +2917,7 @@ Tab.import = tab => {
 // Note that this function can return null if it is the first tab of
 // a new window opened by the "move tab to new window" command.
 Tab.getActiveTab = windowId => {
-  return TabsStore.ensureLivingTab(TabsStore.activeTabInWindow.get(windowId));
+  return TabsStore.ensureLivingItem(TabsStore.activeTabInWindow.get(windowId));
 };
 
 Tab.getFirstTab = windowId => {
@@ -3051,7 +3051,7 @@ Tab.getSubstanceFromAliasGroupTab = groupTab => {
 //===================================================================
 
 Tab.getActiveTabs = () => {
-  return Array.from(TabsStore.activeTabInWindow.values(), TabsStore.ensureLivingTab);
+  return Array.from(TabsStore.activeTabInWindow.values(), TabsStore.ensureLivingItem);
 };
 
 Tab.getAllTabs = (windowId = null, options = {}) => {
@@ -3088,8 +3088,8 @@ Tab.getTabs = (windowId = null, options = {}) => { // only visible, including co
 };
 
 Tab.getTabsBetween = (begin, end) => {
-  if (!begin || !TabsStore.ensureLivingTab(begin) ||
-      !end || !TabsStore.ensureLivingTab(end))
+  if (!begin || !TabsStore.ensureLivingItem(begin) ||
+      !end || !TabsStore.ensureLivingItem(end))
     throw new Error('getTabsBetween requires valid two tabs');
   if (begin.windowId != end.windowId)
     throw new Error('getTabsBetween requires two tabs in same window');
@@ -3176,7 +3176,7 @@ Tab.getLastRootTab = (windowId, options = {}) => {
 
 Tab.collectRootTabs = tabs => {
   return tabs.filter(tab => {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       return false;
     const parent = tab.$TST.parent;
     return !parent || !tabs.includes(parent);
@@ -3545,7 +3545,7 @@ Tab.getOtherTabs = (windowId, ignoreTabs, options = {}) => {
 };
 
 function getTabIndex(tab, { ignoreTabs } = {}) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return -1;
   TabsStore.assertValidTab(tab);
   return Tab.getOtherTabs(tab.windowId, ignoreTabs).indexOf(tab);

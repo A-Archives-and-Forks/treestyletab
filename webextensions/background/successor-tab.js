@@ -160,7 +160,7 @@ async function updateInternal(tabId, excludeTabIds = []) {
 
   const renewedTab = await browser.tabs.get(tabId).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
   if (!renewedTab ||
-      !TabsStore.ensureLivingTab(tab))
+      !TabsStore.ensureLivingItem(tab))
     return;
   log('updateInternal: ', dumpTab(tab), {
     tabSuccessorTabId: tab.successorTabId,

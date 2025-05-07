@@ -612,7 +612,7 @@ windowId = ${raw.windowId}
   }
 
   _updateTabAndAncestorsTooltip(tab) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       return;
     for (const updateTab of [tab].concat(tab.$TST.ancestors)) {
       const tabElement = updateTab.$TST.element;

@@ -157,7 +157,7 @@ async function onActivated(activeInfo) {
 
     const newActiveTab = Tab.get(activeInfo.tabId);
     if (!newActiveTab ||
-        !TabsStore.ensureLivingTab(newActiveTab)) {
+        !TabsStore.ensureLivingItem(newActiveTab)) {
       warnTabDestroyedWhileWaiting(activeInfo.tabId);
       onCompleted();
       return;
@@ -167,7 +167,7 @@ async function onActivated(activeInfo) {
     const oldActiveTabs = TabsInternalOperation.setTabActive(newActiveTab);
     const byActiveTabRemove = !activeInfo.previousTabId;
 
-    if (!TabsStore.ensureLivingTab(newActiveTab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(newActiveTab)) { // it can be removed while waiting
       onCompleted();
       warnTabDestroyedWhileWaiting(activeInfo.tabId);
       return;
@@ -200,7 +200,7 @@ async function onActivated(activeInfo) {
       return;
     }
 
-    if (!TabsStore.ensureLivingTab(newActiveTab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(newActiveTab)) { // it can be removed while waiting
       onCompleted();
       warnTabDestroyedWhileWaiting(activeInfo.tabId);
       return;
@@ -251,7 +251,7 @@ async function onUpdated(tabId, changeInfo, tab) {
   try {
     const updatedTab = Tab.get(tabId);
     if (!updatedTab ||
-        !TabsStore.ensureLivingTab(updatedTab)) {
+        !TabsStore.ensureLivingItem(updatedTab)) {
       onCompleted();
       warnTabDestroyedWhileWaiting(tabId, updatedTab);
       return;
@@ -479,7 +479,7 @@ async function onNewTabTracked(tab, info) {
   let treeForActionDetection;
   const onTreeModified = (_child, _info) => {
     if (!treeForActionDetection ||
-        !TabsStore.ensureLivingTab(tab))
+        !TabsStore.ensureLivingItem(tab))
       return;
     treeForActionDetection = Tree.snapshotForActionDetection(tab);
     log('Tree modification is detected while waiting. Cached tree for action detection is updated: ', treeForActionDetection);
@@ -512,7 +512,7 @@ async function onNewTabTracked(tab, info) {
     const uniqueId = await tab.$TST.promisedUniqueId;
     metric.add('uniqueId resolved');
 
-    if (!TabsStore.ensureLivingTab(tab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) { // it can be removed while waiting
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
       Tab.untrack(tab.id);
@@ -595,7 +595,7 @@ async function onNewTabTracked(tab, info) {
       log(`onNewTabTracked(${dumpTab(tab)}): continued for restored tab`);
       metric.add('win.promisedAllTabsRestored resolved');
     }
-    if (!TabsStore.ensureLivingTab(tab)) {
+    if (!TabsStore.ensureLivingItem(tab)) {
       log(`onNewTabTracked(${dumpTab(tab)}):  => aborted`);
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
@@ -627,7 +627,7 @@ async function onNewTabTracked(tab, info) {
     }
     moved = moved === false;
 
-    if (!TabsStore.ensureLivingTab(tab)) {
+    if (!TabsStore.ensureLivingItem(tab)) {
       log(`onNewTabTracked(${dumpTab(tab)}):  => aborted`);
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
@@ -650,7 +650,7 @@ async function onNewTabTracked(tab, info) {
     log(`onNewTabTracked(${dumpTab(tab)}): moved = `, moved);
     metric.add('kCOMMAND_NOTIFY_TAB_CREATING notified');
 
-    if (TabsStore.ensureLivingTab(tab)) { // it can be removed while waiting
+    if (TabsStore.ensureLivingItem(tab)) { // it can be removed while waiting
       win.openingTabs.add(tab.id);
       setTimeout(() => { // because window.requestAnimationFrame is decelerate for an invisible document.
         if (!TabsStore.windows.get(tab.windowId)) // it can be removed while waiting
@@ -659,7 +659,7 @@ async function onNewTabTracked(tab, info) {
       }, 0);
     }
 
-    if (!TabsStore.ensureLivingTab(tab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) { // it can be removed while waiting
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
       Tab.untrack(tab.id);
@@ -819,11 +819,11 @@ function checkRecycledTab(windowId) {
   const possibleRecycledTabs = Tab.getRecycledTabs(windowId);
   log(`Detecting recycled tabs`);
   for (const tab of possibleRecycledTabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const currentId = tab.$TST.uniqueId.id;
     tab.$TST.updateUniqueId().then(uniqueId => {
-      if (!TabsStore.ensureLivingTab(tab) ||
+      if (!TabsStore.ensureLivingItem(tab) ||
           !uniqueId.restored ||
           uniqueId.id == currentId ||
           Constants.kTAB_STATE_RESTORED in tab.$TST.states)
@@ -1037,7 +1037,7 @@ async function onMoved(tabId, moveInfo) {
       await canceled;
     canceled = canceled === false;
     if (!canceled &&
-        TabsStore.ensureLivingTab(movedTab)) { // it is removed while waiting
+        TabsStore.ensureLivingItem(movedTab)) { // it is removed while waiting
       let newNextIndex = extendedMoveInfo.toIndex;
       if (extendedMoveInfo.fromIndex < newNextIndex)
         newNextIndex++;

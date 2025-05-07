@@ -54,7 +54,7 @@ function logApiTabs(...args) {
 export async function moveTabsBefore(tabs, referenceTab, options = {}) {
   log('moveTabsBefore: ', tabs, referenceTab, options);
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   if (referenceTab.$TST.isAllPlacedBeforeSelf(tabs)) {
@@ -69,7 +69,7 @@ export async function moveTabBefore(tab, referenceTab, options = {}) {
 
 async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   const win = TabsStore.windows.get(tabs[0].windowId);
@@ -159,7 +159,7 @@ export async function moveTabInternallyBefore(tab, referenceTab, options = {}) {
 export async function moveTabsAfter(tabs, referenceTab, options = {}) {
   log('moveTabsAfter: ', tabs, referenceTab, options);
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   if (referenceTab.$TST.isAllPlacedAfterSelf(tabs)) {
@@ -174,7 +174,7 @@ export async function moveTabAfter(tab, referenceTab, options = {}) {
 
 async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   const win = TabsStore.windows.get(tabs[0].windowId);

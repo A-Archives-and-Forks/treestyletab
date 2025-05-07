@@ -34,7 +34,7 @@ export async function activateTab(tab, { byMouseOperation, keepMultiselection, s
   if (!Constants.IS_BACKGROUND)
     throw new Error('Error: TabsInternalOperation.activateTab is available only on the background page, use a `kCOMMAND_ACTIVATE_TAB` message instead.');
 
-  tab = TabsStore.ensureLivingTab(tab);
+  tab = TabsStore.ensureLivingItem(tab);
   if (!tab)
     return;
   log('activateTab: ', dumpTab(tab));
@@ -150,7 +150,7 @@ export async function removeTabs(tabs, { keepDescendants, byMouseOperation, orig
   tabs = tabs.filter(tab => {
     if ((!win ||
          !win.internalClosingTabs.has(tab.id)) &&
-        TabsStore.ensureLivingTab(tab)) {
+        TabsStore.ensureLivingItem(tab)) {
       tabIds.push(tab.id);
       if (tab.active)
         willChangeFocus = true;

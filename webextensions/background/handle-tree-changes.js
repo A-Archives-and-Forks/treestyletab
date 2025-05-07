@@ -36,7 +36,7 @@ function reserveDetachHiddenTab(tab) {
     reserveDetachHiddenTab.tabs.clear();
     log('try to detach hidden tabs: ', tabs);
     for (const tab of tabs) {
-      if (!TabsStore.ensureLivingTab(tab))
+      if (!TabsStore.ensureLivingItem(tab))
         continue;
       for (const descendant of tab.$TST.descendants) {
         if (descendant.hidden)
@@ -98,7 +98,7 @@ function reserveAttachShownTab(tab) {
     reserveAttachShownTab.tabs.clear();
     log('try to attach shown tabs: ', tabs);
     for (const tab of tabs) {
-      if (!TabsStore.ensureLivingTab(tab) ||
+      if (!TabsStore.ensureLivingItem(tab) ||
           tab.$TST.hasParent) {
         tab.$TST.removeState(Constants.kTAB_STATE_SHOWING);
         continue;

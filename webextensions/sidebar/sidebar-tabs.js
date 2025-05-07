@@ -80,7 +80,7 @@ export function getTabFromDOMNode(node, options = {}) {
   if (options.force) {
     return tab?.apiRaw;
   }
-  return TabsStore.ensureLivingTab(tab?.apiRaw);
+  return TabsStore.ensureLivingItem(tab?.apiRaw);
 }
 
 

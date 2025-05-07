@@ -703,7 +703,7 @@ async function onContextMenu(event) {
 
   const originalTargetTabElement = originalTarget && originalTarget.closest('[data-tab-id]');
   const tab = originalTargetTabElement ?
-    TabsStore.ensureLivingTab(Tab.get(parseInt(originalTargetTabElement.dataset.tabId))) :
+    TabsStore.ensureLivingItem(Tab.get(parseInt(originalTargetTabElement.dataset.tabId))) :
     EventUtils.getTabFromEvent(event);
   if (tab &&
       !modifierKeyPressed &&

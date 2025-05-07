@@ -1097,7 +1097,7 @@ function onMessageExternal(message, sender) {
       return (async () => {
         const tabs = await TSTAPI.getTargetTabs(message, sender);
         configs.grantedRemovingTabIds = mapAndFilterUniq(configs.grantedRemovingTabIds.concat(tabs), tab => {
-          tab = TabsStore.ensureLivingTab(tab);
+          tab = TabsStore.ensureLivingItem(tab);
           return tab && tab.id || undefined;
         });
         return true;

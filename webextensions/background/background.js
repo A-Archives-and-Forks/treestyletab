@@ -383,7 +383,7 @@ export async function reload(options = {}) {
 }
 
 export async function tryStartHandleAccelKeyOnTab(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
   const granted = await Permissions.isGranted(Permissions.ALL_URLS);
   if (!granted ||
@@ -415,7 +415,7 @@ export async function tryStartHandleAccelKeyOnTab(tab) {
 export function reserveToUpdateInsertionPosition(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const reserved = reserveToUpdateInsertionPosition.reserved.get(tab.windowId) || {
       timer: null,
@@ -438,7 +438,7 @@ export function reserveToUpdateInsertionPosition(tabOrTabs) {
 reserveToUpdateInsertionPosition.reserved = new Map();
 
 async function updateInsertionPosition(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
 
   const prev = tab.hidden ? tab.$TST.unsafePreviousTab : tab.$TST.previousTab;
@@ -488,7 +488,7 @@ async function updateInsertionPosition(tab) {
 export function reserveToUpdateAncestors(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const reserved = reserveToUpdateAncestors.reserved.get(tab.windowId) || {
       timer: null,
@@ -511,7 +511,7 @@ export function reserveToUpdateAncestors(tabOrTabs) {
 reserveToUpdateAncestors.reserved = new Map();
 
 async function updateAncestors(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
 
   const ancestors = tab.$TST.ancestors.map(ancestor => ancestor.$TST.uniqueId.id);
@@ -528,7 +528,7 @@ async function updateAncestors(tab) {
 export function reserveToUpdateChildren(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const reserved = reserveToUpdateChildren.reserved.get(tab.windowId) || {
       timer: null,
@@ -551,7 +551,7 @@ export function reserveToUpdateChildren(tabOrTabs) {
 reserveToUpdateChildren.reserved = new Map();
 
 async function updateChildren(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
 
   const children = tab.$TST.children.map(child => child.$TST.uniqueId.id);
@@ -567,7 +567,7 @@ async function updateChildren(tab) {
 
 function reserveToUpdateSubtreeCollapsed(tab) {
   if (!mInitialized ||
-      !TabsStore.ensureLivingTab(tab))
+      !TabsStore.ensureLivingItem(tab))
     return;
   const reserved = reserveToUpdateSubtreeCollapsed.reserved.get(tab.windowId) || {
     timer: null,
@@ -589,7 +589,7 @@ function reserveToUpdateSubtreeCollapsed(tab) {
 reserveToUpdateSubtreeCollapsed.reserved = new Map();
 
 async function updateSubtreeCollapsed(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
   tab.$TST.toggleState(Constants.kTAB_STATE_SUBTREE_COLLAPSED, tab.$TST.subtreeCollapsed, { permanently: true });
 }
@@ -819,7 +819,7 @@ Tab.onMoved.addListener((tab, moveInfo) => {
 Tree.onAttached.addListener(async (tab, attachInfo) => {
   await tab.$TST.opened;
 
-  if (!TabsStore.ensureLivingTab(tab) || // not removed while waiting
+  if (!TabsStore.ensureLivingItem(tab) || // not removed while waiting
       tab.$TST.parent != attachInfo.parent) // not detached while waiting
     return;
 

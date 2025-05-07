@@ -390,7 +390,7 @@ function onMouseDown(event) {
         keepMultiselection: true
       });
       if (tab.active || tab.$TST.states.has(Constants.kTAB_STATE_BUNDLED_ACTIVE)) // sticky active tab
-        Scroll.scrollToTab(tab);
+        Scroll.scrollToItem(tab);
     }
   });
 

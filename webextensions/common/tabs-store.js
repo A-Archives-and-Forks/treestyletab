@@ -212,7 +212,7 @@ function matchedWithQuery(tab, query) {
   }
 
   if (query.living &&
-      !ensureLivingTab(tab))
+      !ensureLivingItem(tab))
     return false;
   if (query.normal &&
       (tab.hidden ||
@@ -729,7 +729,7 @@ export function assertValidTab(tab) {
   throw error;
 }
 
-export function ensureLivingTab(tab) {
+export function ensureLivingItem(tab) {
   const isNativeTabGroup = tab?.$TST?.isNativeTabGroup;
   if (!tab ||
       !tab.id ||

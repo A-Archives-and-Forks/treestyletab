@@ -52,7 +52,7 @@ export const onReadyToExpand = new EventListenerManager();
 
 export async function setCollapsed(tab, info = {}) {
   log('setCollapsed ', tab.id, info);
-  if (!TabsStore.ensureLivingTab(tab)) // do nothing for closed tab!
+  if (!TabsStore.ensureLivingItem(tab)) // do nothing for closed tab!
     return;
 
   const changed = (
@@ -104,7 +104,7 @@ export async function setCollapsed(tab, info = {}) {
   const onCompleted = (tab, info = {}) => {
     manager.removeListener(onCompleted);
     if (cancelled ||
-        !TabsStore.ensureLivingTab(tab)) // do nothing for closed tab!
+        !TabsStore.ensureLivingItem(tab)) // do nothing for closed tab!
       return;
 
     if (shouldApplyAnimation() &&
@@ -159,7 +159,7 @@ export async function setCollapsed(tab, info = {}) {
 
   window.requestAnimationFrame(() => {
     if (cancelled ||
-        !TabsStore.ensureLivingTab(tab)) { // it was removed while waiting
+        !TabsStore.ensureLivingItem(tab)) { // it was removed while waiting
       onCanceled();
       return;
     }
@@ -194,7 +194,7 @@ export async function setCollapsed(tab, info = {}) {
     });
     tab.$TST.onEndCollapseExpandAnimation.timeout = setTimeout(() => {
       if (cancelled ||
-          !TabsStore.ensureLivingTab(tab) ||
+          !TabsStore.ensureLivingItem(tab) ||
           !tab.$TST.onEndCollapseExpandAnimation) {
         onCanceled();
         return;

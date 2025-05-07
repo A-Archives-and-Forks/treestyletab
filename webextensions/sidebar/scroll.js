@@ -341,9 +341,9 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
   const stickyItems = updateStickyItems(renderableItems, { staticRendering, skipRefreshItems });
 
   if (skipRefreshItems) {
-    log('renderVirtualScrollViewport: skip re-rendering of tabs, rendered = ', renderableItems);
+    log('renderVirtualScrollViewport: skip re-rendering of items, rendered = ', renderableItems);
     if (mLastRenderedVirtualScrollItemIds.length != renderableItems.length) {
-      mLastRenderedVirtualScrollItemIds = renderableItems.map(tab => tab.$TST.renderingId);
+      mLastRenderedVirtualScrollItemIds = renderableItems.map(item => item.$TST.renderingId);
     }
   }
   else {
@@ -416,7 +416,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
             const item = getRenderableItemById(id);
             if (item?.$TST.element?.parentNode != win.containerElement) // already sticky
               continue;
-            // We don't need to remove already rendered tab,
+            // We don't need to remove already rendered item,
             // because it is automatically moved by insertBefore().
             if (toBeRenderedItemIdSet.has(id) ||
                 !item ||
@@ -501,7 +501,7 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
     mLastCanBeStickyItems = canBeStickyItems;
 
   const removedOrCollapsedTabsCount = parseInt(mNormalScrollBox.querySelector(`.${Constants.kTABBAR_SPACER}`).dataset.removedOrCollapsedTabsCount || 0);
-  for (const item of canBeStickyItems.slice(0).reverse()) { // first try: find bottom sticky tabs from bottom
+  for (const item of canBeStickyItems.slice(0).reverse()) { // first try: find bottom sticky items from bottom
     const index = renderableItems.indexOf(item);
     if (index > -1 &&
         index > (lastInViewportIndex - stickyItemIdsBelow.size) &&
@@ -515,7 +515,7 @@ function updateStickyItems(renderableItems, { staticRendering, skipRefreshItems 
       break;
   }
 
-  for (const item of canBeStickyItems) { // second try: find top sticky tabs and set bottom sticky tabs
+  for (const item of canBeStickyItems) { // second try: find top sticky items and set bottom sticky items
     const index = renderableItems.indexOf(item);
     if (index > -1 &&
         index < (firstInViewportIndex + stickyItemIdsAbove.size) &&
@@ -624,7 +624,7 @@ export function getItemRect(item) {
   }
   const itemTop = Size.getRenderedTabHeight() * index + scrollBoxRect.top - scrollBox.$scrollTop;
   /*
-  console.log('coordinates of tab rect ', {
+  console.log('coordinates of item rect ', {
     index,
     renderableItemHeight: Size.getRenderedTabHeight(),
     scrollBox_rectTop: scrollBoxRect.top,
@@ -661,7 +661,7 @@ function scrollTo(params = {}) {
   //cancelPerformingAutoScroll();
   const scrollBox = getScrollBoxFor(params.tab, { allowFallback: true });
   const scrollTop = params.tab ?
-    scrollBox.$scrollTop + calculateScrollDeltaForTab(params.tab) :
+    scrollBox.$scrollTop + calculateScrollDeltaForItem(params.tab) :
     typeof params.position == 'number' ?
       params.position :
       typeof params.delta == 'number' ?
@@ -685,69 +685,69 @@ function scrollTo(params = {}) {
 }
 
 function cancelRunningScroll() {
-  scrollToTab.stopped = true;
+  scrollToItem.stopped = true;
   stopSmoothScroll();
 }
 
-function calculateScrollDeltaForTab(tab, { over } = {}) {
-  tab = Tab.get(tab && tab.id);
-  if (!tab)
+function calculateScrollDeltaForItem(item, { over } = {}) {
+  item = Tab.get(item && item.id);
+  if (!item)
     return 0;
 
-  tab = tab.$TST.collapsed && tab.$TST.nearestVisibleAncestorOrSelf || tab;
+  item = item.$TST.collapsed && item.$TST.nearestVisibleAncestorOrSelf || item;
 
-  const tabRect       = getItemRect(tab);
-  const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(tab, { allowFallback: true }));
+  const itemRect       = getItemRect(item);
+  const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(item, { allowFallback: true }));
   const overScrollOffset = over === false ?
     0 :
-    Math.ceil(tabRect.height / 2);
+    Math.ceil(itemRect.height / 2);
   let delta = 0;
-  if (scrollBoxRect.bottom < tabRect.bottom) { // should scroll down
-    delta = tabRect.bottom - scrollBoxRect.bottom + overScrollOffset;
-    if (mLastStickyItemIdsBelow.has(tab.id) &&
+  if (scrollBoxRect.bottom < itemRect.bottom) { // should scroll down
+    delta = itemRect.bottom - scrollBoxRect.bottom + overScrollOffset;
+    if (mLastStickyItemIdsBelow.has(item.id) &&
         mLastStickyItemIdsBelow.size > 0)
-      delta += tabRect.height * (mLastStickyItemIdsBelow.size - 1);
+      delta += itemRect.height * (mLastStickyItemIdsBelow.size - 1);
     else
-      delta += tabRect.height * mLastStickyItemIdsBelow.size;
+      delta += itemRect.height * mLastStickyItemIdsBelow.size;
   }
-  else if (scrollBoxRect.top > tabRect.top) { // should scroll up
-    delta = tabRect.top - scrollBoxRect.top - overScrollOffset;
-    if (mLastStickyItemIdsAbove.has(tab.id) &&
+  else if (scrollBoxRect.top > itemRect.top) { // should scroll up
+    delta = itemRect.top - scrollBoxRect.top - overScrollOffset;
+    if (mLastStickyItemIdsAbove.has(item.id) &&
         mLastStickyItemIdsAbove.size > 0)
-      delta -= tabRect.height * (mLastStickyItemIdsAbove.size - 1);
+      delta -= itemRect.height * (mLastStickyItemIdsAbove.size - 1);
     else
-      delta -= tabRect.height * mLastStickyItemIdsAbove.size;
+      delta -= itemRect.height * mLastStickyItemIdsAbove.size;
   }
-  log('calculateScrollDeltaForTab ', tab.id, {
+  log('calculateScrollDeltaForItem ', item.id, {
     delta,
-    tabTop:          tabRect.top,
-    tabBottom:       tabRect.bottom,
+    itemTop:         itemRect.top,
+    itemBottom:      itemRect.bottom,
     scrollBoxBottom: scrollBoxRect.bottom
   });
   return delta;
 }
 
-export function isTabInViewport(tab, { allowPartial } = {}) {
-  tab = Tab.get(tab && tab.id);
-  if (!TabsStore.ensureLivingTab(tab))
+export function isItemInViewport(item, { allowPartial } = {}) {
+  item = Tab.get(item && item.id);
+  if (!TabsStore.ensureLivingItem(item))
     return false;
 
-  if (tab.pinned)
+  if (item.pinned)
     return true;
 
-  const tabRect       = getItemRect(tab);
-  const allowedOffset = allowPartial ? (tabRect.height / 2) : 0;
-  const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(tab));
-  log('isTabInViewport ', tab.id, {
+  const itemRect      = getItemRect(item);
+  const allowedOffset = allowPartial ? (itemRect.height / 2) : 0;
+  const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(item));
+  log('isItemInViewport ', item.id, {
     allowedOffset,
-    tabTop:         tabRect.top + allowedOffset,
-    tabBottom:      tabRect.bottom - allowedOffset,
+    itemTop:        itemRect.top + allowedOffset,
+    itemBottom:     itemRect.bottom - allowedOffset,
     viewPortTop:    scrollBoxRect.top,
     viewPortBottom: scrollBoxRect.bottom,
   });
   return (
-    tabRect.top + allowedOffset >= scrollBoxRect.top &&
-    tabRect.bottom - allowedOffset <= scrollBoxRect.bottom
+    itemRect.top + allowedOffset >= scrollBoxRect.top &&
+    itemRect.bottom - allowedOffset <= scrollBoxRect.bottom
   );
 }
 
@@ -762,7 +762,7 @@ async function smoothScrollTo(params = {}) {
   let delta, startPosition, endPosition;
   if (params.tab) {
     startPosition = scrollBox.$scrollTop;
-    delta       = calculateScrollDeltaForTab(params.tab);
+    delta       = calculateScrollDeltaForItem(params.tab);
     endPosition = startPosition + delta;
   }
   else if (typeof params.position == 'number') {
@@ -836,51 +836,51 @@ function stopSmoothScroll() {
 
 /* advanced operations */
 
-export function scrollToNewTab(tab, options = {}) {
-  if (!canScrollToTab(tab))
+export function scrollToNewTab(item, options = {}) {
+  if (!canScrollToItem(item))
     return;
 
   if (configs.scrollToNewTabMode == Constants.kSCROLL_TO_NEW_TAB_IF_POSSIBLE) {
     const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-    scrollToTab(tab, {
+    scrollToItem(item, {
       ...options,
-      anchor:            !activeTab.pinned && isTabInViewport(activeTab) && activeTab,
+      anchor:            !activeTab.pinned && isItemInViewport(activeTab) && activeTab,
       notifyOnOutOfView: true
     });
   }
 }
 
-function canScrollToTab(tab) {
-  tab = Tab.get(tab && tab.id);
-  return (TabsStore.ensureLivingTab(tab) &&
-          !tab.hidden);
+function canScrollToItem(item) {
+  item = Tab.get(item && item.id);
+  return (TabsStore.ensureLivingItem(item) &&
+          !item.hidden);
 }
 
-export async function scrollToTab(tab, options = {}) {
-  scrollToTab.lastTargetId = null;
+export async function scrollToItem(item, options = {}) {
+  scrollToItem.lastTargetId = null;
 
-  log('scrollToTab to ', tab && tab.id, options.anchor && options.anchor.id, options,
+  log('scrollToItem to ', item && item.id, options.anchor && options.anchor.id, options,
       { stack: configs.debug && new Error().stack });
   cancelRunningScroll();
-  if (!canScrollToTab(tab)) {
+  if (!canScrollToItem(item)) {
     log('=> unscrollable');
     return;
   }
 
-  scrollToTab.stopped = false;
-  cancelNotifyOutOfViewTab();
+  scrollToItem.stopped = false;
+  cancelNotifyOutOfViewItem();
   //cancelPerformingAutoScroll(true);
 
   await nextFrame();
-  if (scrollToTab.stopped)
+  if (scrollToItem.stopped)
     return;
-  cancelNotifyOutOfViewTab();
+  cancelNotifyOutOfViewItem();
 
   const anchorTab = options.anchor;
-  const hasAnchor = TabsStore.ensureLivingTab(anchorTab) && anchorTab != tab;
+  const hasAnchor = TabsStore.ensureLivingItem(anchorTab) && anchorTab != item;
   const openedFromPinnedTab = hasAnchor && anchorTab.pinned;
 
-  if (isTabInViewport(tab) &&
+  if (isItemInViewport(item) &&
       (!hasAnchor ||
        !openedFromPinnedTab)) {
     log('=> already visible');
@@ -889,18 +889,18 @@ export async function scrollToTab(tab, options = {}) {
 
   // wait for one more frame, to start collapse/expand animation
   await nextFrame();
-  if (scrollToTab.stopped)
+  if (scrollToItem.stopped)
     return;
-  cancelNotifyOutOfViewTab();
-  scrollToTab.lastTargetId = tab.id;
+  cancelNotifyOutOfViewItem();
+  scrollToItem.lastTargetId = item.id;
 
-  const scrollBox = getScrollBoxFor(tab);
+  const scrollBox = getScrollBoxFor(item);
   if (hasAnchor &&
       !anchorTab.pinned) {
-    const targetItemRect = getItemRect(tab);
+    const targetItemRect = getItemRect(item);
     const anchorItemRect = getItemRect(anchorTab);
     const scrollBoxRect = Size.getScrollBoxRect(scrollBox);
-    let delta = calculateScrollDeltaForTab(tab, { over: false });
+    let delta = calculateScrollDeltaForItem(item, { over: false });
 
     let topStickyItemsAreaSize, bottomStickyItemsAreaSize;
     if (mLastStickyItemIdsAbove.has(anchorTab.id) &&
@@ -909,7 +909,7 @@ export async function scrollToTab(tab, options = {}) {
     else
       topStickyItemsAreaSize = Size.getRenderedTabHeight() * mLastStickyItemIdsAbove.size;
 
-    if (mLastStickyItemIdsBelow.has(tab.id) &&
+    if (mLastStickyItemIdsBelow.has(item.id) &&
         mLastStickyItemIdsBelow.size > 0)
       bottomStickyItemsAreaSize = Size.getRenderedTabHeight() * (mLastStickyItemIdsBelow.size - 1);
     else
@@ -922,7 +922,7 @@ export async function scrollToTab(tab, options = {}) {
       if (overHeight > 0) {
         delta -= overHeight;
         if (options.notifyOnOutOfView)
-          notifyOutOfViewTab(tab);
+          notifyOutOfViewItem(item);
       }
       log('calculated result: ', {
         boundingHeight, overHeight, delta,
@@ -948,7 +948,7 @@ export async function scrollToTab(tab, options = {}) {
   else {
     await scrollTo({
       ...options,
-      tab
+      item
     });
   }
   // A tab can be moved after the tabbar is scrolled to the tab.
@@ -956,36 +956,36 @@ export async function scrollToTab(tab, options = {}) {
   // keep "last scrolled-to tab" information until the tab is
   // actually moved.
   await wait(configs.tabBunchesDetectionTimeout);
-  if (scrollToTab.stopped)
+  if (scrollToItem.stopped)
     return;
   const retryOptions = {
     retryCount: options.retryCount || 0,
     anchor:     options.anchor
   };
-  if (scrollToTab.lastTargetId == tab.id &&
-      !isTabInViewport(tab) &&
+  if (scrollToItem.lastTargetId == item.id &&
+      !isItemInViewport(item) &&
       (!options.anchor ||
-       !isTabInViewport(options.anchor)) &&
+       !isItemInViewport(options.anchor)) &&
       retryOptions.retryCount < 3) {
     retryOptions.retryCount++;
-    return scrollToTab(tab, retryOptions);
+    return scrollToItem(item, retryOptions);
   }
-  if (scrollToTab.lastTargetId == tab.id)
-    scrollToTab.lastTargetId = null;
+  if (scrollToItem.lastTargetId == item.id)
+    scrollToItem.lastTargetId = null;
 }
-scrollToTab.lastTargetId = null;
+scrollToItem.lastTargetId = null;
 
 /*
-function scrollToTabSubtree(tab) {
-  return scrollToTab(tab.$TST.lastDescendant, {
-    anchor:            tab,
+function scrollToItemSubtree(item) {
+  return scrollToItem(item.$TST.lastDescendant, {
+    anchor:            item,
     notifyOnOutOfView: true
   });
 }
 
-function scrollToTabs(tabs) {
-  return scrollToTab(tabs[tabs.length - 1], {
-    anchor:            tabs[0],
+function scrollToItems(items) {
+  return scrollToItem(items[items.length - 1], {
+    anchor:            items[0],
     notifyOnOutOfView: true
   });
 }
@@ -1034,23 +1034,23 @@ export function autoScrollOnMouseEvent(event) {
 autoScrollOnMouseEvent.areaSize = 20;
 
 
-async function notifyOutOfViewTab(tab) {
-  tab = Tab.get(tab && tab.id);
+async function notifyOutOfViewItem(item) {
+  item = Tab.get(item && item.id);
   if (RestoringTabCount.hasMultipleRestoringTabs()) {
-    log('notifyOutOfViewTab: skip until completely restored');
-    wait(100).then(() => notifyOutOfViewTab(tab));
+    log('notifyOutOfViewItem: skip until completely restored');
+    wait(100).then(() => notifyOutOfViewItem(item));
     return;
   }
   await nextFrame();
-  cancelNotifyOutOfViewTab();
-  if (tab && isTabInViewport(tab))
+  cancelNotifyOutOfViewItem();
+  if (item && isItemInViewport(item))
     return;
   mOutOfViewTabNotifier.classList.add('notifying');
   await wait(configs.outOfViewTabNotifyDuration);
-  cancelNotifyOutOfViewTab();
+  cancelNotifyOutOfViewItem();
 }
 
-function cancelNotifyOutOfViewTab() {
+function cancelNotifyOutOfViewItem() {
   mOutOfViewTabNotifier.classList.remove('notifying');
 }
 
@@ -1069,13 +1069,13 @@ async function onWheel(event) {
     return;
   }
 
-  const tab = EventUtils.getTabFromEvent(event);
-  const scrollBox = getScrollBoxFor(tab, { allowFallback: true });
+  const item = EventUtils.getTabFromEvent(event);
+  const scrollBox = getScrollBoxFor(item, { allowFallback: true });
 
   if (!TSTAPI.isScrollLocked()) {
     cancelRunningScroll();
     if (EventUtils.getElementTarget(event).closest('.sticky-tabs-container') ||
-        (tab?.pinned &&
+        (item?.pinned &&
          scrollBox != mPinnedScrollBox)) {
       event.stopImmediatePropagation();
       event.preventDefault();
@@ -1088,7 +1088,7 @@ async function onWheel(event) {
   event.preventDefault();
 
   TSTAPI.notifyScrolled({
-    tab,
+    tab: item,
     scrollContainer: scrollBox,
     overflow: scrollBox.classList.contains(Constants.kTABBAR_STATE_OVERFLOW),
     event
@@ -1143,13 +1143,13 @@ function reserveToSaveScrollPosition() {
 
 const mReservedScrolls = new WeakMap();
 
-function reserveToScrollToTab(tab, options = {}) {
-  if (!tab)
+function reserveToScrollToItem(item, options = {}) {
+  if (!item)
     return;
 
-  const scrollBox = getScrollBoxFor(tab);
+  const scrollBox = getScrollBoxFor(item);
   const reservedScroll = {
-    tabId: tab.id,
+    itemId: item.id,
     options,
   };
   mReservedScrolls.set(scrollBox, reservedScroll);
@@ -1158,39 +1158,39 @@ function reserveToScrollToTab(tab, options = {}) {
       return;
     mReservedScrolls.delete(scrollBox);
     const options = reservedScroll.options;
-    delete reservedScroll.tabId;
+    delete reservedScroll.itemId;
     delete reservedScroll.options;
-    scrollToTab(tab, options);
+    scrollToItem(item, options);
   });
 }
 
-function reserveToScrollToNewTab(tab) {
-  if (!tab)
+function reserveToScrollToNewTab(item) {
+  if (!item)
     return;
-  const scrollBox = getScrollBoxFor(tab);
+  const scrollBox = getScrollBoxFor(item);
   const reservedScroll = {
-    tabId: tab.id,
+    itemId: item.id,
   };
   mReservedScrolls.set(scrollBox, reservedScroll);
   window.requestAnimationFrame(() => {
     if (mReservedScrolls.get(scrollBox) != reservedScroll)
       return;
     mReservedScrolls.delete(scrollBox);
-    delete reservedScroll.tabId;
-    scrollToNewTab(tab);
+    delete reservedScroll.itemId;
+    scrollToNewTab(item);
   });
 }
 
 
-function reReserveScrollingForTab(tab) {
-  if (!tab)
+function reReserveScrollingForItem(item) {
+  if (!item)
     return false;
-  if (reserveToScrollToTab.reservedTabId == tab.id) {
-    reserveToScrollToTab(tab);
+  if (reserveToScrollToItem.reservedTabId == item.id) {
+    reserveToScrollToItem(item);
     return true;
   }
-  if (reserveToScrollToNewTab.reservedTabId == tab.id) {
-    reserveToScrollToNewTab(tab);
+  if (reserveToScrollToNewTab.reservedTabId == item.id) {
+    reserveToScrollToNewTab(item);
     return true;
   }
   return false;
@@ -1216,7 +1216,7 @@ function onMessage(message, _sender, _respond) {
       ])]);
 
     case Constants.kCOMMAND_ASK_TAB_IS_IN_VIEWPORT:
-      return Promise.resolve(isTabInViewport(Tab.get(message.tabId), {
+      return Promise.resolve(isItemInViewport(Tab.get(message.tabId), {
         allowPartial: message.allowPartial,
       }));
   }
@@ -1231,10 +1231,10 @@ async function onBackgroundMessage(message) {
         message.tabId,
         message.parentId
       ]);
-      const tab = Tab.get(message.tabId);
+      const item = Tab.get(message.tabId);
       const parent = Tab.get(message.parentId);
-      if (tab && parent && parent.active)
-        reserveToScrollToNewTab(tab);
+      if (item && parent && parent.active)
+        reserveToScrollToNewTab(item);
     }; break;
 
     case Constants.kCOMMAND_SCROLL_TABBAR: {
@@ -1275,34 +1275,34 @@ async function onBackgroundMessage(message) {
       await Tab.waitUntilTracked(message.tabId);
       if (message.maybeMoved)
         await SidebarTabs.waitUntilNewTabIsMoved(message.tabId);
-      const tab = Tab.get(message.tabId);
-      if (!tab) // it can be closed while waiting
+      const item = Tab.get(message.tabId);
+      if (!item) // it can be closed while waiting
         break;
       const needToWaitForTreeExpansion = (
-        tab.$TST.collapsedOnCreated &&
-        !tab.active &&
-        !Tab.getActiveTab(tab.windowId).pinned
+        item.$TST.collapsedOnCreated &&
+        !item.active &&
+        !Tab.getActiveTab(item.windowId).pinned
       );
       if (shouldApplyAnimation(true) ||
           needToWaitForTreeExpansion) {
         wait(10).then(() => { // wait until the tab is moved by TST itself
-          const parent = tab.$TST.parent;
+          const parent = item.$TST.parent;
           if (parent && parent.$TST.subtreeCollapsed) // possibly collapsed by other trigger intentionally
             return;
-          const active = tab.active;
-          tab.$TST.collapsedOnCreated = false;
-          const activeTab = Tab.getActiveTab(tab.windowId);
-          CollapseExpand.setCollapsed(tab, { // this is required to scroll to the tab with the "last" parameter
+          const active = item.active;
+          item.$TST.collapsedOnCreated = false;
+          const activeTab = Tab.getActiveTab(item.windowId);
+          CollapseExpand.setCollapsed(item, { // this is required to scroll to the tab with the "last" parameter
             collapsed: false,
             anchor:    (active || activeTab?.$TST.canBecomeSticky) ? null : activeTab,
             last:      !active
           });
           if (!active)
-            notifyOutOfViewTab(tab);
+            notifyOutOfViewItem(item);
         });
       }
       else {
-        reserveToScrollToNewTab(tab);
+        reserveToScrollToNewTab(item);
       }
     }; break;
 
@@ -1321,21 +1321,21 @@ async function onBackgroundMessage(message) {
       unlockScrollToSuccessor(false);
       mLastToBeActivatedTabId = null;
       await Tab.waitUntilTracked(message.tabId);
-      const tab = Tab.get(message.tabId);
-      if (!tab)
+      const item = Tab.get(message.tabId);
+      if (!item)
         break;
       const allowed = await TSTAPI.tryOperationAllowed(
         TSTAPI.kNOTIFY_TRY_SCROLL_TO_ACTIVATED_TAB,
-        { tab },
+        { tab: item },
         { tabProperties: ['tab'] }
       );
       if (allowed)
-        reserveToScrollToTab(tab);
+        reserveToScrollToItem(item);
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_UNPINNED:
       await Tab.waitUntilTracked(message.tabId);
-      reserveToScrollToTab(Tab.get(message.tabId));
+      reserveToScrollToItem(Tab.get(message.tabId));
       break;
 
     case Constants.kCOMMAND_BROADCAST_TAB_STATE: {
@@ -1345,9 +1345,9 @@ async function onBackgroundMessage(message) {
           !message.add.includes(Constants.kTAB_STATE_BUNDLED_ACTIVE))
         break;
       await Tab.waitUntilTracked(message.tabIds);
-      const tab = Tab.get(message.tabIds[0]);
-      if (!tab ||
-          tab.active)
+      const item = Tab.get(message.tabIds[0]);
+      if (!item ||
+          item.active)
         break;
       const bundled = message.add.includes(Constants.kTAB_STATE_BUNDLED_ACTIVE);
       if (bundled &&
@@ -1355,12 +1355,12 @@ async function onBackgroundMessage(message) {
            !configs.syncActiveStateToBundledTabs))
         break;
       const activeTab = bundled ?
-        tab.$TST.bundledTab : // bundled-active state may be applied before the bundled tab become active
-        Tab.getActiveTab(tab.windowId);
+        item.$TST.bundledTab : // bundled-active state may be applied before the bundled tab become active
+        Tab.getActiveTab(item.windowId);
       if (!activeTab)
         break;
-      reserveToScrollToTab(tab, {
-        anchor:            !activeTab.pinned && isTabInViewport(activeTab) && activeTab,
+      reserveToScrollToItem(item, {
+        anchor:            !activeTab.pinned && isItemInViewport(activeTab) && activeTab,
         notifyOnOutOfView: true
       });
     }; break;
@@ -1368,12 +1368,12 @@ async function onBackgroundMessage(message) {
     case Constants.kCOMMAND_NOTIFY_TAB_MOVED:
     case Constants.kCOMMAND_NOTIFY_TAB_INTERNALLY_MOVED: {
       await Tab.waitUntilTracked(message.tabId);
-      const tab = Tab.get(message.tabId);
-      if (!tab) // it can be closed while waiting
+      const item = Tab.get(message.tabId);
+      if (!item) // it can be closed while waiting
         break;
-      if (!reReserveScrollingForTab(tab) &&
-          tab.active)
-        reserveToScrollToTab(tab);
+      if (!reReserveScrollingForItem(item) &&
+          item.active)
+        reserveToScrollToItem(item);
     }; break;
   }
 }
@@ -1436,30 +1436,30 @@ function onMessageExternal(message, _aSender) {
   }
 }
 
-CollapseExpand.onUpdating.addListener((tab, options) => {
+CollapseExpand.onUpdating.addListener((item, options) => {
   if (!configs.scrollToExpandedTree)
     return;
-  if (!tab.pinned)
+  if (!item.pinned)
     reserveToRenderVirtualScrollViewport({ trigger: 'collapseExpand' });
   if (options.last)
-    scrollToTab(tab, {
+    scrollToItem(item, {
       anchor:            options.anchor,
       notifyOnOutOfView: true
     });
 });
 
-CollapseExpand.onUpdated.addListener((tab, options) => {
+CollapseExpand.onUpdated.addListener((item, options) => {
   if (!configs.scrollToExpandedTree)
     return;
-  if (!tab.pinned)
+  if (!item.pinned)
     reserveToRenderVirtualScrollViewport({ trigger: 'collapseExpand' });
   if (options.last)
-    scrollToTab(tab, {
+    scrollToItem(item, {
       anchor:            options.anchor,
       notifyOnOutOfView: true
     });
-  else if (tab.active && !options.collapsed)
-    scrollToTab(tab);
+  else if (item.active && !options.collapsed)
+    scrollToItem(item);
 });
 
 
@@ -1505,7 +1505,7 @@ async function tryLockScrollToSuccessor(tabIds, reason) {
 
     const successor = Tab.get(tab.successorTabId);
     if (!successor ||
-        isTabInViewport(successor))
+        isItemInViewport(successor))
       return;
 
     log('tryLockScrollToSuccessor successor = ', tab.successorTabId);

@@ -317,7 +317,7 @@ Tab.onStateChanged.addListener(tab => {
         configs.autoDiscardTabForUnexpectedFocus) {
       log('Try to discard accidentally restored tab (on restored) ', dumpTab(tab));
       wait(configs.autoDiscardTabForUnexpectedFocusDelay).then(() => {
-        if (!TabsStore.ensureLivingTab(tab) ||
+        if (!TabsStore.ensureLivingItem(tab) ||
             tab.active)
           return;
         if (tab.status == 'complete')
