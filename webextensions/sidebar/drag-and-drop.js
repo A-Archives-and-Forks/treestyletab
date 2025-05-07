@@ -187,8 +187,8 @@ function sanitizeDragData(dragData) {
 }
 
 function getDropAction(event) {
-  const dragOverTab = EventUtils.getTabFromEvent(event);
-  const targetTab   = dragOverTab || EventUtils.getTabFromTabbarEvent(event);
+  const dragOverTab = EventUtils.getTreeItemFromEvent(event);
+  const targetTab   = dragOverTab || EventUtils.getTreeItemFromTabbarEvent(event);
   const info = {
     dragOverTab,
     targetTab,
@@ -627,7 +627,7 @@ function onDragStart(event, options = {}) {
   if (configs.enableWorkaroundForBug1548949)
     configs.workaroundForBug1548949DroppedTabs = '';
 
-  let draggedTab = options.tab || EventUtils.getTabFromEvent(event);
+  let draggedTab = options.tab || EventUtils.getTreeItemFromEvent(event);
   let behavior = 'behavior' in options ? options.behavior :
     event.shiftKey ? configs.tabDragBehaviorShift :
       configs.tabDragBehavior;
@@ -1061,7 +1061,7 @@ function onDragEnter(event) {
 
   const info = getDropAction(event);
   try {
-    const enteredTab = EventUtils.getTabFromEvent(event);
+    const enteredTab = EventUtils.getTreeItemFromEvent(event);
     const leftTab    = SidebarItems.getItemFromDOMNode(event.relatedTarget);
     if (leftTab != enteredTab) {
       mDraggingOnDraggedTabs = (
@@ -1172,7 +1172,7 @@ function onDragLeave(event) {
   let leftFromTabBar = false;
   try {
     const info       = getDropAction(event);
-    const leftTab    = EventUtils.getTabFromEvent(event);
+    const leftTab    = EventUtils.getTreeItemFromEvent(event);
     const enteredTab = SidebarItems.getItemFromDOMNode(event.relatedTarget);
     if (leftTab != enteredTab) {
       if (info.dragData &&
@@ -1574,7 +1574,7 @@ const mDragExitTimeoutForTarget = new WeakMap();
 
 function onTSTAPIDragEnter(event) {
   Scroll.autoScrollOnMouseEvent(event);
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
   if (!tab)
     return;
   let target = tab.$TST.element;
@@ -1600,7 +1600,7 @@ function onTSTAPIDragExit(event) {
   if (mDragTargetIsClosebox &&
       !EventUtils.isEventFiredOnClosebox(event))
     return;
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
   if (!tab)
     return;
   let target = tab.$TST.element;

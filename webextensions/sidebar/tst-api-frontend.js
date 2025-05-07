@@ -826,9 +826,9 @@ async function notifyExtraContentsEvent(event, eventType, details = {}) {
     event.preventDefault();
   }
 
-  const livingTab = EventUtils.getTabFromEvent(event);
+  const livingTab = EventUtils.getTreeItemFromEvent(event);
   const eventInfo = {
-    ...EventUtils.getTabEventDetail(event, livingTab),
+    ...EventUtils.getTreeItemEventDetail(event, livingTab),
     ...extraContentsInfo.fieldValues,
     originalTarget:     extraContentsInfo.target,
     originalTargetPart: extraContentsInfo.targetPart,

@@ -81,7 +81,7 @@ export function getElementOriginalTarget(eventOrTarget) {
 }
 
 export function isEventFiredOnTwisty(event) {
-  const tab = getTabFromEvent(event);
+  const tab = getTreeItemFromEvent(event);
   if (!tab || !tab.$TST.hasChild)
     return false;
 
@@ -135,7 +135,7 @@ export function isEventFiredOnTabbarBottom(event) {
 }
 
 
-export function getTabFromEvent(event, options = {}) {
+export function getTreeItemFromEvent(event, options = {}) {
   return SidebarItems.getItemFromDOMNode(event.target, options);
 }
 
@@ -148,14 +148,14 @@ function getTabbarFromEvent(event) {
   return node && node.closest('.tabs');
 }
 
-export function getTabFromTabbarEvent(event, options = {}) {
+export function getTreeItemFromTabbarEvent(event, options = {}) {
   if (!configs.shouldDetectClickOnIndentSpaces ||
       isEventFiredOnClickable(event))
     return null;
-  return getTabFromCoordinates(event, options);
+  return getTreeItemFromCoordinates(event, options);
 }
 
-function getTabFromCoordinates(event, options = {}) {
+function getTreeItemFromCoordinates(event, options = {}) {
   const tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(event.clientX, event.clientY), options);
   if (tab)
     return tab;
@@ -237,7 +237,7 @@ export function getEventDetail(event) {
   };
 }
 
-export function getTabEventDetail(event, tab) {
+export function getTreeItemEventDetail(event, tab) {
   return {
     ...getEventDetail(event),
     tab:   tab?.id,
@@ -248,7 +248,7 @@ export function getTabEventDetail(event, tab) {
 
 export function getMouseEventDetail(event, tab) {
   return {
-    ...getTabEventDetail(event, tab),
+    ...getTreeItemEventDetail(event, tab),
     twisty:        isEventFiredOnTwisty(event),
     sharingState:  isEventFiredOnSharingState(event),
     soundButton:   isEventFiredOnSoundButton(event),
@@ -268,7 +268,7 @@ export function getEventTargetType(event) {
       element.closest('.rich-confirm, #blocking-screen'))
     return 'outside';
 
-  if (getTabFromEvent(event))
+  if (getTreeItemFromEvent(event))
     return 'tab';
 
   if (isEventFiredOnNewTabButton(event))

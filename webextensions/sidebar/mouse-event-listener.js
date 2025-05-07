@@ -173,7 +173,7 @@ const mTwistySizeBox   = document.querySelector(`#dummy-tab ${kTAB_TWISTY_ELEMEN
 const mDistanceBox     = document.querySelector('#dummy-shift-tabs-for-scrollbar-distance-box');
 
 function onMouseMove(event) {
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
   if (mTabBar.classList.contains(Constants.kTABBAR_STATE_SCROLLBAR_AUTOHIDE)) {
     const onTabBar    = mTabBar.contains(event.target);
     const tabbarRect  = mTabBar.getBoundingClientRect();
@@ -217,7 +217,7 @@ onMouseMove = EventUtils.wrapWithErrorHandler(onMouseMove);
 let mLastWarmUpTab = -1;
 
 function onMouseOver(event) {
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
 
   if (tab &&
       mLastWarmUpTab != tab.id &&
@@ -253,7 +253,7 @@ function onMouseOver(event) {
 onMouseOver = EventUtils.wrapWithErrorHandler(onMouseOver);
 
 function onMouseOut(event) {
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
 
   // We leave the tab or any of its children, but not for one of the tabs
   // (other) children, so we are no longer hovering this tab (relatedTarget
@@ -300,7 +300,7 @@ function onMouseDown(event) {
   }
 
   const target = event.target;
-  const tab = EventUtils.getTabFromEvent(event) || EventUtils.getTabFromTabbarEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event) || EventUtils.getTreeItemFromTabbarEvent(event);
   log('onMouseDown: found target tab: ', tab, event);
 
   const extraContentsInfo = TSTAPIFrontend.getOriginalExtraContentsTarget(event);
@@ -432,8 +432,8 @@ let mLastMouseUpY = -1;
 let mLastMouseUpOnTab = -1;
 
 async function onMouseUp(event) {
-  const unsafeTab = EventUtils.getTabFromEvent(event, { force: true }) || EventUtils.getTabFromTabbarEvent(event, { force: true });
-  const tab       = EventUtils.getTabFromEvent(event) || EventUtils.getTabFromTabbarEvent(event);
+  const unsafeTab = EventUtils.getTreeItemFromEvent(event, { force: true }) || EventUtils.getTreeItemFromTabbarEvent(event, { force: true });
+  const tab       = EventUtils.getTreeItemFromEvent(event) || EventUtils.getTreeItemFromTabbarEvent(event);
   log('onMouseUp: ', unsafeTab, { living: !!tab });
 
   DragAndDrop.endMultiDrag(unsafeTab, event);
@@ -1035,8 +1035,8 @@ async function onDblClick(event) {
   if (EventUtils.isEventFiredOnNewTabButton(event))
     return;
 
-  const tab = EventUtils.getTabFromEvent(event, { force: true }) || EventUtils.getTabFromTabbarEvent(event, { force: true });
-  const livingTab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event, { force: true }) || EventUtils.getTreeItemFromTabbarEvent(event, { force: true });
+  const livingTab = EventUtils.getTreeItemFromEvent(event);
   log('dblclick tab: ', tab, { living: !!livingTab });
 
   if (livingTab &&

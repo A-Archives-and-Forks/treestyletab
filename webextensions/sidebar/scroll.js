@@ -1069,7 +1069,7 @@ async function onWheel(event) {
     return;
   }
 
-  const item = EventUtils.getTabFromEvent(event);
+  const item = EventUtils.getTreeItemFromEvent(event);
   const scrollBox = getScrollBoxFor(item, { allowFallback: true });
 
   if (!TSTAPI.isScrollLocked()) {

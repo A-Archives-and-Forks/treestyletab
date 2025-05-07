@@ -704,7 +704,7 @@ async function onContextMenu(event) {
   const originalTargetTreeItemElement = originalTarget && originalTarget.closest('[data-tab-id]');
   const tab = originalTargetTreeItemElement ?
     TabsStore.ensureLivingItem(Tab.get(parseInt(originalTargetTreeItemElement.dataset.tabId))) :
-    EventUtils.getTabFromEvent(event);
+    EventUtils.getTreeItemFromEvent(event);
   if (tab &&
       !modifierKeyPressed &&
       typeof browser.menus.overrideContext == 'function') {
