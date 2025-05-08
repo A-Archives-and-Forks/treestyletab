@@ -908,7 +908,7 @@ export async function initFolderChooser({ rootItems, defaultItem, defaultValue, 
           item.children = (await browser.runtime.sendMessage({
             type: 'treestyletab:get-bookmark-child-items',
             id:   item.id
-          })).filter(item => item.type == 'folder');
+          })).filter(item => item?.type == 'folder');
         }
         folderItem.classList.toggle('noChild', !item.children || item.children.length == 0);
         if (item.children &&
