@@ -70,9 +70,6 @@ const kDROP_IMPOSSIBLE = 'impossible';
 
 const kDROP_POSITION = 'data-drop-position';
 
-const kTABBAR_STATE_TAB_DRAGGING  = 'tab-dragging';
-const kTABBAR_STATE_LINK_DRAGGING = 'link-dragging';
-
 let mLongHoverExpandedTabs = [];
 let mLongHoverTimer;
 let mLongHoverTimerNext;
@@ -516,10 +513,10 @@ export function clearDraggingTabsState() {
 
 export function clearDraggingState() {
   const win = TabsStore.windows.get(TabsStore.getCurrentWindowId());
-  win.containerClassList.remove(kTABBAR_STATE_TAB_DRAGGING);
-  win.pinnedContainerClassList.remove(kTABBAR_STATE_TAB_DRAGGING);
-  document.documentElement.classList.remove(kTABBAR_STATE_TAB_DRAGGING);
-  document.documentElement.classList.remove(kTABBAR_STATE_LINK_DRAGGING);
+  win.containerClassList.remove(Constants.kTABBAR_STATE_TAB_DRAGGING);
+  win.pinnedContainerClassList.remove(Constants.kTABBAR_STATE_TAB_DRAGGING);
+  document.documentElement.classList.remove(Constants.kTABBAR_STATE_TAB_DRAGGING);
+  document.documentElement.classList.remove(Constants.kTABBAR_STATE_LINK_DRAGGING);
 }
 
 function isDraggingAllActiveTabs(tab) {
@@ -838,9 +835,9 @@ function onDragStart(event, options = {}) {
   }
 
   const win = TabsStore.windows.get(TabsStore.getCurrentWindowId());
-  win.containerClassList.add(kTABBAR_STATE_TAB_DRAGGING);
-  win.pinnedContainerClassList.add(kTABBAR_STATE_TAB_DRAGGING);
-  document.documentElement.classList.add(kTABBAR_STATE_TAB_DRAGGING);
+  win.containerClassList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
+  win.pinnedContainerClassList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
+  document.documentElement.classList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
 
   if (!('behavior' in options) &&
       configs.showTabDragBehaviorNotification) {
@@ -1073,9 +1070,9 @@ function onDragEnter(event) {
       );
     }
     const win = TabsStore.windows.get(TabsStore.getCurrentWindowId());
-    win.containerClassList.add(kTABBAR_STATE_TAB_DRAGGING);
-    win.pinnedContainerClassList.add(kTABBAR_STATE_TAB_DRAGGING);
-    document.documentElement.classList.add(kTABBAR_STATE_TAB_DRAGGING);
+    win.containerClassList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
+    win.pinnedContainerClassList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
+    document.documentElement.classList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
   }
   catch(_e) {
   }
@@ -1083,7 +1080,7 @@ function onDragEnter(event) {
   const dt   = event.dataTransfer;
   dt.dropEffect = info.dropEffect;
   if (info.dropEffect == 'link')
-    document.documentElement.classList.add(kTABBAR_STATE_LINK_DRAGGING);
+    document.documentElement.classList.add(Constants.kTABBAR_STATE_LINK_DRAGGING);
 
   updateLastDragEventCoordinates(event);
 
