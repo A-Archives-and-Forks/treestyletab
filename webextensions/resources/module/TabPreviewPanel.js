@@ -311,7 +311,7 @@ export default class TabPreviewPanel {
       window.addEventListener('pagehide', this.destroy, { once: true });
 
       browser.runtime.sendMessage({
-        type: 'treestyletab:tab-preview-ready',
+        type: 'treestyletab:tab-preview:ready',
       });
     }
     catch (error) {
@@ -329,7 +329,7 @@ export default class TabPreviewPanel {
       console.log('on message: ', message);
 
     switch (message?.type) {
-      case 'treestyletab:show-tab-preview':
+      case 'treestyletab:tab-preview:show':
         return (async () => {
           // Simulate the behavior: show tab preview panel with delay
           // only when the panel is not shown yet.
@@ -359,7 +359,7 @@ export default class TabPreviewPanel {
           return true;
         })();
 
-      case 'treestyletab:hide-tab-preview':
+      case 'treestyletab:tab-preview:hide':
         return (async () => {
           // Ensure the order of messages: "show" for newly hovered tab =>
           // "hide" for previously hovered tab.

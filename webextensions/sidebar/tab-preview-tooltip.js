@@ -153,7 +153,7 @@ async function preparePreview(tabId) {
         if (logging)
           console.log('mouse move on the content area, destroy tab preview container');
         browser.runtime.sendMessage({
-          type: 'treestyletab:hide-tab-preview',
+          type: 'treestyletab:tab-preview:hide',
           timestamp: Date.now(),
         });
         destroy();
@@ -183,7 +183,7 @@ const hoveringTabIds = new Set();
 
 function shouldMessageSend(message) {
   return (
-    message.type != 'treestyletab:show-tab-preview' ||
+    message.type != 'treestyletab:tab-preview:show' ||
     hoveringTabIds.has(message.previewTabId)
   );
 }
@@ -277,7 +277,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
 
   // hide in-sidebar tab preview if in-content tab preview is available
   sendInSidebarTabPreviewMessage({
-    type: 'treestyletab:hide-tab-preview',
+    type: 'treestyletab:tab-preview:hide',
   });
 
   let response;
@@ -377,7 +377,7 @@ async function waitUntilPreviewContainerReadyInTab(tabId) {
   });
   let timeout;
   const onMessage = (message, sender) => {
-    if (message?.type != 'treestyletab:tab-preview-ready' ||
+    if (message?.type != 'treestyletab:tab-preview:ready' ||
         sender.tab?.id != tabId)
       return;
     log('waitUntilPreviewContainerReadyInTab: ready in the tab ', tabId);
@@ -427,7 +427,7 @@ async function onTabSubstanceEnter(event) {
   if (!configs.tabPreviewTooltip ||
       !(configs.tabPreviewTooltipRenderIn & Constants.kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE)) {;
     sendTabPreviewMessage(activeTab.id, {
-      type: 'treestyletab:hide-tab-preview',
+      type: 'treestyletab:tab-preview:hide',
     });
     return;
   }
@@ -495,7 +495,7 @@ async function onTabSubstanceEnter(event) {
 
   log(`onTabSubstanceEnter(${event.target.tab.id}}) [${Date.now() - startAt}msec from start]: show tab preview in ${targetTabId || 'sidebar'} `, { hasCustomTooltip, tooltipText, hasPreview });
   const succeeded = await sendTabPreviewMessage(targetTabId, {
-    type: 'treestyletab:show-tab-preview',
+    type: 'treestyletab:tab-preview:show',
     previewTabId: event.target.tab.id,
     previewTabRect,
     /* These information is used to calculate offset of the sidebar header */
@@ -554,7 +554,7 @@ async function onTabSubstanceLeave(event) {
 
   log(`onTabSubstanceLeave(${event.target.tab.id}}) hide tab preview in ${targetTabId || 'sidebar'} `, startAt);
   sendTabPreviewMessage(targetTabId, {
-    type: 'treestyletab:hide-tab-preview',
+    type: 'treestyletab:tab-preview:hide',
     previewTabId: event.target.tab.id,
     timestamp: startAt,
   });
@@ -569,15 +569,15 @@ browser.tabs.onActivated.addListener(activeInfo => {
     return;
 
   sendInSidebarTabPreviewMessage({
-    type: 'treestyletab:hide-tab-preview',
+    type: 'treestyletab:tab-preview:hide',
     timestamp: startAt,
   });
   sendTabPreviewMessage(activeInfo.tabId, {
-    type: 'treestyletab:hide-tab-preview',
+    type: 'treestyletab:tab-preview:hide',
     timestamp: startAt,
   });
   sendTabPreviewMessage(activeInfo.previousTabId, {
-    type: 'treestyletab:hide-tab-preview',
+    type: 'treestyletab:tab-preview:hide',
     timestamp: startAt,
   });
 });
@@ -594,13 +594,13 @@ document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
   hoveringTabIds.clear();
 
   sendInSidebarTabPreviewMessage({
-    type: 'treestyletab:hide-tab-preview',
+    type: 'treestyletab:tab-preview:hide',
     timestamp: startAt,
   });
 
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
   sendTabPreviewMessage(activeTab.id, {
-    type: 'treestyletab:hide-tab-preview',
+    type: 'treestyletab:tab-preview:hide',
     timestamp: startAt,
   });
 });
