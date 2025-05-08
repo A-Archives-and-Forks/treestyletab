@@ -410,29 +410,31 @@ export default class TabPreviewPanel {
     if (this.#panel)
       return;
 
-    const createdPanel = document.createElement('div');
-    createdPanel.setAttribute('class', 'tab-preview-panel');
-    const contents = createdPanel.appendChild(document.createElement('div'));
-    contents.setAttribute('class', 'tab-preview-panel-contents');
-    const innerBox = contents.appendChild(document.createElement('div'));
-    innerBox.setAttribute('class', 'tab-preview-panel-contents-inner-box');
-    const title = innerBox.appendChild(document.createElement('div'));
-    title.setAttribute('class', 'tab-preview-title');
-    const url = innerBox.appendChild(document.createElement('div'));
-    url.setAttribute('class', 'tab-preview-url');
-    const extendedContent = innerBox.appendChild(document.createElement('div'));
-    extendedContent.setAttribute('class', 'tab-preview-extended-content');
-    const previewContainer = innerBox.appendChild(document.createElement('div'));
-    previewContainer.setAttribute('class', 'tab-preview-image-container');
-    const preview = previewContainer.appendChild(document.createElement('img'));
-    preview.setAttribute('class', 'tab-preview-image');
+    const range = document.createRange();
+    range.selectNodeContents(this.#root);
+    const panelFragment = range.createContextualFragment(`
+      <div class="tab-preview-panel">
+        <div class="tab-preview-panel-contents">
+          <div class="tab-preview-panel-contents-inner-box">
+            <div class="tab-preview-title"></div>
+            <div class="tab-preview-url"></div>
+            <div class="tab-preview-extended-content"></div>
+            <div class="tab-preview-image-container">
+              <img class="tab-preview-image"/>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim());
+    range.detach();
+    const preview = panelFragment.querySelector('.tab-preview-image');
     preview.addEventListener('load', () => {
       if (preview.src)
         preview.classList.remove('loading');
     });
-    this.#root.appendChild(createdPanel);
+    this.#root.appendChild(panelFragment);
 
-    this.#panel = createdPanel;
+    this.#panel = this.#root.querySelector('.tab-preview-panel');
   }
 
   updateUI({ previewTabId, title, url, tooltipHtml, hasPreview, previewURL, previewTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop } = {}) {
