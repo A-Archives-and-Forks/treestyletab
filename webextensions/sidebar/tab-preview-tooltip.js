@@ -432,7 +432,8 @@ async function onTabSubstanceEnter(event) {
     return;
   }
 
-  if (document.documentElement.classList.contains(Constants.kTABBAR_STATE_TAB_DRAGGING)) {
+  if (!event.target.tab ||
+      document.documentElement.classList.contains(Constants.kTABBAR_STATE_TAB_DRAGGING)) {
     return;
   }
 
