@@ -115,84 +115,37 @@ export class TabElement extends HTMLElement {
     // We preserve this class for backward compatibility with other addons.
     this.classList.add(kTAB_CLASS_NAME);
 
-    const extraItemsContainerIndent = document.createElement('span');
-    extraItemsContainerIndent.classList.add(Constants.kEXTRA_ITEMS_CONTAINER);
-    extraItemsContainerIndent.classList.add('indent');
-    this.appendChild(extraItemsContainerIndent);
-
-    const substance = document.createElement(kTAB_SUBSTANCE_ELEMENT_NAME);
-    substance.setAttribute('draggable', true);
-    this.appendChild(substance);
-
-    const backgroundBase = document.createElement('span');
-    backgroundBase.classList.add(Constants.kBACKGROUND);
-    backgroundBase.classList.add('base');
-    substance.appendChild(backgroundBase);
-
-    const background = document.createElement('span');
-    background.classList.add(Constants.kBACKGROUND);
-    substance.appendChild(background);
-
-    const twisty = document.createElement(kTAB_TWISTY_ELEMENT_NAME);
-    substance.appendChild(twisty);
-
-    const ui = document.createElement('span');
-    ui.classList.add('ui');
-    substance.appendChild(ui);
-
-    const extraItemsContainerAbove = document.createElement('span');
-    extraItemsContainerAbove.classList.add(Constants.kEXTRA_ITEMS_CONTAINER);
-    extraItemsContainerAbove.classList.add('above');
-    ui.appendChild(extraItemsContainerAbove);
-
-    const caption = document.createElement('span');
-    caption.classList.add('caption');
-    ui.appendChild(caption);
-
-    const extraItemsContainerBelow = document.createElement('span');
-    extraItemsContainerBelow.classList.add(Constants.kEXTRA_ITEMS_CONTAINER);
-    extraItemsContainerBelow.classList.add('below');
-    ui.appendChild(extraItemsContainerBelow);
-
-    const favicon = document.createElement(kTAB_FAVICON_ELEMENT_NAME);
-    caption.appendChild(favicon);
-
-    const label = document.createElement(kTAB_LABEL_ELEMENT_NAME);
-    caption.appendChild(label);
-
-    const counter = document.createElement(kTAB_COUNTER_ELEMENT_NAME);
-    caption.appendChild(counter);
-
-    const sharingState = document.createElement(kTAB_SHARING_STATE_ELEMENT_NAME);
-    caption.appendChild(sharingState);
-
-    const soundButton = document.createElement(kTAB_SOUND_BUTTON_ELEMENT_NAME);
-    caption.appendChild(soundButton);
-
-    const closebox = document.createElement(kTAB_CLOSE_BOX_ELEMENT_NAME);
-    caption.appendChild(closebox);
-
-    const burster = document.createElement('span');
-    burster.classList.add(Constants.kBURSTER);
-    background.appendChild(burster);
-
-    const activeMarker = document.createElement('span');
-    activeMarker.classList.add(Constants.kHIGHLIGHTER);
-    substance.appendChild(activeMarker);
-
-    const identityMarker = document.createElement('span');
-    identityMarker.classList.add(Constants.kCONTEXTUAL_IDENTITY_MARKER);
-    substance.appendChild(identityMarker);
-
-    const extraItemsContainerBehind = document.createElement('span');
-    extraItemsContainerBehind.classList.add(Constants.kEXTRA_ITEMS_CONTAINER);
-    extraItemsContainerBehind.classList.add('behind');
-    ui.appendChild(extraItemsContainerBehind);
-
-    const extraItemsContainerFront = document.createElement('span');
-    extraItemsContainerFront.classList.add(Constants.kEXTRA_ITEMS_CONTAINER);
-    extraItemsContainerFront.classList.add('front');
-    ui.appendChild(extraItemsContainerFront);
+    const range = document.createRange();
+    range.selectNodeContents(this);
+    const panelFragment = range.createContextualFragment(`
+      <span class="native-tab-group-line"></span>
+      <span class="${Constants.kEXTRA_ITEMS_CONTAINER} indent"></span>
+      <${kTAB_SUBSTANCE_ELEMENT_NAME} class="draggable">
+        <span class="${Constants.kBACKGROUND} base"></span>
+        <span class="${Constants.kBACKGROUND}">
+          <span class="${Constants.kBURSTER}"></span>
+        </span>
+        <${kTAB_TWISTY_ELEMENT_NAME}></${kTAB_TWISTY_ELEMENT_NAME}>
+        <span class="ui">
+          <span class="${Constants.kEXTRA_ITEMS_CONTAINER} above"></span>
+          <span class="caption">
+            <${kTAB_FAVICON_ELEMENT_NAME}></${kTAB_FAVICON_ELEMENT_NAME}>
+            <${kTAB_LABEL_ELEMENT_NAME}></${kTAB_LABEL_ELEMENT_NAME}>
+            <${kTAB_COUNTER_ELEMENT_NAME}></${kTAB_COUNTER_ELEMENT_NAME}>
+            <${kTAB_SHARING_STATE_ELEMENT_NAME}></${kTAB_SHARING_STATE_ELEMENT_NAME}>
+            <${kTAB_SOUND_BUTTON_ELEMENT_NAME}></${kTAB_SOUND_BUTTON_ELEMENT_NAME}>
+            <${kTAB_CLOSE_BOX_ELEMENT_NAME}></${kTAB_CLOSE_BOX_ELEMENT_NAME}>
+          </span>
+          <span class="${Constants.kEXTRA_ITEMS_CONTAINER} below"></span>
+          <span class="${Constants.kEXTRA_ITEMS_CONTAINER} behind"></span>
+          <span class="${Constants.kEXTRA_ITEMS_CONTAINER} front"></span>
+        </span>
+        <span class="${Constants.kHIGHLIGHTER}"></span>
+        <span class="${Constants.kCONTEXTUAL_IDENTITY_MARKER}"></span>
+      </${kTAB_SUBSTANCE_ELEMENT_NAME}>
+    `.trim().replace(/>\s+</g, '><'));
+    range.detach();
+    this.appendChild(panelFragment);
 
     this.removeAttribute('draggable');
 

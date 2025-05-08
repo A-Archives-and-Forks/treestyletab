@@ -50,24 +50,18 @@ export class TabFaviconElement extends HTMLElement {
     // We preserve this class for backward compatibility with other addons.
     this.classList.add(KFAVICON_CLASS_NAME);
 
-    const faviconImage = this.appendChild(document.createElement('img'));
-    faviconImage.classList.add(Constants.kFAVICON_IMAGE);
-    const src = this.getAttribute(kATTR_NAME_SRC);
-    faviconImage.setAttribute(kATTR_NAME_SRC, src);
-
-    const defaultIcon = this.appendChild(document.createElement('span'));
-    defaultIcon.classList.add(Constants.kFAVICON_BUILTIN);
-    defaultIcon.classList.add(Constants.kFAVICON_DEFAULT); // just for backward compatibility, and this should be removed from future versions
-
-    /* for faviconized tabs */
-    const sharingStateIcon = this.appendChild(document.createElement('span'));
-    sharingStateIcon.classList.add(Constants.kFAVICON_SHARING_STATE);
-
-    const stickyStateIcon = this.appendChild(document.createElement('span'));
-    stickyStateIcon.classList.add(Constants.kFAVICON_STICKY_STATE);
-
-    const throbber = this.appendChild(document.createElement('span'));
-    throbber.classList.add(Constants.kTHROBBER);
+    const range = document.createRange();
+    range.selectNodeContents(this);
+    const panelFragment = range.createContextualFragment(`
+      <img class="${Constants.kFAVICON_IMAGE}"
+           src="${this.getAttribute(kATTR_NAME_SRC)}"/>
+      <span class="${Constants.kFAVICON_BUILTIN} ${Constants.kFAVICON_DEFAULT /* just for backward compatibility, and this should be removed from future versions */}"></span>
+      <span class="${Constants.kFAVICON_SHARING_STATE /* for faviconized tabs */}"></span>
+      <span class="${Constants.kFAVICON_STICKY_STATE}"></span>
+      <span class="${Constants.kTHROBBER}"></span>
+    `.trim().replace(/>\s+</g, '><'));
+    range.detach();
+    this.appendChild(panelFragment);
 
     this._applySrc();
   }

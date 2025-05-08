@@ -425,7 +425,7 @@ export default class TabPreviewPanel {
           </div>
         </div>
       </div>
-    `.trim());
+    `.trim().replace(/>\s+</g, '><'));
     range.detach();
     const preview = panelFragment.querySelector('.tab-preview-image');
     preview.addEventListener('load', () => {
