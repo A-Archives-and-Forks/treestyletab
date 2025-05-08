@@ -437,7 +437,7 @@ function getDropAction(event) {
     case kDROP_AFTER: {
       log('drop position = after ', info.targetTab.id);
       const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(info.draggedTab, {
-        insertAfter: targetTab
+        insertAfter: targetTab.$TST.subtreeCollapsed ? targetTab.$TST.lastDescendant : targetTab,
       });
       if (referenceTabs.parent)
         info.parent = referenceTabs.parent;
