@@ -1573,6 +1573,7 @@ export default class Tab {
 
     if (this.tab &&
         modified &&
+        state != Constants.kTAB_STATE_ACTIVE &&
         Constants.IS_BACKGROUND &&
         broadcast !== false)
       Tab.broadcastState(this.tab, {
@@ -1748,6 +1749,7 @@ export default class Tab {
     }
 
     if (modified &&
+        state != Constants.kTAB_STATE_ACTIVE &&
         Constants.IS_BACKGROUND &&
         broadcast !== false)
       Tab.broadcastState(this.tab, {

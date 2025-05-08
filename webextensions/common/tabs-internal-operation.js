@@ -216,10 +216,11 @@ export function setTabActive(tab) {
 export function clearOldActiveStateInWindow(windowId, exception) {
   const oldTabs = TabsStore.activeTabsInWindow.get(windowId);
   for (const oldTab of oldTabs) {
-    if (oldTab == exception)
+    if (oldTab.id == exception?.id)
       continue;
     oldTab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
     oldTab.active = false;
+    oldTabs.delete(oldTab);
   }
   return Array.from(oldTabs);
 }
