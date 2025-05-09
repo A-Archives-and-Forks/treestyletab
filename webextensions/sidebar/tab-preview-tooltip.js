@@ -474,14 +474,14 @@ async function onTabSubstanceEnter(event) {
     activeTab.id :
     null;
 
-  const previewTabRawRect = event.target.tab.$TST.element?.substanceElement?.getBoundingClientRect();
-  const previewTabRect = {
-    bottom: previewTabRawRect?.bottom || 0,
-    height: previewTabRawRect?.height || 0,
-    left:   previewTabRawRect?.left || 0,
-    right:  previewTabRawRect?.right || 0,
-    top:    previewTabRawRect?.top || 0,
-    width:  previewTabRawRect?.width || 0,
+  const anchorTabRawRect = event.target.tab.$TST.element?.substanceElement?.getBoundingClientRect();
+  const anchorTabRect = {
+    bottom: anchorTabRawRect?.bottom || 0,
+    height: anchorTabRawRect?.height || 0,
+    left:   anchorTabRawRect?.left || 0,
+    right:  anchorTabRawRect?.right || 0,
+    top:    anchorTabRawRect?.top || 0,
+    width:  anchorTabRawRect?.width || 0,
   };
 
   // This calculation logic is buggy for a window in a screen placed at
@@ -497,7 +497,7 @@ async function onTabSubstanceEnter(event) {
   const succeeded = await sendTabPreviewMessage(targetTabId, {
     type: 'treestyletab:tab-preview:show',
     previewTabId: event.target.tab.id,
-    previewTabRect,
+    anchorTabRect,
     /* These information is used to calculate offset of the sidebar header */
     offsetTop: window.mozInnerScreenY - window.screenY,
     offsetLeft: window.mozInnerScreenX - window.screenX,

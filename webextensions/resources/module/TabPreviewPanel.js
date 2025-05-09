@@ -450,7 +450,7 @@ export default class TabPreviewPanel {
     this.#panel = this.#root.querySelector('.tab-preview-panel');
   }
 
-  updateUI({ previewTabId, title, url, tooltipHtml, hasPreview, previewURL, previewTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop } = {}) {
+  updateUI({ previewTabId, title, url, tooltipHtml, hasPreview, previewURL, anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop } = {}) {
     if (!this.#panel)
       return;
 
@@ -461,7 +461,7 @@ export default class TabPreviewPanel {
       hasPreview = hasLoadablePreviewURL;
 
     if (logging)
-      console.log('updateUI ', { panel: this.#panel, previewTabId, title, url, tooltipHtml, hasPreview, previewURL, previewTabRect, offsetTop, align, rtl, scale, widthInOuterWorld, fixedOffsetTop });
+      console.log('updateUI ', { panel: this.#panel, previewTabId, title, url, tooltipHtml, hasPreview, previewURL, anchorTabRect, offsetTop, align, rtl, scale, widthInOuterWorld, fixedOffsetTop });
 
     this.#panel.classList.add('updating');
     this.#panel.classList.toggle('animation', animation);
@@ -501,14 +501,14 @@ export default class TabPreviewPanel {
       (fixedOffsetTop || 0) :
       (offsetTop - offsetFromWindowEdge) / scale;
 
-    if (previewTabRect) {
-      const panelTopEdge = this.#windowId ? previewTabRect.bottom : previewTabRect.top;
-      const panelBottomEdge = this.#windowId ? previewTabRect.bottom : previewTabRect.top;
+    if (anchorTabRect) {
+      const panelTopEdge = this.#windowId ? anchorTabRect.bottom : anchorTabRect.top;
+      const panelBottomEdge = this.#windowId ? anchorTabRect.bottom : anchorTabRect.top;
       const panelMaxHeight = Math.max(window.innerHeight - panelTopEdge - sidebarContentsOffset, panelBottomEdge);
       this.#panel.style.maxHeight = `${panelMaxHeight}px`;
       this.#panel.style.setProperty('--panel-max-height', `${panelMaxHeight}px`);
       if (logging)
-        console.log('updateUI: limit panel height to ', this.#panel.style.maxHeight, { previewTabRect, maxHeight: window.innerHeight, sidebarContentsOffset, offsetFromWindowEdge, fixedOffsetTop });
+        console.log('updateUI: limit panel height to ', this.#panel.style.maxHeight, { anchorTabRect, maxHeight: window.innerHeight, sidebarContentsOffset, offsetFromWindowEdge, fixedOffsetTop });
     }
 
     this.#panel.dataset.tabId = previewTabId;
@@ -550,7 +550,7 @@ export default class TabPreviewPanel {
           this.lastStartedAt != startAt)
         return;
 
-      if (!previewTabRect) {
+      if (!anchorTabRect) {
         this.#panel.classList.remove('updating');
         if (logging)
           console.log('updateUI/completeUpdate: no tab rect, no need to update the position');
@@ -577,14 +577,14 @@ export default class TabPreviewPanel {
       let top;
       if (this.#windowId) { // in-sidebar
         if (logging)
-          console.log('updateUI/completeUpdate: in-sidebar, alignment calculating: ', { half: window.innerHeight, maxY, scale, previewTabRect });
-        if (previewTabRect.top > (window.innerHeight / 2)) { // align to bottom edge of the tab
-          top = `${Math.min(maxY, previewTabRect.bottom / scale) - panelHeight - previewTabRect.height}px`;
+          console.log('updateUI/completeUpdate: in-sidebar, alignment calculating: ', { half: window.innerHeight, maxY, scale, anchorTabRect });
+        if (anchorTabRect.top > (window.innerHeight / 2)) { // align to bottom edge of the tab
+          top = `${Math.min(maxY, anchorTabRect.bottom / scale) - panelHeight - anchorTabRect.height}px`;
           if (logging)
             console.log(' => align to bottom edge of the tab, top=', top);
         }
         else { // align to top edge of the tab
-          top = `${Math.max(0, previewTabRect.top / scale) + previewTabRect.height}px`;
+          top = `${Math.max(0, anchorTabRect.top / scale) + anchorTabRect.height}px`;
           if (logging)
             console.log(' => align to top edge of the tab, top=', top);
         }
@@ -594,8 +594,8 @@ export default class TabPreviewPanel {
       }
       else { // in-content
       // We need to shift the position with the height of the sidebar header.
-        const alignToTopPosition = Math.max(0, previewTabRect.top / scale) + sidebarContentsOffset;
-        const alignToBottomPosition = Math.min(maxY, previewTabRect.bottom + sidebarContentsOffset / scale) - panelHeight;
+        const alignToTopPosition = Math.max(0, anchorTabRect.top / scale) + sidebarContentsOffset;
+        const alignToBottomPosition = Math.min(maxY, anchorTabRect.bottom + sidebarContentsOffset / scale) - panelHeight;
 
         if (logging)
           console.log('updateUI/completeUpdate: in-content, alignment calculating: ', { offsetFromWindowEdge, sidebarContentsOffset, alignToTopPosition, panelHeight, maxY, scale });
