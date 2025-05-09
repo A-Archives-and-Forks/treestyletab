@@ -334,8 +334,8 @@ export default class TabPreviewPanel {
           // Simulate the behavior: show tab preview panel with delay
           // only when the panel is not shown yet.
           if (typeof message.waitInitialShowUntil == 'number' &&
-          (!this.#panel ||
-           !this.#panel.classList.contains('open'))) {
+              (!this.#panel ||
+               !this.#panel.classList.contains('open'))) {
             const delay = Math.max(0, message.waitInitialShowUntil - Date.now());
             if (delay > 0) {
               await new Promise((resolve, _reject) => {
@@ -366,7 +366,7 @@ export default class TabPreviewPanel {
           await new Promise(requestAnimationFrame);
           if (!this.#panel ||
               (message.previewTabId &&
-           this.#panel.dataset.tabId != message.previewTabId)) {
+               this.#panel.dataset.tabId != message.previewTabId)) {
             if (message?.logging)
               console.log(`hide tab preview(${message.previewTabId}): already hidden, nothing to do `, message.timestamp);
             if (!this.#panel && !message.previewTabId) { // on initial case
@@ -520,8 +520,8 @@ export default class TabPreviewPanel {
     const previewImage = this.#panel.querySelector('.tab-preview-image');
     previewImage.classList.toggle('blank', !hasPreview && !hasLoadablePreviewURL);
     if (!previewURL ||
-      (previewURL &&
-       previewURL != previewImage.src)) {
+        (previewURL &&
+         previewURL != previewImage.src)) {
       previewImage.classList.add('loading');
       previewImage.src = previewURL || this.DATA_URI_BLANK_PNG;
     }
