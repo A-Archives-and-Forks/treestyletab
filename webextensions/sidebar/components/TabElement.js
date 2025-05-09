@@ -120,7 +120,7 @@ export class TabElement extends HTMLElement {
     const panelFragment = range.createContextualFragment(`
       <span class="native-tab-group-line"></span>
       <span class="${Constants.kEXTRA_ITEMS_CONTAINER} indent"></span>
-      <${kTAB_SUBSTANCE_ELEMENT_NAME} class="draggable">
+      <${kTAB_SUBSTANCE_ELEMENT_NAME} draggable="true">
         <span class="${Constants.kBACKGROUND} base"></span>
         <span class="${Constants.kBACKGROUND}">
           <span class="${Constants.kBURSTER}"></span>
