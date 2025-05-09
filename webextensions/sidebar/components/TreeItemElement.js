@@ -387,9 +387,9 @@ export class TreeItemElement extends HTMLElement {
     this.useTabPreviewTooltip = !!(
       configs.tabPreviewTooltip &&
       canCaptureTab &&
-      (((configs.tabPreviewTooltipRenderIn & Constants.kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT) &&
+      (((configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT) &&
         canInjectScriptToTab) ||
-       (configs.tabPreviewTooltipRenderIn & Constants.kTAB_PREVIEW_PANEL_RENDER_IN_SIDEBAR))
+       (configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR))
     );
 
     let debugTooltip;
