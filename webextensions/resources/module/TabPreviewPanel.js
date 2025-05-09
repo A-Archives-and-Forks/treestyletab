@@ -322,7 +322,7 @@ export default class TabPreviewPanel {
 
   #onMessage(message, _sender) {
     if ((this.#windowId &&
-     message?.windowId != this.#windowId))
+        message?.windowId != this.#windowId))
       return;
 
     if (message?.logging)
@@ -547,7 +547,7 @@ export default class TabPreviewPanel {
       previewImage.removeEventListener('error', completeUpdate);
 
       if (this.#panel.dataset.tabId != previewTabId ||
-        this.lastStartedAt != startAt)
+          this.lastStartedAt != startAt)
         return;
 
       if (!previewTabRect) {
