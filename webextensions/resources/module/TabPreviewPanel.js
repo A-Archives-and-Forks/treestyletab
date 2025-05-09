@@ -533,7 +533,7 @@ export default class TabPreviewPanel {
     }
 
     if (typeof title == 'string' ||
-      typeof url == 'string') {
+        typeof url == 'string') {
       const titleElement = this.#panel.querySelector('.tab-preview-title');
       titleElement.textContent = title;
       const urlElement = this.#panel.querySelector('.tab-preview-url');
