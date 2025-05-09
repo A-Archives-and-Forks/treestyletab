@@ -559,7 +559,7 @@ export default class TabPreviewPanel {
 
       const panelBox = this.#panel.getBoundingClientRect();
       if (!panelBox.height &&
-        completeUpdate.retryCount++ < 10) {
+          completeUpdate.retryCount++ < 10) {
         if (logging)
           console.log('updateUI/completeUpdate: panel size is zero, retrying ', completeUpdate.retryCount);
         requestAnimationFrame(completeUpdate);
