@@ -137,21 +137,21 @@ const mItems = [
       {
         title: indent() + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_label_before') + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_anywhere') + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_label_after'),
         key:   'tabPreviewTooltipRenderIn',
-        value: Constants.kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE,
+        value: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
         type:  'radio',
         expert: true
       },
       {
         title: indent() + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_label_before') + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_content') + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_label_after'),
         key:   'tabPreviewTooltipRenderIn',
-        value: Constants.kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT,
+        value: Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT,
         type:  'radio',
         expert: true
       },
       {
         title: indent() + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_label_before') + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_sidebar') + browser.i18n.getMessage('config_tabPreviewTooltipRenderIn_label_after'),
         key:   'tabPreviewTooltipRenderIn',
-        value: Constants.kTAB_PREVIEW_PANEL_RENDER_IN_SIDEBAR,
+        value: Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR,
         type:  'radio',
         expert: true
       },

@@ -201,7 +201,7 @@ export const configs = new Configs({
   longPressOnNewTabButton: Constants.kCONTEXTUAL_IDENTITY_SELECTOR,
   zoomable: false,
   tabPreviewTooltip: false,
-  tabPreviewTooltipRenderIn: Constants.kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE,
+  tabPreviewTooltipRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
   tabPreviewTooltipInSidebar: null, // migrated to tabPreviewTooltipMode
   tabPreviewTooltipDelayMsec: 500, // same as "ui.tooltip.delay_ms"
   tabPreviewTooltipOffsetTop: 0, // See also https://github.com/piroor/treestyletab/issues/3698

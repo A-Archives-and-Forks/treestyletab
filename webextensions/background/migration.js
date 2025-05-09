@@ -317,8 +317,8 @@ export function migrateConfigs() {
     case 31:
       if (configs.tabPreviewTooltipInSidebar !== null)
         configs.tabPreviewTooltipRenderIn = configs.tabPreviewTooltipInSidebar ?
-          Constants.kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE :
-          Constants.kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT;
+          Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE :
+          Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT;
   }
   configs.configsVersion = kCONFIGS_VERSION;
 }

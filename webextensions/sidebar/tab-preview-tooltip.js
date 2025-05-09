@@ -190,9 +190,9 @@ function shouldMessageSend(message) {
 
 // returns succeeded or not (boolean)
 async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
-  const canRenderInSidebar = !!(configs.tabPreviewTooltipRenderIn & Constants.kTAB_PREVIEW_PANEL_RENDER_IN_SIDEBAR);
+  const canRenderInSidebar = !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
   if (!tabId ||
-      !(configs.tabPreviewTooltipRenderIn & Constants.kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT)) { // in-sidebar mode
+      !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT)) { // in-sidebar mode
     if (canRenderInSidebar &&
         !message.hasCustomTooltip) {
       log(`sendTabPreviewMessage(${message.type}): no tab specified or sidebar only mode, fallback to in-sidebar preview`);
@@ -425,7 +425,7 @@ async function onTabSubstanceEnter(event) {
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
 
   if (!configs.tabPreviewTooltip ||
-      !(configs.tabPreviewTooltipRenderIn & Constants.kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE)) {;
+      !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE)) {;
     sendTabPreviewMessage(activeTab.id, {
       type: 'treestyletab:tab-preview:hide',
     });
