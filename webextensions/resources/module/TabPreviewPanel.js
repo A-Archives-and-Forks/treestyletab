@@ -415,7 +415,7 @@ export default class TabPreviewPanel {
     window.removeEventListener('unload', this.destroy);
     window.removeEventListener('pagehide', this.destroy);
 
-    this.#lastTimestampForTab = clear();
+    this.#lastTimestampForTab.clear();
     this.#root = this.onMessage = this.destroy = null;
   }
 
