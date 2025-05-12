@@ -30,6 +30,8 @@ import { Tab } from '/common/TreeItem.js';
 
 import EventListenerManager from '/extlib/EventListenerManager.js';
 
+import * as TabGroupContextMenu from './tab-group-context-menu.js';
+
 function log(...args) {
   internalLogger('sidebar/tab-context-menu', ...args);
 }
@@ -689,7 +691,7 @@ async function onContextMenu(event) {
   const modifierKeyPressed = isMacOS() ? event.metaKey : event.ctrlKey;
 
   const originalTargetBookmarkElement = originalTarget && originalTarget.closest('[data-bookmark-id]');
-  const bookmarkId = originalTargetBookmarkElement && originalTargetBookmarkElement.dataset.bookmarkId;
+  const bookmarkId = originalTargetBookmarkElement?.dataset.bookmarkId;
   if (bookmarkId &&
       !modifierKeyPressed &&
       typeof browser.menus.overrideContext == 'function') {
@@ -724,6 +726,17 @@ async function onContextMenu(event) {
       left: event.clientX,
       top:  event.clientY,
     });
+    return;
+  }
+
+  const originalTargetNativeTabGroupElement = originalTarget && originalTarget.closest('[data-native-tab-group-id]');
+  const nativeTabGroup = originalTargetNativeTabGroupElement?.$TST.rawGroup;
+  if (nativeTabGroup &&
+      !modifierKeyPressed) {
+    log('onContextMenu: on native tab group');
+    event.stopPropagation();
+    event.preventDefault();
+    TabGroupContextMenu.show(nativeTabGroup);
     return;
   }
 

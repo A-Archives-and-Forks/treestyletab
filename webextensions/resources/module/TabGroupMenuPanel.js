@@ -1,0 +1,593 @@
+/*
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+*/
+'use strict';
+
+// This script can be loaded in three ways:
+//  * REGULAR case:
+//    loaded into a public webpage
+//  * SIDEBAR case:
+//    loaded into the TST sidebar
+
+export default class TabGroupMenuPanel {
+  #panel;
+  #root;
+  #windowId; // for SIDEBAR case
+  #lastTimestamp = 0;
+  #lastTimestampForGroup= new Map();
+
+  // https://searchfox.org/mozilla-central/source/browser/themes/shared/tabbrowser/tabs.css#1143
+  BASE_PANEL_WIDTH = '22em';
+
+  // -moz-platform @media rules looks unavailable on Web contents...
+  isWindows = /^Win/i.test(navigator.platform);
+  isLinux = /Linux/i.test(navigator.platform);
+  isMac = /^Mac/i.test(navigator.platform);
+
+  get styleRules() {
+    return `
+      .tab-group-menu-root {
+        --tab-group-menu-panel-show-hide-animation: opacity 0.1s ease-out;
+        --tab-group-menu-panel-scale: 1; /* Web contents may be zoomed by the user, and we need to cancel the zoom effect. */
+        background: transparent;
+        border: 0 none;
+        height: 0;
+        left: 0;
+        opacity: 1;
+        overflow: visible;
+        position: fixed;
+        right: 0;
+        top: 0;
+        transition: var(--tab-group-menu-panel-show-hide-animation);
+        width: 0;
+        z-index: ${Number.MAX_SAFE_INTEGER};
+      }
+
+      .tab-group-menu-panel {
+        /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/toolkit/themes/shared/popup.css#11-63 */
+        color-scheme: light dark;
+
+        --panel-background: Menu;
+        --panel-color: MenuText;
+        --panel-padding-block: calc(4px / var(--tab-group-menu-panel-scale));
+        --panel-padding: var(--panel-padding-block) 0;
+        --panel-border-radius: calc(4px / var(--tab-group-menu-panel-scale));
+        --panel-border-color: ThreeDShadow;
+        --panel-width: initial;
+
+        --panel-shadow-margin: 0px;
+        --panel-shadow: 0px 0px var(--panel-shadow-margin) hsla(0,0%,0%,.2);
+        -moz-window-input-region-margin: var(--panel-shadow-margin);
+        margin: calc(-1 * var(--panel-shadow-margin));
+
+        /* Panel design token theming */
+        --background-color-canvas: var(--panel-background);
+
+        /*@media (-moz-platform: linux) {*/
+        ${this.isLinux ? '' : '/*'}
+          --panel-border-radius: calc(8px / var(--tab-group-menu-panel-scale));
+          --panel-padding-block: calc(3px / var(--tab-group-menu-panel-scale));
+
+          @media (prefers-contrast) {
+            --panel-border-color: color-mix(in srgb, currentColor 60%, transparent);
+          }
+        ${this.isLinux ? '' : '*/'}
+        /*}*/
+
+        /*@media (-moz-platform: linux) or (-moz-platform: windows) {*/
+        ${this.isLinux || this.isWindows ? '' : '/*'}
+          --panel-shadow-margin: calc(4px / var(--tab-group-menu-panel-scale));
+        ${this.isLinux || this.isWindows ? '' : '*/'}
+        /*}*/
+
+        /* On some linux WMs we need to draw square menus because alpha is not available */
+        @media /*(-moz-platform: linux) and*/ (not (-moz-gtk-csd-transparency-available)) {
+          ${this.isLinux ? '' : '/*'}
+          --panel-shadow-margin: 0px !important;
+          --panel-border-radius: 0px !important;
+          ${this.isLinux ? '' : '*/'}
+        }
+
+        /*@media (-moz-platform: macos) {*/
+        ${this.isMac ? '' : '/*'}
+          appearance: auto;
+          -moz-default-appearance: menupopup;
+          background-color: Menu;
+          --panel-background: white /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */;
+          --panel-border-color: transparent;
+          --panel-border-radius: calc(6px / var(--tab-group-menu-panel-scale));
+        ${this.isMac ? '' : '*/'}
+        /*}*/
+
+        /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5 */
+        --panel-width: min(100%, calc(${this.BASE_PANEL_WIDTH} / var(--tab-group-menu-panel-scale)));
+        --panel-padding: 0;
+
+        /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/toolkit/themes/shared/global-shared.css#111 */
+        /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/browser/themes/shared/browser-colors.css#90 */
+        --panel-border-color: light-dark(rgb(240, 240, 244), rgb(82, 82, 94));
+
+
+        @media (prefers-color-scheme: dark) {
+          --panel-background: ${this.isMac ? 'rgb(66, 65, 77)' /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */ : 'var(--dark-popup)'};
+          --panel-color: var(--dark-popup-text);
+          --panel-border-color: var(--dark-popup-border);
+        }
+
+        background: var(--panel-background);
+        border: var(--panel-border-color) solid calc(1px / var(--tab-group-menu-panel-scale));
+        border-radius: var(--panel-border-radius);
+        box-shadow: var(--panel-shadow);
+        box-sizing: border-box;
+        color: var(--panel-color);
+        direction: ltr;
+        font: Message-Box;
+        left: auto;
+        line-height: 1.5;
+        margin-block-start: 0px;
+        max-width: var(--panel-width);
+        min-width: var(--panel-width);
+        opacity: 0;
+        padding: 0;
+        position: fixed;
+        right: auto;
+        z-index: ${Number.MAX_SAFE_INTEGER};
+      }
+      .tab-group-menu-panel:not(.open) {
+        pointer-events: none;
+      }
+      .tab-group-menu-panel.rtl {
+        direction: rtl;
+      }
+      .tab-group-menu-panel.animation {
+        transition: var(--tab-group-menu-panel-show-hide-animation),
+                    left 0.1s ease-out,
+                    margin-block-start 0.1s ease-out,
+                    right 0.1s ease-out;
+      }
+      .tab-group-menu-panel.open {
+        opacity: 1;
+      }
+
+      .tab-group-menu-panel-contents,
+      .tab-group-menu-panel-contents-inner-box {
+        max-width: calc(var(--panel-width) - (2px / var(--tab-group-menu-panel-scale)));
+        min-width: calc(var(--panel-width) - (2px / var(--tab-group-menu-panel-scale)));
+      }
+      .tab-group-menu-panel.extended .tab-group-menu-panel-contents,
+      .tab-group-menu-panel.extended .tab-group-menu-panel-contents-inner-box {
+        max-width: calc(min(100%, calc(var(--panel-width) * 2)) - (2px / var(--tab-group-menu-panel-scale)));
+      }
+
+      .tab-group-menu-panel-contents {
+        max-height: calc(var(--panel-max-height) - (2px / var(--tab-group-menu-panel-scale)));
+      }
+
+      .tab-group-menu-panel.updating,
+      .tab-group-menu-panel .updating {
+        visibility: hidden;
+      }
+    `;
+  }
+
+  constructor(givenRoot) {
+    try {
+      this.destroy = this.#destroy.bind(this);
+      this.onMessage = this.#onMessage.bind(this);
+
+      this.#root = givenRoot || document.documentElement;
+      this.#root.classList.add('tab-group-menu-root');
+
+      const style = document.createElement('style');
+      style.setAttribute('type', 'text/css');
+      style.textContent = this.styleRules;
+      this.#root.appendChild(style);
+
+      browser.runtime.onMessage.addListener(this.onMessage);
+      window.addEventListener('unload', this.destroy, { once: true });
+      window.addEventListener('pagehide', this.destroy, { once: true });
+
+      browser.runtime.sendMessage({
+        type: 'treestyletab:tab-group-menu:ready',
+      });
+    }
+    catch (error) {
+      console.log('TST Tab Group Menu Panel fatal error: ', error);
+      this.#root = this.onMessage = this.destroy = null;
+    }
+  }
+
+  #onMessage(message, _sender) {
+    if ((this.#windowId &&
+        message?.windowId != this.#windowId))
+      return;
+
+    if (message?.logging)
+      console.log('on message: ', message);
+
+    switch (message?.type) {
+      case 'treestyletab:tab-group-menu:show':
+        return (async () => {
+          if (message.timestamp < this.#lastTimestamp ||
+              message.timestamp < (this.#lastTimestampForGroup.get(message.groupId) || 0)) {
+            if (message?.logging)
+              console.log(`show tab group menu(${message.groupId}): expired, give up to show/update menu `, message.timestamp);
+            return true;
+          }
+          if (message?.logging)
+            console.log(`show tab group menu(${message.groupId}): invoked, let's show/update menu `, message.timestamp);
+          this.#lastTimestamp = message.timestamp;
+          this.#lastTimestampForGroup.set(message.groupId, message.timestamp);
+          this.prepareUI();
+          this.updateUI(message);
+          this.#panel.classList.add('open');
+          return true;
+        })();
+
+      case 'treestyletab:tab-group-menu:hide-if-shown':
+        if (!this.#panel ||
+            (message.groupId &&
+             this.#panel.dataset.groupId != message.groupId) ||
+            !this.#panel.classList.contains('open')) {
+          return;
+        }
+      case 'treestyletab:tab-group-menu:hide':
+        return (async () => {
+          // Ensure the order of messages: "show" for newly hovered tab =>
+          // "hide" for previously hovered tab.
+          await new Promise(requestAnimationFrame);
+          if (!this.#panel ||
+              (message.groupId &&
+               this.#panel.dataset.groupId != message.groupId)) {
+            if (message?.logging)
+              console.log(`hide tab group menu(${message.groupId}): already hidden, nothing to do `, message.timestamp);
+            if (!this.#panel && !message.groupId) { // on initial case
+              this.#lastTimestamp = message.timestamp;
+            }
+            if (message.groupId) {
+              this.#lastTimestampForGroup.set(message.groupId, message.timestamp);
+            }
+            return;
+          }
+          if (message.timestamp < this.#lastTimestamp ||
+              (message.groupId &&
+               message.timestamp < (this.#lastTimestampForGroup.get(message.groupId) || 0))) {
+            if (message?.logging)
+              console.log(`hide tab group menu(${message.groupId}): expired, give up to hide menu `, message.timestamp);
+            return true;
+          }
+          if (message?.logging)
+            console.log(`hide tab group menu(${message.groupId}): invoked, let's hide menu `, message.timestamp);
+          this.#lastTimestamp = message.timestamp;
+          if (message.groupId) {
+            this.#lastTimestampForGroup.set(message.groupId, message.timestamp);
+          }
+          this.#panel.classList.remove('open');
+          return true;
+        })();
+
+      case 'treestyletab:notify-sidebar-closed':
+        if (this.#panel) {
+          this.#panel.classList.remove('open');
+        }
+        break;
+    }
+  }
+
+  #destroy() {
+    if (!this.onMessage)
+      return;
+
+    if (this.#panel) {
+      this.#panel.parentNode.removeChild(this.#panel);
+      this.#panel = null;
+    }
+
+    browser.runtime.onMessage.removeListener(this.onMessage);
+    window.removeEventListener('unload', this.destroy);
+    window.removeEventListener('pagehide', this.destroy);
+
+    this.#lastTimestampForGroup.clear();
+    this.#root = this.onMessage = this.destroy = null;
+  }
+
+  prepareUI() {
+    if (this.#panel)
+      return;
+
+    const range = document.createRange();
+    range.selectNodeContents(this.#root);
+    const panelFragment = range.createContextualFragment(`
+      <div class="tab-group-menu-panel">
+        <div class="tab-group-menu-panel-contents">
+          <div class="tab-group-menu-panel-contents-inner-box">
+            <div class="tab-group-menu-caption"></div>
+            <label>
+              <span class="tab-group-menu-title-field-label"></span>
+              <input class="tab-group-menu-title-field" type="text"/>
+            </label>
+            <div class="tab-group-menu-color-radiogroup">
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color blue"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color purple"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color cyan"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color orange"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color yellow"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color pink"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color green"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color gray"/>
+              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color red"/>
+            </div>
+            <div class="tab-group-menu-commands">
+              <button class="menu-command open-new-tab"></button>
+              <button class="menu-command move-group-to-new-window"></button>
+              <!--button class="menu-command close-group"></button-->
+              <button class="menu-command ungroup"></button>
+            </div>
+            <div class="tab-group-menu-delete-command">
+              <button class="menu-command delete"></button>
+            </div>
+            <div class="tab-group-menu-buttons">
+              <button class="tab-group-menu-button accept"></button>
+              <button class="tab-group-menu-button cancel"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `.trim().replace(/>\s+</g, '><'));
+    range.detach();
+    const titleField = panelFragment.querySelector('.tab-group-menu-title-field');
+    titleField.addEventListener('input', event => {
+    });
+    const colorRadioGroup = panelFragment.querySelector('.tab-group-menu-color-radiogroup');
+    colorRadioGroup.addEventListener('change', event => {
+    });
+    const panel = panelFragment.querySelector('.tab-group-menu-panel');
+    panel.addEventListener('click', event => {
+    });
+    panel.addEventListener('keydown', event => {
+    });
+    this.#root.appendChild(panelFragment);
+
+    this.#panel = this.#root.querySelector('.tab-group-menu-panel');
+  }
+
+  updateUI({ groupId, groupTitle, groupColor, anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop } = {}) {
+    if (!this.#panel)
+      return;
+
+    const startAt = this.lastStartedAt = Date.now();
+
+    if (logging)
+      console.log('updateUI ', { panel: this.#panel, groupId, groupTitle, groupColor, anchorTabRect, offsetTop, align, rtl, scale, widthInOuterWorld, fixedOffsetTop });
+
+    this.#panel.classList.add('updating');
+    this.#panel.classList.toggle('animation', animation);
+
+    if (backgroundColor) {
+      this.#panel.style.setProperty('--panel-background', backgroundColor);
+    }
+    if (borderColor) {
+      this.#panel.style.setProperty('--panel-border-color', borderColor);
+    }
+    if (color) {
+      this.#panel.style.setProperty('--panel-color', color);
+    }
+
+    // This cancels the zoom effect by the user.
+    // We need to calculate the scale with two devicePixelRatio values
+    // from both the sidebar and the content area, because all contents
+    // of the browser window can be scaled on a high-DPI display by the
+    // platform.
+    const isResistFingerprintingMode = window.mozInnerScreenY == window.screenY;
+    const devicePixelRatio = window.devicePixelRatio != 1 ?
+      window.devicePixelRatio : // devicePixelRatio is always available on macOS with Retina
+      ((widthInOuterWorld || window.innerWidth) / window.innerWidth);
+    if (logging)
+      console.log('updateUI: isResistFingerprintingMode ', isResistFingerprintingMode, { devicePixelRatio });
+    // But window.devicePixelRatio is not available if privacy.resistFingerprinting=true,
+    // thus we need to calculate it based on tabs.Tab.width.
+    scale = devicePixelRatio * (scale || 1);
+    this.#root.style.setProperty('--tab-group-menu-panel-scale', scale);
+    this.#panel.style.setProperty('--panel-width', `min(${window.innerWidth}px, calc(${this.BASE_PANEL_WIDTH} / ${scale}))`);
+
+    const offsetFromWindowEdge = isResistFingerprintingMode ?
+      0 :
+      (window.mozInnerScreenY - window.screenY) * scale;
+    const sidebarContentsOffset = isResistFingerprintingMode ?
+      (fixedOffsetTop || 0) :
+      (offsetTop - offsetFromWindowEdge) / scale;
+
+    this.#panel.dataset.groupId = groupId;
+    if (align)
+      this.#panel.dataset.align = align;
+
+    this.#panel.classList.toggle('rtl', !!rtl);
+
+    const completeUpdate = () => {
+      if (this.#panel.dataset.groupId != groupId ||
+          this.lastStartedAt != startAt)
+        return;
+
+      if (!anchorTabRect) {
+        this.#panel.classList.remove('updating');
+        if (logging)
+          console.log('updateUI/completeUpdate: no tab rect, no need to update the position');
+        return;
+      }
+
+      const panelBox = this.#panel.getBoundingClientRect();
+      if (!panelBox.height &&
+          completeUpdate.retryCount++ < 10) {
+        if (logging)
+          console.log('updateUI/completeUpdate: panel size is zero, retrying ', completeUpdate.retryCount);
+        requestAnimationFrame(completeUpdate);
+        return;
+      }
+
+      const maxY = window.innerHeight / scale;
+      const panelHeight = panelBox.height;
+
+      const contentsHeight = this.#panel.querySelector('.tab-group-menu-panel-contents-inner-box').getBoundingClientRect().height;
+
+      let top;
+      if (this.#windowId) { // in-sidebar
+        if (logging)
+          console.log('updateUI/completeUpdate: in-sidebar, alignment calculating: ', { half: window.innerHeight, maxY, scale, anchorTabRect });
+        if (anchorTabRect.top > (window.innerHeight / 2)) { // align to bottom edge of the tab
+          top = `${Math.min(maxY, anchorTabRect.bottom / scale) - panelHeight - anchorTabRect.height}px`;
+          if (logging)
+            console.log(' => align to bottom edge of the tab, top=', top);
+        }
+        else { // align to top edge of the tab
+          top = `${Math.max(0, anchorTabRect.top / scale) + anchorTabRect.height}px`;
+          if (logging)
+            console.log(' => align to top edge of the tab, top=', top);
+        }
+
+        if (logging)
+          console.log(' => top=', top);
+      }
+      else { // in-content
+      // We need to shift the position with the height of the sidebar header.
+        const alignToTopPosition = Math.max(0, anchorTabRect.top / scale) + sidebarContentsOffset;
+        const alignToBottomPosition = Math.min(maxY, anchorTabRect.bottom + sidebarContentsOffset / scale) - panelHeight;
+
+        if (logging)
+          console.log('updateUI/completeUpdate: in-content, alignment calculating: ', { offsetFromWindowEdge, sidebarContentsOffset, alignToTopPosition, panelHeight, maxY, scale });
+        if (alignToTopPosition + panelHeight >= maxY &&
+          alignToBottomPosition >= 0) { // align to bottom edge of the tab
+          top = `${alignToBottomPosition}px`;
+          if (logging)
+            console.log(' => align to bottom edge of the tab, top=', top);
+        }
+        else { // align to top edge of the tab
+          top = `${alignToTopPosition}px`;
+          if (logging)
+            console.log(' => align to top edge of the tab, top=', top);
+        }
+      }
+      // updateUI() may be called multiple times for a target tab
+      // (with/without previewURL), so we should not set positions again
+      // if not needed. Otherwise the animation may be canceled in middle.
+      if (top &&
+        this.#panel.style.top != top) {
+        this.#panel.style.top = top;
+      }
+
+      let left, right;
+      if (align == 'left') {
+        left  = 'var(--panel-shadow-margin)';
+        right = '';
+      }
+      else {
+        left  = '';
+        right = 'var(--panel-shadow-margin)';
+      }
+      if (this.#panel.style.left != left) {
+        this.#panel.style.left = left;
+      }
+      if (this.#panel.style.right != right) {
+        this.#panel.style.right = right;
+      }
+
+      this.#panel.classList.remove('updating');
+    };
+    completeUpdate.retryCount = 0;
+
+    if (logging)
+      console.log('updateUI: complete now');
+    completeUpdate();
+  }
+
+  // for SIDEBAR case
+  set windowId(id) {
+    return this.#windowId = id;
+  }
+  get windowId() {
+    return this.#windowId;
+  }
+
+  get open() {
+    return !!this.#panel?.classList.contains('open');
+  }
+
+  // for SIDEBAR case
+  handleMessage(message) {
+    return this.onMessage(message);
+  }
+
+  getColors() {
+    this.prepareUI();
+
+    const style = window.getComputedStyle(this.#panel, null);
+    try {
+    // Computed style's colors may be unexpected value if the element
+    // is not rendered on the screen yet and it has colors for light
+    // and dark schemes. So we need to get preferred colors manually.
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return {
+        backgroundColor: this.getPreferredColor(style.getPropertyValue('--panel-background'), { isDark }),
+        borderColor: this.getPreferredColor(style.getPropertyValue('--panel-border-color'), { isDark }),
+        color: this.getPreferredColor(style.getPropertyValue('--panel-color'), { isDark }),
+      };
+    }
+    catch(_error) {
+    }
+    return {
+      backgroundColor: style.backgroundColor,
+      borderColor: style.borderColor,
+      color: style.color,
+    };
+  }
+
+  // Parse light-dark(<light color>, <dark color>) and return preferred color
+  getPreferredColor(color, { isDark } = {}) {
+    if (!color.startsWith('light-dark('))
+      return color;
+
+    const values = [];
+    let buffer = '';
+    let inParenCount = 0;
+    color = color.substring(11); // remove "light-dark(" prefix
+    ColorParse:
+    for (let i = 0, maxi = color.length; i < maxi; i++) {
+      const character = color.charAt(i);
+      switch (character) {
+        case '(':
+          inParenCount++;
+          buffer += character;
+          break;
+
+        case ')':
+          inParenCount--;
+          if (inParenCount < 0) {
+            values.push(buffer);
+            buffer = '';
+            break ColorParse;
+          }
+          buffer += character;
+          break;
+
+        case ',':
+          if (inParenCount > 0) {
+            buffer += character;
+          }
+          else {
+            values.push(buffer);
+            buffer = '';
+          }
+          break;
+
+        default:
+          buffer += character;
+          break;
+      }
+    }
+
+    if (typeof isDark != 'boolean')
+      isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return isDark ? values[1] : values[0];
+  }
+}

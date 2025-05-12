@@ -208,6 +208,8 @@ export const configs = new Configs({
   showOverflowTitleByTooltip: true,
   showCollapsedDescendantsByTooltip: true,
 
+  tabGroupMenuPanelRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
+
   showDialogInSidebar: false,
 
   outOfScreenTabsRenderingPages: 1,
@@ -617,6 +619,7 @@ export const configs = new Configs({
     'sidebar/size': false,
     'sidebar/subpanel': false,
     'sidebar/tab-context-menu': false,
+    'sidebar/tab-group-context-menu': false,
     'sidebar/tab-preview-tooltip': false,
     'sidebar/tst-api-frontend': false,
   },
