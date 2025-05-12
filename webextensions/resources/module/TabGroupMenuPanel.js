@@ -192,9 +192,15 @@ export default class TabGroupMenuPanel {
         /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#107 */
         /** Color **/
         --color-blue-20: oklch(83% 0.17 260);
+        --color-blue-60: oklch(55% 0.24 260);
         --color-blue-70: oklch(48% 0.2 260);
+        --color-blue-80: oklch(41% 0.17 260);
+        --color-cyan-10: oklch(90% 0.07 205);
         --color-cyan-20: oklch(83% 0.11 205);
+        --color-cyan-30: oklch(76% 0.14 205);
         --color-cyan-70: oklch(48% 0.2 205);
+        --color-gray-05: #fbfbfe;
+        --color-gray-100: #15141a;
         --color-green-20: oklch(83% 0.14 145);
         --color-green-70: oklch(48% 0.2 145);
         --color-orange-20: oklch(86% 0.14 50);
@@ -205,6 +211,7 @@ export default class TabGroupMenuPanel {
         --color-purple-70: oklch(48% 0.2 315);
         --color-red-20: oklch(83% 0.14 15);
         --color-red-70: oklch(48% 0.2 15);
+        --color-white: #ffffff;
         --color-yellow-20: oklch(86% 0.14 90);
         --color-yellow-70: oklch(51% 0.23 90);
 
@@ -297,6 +304,22 @@ export default class TabGroupMenuPanel {
 
         /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/browser/themes/shared/tabbrowser/tabs.css#37 */
         --tab-hover-background-color: color-mix(in srgb, currentColor 11%, transparent);
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-brand.css#23 */
+        --button-background-color: color-mix(in srgb, currentColor 7%, transparent);
+        --button-background-color-hover: color-mix(in srgb, currentColor 14%, transparent);
+        --button-background-color-active: color-mix(in srgb, currentColor 21%, transparent);
+        --button-text-color: light-dark(var(--color-gray-100), var(--color-gray-05));
+        --button-text-color-primary: light-dark(var(--color-white), var(--color-gray-100));
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-brand.css#30 */
+        --color-accent-primary: light-dark(var(--color-blue-60), var(--color-cyan-30));
+        --color-accent-primary-hover: light-dark(var(--color-blue-70), var(--color-cyan-20));
+        --color-accent-primary-active: light-dark(var(--color-blue-80), var(--color-cyan-10));
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#99 */
+        --button-text-color-primary-hover: var(--button-text-color-primary);
+        --button-text-color-primary-active: var(--button-text-color-primary-hover);
+        --button-text-color-primary-disabled: var(--button-text-color-primary);
+
 
         --panel-width: 22em;
         --panel-padding: var(--space-large);
@@ -392,7 +415,7 @@ export default class TabGroupMenuPanel {
            appearance: none;
            background: transparent;
            border: none;
-           border-radius: 0.3em;
+           border-radius: var(--space-xsmall);
            display: block;
            font: menu;
            margin: 0;
@@ -421,6 +444,31 @@ export default class TabGroupMenuPanel {
         .tabGroupEditor_deleteGroup {
           .label-text {
             color: var(--text-color-error);
+          }
+        }
+      }
+
+      .tab-group-create-actions {
+        text-align: right;
+
+        button {
+          appearance: none;
+          border-radius: var(--space-xsmall);
+          margin-inline: var(--space-small);
+          padding: var(--space-small);
+
+          &.primary {
+            color: var(--button-text-color-primary);
+            background-color: var(--color-accent-primary);
+            &:hover {
+              color: var(--button-text-color-primary-hover);
+              background-color: var(--color-accent-primary-hover);
+            }
+            &:hover:active,
+            &[open] {
+              color: var(--button-text-color-primary-active);
+              background-color: var(--color-accent-primary-active);
+            }
           }
         }
       }
@@ -634,11 +682,11 @@ export default class TabGroupMenuPanel {
                        ><span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_delete_label)}</span></button>
               </div>
               <!-hr class="tab-group-create-mode-only"/>
-              <div class="moz-button-group tab-group-create-actions tab-group-create-mode-only">
+              <div class="tab-group-create-actions tab-group-create-mode-only">
                 <button class="primary tab-group-editor-button-done"
                         accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_done_accesskey)}
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_done_label)}</button>
-                <button class="primary tab-group-editor-button-cancel"
+                <button class="tab-group-editor-button-cancel"
                         accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_cancel_accesskey)}
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_cancel_label)}</button>
               </div>
