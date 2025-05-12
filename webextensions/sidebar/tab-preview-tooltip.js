@@ -121,7 +121,7 @@ async function preparePreview(tabId) {
         // We use a wrapper custom element to enclose all preview elements
         // which can contain privacy information.
         // It should guard them from accesses by webpage scripts.
-        class ClosedContainer extends HTMLElement {
+        class TabPreviewPanelClosedContainer extends HTMLElement {
           constructor() {
             super();
             const shadow = this.attachShadow({ mode: 'closed' });
@@ -130,7 +130,7 @@ async function preparePreview(tabId) {
             tabPreviewPanel = new window.lastTabPreviewPanel(root); // don't touch "TabPreviewPanel" directly - it can be a reference to the obsolete one.
           }
         }
-        window.customElements.define(window.tabPreviewPanelClosedContainerType, ClosedContainer);
+        window.customElements.define(window.tabPreviewPanelClosedContainerType, TabPreviewPanelClosedContainer);
       }
       const container = document.createElement(window.tabPreviewPanelClosedContainerType);
       document.documentElement.appendChild(container);

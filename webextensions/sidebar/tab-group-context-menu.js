@@ -101,7 +101,7 @@ async function prepareMenu(tabId) {
         // We use a wrapper custom element to enclose all preview elements
         // which can contain privacy information.
         // It should guard them from accesses by webpage scripts.
-        class ClosedContainer extends HTMLElement {
+        class TabGroupMenuPanelClosedContainer extends HTMLElement {
           constructor() {
             super();
             const shadow = this.attachShadow({ mode: 'closed' });
@@ -110,7 +110,7 @@ async function prepareMenu(tabId) {
             tabGroupMenuPanel = new window.lastTabGroupMenuPanel(root); // don't touch "TabGroupMenuPanel" directly - it can be a reference to the obsolete one.
           }
         }
-        window.customElements.define(window.tabGroupMenuPanelClosedContainerType, ClosedContainer);
+        window.customElements.define(window.tabGroupMenuPanelClosedContainerType, TabGroupMenuPanelClosedContainer);
       }
       const container = document.createElement(window.tabGroupMenuPanelClosedContainerType);
       document.documentElement.appendChild(container);
