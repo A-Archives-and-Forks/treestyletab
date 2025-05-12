@@ -107,17 +107,17 @@ async function preparePreview(tabId) {
 
       const logging = ${!!logging};
 
-      window.closedContainerType = window.closedContainerType || '${generateOneTimeCustomElementName()}';
+      window.tabPreviewPanelClosedContainerType = window.tabPreviewPanelClosedContainerType || '${generateOneTimeCustomElementName()}';
 
       // cleanup!
-      for (const oldConatiner of document.querySelectorAll(window.closedContainerType)) {
+      for (const oldConatiner of document.querySelectorAll(window.tabPreviewPanelClosedContainerType)) {
         oldContainer.parentNode.removeChild(oldContainer);
       }
 
       let tabPreviewPanel;
 
       // We cannot undefine custom element types, so we define it just one time.
-      if (!window.customElements.get(window.closedContainerType)) {
+      if (!window.customElements.get(window.tabPreviewPanelClosedContainerType)) {
         // We use a wrapper custom element to enclose all preview elements
         // which can contain privacy information.
         // It should guard them from accesses by webpage scripts.
@@ -130,9 +130,9 @@ async function preparePreview(tabId) {
             tabPreviewPanel = new window.lastTabPreviewPanel(root); // don't touch "TabPreviewPanel" directly - it can be a reference to the obsolete one.
           }
         }
-        window.customElements.define(window.closedContainerType, ClosedContainer);
+        window.customElements.define(window.tabPreviewPanelClosedContainerType, ClosedContainer);
       }
-      const container = document.createElement(window.closedContainerType);
+      const container = document.createElement(window.tabPreviewPanelClosedContainerType);
       document.documentElement.appendChild(container);
 
       const onMessage = (message, _sender) => {
