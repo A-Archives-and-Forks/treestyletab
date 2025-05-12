@@ -432,10 +432,12 @@ document.querySelector('#tabbar').addEventListener('mousedown', event => {
     return;
   }
 
+  /*
   if (mTabGroupMenuPanel.open) {
     event.stopPropagation();
     event.preventDefault();
   }
+  */
 
   const startAt = Date.now();
   sendInSidebarTabGroupMenuMessage({
