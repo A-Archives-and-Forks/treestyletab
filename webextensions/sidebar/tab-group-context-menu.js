@@ -56,8 +56,6 @@ import { Tab } from '/common/TreeItem.js';
 
 import TabGroupMenuPanel from '/resources/module/TabGroupMenuPanel.js'; // the IMPL
 
-import * as EventUtils from './event-utils.js';
-
 function log(...args) {
   internalLogger('sidebar/tab-group-context-menu', ...args);
 }

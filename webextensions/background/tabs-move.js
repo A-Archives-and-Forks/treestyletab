@@ -38,7 +38,7 @@ import { SequenceMatcher } from '/extlib/diff.js';
 import * as SidebarConnection from '/common/sidebar-connection.js';
 import * as TabsStore from '/common/tabs-store.js';
 
-import { Tab, TreeItem } from '/common/TreeItem.js';
+import { Tab } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('background/tabs-move', ...args);
