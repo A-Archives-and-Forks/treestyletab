@@ -103,37 +103,49 @@ async function preparePreview(tabId) {
     runAt: 'document_start',
     code: `(() => { // the LOADER
       ${TabPreviewPanel.toString()}
-      window.lastTabPreviewPanel = TabPreviewPanel;
 
       const logging = ${!!logging};
 
-      window.tabPreviewPanelClosedContainerType = window.tabPreviewPanelClosedContainerType || '${generateOneTimeCustomElementName()}';
+      // We cannot use multiple custom element types with contents scripts -
+      // otherwise second custom type must fail its construction ("super()" in
+      // its constructor raises unexpected error), so we just use only one
+      // custom element type and recycle it for multiple purposes.
+      window.closedContainerType = window.closedContainerType || '${generateOneTimeCustomElementName()}';
 
-      // cleanup!
-      for (const oldConatiner of document.querySelectorAll(window.tabPreviewPanelClosedContainerType)) {
-        oldContainer.parentNode.removeChild(oldContainer);
+      if (window.lastClosedContainer) {
+        window.clearClosedContents();
       }
 
-      let tabPreviewPanel;
-
       // We cannot undefine custom element types, so we define it just one time.
-      if (!window.customElements.get(window.tabPreviewPanelClosedContainerType)) {
+      if (!window.customElements.get(window.closedContainerType)) {
         // We use a wrapper custom element to enclose all preview elements
         // which can contain privacy information.
         // It should guard them from accesses by webpage scripts.
-        class TabPreviewPanelClosedContainer extends HTMLElement {
+        class ClosedContainer extends HTMLElement {
           constructor() {
             super();
             const shadow = this.attachShadow({ mode: 'closed' });
-            const root = document.createElement('div');
-            shadow.appendChild(root);
-            tabPreviewPanel = new window.lastTabPreviewPanel(root); // don't touch "TabPreviewPanel" directly - it can be a reference to the obsolete one.
+            window.appendClosedContents = element => shadow.appendChild(element);
           }
         }
-        window.customElements.define(window.tabPreviewPanelClosedContainerType, TabPreviewPanelClosedContainer);
+        window.customElements.define(window.closedContainerType, ClosedContainer);
+        window.closedContentsDestructors = new Set();
+        window.clearClosedContents = () => {
+          for (const destructor of window.closedContentsDestructors) {
+            destructor();
+          }
+          window.closedContentsDestructors.clear();
+          window.lastClosedContainer.parentNode.removeChild(window.lastClosedContainer);
+          window.lastClosedContainer = null;
+        };
       }
-      const container = document.createElement(window.tabPreviewPanelClosedContainerType);
-      document.documentElement.appendChild(container);
+
+      window.lastClosedContainer = document.createElement(window.closedContainerType);
+      document.documentElement.appendChild(window.lastClosedContainer);
+
+      const root = document.createElement('div');
+      window.appendClosedContents(root);
+      let tabPreviewPanel = new TabPreviewPanel(root);
 
       const onMessage = (message, _sender) => {
         switch (message?.type) {
@@ -165,16 +177,15 @@ async function preparePreview(tabId) {
           tabPreviewPanel.destroy();
           tabPreviewPanel = null;
         }
-        if (!container.parentNode)
-          return;
-        container.parentNode.removeChild(container);
         browser.runtime.onMessage.removeListener(onMessage);
         window.removeEventListener('mousemove', onMouseMove);
         window.removeEventListener('unload', destroy);
         window.removeEventListener('pagehide', destroy);
+        window.closedContentsDestructors.delete(destroy);
       };
       window.addEventListener('unload', destroy, { once: true });
       window.addEventListener('pagehide', destroy, { once: true });
+      window.closedContentsDestructors.add(destroy);
     })()`,
   });
 }
