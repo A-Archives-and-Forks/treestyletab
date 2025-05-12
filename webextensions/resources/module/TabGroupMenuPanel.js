@@ -17,6 +17,7 @@ export default class TabGroupMenuPanel {
   #windowId; // for SIDEBAR case
   #lastTimestamp = 0;
   #lastTimestampForGroup= new Map();
+  #i18n;
 
   // https://searchfox.org/mozilla-central/source/browser/themes/shared/tabbrowser/tabs.css#1143
   BASE_PANEL_WIDTH = '22em';
@@ -294,6 +295,9 @@ export default class TabGroupMenuPanel {
           padding: var(--panel-padding);
         }
 
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/browser/themes/shared/tabbrowser/tabs.css#37 */
+        --tab-hover-background-color: color-mix(in srgb, currentColor 11%, transparent);
+
         --panel-width: 22em;
         --panel-padding: var(--space-large);
         --panel-separator-margin: var(--panel-separator-margin-vertical) 0;
@@ -302,6 +306,10 @@ export default class TabGroupMenuPanel {
         .panel-header {
           min-height: auto;
           > h1 {
+            text-align: center;
+            font: menu;
+            font-weight: bold;
+
             margin-top: 0;
           }
         }
@@ -336,13 +344,19 @@ export default class TabGroupMenuPanel {
 
         .tab-group-editor-swatches {
           display: flex;
-          flex-flow: row /*nowrap*/wrap;
-          justify-content: /*space-between*/flex-start;
+          flex-flow: row nowrap;
+          justify-content: space-between;
+
+          #tabGroupContextMenuRoot & {
+            flex-flow: row wrap;
+            justify-content: flex-start;
+          }
         }
 
         .tab-group-editor-swatch {
           appearance: none;
           box-sizing: content-box;
+          margin: 0;
 
           font-size: 0;
           width: 16px;
@@ -365,25 +379,31 @@ export default class TabGroupMenuPanel {
             outline: 1px solid var(--focus-outline-color);
             outline-offset: 1px;
           }
+
+          + .label-text {
+            font-size: 0;
+          }
         }
 
         .tab-group-edit-actions,
         .tab-group-delete {
           padding-block: 0;
-          > toolbarbutton {
+          > button /*toolbarbutton*/ {
+           appearance: none;
+           background: transparent;
+           border: none;
+           border-radius: 0.2em;
+           display: block;
+           font: menu;
+           margin: 0;
+           padding: var(--space-small);
+
            justify-content: flex-start;
+
+           &:hover {
+             background-color: var(--tab-hover-background-color);
+           }
           }
-        }
-
-        .tab-group-edit-actions button /*toolbarbutton*/,
-        .tab-group-delete button /*toolbarbutton*/ {
-          appearance: none;
-          background: transparent;
-          border: none;
-          color: inherit;
-          display: block;
-
-          margin: 0;
         }
 
         /* cancel /resources/base.css */
@@ -404,10 +424,12 @@ export default class TabGroupMenuPanel {
     `;
   }
 
-  constructor(givenRoot) {
+  constructor(givenRoot, i18n) {
     try {
       this.destroy = this.#destroy.bind(this);
       this.onMessage = this.#onMessage.bind(this);
+
+      this.#i18n = i18n;
 
       this.#root = givenRoot || document.documentElement;
       this.#root.classList.add('tab-group-menu-root');
@@ -522,13 +544,14 @@ export default class TabGroupMenuPanel {
     window.removeEventListener('pagehide', this.destroy);
 
     this.#lastTimestampForGroup.clear();
-    this.#root = this.onMessage = this.destroy = null;
+    this.#root = this.onMessage = this.destroy = this.#i18n = null;
   }
 
   prepareUI() {
     if (this.#panel)
       return;
 
+    const i18n = this.#i18n;
     const range = document.createRange();
     range.selectNodeContents(this.#root);
     const panelFragment = range.createContextualFragment(`
@@ -537,44 +560,84 @@ export default class TabGroupMenuPanel {
           <div class="tab-group-menu-panel-contents-inner-box">
             <div class="tab-group-default-header">
               <div class="panel-header">
-                <h1 class="tab-group-editor-title-create tab-group-create-mode-only"></h1>
-                <h1 class="tab-group-editor-title-edit tab-group-edit-mode-only"></h1>
+                <h1 class="tab-group-editor-title-create tab-group-create-mode-only"
+                   >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_title_create)}</h1>
+                <h1 class="tab-group-editor-title-edit tab-group-edit-mode-only"
+                   >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_title_edit)}</h1>
               </div>
             </div>
             <hr/>
             <div class="panel-body tab-group-editor-name">
               <label>
-                <span class="label-text"></span>
-                <input class="tab-group-menu-title-field" type="text"/>
+                <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_name_label)}</span>
+                <input class="tab-group-menu-title-field" type="text"
+                       placeholder=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_name_field_placeholder)}/>
               </label>
             </div>
             <div class="tab-group-main">
-              <div class="panel-body tab-group-editor-swatches" role="radiogroup">
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch blue"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch purple"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch cyan"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch orange"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch yellow"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch pink"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch green"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch gray"/><span class="label-text"></span></label>
-                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch red"/><span class="label-text"></span></label>
+              <div class="panel-body tab-group-editor-swatches" role="radiogroup"
+                   aria-label=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector_aria_label)}>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_blue_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch blue"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_blue)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_purple_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch purple"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_purple)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_cyan_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch cyan"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_cyan)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_orange_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch orange"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_orange)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_yellow_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch yellow"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_yellow)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_pink_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch pink"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_pink)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_green_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch green"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_green)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_gray_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch gray"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_gray)}</span>
+                </label>
+                <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_red_title)}>
+                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch red"/>
+                  <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_red)}</span>
+                </label>
               </div>
               <hr/>
               <div class="panel-body tab-group-edit-actions tab-group-edit-mode-only">
-                <button tabindex="0" class="tabGroupEditor_addNewTabInGroup subviewbutton"></button>
-                <button tabindex="0" class="tabGroupEditor_moveGroupToNewWindow subviewbutton"></button>
-                <button tabindex="0" class="tabGroupEditor_saveAndCloseGroup subviewbutton"></button>
-                <button tabindex="0" class="tabGroupEditor_ungroupTabs subviewbutton"></button>
+                <button tabindex="0" class="tabGroupEditor_addNewTabInGroup subviewbutton"
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_new_tab_label)}</button>
+                <button tabindex="0" class="tabGroupEditor_moveGroupToNewWindow subviewbutton"
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_new_window_label)}</button>
+                <button tabindex="0" class="tabGroupEditor_saveAndCloseGroup subviewbutton"
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_save_label)}</button>
+                <button tabindex="0" class="tabGroupEditor_ungroupTabs subviewbutton"
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_ungroup_label)}</button>
               </div>
               <hr class="tab-group-edit-mode-only"/>
               <div class="tab-group-edit-mode-only panel-body tab-group-delete">
-                <button tabindex="0" class="tabGroupEditor_deleteGroup subviewbutton"></button>
+                <button tabindex="0" class="tabGroupEditor_deleteGroup subviewbutton"
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_delete_label)}</button>
               </div>
-              <hr class="tab-group-edit-mode-only"/>
+              <!-hr class="tab-group-create-mode-only"/>
               <div class="moz-button-group tab-group-create-actions tab-group-create-mode-only">
-                <button class="primary tab-group-editor-button-create"></button>
-                <button class="primary tab-group-editor-button-cancel"></button>
+                <button class="primary tab-group-editor-button-done"
+                        accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_done_accesskey)}
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_done_label)}</button>
+                <button class="primary tab-group-editor-button-cancel"
+                        accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_cancel_accesskey)}
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_cancel_label)}</button>
               </div>
             </div>
           </div>
@@ -596,6 +659,13 @@ export default class TabGroupMenuPanel {
     this.#root.appendChild(panelFragment);
 
     this.#panel = this.#root.querySelector('.tab-group-menu-panel');
+  }
+  sanitizeForHTMLText(text) {
+    return (text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   updateUI({ groupId, groupTitle, groupColor, anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop } = {}) {

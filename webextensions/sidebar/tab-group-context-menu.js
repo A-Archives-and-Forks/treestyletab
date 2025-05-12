@@ -61,7 +61,43 @@ function log(...args) {
   internalLogger('sidebar/tab-group-context-menu', ...args);
 }
 
-const mTabGroupMenuPanel = new TabGroupMenuPanel(document.querySelector('#tabGroupContextMenuRoot'));
+const TAB_GROUP_MENU_LABELS = Object.fromEntries(`
+  tabGroupMenu_tab-group-editor-title-create
+  tabGroupMenu_tab-group-editor-title-edit
+  tabGroupMenu_tab-group-editor-name-label
+  tabGroupMenu_tab-group-editor-name-field_placeholder
+  tabGroupMenu_tab-group-editor-cancel_label
+  tabGroupMenu_tab-group-editor-cancel_accesskey
+  tabGroupMenu_tab-group-editor-color-selector_aria-label
+  tabGroupMenu_tab-group-editor-color-selector2-blue
+  tabGroupMenu_tab-group-editor-color-selector2-blue_title
+  tabGroupMenu_tab-group-editor-color-selector2-purple
+  tabGroupMenu_tab-group-editor-color-selector2-purple_title
+  tabGroupMenu_tab-group-editor-color-selector2-cyan
+  tabGroupMenu_tab-group-editor-color-selector2-cyan_title
+  tabGroupMenu_tab-group-editor-color-selector2-orange
+  tabGroupMenu_tab-group-editor-color-selector2-orange_title
+  tabGroupMenu_tab-group-editor-color-selector2-yellow
+  tabGroupMenu_tab-group-editor-color-selector2-yellow_title
+  tabGroupMenu_tab-group-editor-color-selector2-pink
+  tabGroupMenu_tab-group-editor-color-selector2-pink_title
+  tabGroupMenu_tab-group-editor-color-selector2-green
+  tabGroupMenu_tab-group-editor-color-selector2-green_title
+  tabGroupMenu_tab-group-editor-color-selector2-gray
+  tabGroupMenu_tab-group-editor-color-selector2-gray_title
+  tabGroupMenu_tab-group-editor-color-selector2-red
+  tabGroupMenu_tab-group-editor-color-selector2-red_title
+  tabGroupMenu_tab-group-editor-action-new-tab_label
+  tabGroupMenu_tab-group-editor-action-new-window_label
+  tabGroupMenu_tab-group-editor-action-save_label
+  tabGroupMenu_tab-group-editor-action-ungroup_label
+  tabGroupMenu_tab-group-editor-action-delete_label
+  tabGroupMenu_tab-group-editor-done_label
+  tabGroupMenu_tab-group-editor-done_accesskey
+`.trim().split(/\s+/).map(key => [key.replace(/-/g, '_'), browser.i18n.getMessage(key)]));
+const TAB_GROUP_MENU_LABELS_CODE = JSON.stringify(TAB_GROUP_MENU_LABELS);
+
+const mTabGroupMenuPanel = new TabGroupMenuPanel(document.querySelector('#tabGroupContextMenuRoot'), TAB_GROUP_MENU_LABELS);
 
 async function prepareMenu(tabId) {
   const tab = Tab.get(tabId);
@@ -82,7 +118,7 @@ async function prepareMenu(tabId) {
 
       const root = document.createElement('div');
       appendClosedContents(root);
-      let tabGroupMenuPanel = new TabGroupMenuPanel(root);
+      let tabGroupMenuPanel = new TabGroupMenuPanel(root, ${TAB_GROUP_MENU_LABELS_CODE});
 
       const onMessage = (message, _sender) => {
         switch (message?.type) {
