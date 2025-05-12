@@ -365,7 +365,7 @@ export default class TabPreviewPanel {
           // "hide" for previously hovered tab.
           await new Promise(requestAnimationFrame);
           if (!this.#panel ||
-          (message.previewTabId &&
+              (message.previewTabId &&
            this.#panel.dataset.tabId != message.previewTabId)) {
             if (message?.logging)
               console.log(`hide tab preview(${message.previewTabId}): already hidden, nothing to do `, message.timestamp);
