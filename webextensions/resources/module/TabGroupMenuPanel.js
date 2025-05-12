@@ -392,7 +392,7 @@ export default class TabGroupMenuPanel {
            appearance: none;
            background: transparent;
            border: none;
-           border-radius: 0.2em;
+           border-radius: 0.3em;
            display: block;
            font: menu;
            margin: 0;
