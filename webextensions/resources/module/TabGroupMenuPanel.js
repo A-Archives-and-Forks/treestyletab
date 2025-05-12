@@ -420,6 +420,7 @@ export default class TabGroupMenuPanel {
            font: menu;
            margin: 0;
            padding: var(--space-small);
+           text-align: start;
            width: 100%;
 
            justify-content: flex-start;
