@@ -19,6 +19,7 @@ export default class TabPreviewPanel {
   #root;
   #windowId; // for SIDEBAR case
   #lastTimestamp = 0;
+  #lastTimestampForTab = new Map();
 
   // https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5
   BASE_PANEL_WIDTH  = 280;
@@ -342,7 +343,8 @@ export default class TabPreviewPanel {
               });
             }
           }
-          if (message.timestamp < this.#lastTimestamp) {
+          if (message.timestamp < this.#lastTimestamp ||
+              message.timestamp < (this.#lastTimestampForTab.get(message.previewTabId) || 0)) {
             if (message?.logging)
               console.log(`show tab preview(${message.previewTabId}): expired, give up to show/update preview `, message.timestamp);
             return true;
@@ -350,6 +352,7 @@ export default class TabPreviewPanel {
           if (message?.logging)
             console.log(`show tab preview(${message.previewTabId}): invoked, let's show/update preview `, message.timestamp);
           this.#lastTimestamp = message.timestamp;
+          this.#lastTimestampForTab.set(message.previewTabId, message.timestamp);
           this.prepareUI();
           this.updateUI(message);
           this.#panel.classList.add('open');
@@ -366,11 +369,16 @@ export default class TabPreviewPanel {
            this.#panel.dataset.tabId != message.previewTabId)) {
             if (message?.logging)
               console.log(`hide tab preview(${message.previewTabId}): already hidden, nothing to do `, message.timestamp);
-            if (!this.#panel && !message.previewTabId) // on initial case
+            if (!this.#panel && !message.previewTabId) { // on initial case
               this.#lastTimestamp = message.timestamp;
+            }
+            if (message.previewTabId) {
+              this.#lastTimestampForTab.set(message.previewTabId, message.timestamp);
+            }
             return;
           }
-          if (message.timestamp < this.#lastTimestamp) {
+          if (message.timestamp < this.#lastTimestamp ||
+              message.timestamp < (this.#lastTimestampForTab.get(message.previewTabId) || 0)) {
             if (message?.logging)
               console.log(`hide tab preview(${message.previewTabId}): expired, give up to hide preview `, message.timestamp);
             return true;
@@ -378,7 +386,9 @@ export default class TabPreviewPanel {
           if (message?.logging)
             console.log(`hide tab preview(${message.previewTabId}): invoked, let's hide preview `, message.timestamp);
           this.#lastTimestamp = message.timestamp;
+          this.#lastTimestampForTab.set(message.previewTabId, message.timestamp);
           this.#panel.classList.remove('open');
+          this.#panel.dataset.tabId = 0;
           return true;
         })();
 
@@ -403,6 +413,7 @@ export default class TabPreviewPanel {
     window.removeEventListener('unload', this.destroy);
     window.removeEventListener('pagehide', this.destroy);
 
+    this.#lastTimestampForTab = clear();
     this.#root = this.onMessage = this.destroy = null;
   }
 
