@@ -378,7 +378,8 @@ export default class TabPreviewPanel {
             return;
           }
           if (message.timestamp < this.#lastTimestamp ||
-              message.timestamp < (this.#lastTimestampForTab.get(message.previewTabId) || 0)) {
+              (message.previewTabId &&
+               message.timestamp < (this.#lastTimestampForTab.get(message.previewTabId) || 0))) {
             if (message?.logging)
               console.log(`hide tab preview(${message.previewTabId}): expired, give up to hide preview `, message.timestamp);
             return true;
@@ -386,9 +387,10 @@ export default class TabPreviewPanel {
           if (message?.logging)
             console.log(`hide tab preview(${message.previewTabId}): invoked, let's hide preview `, message.timestamp);
           this.#lastTimestamp = message.timestamp;
-          this.#lastTimestampForTab.set(message.previewTabId, message.timestamp);
+          if (message.previewTabId) {
+            this.#lastTimestampForTab.set(message.previewTabId, message.timestamp);
+          }
           this.#panel.classList.remove('open');
-          this.#panel.dataset.tabId = 0;
           return true;
         })();
 
