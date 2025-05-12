@@ -734,8 +734,8 @@ async function onContextMenu(event) {
   if (nativeTabGroup &&
       !modifierKeyPressed) {
     log('onContextMenu: on native tab group');
-    event.stopPropagation();
-    event.preventDefault();
+    //event.stopPropagation();
+    //event.preventDefault();
     TabGroupContextMenu.show(nativeTabGroup);
     return;
   }
