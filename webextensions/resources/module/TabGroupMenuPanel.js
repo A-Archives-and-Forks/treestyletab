@@ -151,14 +151,10 @@ export default class TabGroupMenuPanel {
         opacity: 1;
       }
 
-      .tab-group-menu-panel-contents,
-      .tab-group-menu-panel-contents-inner-box {
+      .tab-group-menu-panel-contents/*,
+      .tab-group-menu-panel-contents-inner-box*/ {
         max-width: calc(var(--panel-width) - (2px / var(--tab-group-menu-panel-scale)));
         min-width: calc(var(--panel-width) - (2px / var(--tab-group-menu-panel-scale)));
-      }
-      .tab-group-menu-panel.extended .tab-group-menu-panel-contents,
-      .tab-group-menu-panel.extended .tab-group-menu-panel-contents-inner-box {
-        max-width: calc(min(100%, calc(var(--panel-width) * 2)) - (2px / var(--tab-group-menu-panel-scale)));
       }
 
       .tab-group-menu-panel-contents {
@@ -168,6 +164,242 @@ export default class TabGroupMenuPanel {
       .tab-group-menu-panel.updating,
       .tab-group-menu-panel .updating {
         visibility: hidden;
+      }
+
+
+      /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/browser/themes/shared/tabbrowser/tabs.css#1145 */
+      .tab-group-menu-panel {
+        /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#266 */
+        /** Size **/
+        --size-item-small: 16px;
+        --size-item-medium: 28px;
+        --size-item-large: 32px;
+
+        /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#271 */
+        /** Space **/
+        --space-xxsmall: calc(0.5 * var(--space-xsmall)); /* 2px */
+        --space-xsmall: 0.267rem; /* 4px */
+        --space-small: calc(2 * var(--space-xsmall)); /* 8px */
+        --space-medium: calc(3 * var(--space-xsmall)); /* 12px */
+        --space-large: calc(4 * var(--space-xsmall)); /* 16px */
+        --space-xlarge: calc(6 * var(--space-xsmall)); /* 24px */
+        --space-xxlarge: calc(8 * var(--space-xsmall)); /* 32px */
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/browser/themes/shared/customizableui/panelUI-shared.css#20 */
+        --panel-separator-margin-vertical: 4px;
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#107 */
+        /** Color **/
+        --color-blue-20: oklch(83% 0.17 260);
+        --color-blue-70: oklch(48% 0.2 260);
+        --color-cyan-20: oklch(83% 0.11 205);
+        --color-cyan-70: oklch(48% 0.2 205);
+        --color-green-20: oklch(83% 0.14 145);
+        --color-green-70: oklch(48% 0.2 145);
+        --color-orange-20: oklch(86% 0.14 50);
+        --color-orange-70: oklch(48% 0.20 50);
+        --color-pink-20: oklch(83% 0.14 360);
+        --color-pink-70: oklch(48% 0.2 360);
+        --color-purple-20: oklch(83% 0.14 315);
+        --color-purple-70: oklch(48% 0.2 315);
+        --color-red-20: oklch(83% 0.14 15);
+        --color-red-70: oklch(48% 0.2 15);
+        --color-yellow-20: oklch(86% 0.14 90);
+        --color-yellow-70: oklch(51% 0.23 90);
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-platform.css#31 */
+        --color-accent-primary: AccentColor;
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#226 */
+        /** Focus Outline **/
+        --focus-outline: var(--focus-outline-width) solid var(--focus-outline-color);
+        --focus-outline-color: var(--color-accent-primary);
+        --focus-outline-inset: calc(-1 * var(--focus-outline-width));
+        --focus-outline-offset: 2px;
+        --focus-outline-width: 2px;
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#20 */
+        /** Border **/
+        --border-color-card: color-mix(in srgb, currentColor 10%, transparent);
+        --border-color-interactive-hover: var(--border-color-interactive);
+        --border-color-interactive-active: var(--border-color-interactive);
+        --border-color-interactive-disabled: var(--border-color-interactive);
+        --border-radius-circle: 9999px;
+        --border-radius-small: 4px;
+        --border-radius-medium: 8px;
+        --border-width: 1px;
+
+        /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/browser/themes/shared/tabbrowser/tabs.css#79 */
+        --tab-group-color-blue: var(--color-blue-70);
+        --tab-group-color-blue-invert: var(--color-blue-20);
+        --tab-group-color-purple: var(--color-purple-70);
+        --tab-group-color-purple-invert: var(--color-purple-20);
+        --tab-group-color-cyan: var(--color-cyan-70);
+        --tab-group-color-cyan-invert: var(--color-cyan-20);
+        --tab-group-color-orange: var(--color-orange-70);
+        --tab-group-color-orange-invert: var(--color-orange-20);
+        --tab-group-color-yellow: var(--color-yellow-70);
+        --tab-group-color-yellow-invert: var(--color-yellow-20);
+        --tab-group-color-pink: var(--color-pink-70);
+        --tab-group-color-pink-invert: var(--color-pink-20);
+        --tab-group-color-green: var(--color-green-70);
+        --tab-group-color-green-invert: var(--color-green-20);
+        --tab-group-color-red: var(--color-red-70);
+        --tab-group-color-red-invert: var(--color-red-20);
+        --tab-group-color-gray: #5E6A77;
+        --tab-group-color-gray-invert: #99A6B4;
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#286 */
+        --text-color-error: light-dark(var(--color-red-70), var(--color-red-20));
+
+        .blue {
+          --tabgroup-swatch-color: var(--tab-group-color-blue);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-blue-invert);
+        }
+        .purple {
+          --tabgroup-swatch-color: var(--tab-group-color-purple);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-purple-invert);
+        }
+        .cyan {
+          --tabgroup-swatch-color: var(--tab-group-color-cyan);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-cyan-invert);
+        }
+        .orange {
+          --tabgroup-swatch-color: var(--tab-group-color-orange);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-orange-invert);
+        }
+        .yellow {
+          --tabgroup-swatch-color: var(--tab-group-color-yellow);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-yellow-invert);
+        }
+        .pink {
+          --tabgroup-swatch-color: var(--tab-group-color-pink);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-pink-invert);
+        }
+        .green {
+          --tabgroup-swatch-color: var(--tab-group-color-green);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-green-invert);
+        }
+        .red {
+          --tabgroup-swatch-color: var(--tab-group-color-red);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-red-invert);
+        }
+        .gray {
+          --tabgroup-swatch-color: var(--tab-group-color-gray);
+          --tabgroup-swatch-color-invert: var(--tab-group-color-gray-invert);
+        }
+
+        /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/popup.css#63 */
+        .tab-group-menu-panel-contents-inner-box {
+          padding: var(--panel-padding);
+        }
+
+        --panel-width: 22em;
+        --panel-padding: var(--space-large);
+        --panel-separator-margin: var(--panel-separator-margin-vertical) 0;
+        font: menu;
+
+        .panel-header {
+          min-height: auto;
+          > h1 {
+            margin-top: 0;
+          }
+        }
+
+        hr /*toolbarseparator*/ {
+          margin-block: var(--space-medium);
+          border: 1px solid;
+          border-width: 1px 0 0 0;
+          opacity: 0.5;
+        }
+
+        .panel-body {
+          padding-block: var(--space-medium);
+        }
+
+        &.tab-group-editor-mode-create .tab-group-edit-mode-only,
+        &:not(.tab-group-editor-mode-create) .tab-group-create-mode-only {
+          display: none;
+        }
+
+        .tab-group-editor-name > label {
+          display: flex;
+          flex-direction: column;
+          > label {
+            margin-inline: 0;
+            margin-bottom: var(--space-small);
+          }
+          > input[type="text"] {
+            padding: var(/*--space-medium*/--space-xsmall);
+          }
+        }
+
+        .tab-group-editor-swatches {
+          display: flex;
+          flex-flow: row /*nowrap*/wrap;
+          justify-content: /*space-between*/flex-start;
+        }
+
+        .tab-group-editor-swatch {
+          appearance: none;
+          box-sizing: content-box;
+
+          font-size: 0;
+          width: 16px;
+          height: 16px;
+          padding: var(--focus-outline-offset);
+          border: var(--focus-outline-width) solid transparent;
+          border-radius: var(--border-radius-medium);
+          background-clip: content-box;
+          background-color: light-dark(var(--tabgroup-swatch-color), var(--tabgroup-swatch-color-invert));
+
+          &:checked {
+            border-color: var(--focus-outline-color);
+          }
+
+          &:disabled {
+            opacity: 0.5;
+          }
+
+          &:focus-visible {
+            outline: 1px solid var(--focus-outline-color);
+            outline-offset: 1px;
+          }
+        }
+
+        .tab-group-edit-actions,
+        .tab-group-delete {
+          padding-block: 0;
+          > toolbarbutton {
+           justify-content: flex-start;
+          }
+        }
+
+        .tab-group-edit-actions button /*toolbarbutton*/,
+        .tab-group-delete button /*toolbarbutton*/ {
+          appearance: none;
+          background: transparent;
+          border: none;
+          color: inherit;
+          display: block;
+
+          margin: 0;
+        }
+
+        /* cancel /resources/base.css */
+        input:focus {
+          box-shadow: none;
+        }
+      }
+
+      .tab-group-editor-panel.tab-group-editor-panel-expanded {
+        --panel-width: 25em;
+      }
+
+      @media not (prefers-contrast) {
+        .tabGroupEditor_deleteGroup {
+          color: var(--text-color-error);
+        }
       }
     `;
   }
@@ -303,34 +535,47 @@ export default class TabGroupMenuPanel {
       <div class="tab-group-menu-panel">
         <div class="tab-group-menu-panel-contents">
           <div class="tab-group-menu-panel-contents-inner-box">
-            <div class="tab-group-menu-caption"></div>
-            <label>
-              <span class="tab-group-menu-title-field-label"></span>
-              <input class="tab-group-menu-title-field" type="text"/>
-            </label>
-            <div class="tab-group-menu-color-radiogroup">
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color blue"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color purple"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color cyan"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color orange"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color yellow"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color pink"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color green"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color gray"/>
-              <input type="radio" name="tab-group-menu-color" class="tab-group-menu-color red"/>
+            <div class="tab-group-default-header">
+              <div class="panel-header">
+                <h1 class="tab-group-editor-title-create tab-group-create-mode-only"></h1>
+                <h1 class="tab-group-editor-title-edit tab-group-edit-mode-only"></h1>
+              </div>
             </div>
-            <div class="tab-group-menu-commands">
-              <button class="menu-command open-new-tab"></button>
-              <button class="menu-command move-group-to-new-window"></button>
-              <!--button class="menu-command close-group"></button-->
-              <button class="menu-command ungroup"></button>
+            <hr/>
+            <div class="panel-body tab-group-editor-name">
+              <label>
+                <span class="label-text"></span>
+                <input class="tab-group-menu-title-field" type="text"/>
+              </label>
             </div>
-            <div class="tab-group-menu-delete-command">
-              <button class="menu-command delete"></button>
-            </div>
-            <div class="tab-group-menu-buttons">
-              <button class="tab-group-menu-button accept"></button>
-              <button class="tab-group-menu-button cancel"></button>
+            <div class="tab-group-main">
+              <div class="panel-body tab-group-editor-swatches" role="radiogroup">
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch blue"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch purple"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch cyan"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch orange"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch yellow"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch pink"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch green"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch gray"/><span class="label-text"></span></label>
+                <label><input type="radio" name="tab-group-color" class="tab-group-editor-swatch red"/><span class="label-text"></span></label>
+              </div>
+              <hr/>
+              <div class="panel-body tab-group-edit-actions tab-group-edit-mode-only">
+                <button tabindex="0" class="tabGroupEditor_addNewTabInGroup subviewbutton"></button>
+                <button tabindex="0" class="tabGroupEditor_moveGroupToNewWindow subviewbutton"></button>
+                <button tabindex="0" class="tabGroupEditor_saveAndCloseGroup subviewbutton"></button>
+                <button tabindex="0" class="tabGroupEditor_ungroupTabs subviewbutton"></button>
+              </div>
+              <hr class="tab-group-edit-mode-only"/>
+              <div class="tab-group-edit-mode-only panel-body tab-group-delete">
+                <button tabindex="0" class="tabGroupEditor_deleteGroup subviewbutton"></button>
+              </div>
+              <hr class="tab-group-edit-mode-only"/>
+              <div class="moz-button-group tab-group-create-actions tab-group-create-mode-only">
+                <button class="primary tab-group-editor-button-create"></button>
+                <button class="primary tab-group-editor-button-cancel"></button>
+              </div>
             </div>
           </div>
         </div>
@@ -340,7 +585,7 @@ export default class TabGroupMenuPanel {
     const titleField = panelFragment.querySelector('.tab-group-menu-title-field');
     titleField.addEventListener('input', event => {
     });
-    const colorRadioGroup = panelFragment.querySelector('.tab-group-menu-color-radiogroup');
+    const colorRadioGroup = panelFragment.querySelector('.tab-group-editor-swatches');
     colorRadioGroup.addEventListener('change', event => {
     });
     const panel = panelFragment.querySelector('.tab-group-menu-panel');
