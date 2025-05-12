@@ -16,6 +16,7 @@ import {
 import * as ApiTabs from '/common/api-tabs.js';
 import * as Constants from '/common/constants.js';
 import * as ContextualIdentities from '/common/contextual-identities.js';
+import * as SidebarConnection from '/common/sidebar-connection.js';
 import * as Sync from '/common/sync.js';
 import * as TabsInternalOperation from '/common/tabs-internal-operation.js';
 import * as TabsStore from '/common/tabs-store.js';
@@ -1282,7 +1283,16 @@ async function onClick(info, contextTab) {
 
     case 'context_newGroup':
     case 'context_addToGroup_newGroup':
-      Commands.addTabsToNativeTabGroup(multiselectedTabs || [contextTab]);
+      Commands.addTabsToNativeTabGroup(multiselectedTabs || [contextTab]).then(({ groupId, created }) => {
+        if (!created) {
+          return;
+        }
+        SidebarConnection.sendMessage({
+          type: Constants.kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL,
+          windowId,
+          groupId,
+        });
+      });
       break;
 
     case 'context_removeFromGroup':

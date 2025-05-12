@@ -101,6 +101,7 @@ export const kCOMMAND_GET_BELOW_TAB                 = 'treestyletab:get-below-ta
 export const kCOMMAND_GET_LEFT_TAB                  = 'treestyletab:get-left-tab';
 export const kCOMMAND_GET_RIGHT_TAB                 = 'treestyletab:get-right-tab';
 export const kCOMMAND_GET_BOUNDING_CLIENT_RECT      = 'treestyletab:get-bounding-client-rect';
+export const kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL = 'treestyletab:show-native-tab-group-menu-panel';
 
 export const kCOMMAND_ACTIVATE_TAB            = 'treestyletab:activate-tab';
 export const kCOMMAND_HIGHLIGHT_TABS          = 'treestyletab:highlight-tabs';

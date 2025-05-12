@@ -1083,8 +1083,11 @@ export async function reopenInContainer(sourceTabOrTabs, cookieStoreId, options 
 }
 
 export async function addTabsToNativeTabGroup(tabs, groupId) {
+  const initialGroupId = groupId;
   groupId = await addTabsToNativeTabGroupInternal(tabs, groupId);
   await Tree.maintainTreeForNativeTabGroup({ windowId: tabs[0].windowId, groupId });
+  const created = groupId != initialGroupId;
+  return { groupId, created };
 }
 async function addTabsToNativeTabGroupInternal(tabs, groupId) {
   const tabsToGrouped = tabs.filter(tab => tab.groupId != groupId);

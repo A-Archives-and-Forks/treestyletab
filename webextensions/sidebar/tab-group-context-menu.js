@@ -361,7 +361,7 @@ async function sendInSidebarTabGroupMenuMessage(message) {
   return true;
 }
 
-export async function show(group) {
+export async function show(group, creating = false) {
   if (!group?.id) {
     return;
   }
@@ -402,6 +402,7 @@ export async function show(group) {
     groupId:    group.id,
     groupTitle: group.title,
     groupColor: group.color,
+    creating: !!creating,
     anchorTabRect,
     /* These information is used to calculate offset of the sidebar header */
     offsetTop: window.mozInnerScreenY - window.screenY,

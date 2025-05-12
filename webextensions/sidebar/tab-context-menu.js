@@ -780,5 +780,17 @@ BackgroundConnection.onMessage.addListener(async message => {
       close();
       mNewTabButtonUI.close();
       break;
+
+    case Constants.kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL: {
+      close();
+      mNewTabButtonUI.close();
+      const group = TabsStore.windows.get(message.windowId).tabGroups.get(message.groupId);
+      Promise.race([
+        group.$TST?.promisedElement,
+        wait(250),
+      ]).then(() => {
+        TabGroupContextMenu.show(group, true);
+      });
+    }; break;
   }
 });

@@ -671,17 +671,18 @@ export default class TabGroupMenuPanel {
       .replace(/"/g, '&quot;');
   }
 
-  updateUI({ groupId, groupTitle, groupColor, anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop } = {}) {
+  updateUI({ groupId, groupTitle, groupColor, creating, anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop } = {}) {
     if (!this.#panel)
       return;
 
     const startAt = this.lastStartedAt = Date.now();
 
     if (logging)
-      console.log('updateUI ', { panel: this.#panel, groupId, groupTitle, groupColor, anchorTabRect, offsetTop, align, rtl, scale, widthInOuterWorld, fixedOffsetTop });
+      console.log('updateUI ', { panel: this.#panel, groupId, groupTitle, groupColor, creating, anchorTabRect, offsetTop, align, rtl, scale, widthInOuterWorld, fixedOffsetTop });
 
     this.#panel.classList.add('updating');
     this.#panel.classList.toggle('animation', animation);
+    this.#panel.classList.toggle('tab-group-editor-mode-create', creating);
 
     if (backgroundColor) {
       this.#panel.style.setProperty('--panel-background', backgroundColor);
