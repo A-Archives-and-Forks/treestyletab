@@ -397,6 +397,7 @@ export default class TabGroupMenuPanel {
            font: menu;
            margin: 0;
            padding: var(--space-small);
+           width: 100%;
 
            justify-content: flex-start;
 
@@ -418,7 +419,9 @@ export default class TabGroupMenuPanel {
 
       @media not (prefers-contrast) {
         .tabGroupEditor_deleteGroup {
-          color: var(--text-color-error);
+          .label-text {
+            color: var(--text-color-error);
+          }
         }
       }
     `;
@@ -628,7 +631,7 @@ export default class TabGroupMenuPanel {
               <hr class="tab-group-edit-mode-only"/>
               <div class="tab-group-edit-mode-only panel-body tab-group-delete">
                 <button tabindex="0" class="tabGroupEditor_deleteGroup subviewbutton"
-                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_delete_label)}</button>
+                       ><span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_delete_label)}</span></button>
               </div>
               <!-hr class="tab-group-create-mode-only"/>
               <div class="moz-button-group tab-group-create-actions tab-group-create-mode-only">
