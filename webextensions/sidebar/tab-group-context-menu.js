@@ -55,18 +55,10 @@ import * as TabsStore from '/common/tabs-store.js';
 import { Tab } from '/common/TreeItem.js';
 
 import TabGroupMenuPanel from '/resources/module/TabGroupMenuPanel.js'; // the IMPL
+import * as InContentClosedContainer from '/resources/module/in-content-closed-container.js';
 
 function log(...args) {
   internalLogger('sidebar/tab-group-context-menu', ...args);
-}
-
-// Generates a custom element name at random. This mainly aims to avoid
-// conflicting of custom element names defined by webpage scripts.
-// The generated name is user-unfriendly, this aims to guard your privacy.
-function generateOneTimeCustomElementName() {
-  const alphabets = 'abcdefghijklmnopqrstuvwxyz';
-  const prefix = alphabets[Math.floor(Math.random() * alphabets.length)];
-  return prefix + '-' + Date.now() + '-' + Math.round(Math.random() * 65000);
 }
 
 const mTabGroupMenuPanel = new TabGroupMenuPanel(document.querySelector('#tabGroupContextMenuRoot'));
@@ -86,45 +78,10 @@ async function prepareMenu(tabId) {
 
       const logging = ${!!logging};
 
-      // We cannot use multiple custom element types with contents scripts -
-      // otherwise second custom type must fail its construction ("super()" in
-      // its constructor raises unexpected error), so we just use only one
-      // custom element type and recycle it for multiple purposes.
-      window.closedContainerType = window.closedContainerType || '${generateOneTimeCustomElementName()}';
-
-      if (window.lastClosedContainer) {
-        window.clearClosedContents();
-      }
-
-      // We cannot undefine custom element types, so we define it just one time.
-      if (!window.customElements.get(window.closedContainerType)) {
-        // We use a wrapper custom element to enclose all preview elements
-        // which can contain privacy information.
-        // It should guard them from accesses by webpage scripts.
-        class ClosedContainer extends HTMLElement {
-          constructor() {
-            super();
-            const shadow = this.attachShadow({ mode: 'closed' });
-            window.appendClosedContents = element => shadow.appendChild(element);
-          }
-        }
-        window.customElements.define(window.closedContainerType, ClosedContainer);
-        window.closedContentsDestructors = new Set();
-        window.clearClosedContents = () => {
-          for (const destructor of window.closedContentsDestructors) {
-            destructor();
-          }
-          window.closedContentsDestructors.clear();
-          window.lastClosedContainer.parentNode.removeChild(window.lastClosedContainer);
-          window.lastClosedContainer = null;
-        };
-      }
-
-      window.lastClosedContainer = document.createElement(window.closedContainerType);
-      document.documentElement.appendChild(window.lastClosedContainer);
+      ${InContentClosedContainer.getProviderCode()};
 
       const root = document.createElement('div');
-      window.appendClosedContents(root);
+      appendClosedContents(root);
       let tabGroupMenuPanel = new TabGroupMenuPanel(root);
 
       const onMessage = (message, _sender) => {
@@ -135,7 +92,7 @@ async function prepareMenu(tabId) {
           case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
             if (logging)
               console.log('tab detached from window, destroy tab group menu container');
-            destroy();
+            destroyClosedContents(destroy);
             break;
         }
       };
@@ -151,7 +108,7 @@ async function prepareMenu(tabId) {
           type: 'treestyletab:tab-group-menu:hide',
           timestamp: Date.now(),
         });
-        destroy();
+        destroyClosedContents(destroy);
       };
       document.documentElement.addEventListener('mousedown', onMouseDown, { captuer: true });
 
@@ -163,11 +120,10 @@ async function prepareMenu(tabId) {
         browser.runtime.onMessage.removeListener(onMessage);
         window.removeEventListener('unload', destroy);
         window.removeEventListener('pagehide', destroy);
-        window.closedContentsDestructors.delete(destroy);
       };
       window.addEventListener('unload', destroy, { once: true });
       window.addEventListener('pagehide', destroy, { once: true });
-      window.closedContentsDestructors.add(destroy);
+      closedContentsDestructors.add(destroy);
     })()`,
   });
 }
