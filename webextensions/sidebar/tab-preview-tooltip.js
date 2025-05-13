@@ -400,7 +400,6 @@ async function onTabSubstanceEnter(event) {
     return;
   }
 
-console.log('event.target.tab ', event.target.tab);
   if (!event.target.tab ||
       document.documentElement.classList.contains(Constants.kTABBAR_STATE_TAB_DRAGGING)) {
     return;

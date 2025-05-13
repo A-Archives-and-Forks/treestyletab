@@ -219,7 +219,7 @@ let mLastWarmUpTab = -1;
 function onMouseOver(event) {
   const tab = EventUtils.getTreeItemFromEvent(event);
 
-  if (tab &&
+  if (tab?.$TST.tab &&
       mLastWarmUpTab != tab.id &&
       typeof browser.tabs.warmup == 'function') {
     browser.tabs.warmup(tab.id);
