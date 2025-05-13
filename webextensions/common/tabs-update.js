@@ -268,7 +268,7 @@ export function updateTab(tab, newState = {}, options = {}) {
   if (options.forceApply ||
       'mutedInfo' in newState) {
     soundStateChanged = true;
-    const muted = newState.mutedInfo && newState.mutedInfo.muted;
+    const muted = newState.mutedInfo?.muted;
     tab.$TST.toggleState(Constants.kTAB_STATE_MUTED, muted, newState.audible);
     Tab.onMutedStateChanged.dispatch(tab, muted);
   }
@@ -294,9 +294,9 @@ export function updateTab(tab, newState = {}, options = {}) {
   if (options.forceApply ||
       'sharingState' in newState) {
     sharingStateChanged = true;
-    const sharingCamera     = newState.sharingState && newState.sharingState.camera;
-    const sharingMicrophone = newState.sharingState && newState.sharingState.microphone;
-    const sharingScreen     = newState.sharingState && !!newState.sharingState.screen;
+    const sharingCamera     = !!newState.sharingState?.camera;
+    const sharingMicrophone = !!newState.sharingState?.microphone;
+    const sharingScreen     = !!newState.sharingState?.screen;
     tab.$TST.toggleState(Constants.kTAB_STATE_SHARING_CAMERA,     sharingCamera);
     tab.$TST.toggleState(Constants.kTAB_STATE_SHARING_MICROPHONE, sharingMicrophone);
     tab.$TST.toggleState(Constants.kTAB_STATE_SHARING_SCREEN,     sharingScreen);
@@ -377,7 +377,7 @@ export function updateTab(tab, newState = {}, options = {}) {
   update.sharingStateChanged = update.sharingStateChanged || sharingStateChanged;
   update.attributes.updated = {
     ...update.attributes.updated,
-    ...(newState && newState.$TST && newState.$TST.sanitized || newState),
+    ...(newState?.$TST?.sanitized || newState),
   };
   flushBufferedUpdates();
 

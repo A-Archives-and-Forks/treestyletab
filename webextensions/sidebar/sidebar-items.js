@@ -75,8 +75,8 @@ export function getItemFromDOMNode(node, options = {}) {
     return null;
   if (!(node instanceof Element))
     node = node.parentNode;
-  const itemSubstance = node && node.closest(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
-  const item = itemSubstance && itemSubstance.closest(kTREE_ITEM_ELEMENT_NAME);
+  const itemSubstance = node?.closest(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
+  const item = itemSubstance?.closest(kTREE_ITEM_ELEMENT_NAME);
   if (options.force) {
     return item?.apiRaw;
   }
@@ -269,13 +269,13 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
 
   let nextElement = insertBefore?.nodeType == Node.ELEMENT_NODE ?
     insertBefore :
-    (insertBefore && insertBefore.$TST.element);
+    (insertBefore?.$TST.element);
   if (nextElement === undefined &&
       (containerElement == win.containerElement ||
        containerElement == win.pinnedContainerElement)) {
     const nextTab = item.$TST.nearestSameTypeRenderedTab;
-    log(`render item element for ${item.id} (pinned=${item.pinned}) before ${nextTab && nextTab.id}, item, nextTab = `, item, nextTab);
-    nextElement = nextTab && nextTab.$TST.element.parentNode == containerElement ?
+    log(`render item element for ${item.id} (pinned=${item.pinned}) before ${nextTab?.id}, item, nextTab = `, item, nextTab);
+    nextElement = nextTab?.$TST.element.parentNode == containerElement ?
       nextTab.$TST.element :
       null;
   }

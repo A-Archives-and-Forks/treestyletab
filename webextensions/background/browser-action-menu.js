@@ -2324,7 +2324,7 @@ function createItem(id, item, parent) {
 
   const params = {
     id,
-    title:    item.title && item.title.replace(/^:|:$/g, ''),
+    title:    item.title?.replace(/^:|:$/g, ''),
     type:     item.type || 'normal',
     contexts: [MENU_CONTEXT],
     parentId

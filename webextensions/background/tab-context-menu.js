@@ -780,28 +780,28 @@ async function onShown(info, contextTab) {
   if (!mInitialized)
     return;
 
-  const contextTabId = contextTab && contextTab.id;
+  const contextTabId = contextTab?.id;
   mLastContextTabId = contextTabId;
   try {
-    contextTab = contextTab && Tab.get(contextTabId);
+    contextTab = Tab.get(contextTabId);
 
     const windowId              = contextTab ? contextTab.windowId : (await browser.windows.getLastFocused({}).catch(ApiTabs.createErrorHandler())).id;
     if (mLastContextTabId != contextTabId)
       return; // Skip further operations if the menu was already reopened on a different context tab.
-    const previousTab           = contextTab && contextTab.$TST.previousTab;
-    const previousSiblingTab    = contextTab && contextTab.$TST.previousSiblingTab;
-    const nextTab               = contextTab && contextTab.$TST.nextTab;
-    const nextSiblingTab        = contextTab && contextTab.$TST.nextSiblingTab;
+    const previousTab           = contextTab?.$TST.previousTab;
+    const previousSiblingTab    = contextTab?.$TST.previousSiblingTab;
+    const nextTab               = contextTab?.$TST.nextTab;
+    const nextSiblingTab        = contextTab?.$TST.nextSiblingTab;
     const hasDuplicatedTabs     = Tab.hasDuplicatedTabs(windowId);
     const hasMultipleTabs       = Tab.hasMultipleTabs(windowId);
     const hasMultipleNormalTabs = Tab.hasMultipleTabs(windowId, { normal: true });
-    const multiselected         = contextTab && contextTab.$TST.multiselected;
+    const multiselected         = contextTab?.$TST.multiselected;
     const contextTabs           = multiselected ?
       Tab.getSelectedTabs(windowId) :
       contextTab ?
         [contextTab] :
         [];
-    const hasChild              = contextTab && contextTabs.some(tab => tab.$TST.hasChild);
+    const hasChild              = contextTab?.some(tab => tab.$TST.hasChild);
     const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
     const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
     const hasChoosableNativeTabGroup = contextTab && getEffectiveTabGroups(windowId).filter(group => group.id != contextTab.groupId).length > 0;
@@ -899,11 +899,11 @@ async function onShown(info, contextTab) {
       hasUnmutedDescendant,
     }) && modifiedItemsCount++;
     updateItem('context_pinTab', {
-      visible: emulate && !!contextTab && !contextTab.pinned,
+      visible: emulate && !!contextTab?.pinned,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_unpinTab', {
-      visible: emulate && !!contextTab && contextTab.pinned,
+      visible: emulate && !!contextTab?.pinned,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_toggleSticky', {
@@ -1232,8 +1232,8 @@ function onHidden() {
   if (!mInitialized)
     return;
 
-  const owner = mOverriddenContext && mOverriddenContext.owner;
-  const windowId = mOverriddenContext && mOverriddenContext.windowId;
+  const owner = mOverriddenContext?.owner;
+  const windowId = mOverriddenContext?.windowId;
   if (mLastOverriddenContextOwner &&
       owner == mLastOverriddenContextOwner) {
     mOverriddenContext = null;
@@ -1256,9 +1256,9 @@ async function onClick(info, contextTab) {
   if (!mInitialized)
     return;
 
-  contextTab = contextTab && Tab.get(contextTab.id);
+  contextTab = Tab.get(contextTab?.id);
   const win       = await browser.windows.getLastFocused({ populate: true }).catch(ApiTabs.createErrorHandler());
-  const windowId  = contextTab && contextTab.windowId || win.id;
+  const windowId  = contextTab?.windowId || win.id;
   const activeTab = TabsStore.activeTabInWindow.get(windowId);
 
   let multiselectedTabs = Tab.getSelectedTabs(windowId);
@@ -1739,7 +1739,7 @@ export function onMessageExternal(message, sender) {
       }
       if (shouldAdd) {
         items.push(params);
-        if (parent && params.id) {
+        if (parent?.id) {
           parent.children = parent.children || [];
           parent.children.push(params.id);
         }
@@ -1832,7 +1832,7 @@ export function onMessageExternal(message, sender) {
       const parent = item.parentId && items.filter(item => item.id == item.parentId)[0];
       items = items.filter(item => item.id != id);
       mExtraItems.set(sender.id, items);
-      if (parent && parent.children)
+      if (parent?.children)
         parent.children = parent.children.filter(childId => childId != id);
       if (item.children) {
         for (const childId of item.children) {

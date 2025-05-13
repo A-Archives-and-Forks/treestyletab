@@ -912,7 +912,7 @@ async function onExtraContentsFocusEvent(event) {
 
   let relatedTarget = null;
   const relatedTargetNode    = event.relatedTarget && EventUtils.getElementTarget(event.relatedTarget);
-  const relatedExtraContents = relatedTargetNode && relatedTargetNode.closest(`.extra-item`)
+  const relatedExtraContents = relatedTargetNode?.closest(`.extra-item`)
   if (relatedExtraContents &&
       extraContents.dataset.owner == relatedExtraContents.dataset.owner)
     relatedTarget = relatedTargetNode.outerHTML;
@@ -944,7 +944,7 @@ function getFieldValues(event) {
 export function getOriginalExtraContentsTarget(event) {
   try {
     const target        = EventUtils.getElementOriginalTarget(event);
-    const extraContents = target && target.closest(`.extra-item`);
+    const extraContents = target?.closest(`.extra-item`);
     if (extraContents) {
       const targetPart = target.closest(`[part]`)
       return {
@@ -1012,7 +1012,7 @@ export async function tryMouseOperationAllowedWithExtraContents(eventType, rawEv
       $extraContentsInfo: null,
     };
     const options = {
-      except: extraContentsInfo && extraContentsInfo.owners,
+      except: extraContentsInfo?.owners,
     };
     if (mousedown.tab) {
       eventInfo.tab = mousedown.tab;

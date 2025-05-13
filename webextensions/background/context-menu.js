@@ -188,8 +188,8 @@ for (const id of Object.keys(mTabItemsById)) {
   item.enabled = true;
   // Access key is not supported by WE API.
   // See also: https://bugzilla.mozilla.org/show_bug.cgi?id=1320462
-  item.titleWithoutAccesskey = item.title && item.title.replace(/\(&[a-z]\)|&([a-z])/i, '$1');
-  item.titleMultiselectedWithoutAccesskey = item.titleMultiselected && item.titleMultiselected.replace(/\(&[a-z]\)|&([a-z])/i, '$1');
+  item.titleWithoutAccesskey = item.title?.replace(/\(&[a-z]\)|&([a-z])/i, '$1');
+  item.titleMultiselectedWithoutAccesskey = item.titleMultiselected?.replace(/\(&[a-z]\)|&([a-z])/i, '$1');
   item.type = item.type || 'normal';
   item.contexts = ['tab'];
   item.lastVisible = item.visible = false;
@@ -410,7 +410,7 @@ function updateItemsVisibility(items, { forceVisible = null, multiselected = fal
       updated = true;
     }
   }
-  if (lastSeparator && lastSeparator.lastVisible) {
+  if (lastSeparator?.lastVisible) {
     updateItem(lastSeparator.id, { visible: false });
     lastSeparator.lastVisible = false;
     updated = true;
@@ -605,11 +605,11 @@ browser.menus.onShown.addListener(onShown);
 
 let mLastContextTabId = null;
 async function onTabContextMenuShown(info, tab) {
-  const contextTabId = tab && tab.id;
+  const contextTabId = tab?.id;
   mLastContextTabId = contextTabId;
 
   tab = tab && Tab.get(contextTabId);
-  const multiselected = tab && tab.$TST.multiselected;
+  const multiselected = tab?.$TST.multiselected;
   const contextTabs      = multiselected ? Tab.getSelectedTabs(tab.windowId) : tab ? [tab] : [];
   const hasChild         = contextTabs.length > 0 && contextTabs.some(tab => tab.$TST.hasChild);
   const subtreeCollapsed = contextTabs.length > 0 && contextTabs.some(tab => tab.$TST.subtreeCollapsed);

@@ -82,10 +82,9 @@ export async function blurTab(bluredTabs, { windowId, silently, keepDiscarded } 
   // First, try to find successor based on successorTabId from left tabs.
   let successorTab = Tab.get(bluredTabs.find(tab => tab.active)?.successorTabId);
   const scannedTabIds = new Set();
-  while (successorTab &&
-         (bluredTabIds.has(successorTab.id) ||
-          (keepDiscarded &&
-           successorTab.discarded))) {
+  while (bluredTabIds.has(successorTab?.id) ||
+         (keepDiscarded &&
+          successorTab?.discarded)) {
     if (scannedTabIds.has(successorTab.id))
       break; // prevent infinite loop!
     scannedTabIds.add(successorTab.id);

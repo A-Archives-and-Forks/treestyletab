@@ -285,7 +285,7 @@ async function onShortcutCommand(command) {
           });
           log(`simulateUpOnTree: nextActiveId = ${nextActiveId}`);
           const nextActive = (
-            nextActiveId && Tab.get(nextActiveId) ||
+            Tab.get(nextActiveId) ||
             Tab.getLastVisibleTab(activeTab.windowId)
           );
           TabsInternalOperation.activateTab(nextActive, {
@@ -311,7 +311,7 @@ async function onShortcutCommand(command) {
           });
           log(`simulateDownOnTree: nextActiveId = ${nextActiveId}`);
           const nextActive = (
-            nextActiveId && Tab.get(nextActiveId) ||
+            Tab.get(nextActiveId) ||
             Tab.getFirstNormalTab(activeTab.windowId)
           );
           TabsInternalOperation.activateTab(nextActive, {
@@ -575,7 +575,7 @@ function onMessage(message, sender) {
       }
       return Promise.resolve(message.tabIds.map(id => {
         const tab = Tab.get(id);
-        return tab && tab.$TST.export(true);
+        return tab?.$TST.export(true);
       }));
 
     case Constants.kCOMMAND_PULL_TABS_ORDER:
@@ -1098,7 +1098,7 @@ function onMessageExternal(message, sender) {
         const tabs = await TSTAPI.getTargetTabs(message, sender);
         configs.grantedRemovingTabIds = mapAndFilterUniq(configs.grantedRemovingTabIds.concat(tabs), tab => {
           tab = TabsStore.ensureLivingItem(tab);
-          return tab && tab.id || undefined;
+          return tab?.id || undefined;
         });
         return true;
       })();

@@ -339,12 +339,12 @@ export class TreeItem {
 
   get nearestFollowingForeignerTab() {
     const base = this.lastDescendant || this.raw;
-    return base && base.$TST.nextTab;
+    return base?.$TST.nextTab;
   }
 
   get unsafeNearestFollowingForeignerTab() {
     const base = this.lastDescendant || this.raw;
-    return base && base.$TST.unsafeNextTab;
+    return base?.$TST.unsafeNextTab;
   }
 
   get children() { return []; }
@@ -1064,7 +1064,7 @@ export class Tab extends TreeItem {
 
   get precedesPinnedTab() {
     const following = this.nearestVisibleFollowingTab;
-    return following && following.pinned;
+    return following?.pinned;
   }
 
   get followsUnpinnedTab() {
@@ -1183,7 +1183,7 @@ export class Tab extends TreeItem {
 
   get selected() {
     return this.states.has(Constants.kTAB_STATE_SELECTED) ||
-             (this.hasOtherHighlighted && !!(this.raw && this.raw.highlighted));
+             (this.hasOtherHighlighted && !!(this.raw?.highlighted));
   }
 
   get multiselected() {
@@ -1674,7 +1674,7 @@ export class Tab extends TreeItem {
 
     const ancestorIds = this.ancestorIds;
     const newChildIds = mapAndFilter(tabs, tab => {
-      const id = typeof tab == 'number' ? tab : tab && tab.id;
+      const id = typeof tab == 'number' ? tab : tab?.id;
       if (!ancestorIds.includes(id))
         return TabsStore.ensureLivingItem(Tab.get(id)) ? id : undefined;
       console.log('FATAL ERROR: Cyclic tree structure has detected and prevented. ', {
@@ -2131,7 +2131,7 @@ export class Tab extends TreeItem {
     if (!this.raw || !state)
       return;
 
-    const modified = this.states && this.states.has(state);
+    const modified = this.states?.has(state);
 
     super.removeState(state);
 
@@ -2643,6 +2643,9 @@ Tab.isTracked = tabId =>  {
 };
 
 Tab.get = tabId =>  {
+  if (!tabId) {
+    return null;
+  }
   if (typeof tabId?.color !== 'undefined') { // for backward compatibility
     return TabGroup.get({ windowId: tabId.windowId, groupId: tabId.id });
   }
@@ -2816,7 +2819,7 @@ Tab.waitUntilTracked = async (tabId, options = {}) => {
   const windowId = TabsStore.getCurrentWindowId();
   if (windowId) {
     const tabs = TabsStore.removedTabsInWindow.get(windowId);
-    if (tabs && tabs.has(tabId))
+    if (tabs?.has(tabId))
       return null; // already removed tab
   }
 
@@ -2873,7 +2876,7 @@ Tab.init = (tab, options = {}) => {
   const trackedTab = Tab.get(tab.id);
   if (trackedTab)
     tab = trackedTab;
-  tab.$TST = (trackedTab && trackedTab.$TST) || new Tab(tab);
+  tab.$TST = trackedTab?.$TST || new Tab(tab);
   tab.$TST.updateUniqueId().then(tab.$TST.onUniqueIdGenerated);
 
   if (tab.active)
@@ -3042,7 +3045,7 @@ Tab.getOpenerFromGroupTab = groupTab => {
     return null;
   TabsStore.assertValidTab(groupTab);
   const openerTabId = (new URL(groupTab.url)).searchParams.get('openerTabId');
-  const openerTab = openerTabId && Tab.getByUniqueId(openerTabId);
+  const openerTab = Tab.getByUniqueId(openerTabId);
   if (!openerTab ||
       openerTab == groupTab ||
       openerTab.pinned == groupTab.pinned)
@@ -3055,7 +3058,7 @@ Tab.getSubstanceFromAliasGroupTab = groupTab => {
     return null;
   TabsStore.assertValidTab(groupTab);
   const aliasTabId = (new URL(groupTab.url)).searchParams.get('aliasTabId');
-  const aliasTab = aliasTabId && Tab.getByUniqueId(aliasTabId);
+  const aliasTab = Tab.getByUniqueId(aliasTabId);
   if (!aliasTab ||
       aliasTab == groupTab ||
       aliasTab.pinned == groupTab.pinned)

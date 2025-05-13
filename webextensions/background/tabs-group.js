@@ -341,7 +341,7 @@ function reserveToUpdateRelatedGroupTabs(tab, changedInfo) {
     tab.$TST.bundledTab,
     ...tab.$TST.ancestors,
     ...tab.$TST.ancestors.map(tab => tab.$TST.bundledTab),
-  ].filter(tab => tab && tab.$TST.isGroupTab);
+  ].filter(tab => tab?.$TST.isGroupTab);
   for (const updatingTab of ancestorGroupTabs) {
     const updatingMetadata = updatingTab.$TST.temporaryMetadata;
     const reservedChangedInfo = updatingMetadata.get('reservedUpdateRelatedGroupTabChangedInfo') || new Set();
@@ -458,7 +458,7 @@ Tab.onUpdated.addListener((tab, changeInfo) => {
   if ('url' in changeInfo ||
       'previousUrl' in changeInfo ||
       'state' in changeInfo) {
-    const status = changeInfo.status || tab && tab.status;
+    const status = changeInfo.status || tab?.status;
     const url = changeInfo.url ? changeInfo.url :
       status == 'complete' && tab ? tab.url : '';
     if (tab &&

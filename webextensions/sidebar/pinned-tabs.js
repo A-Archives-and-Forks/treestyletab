@@ -293,7 +293,7 @@ BackgroundConnection.onMessage.addListener(async message => {
     case Constants.kCOMMAND_NOTIFY_TAB_INTERNALLY_MOVED: {
       // don't wait until tracked here, because removing or detaching tab will become untracked!
       const tab = Tab.get(message.tabId);
-      if (tab && tab.pinned)
+      if (tab?.pinned)
         reserveToReposition();
     }; break;
 

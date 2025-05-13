@@ -780,14 +780,14 @@ function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
   log(`updateTabbarLayout reasons: ${readableReasons.join(',')}`);
 
   const lastVisibleTab = Tab.getLastVisibleTab(mTargetWindow);
-  const previousLastVisibleTab = mLastVisibleTabId && Tab.get(mLastVisibleTabId);
+  const previousLastVisibleTab = Tab.get(mLastVisibleTabId);
   if (previousLastVisibleTab &&
       (!lastVisibleTab ||
        lastVisibleTab.id != previousLastVisibleTab.id))
     previousLastVisibleTab.$TST.removeState(Constants.kTAB_STATE_LAST_VISIBLE);
   if (lastVisibleTab)
     lastVisibleTab.$TST.addState(Constants.kTAB_STATE_LAST_VISIBLE);
-  mLastVisibleTabId = lastVisibleTab && lastVisibleTab.id;
+  mLastVisibleTabId = lastVisibleTab?.id;
 
   const visibleNewTabButton = document.querySelector('#tabbar:not(.overflow) .after-tabs .newtab-button-box, #tabbar.overflow ~ .after-tabs .newtab-button-box');
   const newTabButtonSize    = visibleNewTabButton.offsetHeight;

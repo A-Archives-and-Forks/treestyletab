@@ -99,7 +99,7 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
     for (const tab of tabs) {
       const oldPreviousTab = tab.$TST.unsafePreviousTab;
       const oldNextTab     = tab.$TST.unsafeNextTab;
-      if (oldNextTab && oldNextTab.id == referenceTab.id) // no move case
+      if (oldNextTab?.id == referenceTab.id) // no move case
         continue;
       const fromIndex = tab.index;
       if (referenceTab.index > tab.index)
@@ -125,7 +125,7 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
         tabId:       tab.id,
         fromIndex,
         toIndex:     tab.index,
-        nextTabId:   referenceTab && referenceTab.id,
+        nextTabId:   referenceTab?.id,
         broadcasted: !!options.broadcasted
       });
       if (options.doNotOptimize) {
@@ -250,7 +250,7 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
         tabId:       tab.id,
         fromIndex,
         toIndex:     tab.index,
-        nextTabId:   nextTab && nextTab.id,
+        nextTabId:   nextTab?.id,
         broadcasted: !!options.broadcasted
       });
       if (options.doNotOptimize) {

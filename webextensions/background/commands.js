@@ -536,9 +536,9 @@ async function performTabsDragDropWithMessage(message) {
   return performTabsDragDrop({
     ...message,
     tabs:         message.import ? message.tabs : draggedTabIds.map(id => Tab.get(id)),
-    attachTo:     message.attachToId && Tab.get(message.attachToId),
-    insertBefore: message.insertBeforeId && Tab.get(message.insertBeforeId),
-    insertAfter:  message.insertAfterId && Tab.get(message.insertAfterId)
+    attachTo:     Tab.get(message.attachToId),
+    insertBefore: Tab.get(message.insertBeforeId),
+    insertAfter:  Tab.get(message.insertAfterId),
   });
 }
 
@@ -758,7 +758,7 @@ async function attachTabsWithStructure(tabs, parent, options = {}) {
     else
       await Tree.detachTab(tab, memberOptions);
     // The tree can remain being collapsed by other addons like TST Lock Tree Collapsed.
-    const collapsed = parent && parent.$TST.subtreeCollapsed;
+    const collapsed = parent?.$TST.subtreeCollapsed;
     return Tree.collapseExpandTabAndSubtree(tab, {
       ...memberOptions,
       collapsed,

@@ -25,7 +25,7 @@ async function doTest() {
       const tracked = Tab.get(duplicated.id);
       const uniqueId = await tracked.$TST.promisedUniqueId;
       duplicatedTabIds.push(duplicated.id);
-      return uniqueId && uniqueId.duplicated;
+      return uniqueId?.duplicated;
     }));
   }
   const successCount = (await Promise.all(promises)).filter(result => !!result).length;

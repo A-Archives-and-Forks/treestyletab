@@ -71,7 +71,7 @@ export function queryAll(query) {
   if (configs.loggingQueries) {
     queryLogs.push(query);
     queryLogs.splice(0, Math.max(0, queryLogs.length - MAX_LOGS));
-    if (query.tabs && query.tabs.name)
+    if (query.tabs?.name)
       query.indexedTabs = query.tabs.name;
   }
   fixupQuery(query);
@@ -109,7 +109,7 @@ export function queryAll(query) {
 function sourceTabsForQuery(query, win) {
   let offset = 0;
   if (!query.ordered)
-    return [query.tabs && query.tabs.values() || win.tabs.values(), offset];
+    return [query.tabs?.values() || win.tabs.values(), offset];
   let fromId;
   let toId = query.toId;
   if (typeof query.index == 'number') {
@@ -285,7 +285,7 @@ export function query(query) {
   if (configs.loggingQueries) {
     queryLogs.push(query);
     queryLogs.splice(0, Math.max(0, queryLogs.length - MAX_LOGS));
-    if (query.tabs && query.tabs.name)
+    if (query.tabs?.name)
       query.indexedTabs = query.tabs.name;
   }
   fixupQuery(query);
@@ -722,7 +722,7 @@ export function removeVirtualScrollRenderableTab(tab) {
 //===================================================================
 
 export function assertValidTab(tab) {
-  if (tab && tab.$TST)
+  if (tab?.$TST)
     return;
   const error = new Error('FATAL ERROR: invalid tab is given');
   console.log(error.message, tab, error.stack);

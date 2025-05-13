@@ -250,7 +250,7 @@ async function waitUntilCompletelyRestored() {
         browser.sessions.getTabValue(tab.id, Constants.kWINDOW_STATE_CACHED_TABS)
           .catch(ApiTabs.createErrorSuppressor())
           .then(cache => mPreloadedCaches.set(`tab-${tab.id}`, cache));
-        //uniqueId = uniqueId && uniqueId.id || '?'; // not used
+        //uniqueId = uniqueId?.id || '?'; // not used
         timeout = setTimeout(resolver, 100);
       };
       browser.tabs.onCreated.addListener(onNewTabRestored);
@@ -601,7 +601,7 @@ export async function confirmToCloseTabs(tabs, { windowId, configKey, messageKey
   const grantedIds = new Set(configs.grantedRemovingTabIds);
   let count = 0;
   const tabIds = [];
-  tabs = tabs.map(tab => tab && Tab.get(tab.id)).filter(tab => {
+  tabs = tabs.map(tab => Tab.get(tab?.id)).filter(tab => {
     if (tab && !grantedIds.has(tab.id)) {
       count++;
       tabIds.push(tab.id);
@@ -700,7 +700,7 @@ Tab.onUpdated.addListener((tab, changeInfo) => {
 
   // Loading of "about:(unknown type)" won't report new URL via tabs.onUpdated,
   // so we need to see the complete tab object.
-  const status = changeInfo.status || tab && tab.status;
+  const status = changeInfo.status || tab?.status;
   const url = changeInfo.url ? changeInfo.url :
     status == 'complete' && tab ? tab.url : '';
   if (tab &&

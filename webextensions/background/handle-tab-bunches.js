@@ -58,8 +58,8 @@ Tab.onBeforeCreate.addListener(async (tab, info) => {
         id:       tab.id,
         windowId: tab.windowId,
         indexOnCreated: tab.$indexOnCreated,
-        openerId: openerTab && openerTab.id,
-        openerIsPinned: openerTab && openerTab.pinned,
+        openerId: openerTab?.id,
+        openerIsPinned: openerTab?.pinned,
         openerIsFirefoxView: isFirefoxViewTab(openerTab),
         maybeFromBookmark: tab.$TST.maybeFromBookmark,
         shouldNotGrouped: TSTAPI.isGroupingBlocked(),
@@ -95,7 +95,7 @@ async function tryDetectTabBunches(win) {
     const tab = Tab.get(tabReference.id);
     if (!tab)
       return false;
-    const uniqueId = tab && tab.$TST && tab.$TST.uniqueId;
+    const uniqueId = tab?.$TST?.uniqueId;
     return !uniqueId || (!uniqueId.duplicated && !uniqueId.restored);
   });
   if (tabReferences.length == 0) {
@@ -345,7 +345,7 @@ async function tryGroupTabBunchesFromPinnedOpener(rootTabs) {
         refTabs.insertAfter,
         { broadcast: true }
       );
-      log(`newly opened child ${tab.id} has been moved after ${refTabs.insertAfter && refTabs.insertAfter.id}`);
+      log(`newly opened child ${tab.id} has been moved after ${refTabs.insertAfter?.id}`);
     }
     else if (refTabs.insertBefore) {
       await Tree.moveTabSubtreeBefore(
@@ -353,7 +353,7 @@ async function tryGroupTabBunchesFromPinnedOpener(rootTabs) {
         refTabs.insertBefore,
         { broadcast: true }
       );
-      log(`newly opened child ${tab.id} has been moved before ${refTabs.insertBefore && refTabs.insertBefore.id}`);
+      log(`newly opened child ${tab.id} has been moved before ${refTabs.insertBefore?.id}`);
     }
     else {
       continue;

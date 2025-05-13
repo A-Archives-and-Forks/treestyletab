@@ -753,7 +753,7 @@ export function log(module, ...args)
 {
   const isModuleLog = module in configs.$default.logFor;
   const message    = isModuleLog ? args.shift() : module ;
-  const useConsole = configs && configs.debug && (!isModuleLog || configs.logFor[module]);
+  const useConsole = configs?.debug && (!isModuleLog || configs.logFor[module]);
   const logging    = useConsole || log.forceStore;
   if (!logging)
     return;

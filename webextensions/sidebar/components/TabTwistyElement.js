@@ -72,7 +72,7 @@ export class TabTwistyElement extends HTMLElement {
     const tab = this.owner;
 
     let key;
-    if (tab && tab.$TST.subtreeCollapsed)
+    if (tab?.$TST.subtreeCollapsed)
       key = COLLAPSED_TOOLTIP;
     else
       key = EXPANDED_TOOLTIP;

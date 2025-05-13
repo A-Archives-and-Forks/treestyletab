@@ -216,7 +216,7 @@ async function applyProvider(id) {
 async function restoreLastProvider() {
   const lastProvider = TSTAPI.getAddon(configs.lastSelectedSubPanelProviderId);
   log('restoreLastProvider ', lastProvider);
-  if (lastProvider && lastProvider.subPanel)
+  if (lastProvider?.subPanel)
     await applyProvider(lastProvider.id);
   else if (mSelector.hasChildNodes())
     await applyProvider(mSelector.firstChild.dataset.value);
@@ -258,7 +258,7 @@ function updateLayout() {
         (!mSubPanel.src || mSubPanel.src == 'about:blank')) {
       // delayed load
       const provider = TSTAPI.getAddon(mProviderId);
-      if (provider && provider.subPanel)
+      if (provider?.subPanel)
         mSubPanel.src = provider.subPanel.url;
     }
     else if (mHeight == 0) {

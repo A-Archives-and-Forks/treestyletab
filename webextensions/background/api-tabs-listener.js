@@ -1072,7 +1072,7 @@ async function onMoved(tabId, moveInfo) {
           tabId:     movedTab.id,
           fromIndex: moveInfo.fromIndex,
           toIndex:   movedTab.index,
-          nextTabId: nextTab && nextTab.id
+          nextTabId: nextTab?.id,
         });
     }
     if (win.internalMovingTabs.has(tabId))
@@ -1115,7 +1115,7 @@ async function onAttached(tabId, attachInfo) {
       // we should retry for a while.
       // See also: https://github.com/piroor/treestyletab/issues/3311
       const newWindow = await browser.windows.get(attachInfo.newWindowId, { populate: true }).then(_error => null);
-      attachedTab = newWindow && newWindow.tabs.find(tab => tab.id == tabId);
+      attachedTab = newWindow?.tabs.find(tab => tab.id == tabId);
       if (!newWindow || !attachedTab) {
         if (!('$TST_retryCount' in attachInfo))
           attachInfo.$TST_retryCount = 0;
@@ -1133,7 +1133,7 @@ async function onAttached(tabId, attachInfo) {
     if (!tab) {
       log(`tabs.onAttached: Moved tab ${tabId} is not tracked yet.`);
       const newWindow = await browser.windows.get(attachInfo.newWindowId, { populate: true }).then(_error => null);
-      attachedTab = newWindow && newWindow.tabs.find(tab => tab.id == tabId);
+      attachedTab = newWindow?.tabs.find(tab => tab.id == tabId);
       if (!attachedTab) {
         console.log(`tabs.onAttached: the tab ${tabId} is already closed.`);
         onCompleted();

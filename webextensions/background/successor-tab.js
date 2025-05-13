@@ -155,7 +155,7 @@ async function updateInternal(tabId, excludeTabIds = []) {
   const promisedUpdate = mPromisedUpdatedSuccessorTabId.get(tabId);
   await Promise.all([
     tab.$TST.opened,
-    promisedUpdate && promisedUpdate.promisedSuccessorTabId,
+    promisedUpdate?.promisedSuccessorTabId,
   ]);
 
   const renewedTab = await browser.tabs.get(tabId).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
@@ -346,7 +346,7 @@ Tab.onCreating.addListener((tab, info = {}) => {
         return;
 
       const opener = Tab.get(tab.openerTabId);
-      const lastRelatedTab = opener && opener.$TST.lastRelatedTab;
+      const lastRelatedTab = opener?.$TST.lastRelatedTab;
       log(`opener ${dumpTab(opener)}'s lastRelatedTab: ${dumpTab(lastRelatedTab)})`);
       if (lastRelatedTab) {
         log(' => clear successor');

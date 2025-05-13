@@ -69,14 +69,14 @@ export async function restoreWindowFromEffectiveWindowCache(windowId, options = 
   if (configs.debug)
     log(`restoreWindowFromEffectiveWindowCache for ${windowId} tabs: `, () => tabs.map(dumpTab));
   const actualSignature = getWindowSignature(tabs);
-  let cache = options.caches && options.caches.get(`window-${owner.windowId}`) || await MetricsData.addAsync('restoreWindowFromEffectiveWindowCache: window cache', getWindowCache(owner, Constants.kWINDOW_STATE_CACHED_TABS));
+  let cache = options.caches?.get(`window-${owner.windowId}`) || await MetricsData.addAsync('restoreWindowFromEffectiveWindowCache: window cache', getWindowCache(owner, Constants.kWINDOW_STATE_CACHED_TABS));
   if (!cache) {
     log(`restoreWindowFromEffectiveWindowCache for ${windowId} fail: no cache`);
     return false;
   }
   const promisedPermanentStates = Promise.all(tabs.map(tab => Tab.get(tab.id).$TST.getPermanentStates())); // don't await at here for better performance
   MetricsData.add('restoreWindowFromEffectiveWindowCache: validity check: start');
-  let cachedSignature = cache && cache.signature;
+  let cachedSignature = cache?.signature;
   log(`restoreWindowFromEffectiveWindowCache for ${windowId}: got from the owner `, {
     owner, cachedSignature, cache
   });
@@ -275,7 +275,7 @@ function fixupTabRestoredFromCache(tab, permanentStates, cachedTab, idMap) {
   log('fixupTabRestoredFromCache children: ', cachedTab.$TST.childIds);
   const childIds = mapAndFilter(cachedTab.$TST.childIds, oldId => {
     const tab = idMap.get(oldId);
-    return tab && tab.id || undefined;
+    return tab?.id || undefined;
   });
   tab.$TST.children = childIds;
   if (childIds.length > 0)
@@ -436,7 +436,7 @@ reserveToCacheTree.triggers = new Set();
 
 function cancelReservedCacheTree(windowId) {
   const win = TabsStore.windows.get(windowId);
-  if (win && win.waitingToCacheTree) {
+  if (win?.waitingToCacheTree) {
     clearTimeout(win.waitingToCacheTree);
     delete win.waitingToCacheTree;
   }

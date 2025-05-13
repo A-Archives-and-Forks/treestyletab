@@ -48,7 +48,7 @@ export function isAccelKeyPressed(event) {
 
 export function isCopyAction(event) {
   return isAccelKeyPressed(event) ||
-           (event.dataTransfer && event.dataTransfer.dropEffect == 'copy');
+           (event.dataTransfer?.dropEffect == 'copy');
 }
 
 export function getElementTarget(eventOrTarget) {
@@ -86,52 +86,52 @@ export function isEventFiredOnTwisty(event) {
     return false;
 
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_TWISTY_ELEMENT_NAME);
+  return target?.closest && !!target.closest(kTAB_TWISTY_ELEMENT_NAME);
 }
 
 export function isEventFiredOnSharingState(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_SHARING_STATE_ELEMENT_NAME);
+  return target?.closest && !!target.closest(kTAB_SHARING_STATE_ELEMENT_NAME);
 }
 
 export function isEventFiredOnSoundButton(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_SOUND_BUTTON_ELEMENT_NAME);
+  return target?.closest && !!target.closest(kTAB_SOUND_BUTTON_ELEMENT_NAME);
 }
 
 export function isEventFiredOnClosebox(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_CLOSE_BOX_ELEMENT_NAME);
+  return target?.closest && !!target.closest(kTAB_CLOSE_BOX_ELEMENT_NAME);
 }
 
 export function isEventFiredOnNewTabButton(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(`.${Constants.kNEWTAB_BUTTON}`);
+  return target?.closest && !!target.closest(`.${Constants.kNEWTAB_BUTTON}`);
 }
 
 export function isEventFiredOnMenuOrPanel(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest('ul.menu, ul.panel');
+  return target?.closest && !!target.closest('ul.menu, ul.panel');
 }
 
 export function isEventFiredOnAnchor(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(`[data-menu-ui]`);
+  return target?.closest && !!target.closest(`[data-menu-ui]`);
 }
 
 export function isEventFiredOnClickable(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(`button, scrollbar, select`);
+  return target?.closest && !!target.closest(`button, scrollbar, select`);
 }
 
 export function isEventFiredOnTabbarTop(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest('#tabbar-top');
+  return target?.closest && !!target.closest('#tabbar-top');
 }
 
 export function isEventFiredOnTabbarBottom(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest('#tabbar-bottom');
+  return target?.closest && !!target.closest('#tabbar-bottom');
 }
 
 
@@ -145,7 +145,7 @@ function getTabbarFromEvent(event) {
     return null;
   if (!(node instanceof Element))
     node = node.parentNode;
-  return node && node.closest('.tabs');
+  return node?.closest('.tabs');
 }
 
 export function getTreeItemFromTabbarEvent(event, options = {}) {
@@ -184,13 +184,13 @@ function getTreeItemFromCoordinates(event, options = {}) {
   const height = Size.getTabHeight();
   for (const x of trialPoints) {
     let tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
-    tab = SidebarItems.getItemFromDOMNode(tab && tab.$TST.element.nextSibling, options);
+    tab = SidebarItems.getItemFromDOMNode(tab?.$TST.element.nextSibling, options);
     if (tab)
       return tab;
   }
   for (const x of trialPoints) {
     let tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
-    tab = SidebarItems.getItemFromDOMNode(tab && tab.$TST.element.previousSibling, options);
+    tab = SidebarItems.getItemFromDOMNode(tab?.$TST.element.previousSibling, options);
     if (tab)
       return tab;
   }
