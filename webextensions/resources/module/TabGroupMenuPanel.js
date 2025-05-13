@@ -829,8 +829,6 @@ export default class TabGroupMenuPanel {
       const maxY = window.innerHeight / scale;
       const panelHeight = panelBox.height;
 
-      const contentsHeight = this.#panel.querySelector('.tab-group-menu-panel-contents-inner-box').getBoundingClientRect().height;
-
       let top;
       if (this.#windowId) { // in-sidebar
         if (logging)
