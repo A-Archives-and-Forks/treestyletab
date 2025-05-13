@@ -24,14 +24,15 @@ tab-favicon {
 
   --favicon-base-z-index:            20;
   --favicon-preferred-image-z-index: 100;
-}
-tab-item tab-favicon,
-tab-item tab-favicon * {
-  vertical-align: baseline;
-}
-tab-item tab-favicon * {
-  position: relative;
-  z-index: var(--favicon-base-z-index);
+
+  tab-item &,
+  tab-item & * {
+    vertical-align: baseline;
+  }
+  tab-item & * {
+    position: relative;
+    z-index: var(--favicon-base-z-index);
+  }
 }
 
 .favicon-image {
@@ -70,11 +71,13 @@ tab-item tab-favicon * {
   max-width: var(--favicon-size);
   width: var(--svg-small-icon-size);
 }
-:root.simulate-svg-context-fill tab-item .favicon-builtin::before,
-:root.simulate-svg-context-fill tab-item .favicon-sharing-state::before,
-:root.simulate-svg-context-fill tab-item .favicon-sticky-state::after {
-  background: var(--tab-text);
-  mask: url("/resources/icons/defaultFavicon.svg") no-repeat center / 100%;
+:root.simulate-svg-context-fill tab-item {
+  .favicon-builtin::before,
+  .favicon-sharing-state::before,
+  .favicon-sticky-state::after {
+    background: var(--tab-text);
+    mask: url("/resources/icons/defaultFavicon.svg") no-repeat center / 100%;
+  }
 }
 
 tab-item.group-tab .favicon-builtin::before {
@@ -252,20 +255,22 @@ tab-item.loading .favicon-builtin::before {
 /* Sharing status for faviconized tabs.
    Styles for regular tabs are degined in sharing-state.css. */
 
-tab-item:not(.faviconized) .favicon-sharing-state,
-tab-item.active .favicon-sharing-state,
-tab-item.loading .favicon-sharing-state,
-tab-item.faviconized:not(.sharing-camera):not(.sharing-microphone):not(.sharing-screen) .favicon-sharing-state {
-  display: none;
+tab-item:not(.faviconized),
+tab-item.active,
+tab-item.loading,
+tab-item.faviconized:not(.sharing-camera):not(.sharing-microphone):not(.sharing-screen) {
+  .favicon-sharing-state {
+    display: none;
+  }
 }
 
-tab-item.faviconized:not(.active):not(.loading).sharing-camera .favicon-image,
-tab-item.faviconized:not(.active):not(.loading).sharing-camera .favicon-builtin::before,
-tab-item.faviconized:not(.active):not(.loading).sharing-microphone .favicon-image,
-tab-item.faviconized:not(.active):not(.loading).sharing-microphone .favicon-builtin::before,
-tab-item.faviconized:not(.active):not(.loading).sharing-screen .favicon-image,
-tab-item.faviconized:not(.active):not(.loading).sharing-screen .favicon-builtin::before {
-  animation: var(--tab-sharing-icon-animation-inverted);
+tab-item.faviconized:not(.active):not(.loading).sharing-camera,
+tab-item.faviconized:not(.active):not(.loading).sharing-microphone,
+tab-item.faviconized:not(.active):not(.loading).sharing-screen {
+  .favicon-image,
+  .favicon-builtin::before {
+    animation: var(--tab-sharing-icon-animation-inverted);
+  }
 }
 
 .favicon-sharing-state {
@@ -307,7 +312,6 @@ tab-item.faviconized.sharing-screen .favicon-sharing-state::before {
 }
 
 
-
 /* Sticky status */
 
 .favicon-sticky-state {
@@ -315,30 +319,30 @@ tab-item.faviconized.sharing-screen .favicon-sharing-state::before {
   inset-inline-start: calc(var(--svg-small-icon-size) - var(--favicon-size));
   position: absolute;
   top: calc(var(--svg-small-icon-size) - var(--favicon-size));
-}
 
-.favicon-sticky-state::before {
-  background: var(--tab-text-inverted);
-  border-radius: 150%;
-  content: "";
-  display: inline-block;
-  height: var(--svg-small-icon-size);
-  inset-inline-start: -10%;
-  opacity: 0.75;
-  position: absolute;
-  top: 10%;
-  transform: scale(1.3, 1.3);
-  width: var(--svg-small-icon-size);
-}
+  &::before {
+    background: var(--tab-text-inverted);
+    border-radius: 150%;
+    content: "";
+    display: inline-block;
+    height: var(--svg-small-icon-size);
+    inset-inline-start: -10%;
+    opacity: 0.75;
+    position: absolute;
+    top: 10%;
+    transform: scale(1.3, 1.3);
+    width: var(--svg-small-icon-size);
+  }
 
-tab-item:not(.sticky) .favicon-sticky-state,
-tab-item.pinned .favicon-sticky-state {
-  display: none;
-}
+  tab-item:not(.sticky) &,
+  tab-item.pinned & {
+    display: none;
+  }
 
-tab-item.sticky .favicon-sticky-state::after {
-  background-image: url("./icons/pin-12.svg")
-}
-:root.simulate-svg-context-fill tab-item.sticky .favicon-sticky-state::after {
-  mask-image: url("./icons/pin-12.svg");
+  tab-item.sticky &::after {
+    background-image: url("./icons/pin-12.svg")
+  }
+  :root.simulate-svg-context-fill tab-item.sticky &::after {
+    mask-image: url("./icons/pin-12.svg");
+  }
 }

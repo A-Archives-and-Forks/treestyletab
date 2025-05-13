@@ -69,39 +69,39 @@ tab-item.faviconized[data-drop-position="after"] tab-item-substance::before {
   min-width: calc(var(--favicon-size) / 5);
   position: fixed;
   z-index: var(--blocking-ui-z-index);
-}
 
-:root.debug .tab-drop-blocker {
-  background: rgba(255, 0, 0, 0.5);
-}
+  :root.debug & {
+    background: rgba(255, 0, 0, 0.5);
+  }
 
-:root.tab-dragging .tab-drop-blocker,
-:root.link-dragging .tab-drop-blocker {
-  display: block;
-}
+  :root.tab-dragging &,
+  :root.link-dragging & {
+    display: block;
+  }
 
-.tab-drop-blocker#tab-drop-blocker-top {
-  inset-inline-start: 0;
-  inset-inline-end: 0;
-  top: 0;
-}
+  &#tab-drop-blocker-top {
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    top: 0;
+  }
 
-.tab-drop-blocker#tab-drop-blocker-right {
-  bottom: 0;
-  inset-inline-end: 0;
-  top: 0;
-}
+  &#tab-drop-blocker-right {
+    bottom: 0;
+    inset-inline-end: 0;
+    top: 0;
+  }
 
-.tab-drop-blocker#tab-drop-blocker-bottom {
-  bottom: 0;
-  inset-inline-start: 0;
-  inset-inline-end: 0;
-}
+  &#tab-drop-blocker-bottom {
+    bottom: 0;
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+  }
 
-.tab-drop-blocker#tab-drop-blocker-left {
-  bottom: 0;
-  inset-inline-start: 0;
-  top: 0;
+  &#tab-drop-blocker-left {
+    bottom: 0;
+    inset-inline-start: 0;
+    top: 0;
+  }
 }
 
 

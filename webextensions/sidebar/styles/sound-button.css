@@ -24,111 +24,110 @@ tab-sound-button {
   position: relative;
   width: var(--sound-button-size);
   z-index: var(--tab-ui-z-index);
+
+  /* background circle */
+  &::before {
+    background: var(--tab-text-inverted);
+    border-radius: 150%;
+    content: "";
+    display: inline-block;
+    height: calc(var(--sound-button-size) * 1.4);
+    inset-inline-start: calc(0px - (var(--sound-button-size) * 0.2));
+    top: calc(0px - (var(--sound-button-size) * 0.2));
+    width: calc(var(--sound-button-size) * 1.4);
+    opacity: 0.95;
+    position: absolute;
+  }
+  &:hover::before {
+    opacity: 0.5;
+  }
+  tab-item.faviconized &:hover::before {
+    opacity: 0.8;
+  }
+
+  &::after {
+    -moz-context-properties: fill;
+    background: none no-repeat center / 100%;
+    content: "";
+    display: inline-block;
+    fill: var(--tab-text);
+    height: var(--sound-button-size);
+    inset-inline-end: 0;
+    position: absolute;
+    top: 0;
+    width: var(--sound-button-size);
+  }
+  :root.simulate-svg-context-fill &::after {
+    background: var(--tab-text);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: 100%;
+  }
+
+  tab-item.faviconized & {
+    --sound-button-size: 10px;
+    inset-inline-end: 0;
+    padding-block: 0;
+    padding-inline: 0;
+    position: absolute;
+    top: calc(var(--sound-button-size) * 0.2); /* cancel negative margin of the background circle */
+  }
 }
 
-/* background circle */
-tab-sound-button::before {
-  background: var(--tab-text-inverted);
-  border-radius: 150%;
-  content: "";
-  display: inline-block;
-  height: calc(var(--sound-button-size) * 1.4);
-  inset-inline-start: calc(0px - (var(--sound-button-size) * 0.2));
-  top: calc(0px - (var(--sound-button-size) * 0.2));
-  width: calc(var(--sound-button-size) * 1.4);
-  opacity: 0.95;
-  position: absolute;
-}
-tab-sound-button:hover::before {
-  opacity: 0.5;
-}
-tab-item.faviconized tab-sound-button:hover::before {
-  opacity: 0.8;
-}
+tab-item:not(.collapsed) {
+  tab-sound-button:hover {
+    opacity: var(--button-hover-opacity);
+  }
 
-tab-sound-button::after {
-  -moz-context-properties: fill;
-  background: none no-repeat center / 100%;
-  content: "";
-  display: inline-block;
-  fill: var(--tab-text);
-  height: var(--sound-button-size);
-  inset-inline-end: 0;
-  position: absolute;
-  top: 0;
-  width: var(--sound-button-size);
-}
-:root.simulate-svg-context-fill tab-sound-button::after {
-  background: var(--tab-text);
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: 100%;
-}
+  tab-sound-button:active {
+    opacity: var(--button-active-opacity);
+  }
 
-tab-item:not(.collapsed) tab-sound-button:hover {
-  opacity: var(--button-hover-opacity);
-}
+  &.sound-playing tab-sound-button,
+  &.has-sound-playing-member.subtree-collapsed[data-child-ids] tab-sound-button,
+  &.muted tab-sound-button,
+  &.has-muted-member.subtree-collapsed[data-child-ids] tab-sound-button,
+  &.autoplay-blocked tab-sound-button,
+  &.has-autoplay-blocked-member.subtree-collapsed[data-child-ids] tab-sound-button {
+    display: inline-block;
+  }
 
-tab-item:not(.collapsed) tab-sound-button:active {
-  opacity: var(--button-active-opacity);
-}
+  &.muted tab-sound-button::after,
+  &.has-muted-member.subtree-collapsed[data-child-ids] tab-sound-button::after {
+    background-image: url("./icons/audio-16-mute.svg");
+  }
+  :root.simulate-svg-context-fill & {
+    &.muted tab-sound-button::after,
+    &.has-muted-member.subtree-collapsed[data-child-ids] tab-sound-button::after {
+      background-image: none;
+      mask-image: url("./icons/audio-16-mute.svg");
+    }
+  }
 
-tab-item:not(.collapsed).sound-playing tab-sound-button,
-tab-item:not(.collapsed).has-sound-playing-member.subtree-collapsed[data-child-ids]
-  tab-sound-button,
-tab-item:not(.collapsed).muted tab-sound-button,
-tab-item:not(.collapsed).has-muted-member.subtree-collapsed[data-child-ids]
-  tab-sound-button,
-tab-item:not(.collapsed).autoplay-blocked tab-sound-button,
-tab-item:not(.collapsed).has-autoplay-blocked-member.subtree-collapsed[data-child-ids]
-  tab-sound-button {
-  display: inline-block;
-}
+  &.autoplay-blocked tab-sound-button::after,
+  &.has-autoplay-blocked-member.subtree-collapsed[data-child-ids] tab-sound-button::after {
+    background-image: url("./icons/audio-16-blocked.svg");
+  }
+  :root.simulate-svg-context-fill & {
+    &.autoplay-blocked tab-sound-button::after,
+    &.has-autoplay-blocked-member.subtree-collapsed[data-child-ids] tab-sound-button::after {
+      background-image: none;
+      mask-image: url("./icons/audio-16-blocked.svg");
+    }
+  }
 
-tab-item:not(.collapsed).muted tab-sound-button::after,
-tab-item:not(.collapsed).has-muted-member.subtree-collapsed[data-child-ids]
-  tab-sound-button::after {
-  background-image: url("./icons/audio-16-mute.svg");
-}
-:root.simulate-svg-context-fill tab-item:not(.collapsed).muted tab-sound-button::after,
-:root.simulate-svg-context-fill tab-item:not(.collapsed).has-muted-member.subtree-collapsed[data-child-ids]
-  tab-sound-button::after {
-  background-image: none;
-  mask-image: url("./icons/audio-16-mute.svg");
-}
-
-tab-item:not(.collapsed).autoplay-blocked tab-sound-button::after,
-tab-item:not(.collapsed).has-autoplay-blocked-member.subtree-collapsed[data-child-ids]
-  tab-sound-button::after {
-  background-image: url("./icons/audio-16-blocked.svg");
-}
-:root.simulate-svg-context-fill tab-item:not(.collapsed).autoplay-blocked tab-sound-button::after,
-:root.simulate-svg-context-fill tab-item:not(.collapsed).has-autoplay-blocked-member.subtree-collapsed[data-child-ids]
-  tab-sound-button::after {
-  background-image: none;
-  mask-image: url("./icons/audio-16-blocked.svg");
-}
-
-/* put style definition for sound-playing tab after muted tab,
-   because "sound-playing" is more important than muted for
-   mixed state tree. */
-tab-item:not(.collapsed).sound-playing:not(.muted) tab-sound-button::after,
-tab-item:not(.collapsed).has-sound-playing-member.subtree-collapsed[data-child-ids]
-  tab-sound-button::after {
-  background-image: url("./icons/audio-16.svg");
-}
-:root.simulate-svg-context-fill tab-item:not(.collapsed).sound-playing:not(.muted) tab-sound-button::after,
-:root.simulate-svg-context-fill tab-item:not(.collapsed).has-sound-playing-member.subtree-collapsed[data-child-ids]
-  tab-sound-button::after {
-  background-image: none;
-  mask-image: url("./icons/audio-16.svg");
-}
-
-tab-item.faviconized tab-sound-button {
-  --sound-button-size: 10px;
-  inset-inline-end: 0;
-  padding-block: 0;
-  padding-inline: 0;
-  position: absolute;
-  top: calc(var(--sound-button-size) * 0.2); /* cancel negative margin of the background circle */
+  /* put style definition for sound-playing tab after muted tab,
+     because "sound-playing" is more important than muted for
+     mixed state tree. */
+  &.sound-playing:not(.muted) tab-sound-button::after,
+  &.has-sound-playing-member.subtree-collapsed[data-child-ids] tab-sound-button::after {
+    background-image: url("./icons/audio-16.svg");
+  }
+  :root.simulate-svg-context-fill & {
+    &.sound-playing:not(.muted) tab-sound-button::after,
+    &.has-sound-playing-member.subtree-collapsed[data-child-ids] tab-sound-button::after {
+      background-image: none;
+      mask-image: url("./icons/audio-16.svg");
+    }
+  }
 }

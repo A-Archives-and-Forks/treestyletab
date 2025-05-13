@@ -51,66 +51,71 @@ tab-sharing-state {
   position: relative;
   width: var(--sharing-state-size);
   z-index: var(--tab-ui-z-index);
+
+  &::after {
+    -moz-context-properties: fill;
+    background: none no-repeat center / 100%;
+    content: "";
+    display: inline-block;
+    fill: var(--sharing-state-color);
+    height: var(--sharing-state-size);
+    inset-inline-end: 0;
+    position: absolute;
+    top: 0;
+    width: var(--sharing-state-size);
+  }
+  :root.simulate-svg-context-fill &::after {
+    background: var(--sharing-state-color);
+    mask-position: center;
+    mask-repeat: no-repeat;
+    mask-size: 100%;
+  }
 }
 
-tab-sharing-state::after {
-  -moz-context-properties: fill;
-  background: none no-repeat center / 100%;
-  content: "";
-  display: inline-block;
-  fill: var(--sharing-state-color);
-  height: var(--sharing-state-size);
-  inset-inline-end: 0;
-  position: absolute;
-  top: 0;
-  width: var(--sharing-state-size);
-}
-:root.simulate-svg-context-fill tab-sharing-state::after {
-  background: var(--sharing-state-color);
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: 100%;
-}
+tab-item:not(.collapsed):not(.faviconized) {
+  &:not(.active).sharing-camera tab-sharing-state,
+  &:not(.active).sharing-microphone tab-sharing-state,
+  &:not(.active).sharing-screen tab-sharing-state,
+  &:not(.sharing-camera).has-sharing-camera-member.subtree-collapsed[data-child-ids] tab-sharing-state,
+  &:not(.sharing-microphone).has-sharing-microphone-member.subtree-collapsed[data-child-ids] tab-sharing-state,
+  &:not(.sharing-screen).has-sharing-screen-member.subtree-collapsed[data-child-ids] tab-sharing-state {
+    animation: var(--tab-sharing-icon-animation);
+    display: inline-block;
+  }
 
-tab-item:not(.collapsed):not(.faviconized):not(.active).sharing-camera tab-sharing-state,
-tab-item:not(.collapsed):not(.faviconized):not(.active).sharing-microphone tab-sharing-state,
-tab-item:not(.collapsed):not(.faviconized):not(.active).sharing-screen tab-sharing-state,
-tab-item:not(.collapsed):not(.faviconized):not(.sharing-camera).has-sharing-camera-member.subtree-collapsed[data-child-ids]
-  tab-sharing-state,
-tab-item:not(.collapsed):not(.faviconized):not(.sharing-microphone).has-sharing-microphone-member.subtree-collapsed[data-child-ids]
-  tab-sharing-state,
-tab-item:not(.collapsed):not(.faviconized):not(.sharing-screen).has-sharing-screen-member.subtree-collapsed[data-child-ids]
-  tab-sharing-state {
-  animation: var(--tab-sharing-icon-animation);
-  display: inline-block;
-}
+  &.sharing-camera tab-sharing-state::after,
+  &.has-sharing-camera-member tab-sharing-state::after {
+    background-image: url("./icons/camera.svg");
+  }
+  :root.simulate-svg-context-fill & {
+    &.sharing-camera tab-sharing-state::after,
+    &.has-sharing-camera-member tab-sharing-state::after {
+      background-image: none;
+      mask-image: url("./icons/camera.svg");
+    }
+  }
 
-tab-item:not(.collapsed):not(.faviconized).sharing-camera tab-sharing-state::after,
-tab-item:not(.collapsed):not(.faviconized).has-sharing-camera-member tab-sharing-state::after {
-  background-image: url("./icons/camera.svg");
-}
-:root.simulate-svg-context-fill tab-item:not(.collapsed):not(.faviconized).sharing-camera tab-sharing-state::after,
-:root.simulate-svg-context-fill tab-item:not(.collapsed):not(.faviconized).has-sharing-camera-member tab-sharing-state::after {
-  background-image: none;
-  mask-image: url("./icons/camera.svg");
-}
+  &.sharing-microphone tab-sharing-state::after,
+  &.has-sharing-camera-microphone tab-sharing-state::after {
+    background-image: url("./icons/microphone.svg");
+  }
+  :root.simulate-svg-context-fill & {
+    &.sharing-microphone tab-sharing-state::after,
+    &.has-sharing-microphone-member tab-sharing-state::after {
+      background-image: none;
+      mask-image: url("./icons/microphone.svg");
+    }
+  }
 
-tab-item:not(.collapsed):not(.faviconized).sharing-microphone tab-sharing-state::after,
-tab-item:not(.collapsed):not(.faviconized).has-sharing-camera-microphone tab-sharing-state::after {
-  background-image: url("./icons/microphone.svg");
-}
-:root.simulate-svg-context-fill tab-item:not(.collapsed):not(.faviconized).sharing-microphone tab-sharing-state::after,
-:root.simulate-svg-context-fill tab-item:not(.collapsed):not(.faviconized).has-sharing-microphone-member tab-sharing-state::after {
-  background-image: none;
-  mask-image: url("./icons/microphone.svg");
-}
-
-tab-item:not(.collapsed):not(.faviconized).sharing-screen tab-sharing-state::after,
-tab-item:not(.collapsed):not(.faviconized).has-sharing-camera-screen tab-sharing-state::after {
-  background-image: url("./icons/screen.svg");
-}
-:root.simulate-svg-context-fill tab-item:not(.collapsed):not(.faviconized).sharing-screen tab-sharing-state::after,
-:root.simulate-svg-context-fill tab-item:not(.collapsed):not(.faviconized).has-sharing-screen-member tab-sharing-state::after {
-  background-image: none;
-  mask-image: url("./icons/screen.svg");
+  &.sharing-screen tab-sharing-state::after,
+  &.has-sharing-camera-screen tab-sharing-state::after {
+    background-image: url("./icons/screen.svg");
+  }
+  :root.simulate-svg-context-fill & {
+    &.sharing-screen tab-sharing-state::after,
+    &.has-sharing-screen-member tab-sharing-state::after {
+      background-image: none;
+      mask-image: url("./icons/screen.svg");
+    }
+  }
 }
