@@ -421,29 +421,6 @@ export async function show(group, creating = false) {
   log(` => ${succeeded ? 'succeeded' : 'failed'}`);
 }
 
-/*
-async function onTabSubstanceLeave(event) {
-  const startAt = Date.now();
-  if (!event.target.tab)
-    return;
-
-  const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-  const targetTabId = await Permissions.canInjectScriptToTab(activeTab) ?
-    activeTab.id :
-    null;
-
-  if (!event.target.tab) // the tab was closed while waiting
-    return;
-
-  sendTabGroupMenuMessage(targetTabId, {
-    type: 'treestyletab:tab-group-menu:hide',
-    groupId: event.target.groupId,
-    timestamp: startAt,
-  });
-}
-onTabSubstanceLeave = EventUtils.wrapWithErrorHandler(onTabSubstanceLeave);
-*/
-
 
 browser.tabs.onActivated.addListener(activeInfo => {
   const startAt = Date.now();
