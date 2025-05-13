@@ -28,6 +28,6 @@
 <g id="green-invert"  fill="oklch(83% 0.14 145)" stroke="oklch(83% 0.14 145)"><use href="#icon"/></g>
 <g id="red"           fill="oklch(48% 0.2 15)"   stroke="oklch(48% 0.2 15)"><use href="#icon"/></g>
 <g id="red-invert"    fill="oklch(83% 0.14 15)"  stroke="oklch(83% 0.14 15)"><use href="#icon"/></g>
-<g id="gray"          fill="#5b5b66"             stroke="#5b5b66"><use href="#icon"/></g>
-<g id="gray-invert"   fill="#bac2ca"             stroke="#bac2ca"><use href="#icon"/></g>
+<g id="grey"          fill="#5b5b66"             stroke="#5b5b66"><use href="#icon"/></g>
+<g id="grey-invert"   fill="#bac2ca"             stroke="#bac2ca"><use href="#icon"/></g>
 </svg>
