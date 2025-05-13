@@ -665,7 +665,6 @@ export default class TabGroupMenuPanel {
   }
 
   focusTo(item) {
-if (!item) console.log('NO ITEM');
     if (!item) {
       return;
     }
