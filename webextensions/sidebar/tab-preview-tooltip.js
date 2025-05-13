@@ -133,6 +133,7 @@ async function preparePreview(tabId) {
         if (tabPreviewPanel) {
           tabPreviewPanel.destroy();
           tabPreviewPanel = null;
+          removeClosedContents(root);
         }
         browser.runtime.onMessage.removeListener(onMessage);
         window.removeEventListener('mousemove', onMouseMove);

@@ -32,6 +32,7 @@ export function getProviderCode() {
 
     // We cannot undefine custom element types, so we define it just one time.
     if (!window.customElements.get(window.closedContainerType)) {
+      window.closedContentsDestructors = new Set();
       // We use a wrapper custom element to enclose all preview elements
       // which can contain privacy information.
       // It should guard them from accesses by webpage scripts.
@@ -40,23 +41,26 @@ export function getProviderCode() {
           super();
           const shadow = this.attachShadow({ mode: 'closed' });
           window.appendClosedContents = element => shadow.appendChild(element);
+          window.removeClosedContents = element => shadow.removeChild(element);
+          window.clearClosedContents = () => {
+            for (const destructor of window.closedContentsDestructors) {
+              try {
+                destructor();
+              }
+              catch(error) {
+                console.error(error);
+              }
+            }
+            for (const element of shadow.childNodes) {
+              removeClosedContents(element);
+            }
+            closedContentsDestructors.clear();
+            lastClosedContainer.parentNode.removeChild(lastClosedContainer);
+            window.lastClosedContainer = null;
+          };
         }
       }
       window.customElements.define(window.closedContainerType, ClosedContainer);
-      window.closedContentsDestructors = new Set();
-      window.clearClosedContents = () => {
-        for (const destructor of window.closedContentsDestructors) {
-          try {
-            destructor();
-          }
-          catch(error) {
-            console.error(error);
-          }
-        }
-        window.closedContentsDestructors.clear();
-        window.lastClosedContainer.parentNode.removeChild(window.lastClosedContainer);
-        window.lastClosedContainer = null;
-      };
       window.destroyClosedContents = destructor => {
         try{
           destructor();

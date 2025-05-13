@@ -156,6 +156,7 @@ async function prepareMenu(tabId) {
         browser.runtime.onMessage.removeListener(onMessage);
         window.removeEventListener('unload', destroy);
         window.removeEventListener('pagehide', destroy);
+        removeClosedContents(root);
       };
       window.addEventListener('unload', destroy, { once: true });
       window.addEventListener('pagehide', destroy, { once: true });
