@@ -103,6 +103,7 @@ export const kCOMMAND_GET_RIGHT_TAB                 = 'treestyletab:get-right-ta
 export const kCOMMAND_GET_BOUNDING_CLIENT_RECT      = 'treestyletab:get-bounding-client-rect';
 export const kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL = 'treestyletab:show-native-tab-group-menu-panel';
 export const kCOMMAND_UPDATE_NATIVE_TAB_GROUP       = 'treestyletab:update-native-tab-group';
+export const kCOMMAND_INVOKE_NATIVE_TAB_GROUP_MENU_PANEL_COMMAND = 'treestyletab:invoke-native-tab-group-menu-panel-command';
 
 export const kCOMMAND_ACTIVATE_TAB            = 'treestyletab:activate-tab';
 export const kCOMMAND_HIGHLIGHT_TABS          = 'treestyletab:highlight-tabs';

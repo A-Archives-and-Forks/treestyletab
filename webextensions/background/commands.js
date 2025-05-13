@@ -26,7 +26,7 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab, TreeItem } from '/common/TreeItem.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as TabsGroup from './tabs-group.js';
 import * as TabsMove from './tabs-move.js';
@@ -1252,7 +1252,7 @@ SidebarConnection.onMessage.addListener(async (windowId, message) => {
   }
 });
 
-browser.runtime.onMessage.addListener((message, _sender) => {
+browser.runtime.onMessage.addListener((message, sender) => {
   switch (message.type) {
     // for automated tests
     case Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP:
@@ -1269,6 +1269,32 @@ browser.runtime.onMessage.addListener((message, _sender) => {
       }
       browser.tabGroups.update(message.groupId, updates);
     }; break;
+
+    case Constants.kCOMMAND_INVOKE_NATIVE_TAB_GROUP_MENU_PANEL_COMMAND:
+      switch (message.command) {
+        case 'addNewTabInGroup':
+          break;
+
+        case 'moveGroupToNewWindow':
+          break;
+
+        case 'saveAndCloseGroup':
+        case 'deleteGroup':
+          break;
+
+        case 'ungroupTabs':
+        case 'cancel': {
+          const members = TabGroup.getMemberTabs({
+            windowId: sender.tab.windowId,
+            groupId:  message.groupId,
+          });
+          removeTabsFromNativeTabGroup(members);
+        }; break;
+
+        case 'done':
+          break;
+      }
+      break;
   }
 });
 

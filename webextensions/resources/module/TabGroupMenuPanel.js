@@ -458,8 +458,9 @@ export default class TabGroupMenuPanel {
 
         button {
           appearance: none;
+          border: none;
           border-radius: var(--space-xsmall);
-          margin-inline: var(--space-small);
+          margin-inline: var(--space-xsmall);
           padding: var(--space-small);
 
           &.primary {
@@ -488,6 +489,8 @@ export default class TabGroupMenuPanel {
     try {
       this.destroy = this.#destroy.bind(this);
       this.onMessage = this.#onMessage.bind(this);
+      this.onClick = this.#onClick.bind(this);
+      this.onKeyDown = this.#onKeyDown.bind(this);
 
       this.#i18n = i18n;
 
@@ -590,11 +593,97 @@ export default class TabGroupMenuPanel {
     }
   }
 
+  #onClick(event) {
+    event.stopPropagation();
+    const command = event.target?.closest('input, button')?.dataset?.command;
+    if (!command) {
+      return;
+    }
+    browser.runtime.sendMessage({
+      type:    'treestyletab:invoke-native-tab-group-menu-panel-command',
+      groupId: parseInt(this.#panel.dataset.groupId),
+      command,
+    });
+    this.#onMessage({
+      type: 'treestyletab:tab-group-menu:hide',
+      timestamp: Date.now(),
+    });
+  }
+
+  #onKeyDown(event) {
+    event.stopPropagation();
+    const target = event.target?.closest('input, button');
+    if (!target) {
+      return;
+    }
+    switch (event.key) {
+      case 'Tab':
+        this.advanceFocus(event.shiftKey ? -1 : 1);
+        event.preventDefault();
+        return;
+
+      case 'Enter':
+      case 'Return':
+        browser.runtime.sendMessage({
+          type:    'treestyletab:invoke-native-tab-group-menu-panel-command',
+          groupId: parseInt(this.#panel.dataset.groupId),
+          command: target.dataset?.command,
+        });
+        this.#onMessage({
+          type: 'treestyletab:tab-group-menu:hide',
+          timestamp: Date.now(),
+        });
+        return;
+
+      case 'Escape':
+        this.#onMessage({
+          type: 'treestyletab:tab-group-menu:hide',
+          timestamp: Date.now(),
+        });
+        return;
+    }
+  }
+
+  advanceFocus(direction) {
+    const lastFocused = this.#panel.querySelector('input:focus, button:focus');
+    const focusibleItems = this.focusibleItems;
+    const index = lastFocused ? focusibleItems.indexOf(lastFocused) : -1;
+    const lastIndex = focusibleItems.length - 1;
+    if (index < 0) {
+      if (direction < 0) {
+        this.focusTo(focusibleItems[lastIndex]);
+      }
+      else {
+        this.focusTo(focusibleItems[0]);
+      }
+      return;
+    }
+    this.focusTo(direction < 0 ?
+      (index == 0 ? focusibleItems[lastIndex] : focusibleItems[index - 1]) :
+      (index == lastIndex ? focusibleItems[0] : focusibleItems[index + 1])
+    );
+  }
+
+  focusTo(item) {
+if (!item) console.log('NO ITEM');
+    if (!item) {
+      return;
+    }
+    item.focus();
+  }
+
+  get focusibleItems() {
+    return [...this.#panel.querySelectorAll('input[type="text"], input[type="radio"]:checked, button')]
+      .filter(item => item.offsetWidth > 0 && item.offsetHeight > 0);
+  }
+
   #destroy() {
     if (!this.onMessage)
       return;
 
     if (this.#panel) {
+      this.#panel.removeEventListener('click', this.onClick);
+      this.#panel.removeEventListener('keydown', this.onKeyDown);
       this.#panel.parentNode.removeChild(this.#panel);
       this.#panel = null;
     }
@@ -604,7 +693,7 @@ export default class TabGroupMenuPanel {
     window.removeEventListener('pagehide', this.destroy);
 
     this.#lastTimestampForGroup.clear();
-    this.#root = this.onMessage = this.destroy = this.#i18n = null;
+    this.#root = this.onMessage = this.destroy = this.onClick = this.onKeyDown = this.#i18n = null;
   }
 
   prepareUI() {
@@ -677,27 +766,34 @@ export default class TabGroupMenuPanel {
               <hr/>
               <div class="panel-body tab-group-edit-actions tab-group-edit-mode-only">
                 <button tabindex="0" class="tabGroupEditor_addNewTabInGroup subviewbutton"
+                        data-command="addNewTabInGroup"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_new_tab_label)}</button>
                 <button tabindex="0" class="tabGroupEditor_moveGroupToNewWindow subviewbutton"
+                        data-command="moveGroupToNewWindow"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_new_window_label)}</button>
                 <!--
                 <button tabindex="0" class="tabGroupEditor_saveAndCloseGroup subviewbutton"
+                        data-command="saveAndCloseGroup"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_save_label)}</button>
                 -->
                 <button tabindex="0" class="tabGroupEditor_ungroupTabs subviewbutton"
+                        data-command="ungroupTabs"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_ungroup_label)}</button>
               </div>
               <hr class="tab-group-edit-mode-only"/>
               <div class="tab-group-edit-mode-only panel-body tab-group-delete">
                 <button tabindex="0" class="tabGroupEditor_deleteGroup subviewbutton"
+                        data-command="deleteGroup"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_delete_label)}</button>
               </div>
               <!-hr class="tab-group-create-mode-only"/>
               <div class="tab-group-create-actions tab-group-create-mode-only">
                 <button class="primary tab-group-editor-button-done"
+                        data-command="done"
                         accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_done_accesskey)}
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_done_label)}</button>
                 <button class="tab-group-editor-button-cancel"
+                        data-command="cancel"
                         accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_cancel_accesskey)}
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_cancel_label)}</button>
               </div>
@@ -727,10 +823,8 @@ export default class TabGroupMenuPanel {
       });
     });
     const panel = panelFragment.querySelector('.tab-group-menu-panel');
-    panel.addEventListener('click', event => {
-    });
-    panel.addEventListener('keydown', event => {
-    });
+    panel.addEventListener('click', this.onClick);
+    panel.addEventListener('keydown', this.onKeyDown);
     this.#root.appendChild(panelFragment);
 
     this.#panel = this.#root.querySelector('.tab-group-menu-panel');
@@ -848,7 +942,7 @@ export default class TabGroupMenuPanel {
           console.log(' => top=', top);
       }
       else { // in-content
-      // We need to shift the position with the height of the sidebar header.
+        // We need to shift the position with the height of the sidebar header.
         const alignToTopPosition = Math.max(0, anchorTabRect.top / scale) + sidebarContentsOffset;
         const alignToBottomPosition = Math.min(maxY, anchorTabRect.bottom + sidebarContentsOffset / scale) - panelHeight;
 
