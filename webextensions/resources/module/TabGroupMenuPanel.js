@@ -294,7 +294,7 @@ export default class TabGroupMenuPanel {
           --tabgroup-swatch-color: var(--tab-group-color-red);
           --tabgroup-swatch-color-invert: var(--tab-group-color-red-invert);
         }
-        input[value="gray"] {
+        input[value="grey"] {
           --tabgroup-swatch-color: var(--tab-group-color-gray);
           --tabgroup-swatch-color-invert: var(--tab-group-color-gray-invert);
         }
@@ -666,7 +666,7 @@ export default class TabGroupMenuPanel {
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_green)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_gray_title)}>
-                  <input type="radio" name="tab-group-color" value="gray" class="tab-group-editor-swatch"/>
+                  <input type="radio" name="tab-group-color" value="grey" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_gray)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_red_title)}>

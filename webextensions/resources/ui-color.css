@@ -262,9 +262,9 @@
   --tab-group-color-red: var(--color-red-70);
   --tab-group-color-red-invert: var(--color-red-20);
   --tab-group-color-red-pale: var(--color-red-0);
-  --tab-group-color-gray: #5E6A77;
-  --tab-group-color-gray-invert: #99A6B4;
-  --tab-group-color-gray-pale: #F2F9FF;
+  --tab-group-color-grey: #5E6A77;
+  --tab-group-color-grey-invert: #99A6B4;
+  --tab-group-color-grey-pale: #F2F9FF;
   --tab-group-label-text-dark: var(--color-gray-100);
 
 
