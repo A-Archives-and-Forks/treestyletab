@@ -682,8 +682,10 @@ export default class TabGroupMenuPanel {
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_new_tab_label)}</button>
                 <button tabindex="0" class="tabGroupEditor_moveGroupToNewWindow subviewbutton"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_new_window_label)}</button>
+                <!--
                 <button tabindex="0" class="tabGroupEditor_saveAndCloseGroup subviewbutton"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_save_label)}</button>
+                -->
                 <button tabindex="0" class="tabGroupEditor_ungroupTabs subviewbutton"
                        >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_ungroup_label)}</button>
               </div>
