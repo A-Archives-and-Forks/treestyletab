@@ -606,7 +606,8 @@ export default class TabGroupMenuPanel {
       command,
     });
     this.#onMessage({
-      type: 'treestyletab:tab-group-menu:hide',
+      type:      'treestyletab:tab-group-menu:hide',
+      windowId:  this.#windowId,
       timestamp: Date.now(),
     });
   }
@@ -632,14 +633,16 @@ export default class TabGroupMenuPanel {
           command:  target.dataset?.command,
         });
         this.#onMessage({
-          type: 'treestyletab:tab-group-menu:hide',
+          type:      'treestyletab:tab-group-menu:hide',
+          windowId:  this.#windowId,
           timestamp: Date.now(),
         });
         return;
 
       case 'Escape':
         this.#onMessage({
-          type: 'treestyletab:tab-group-menu:hide',
+          type:      'treestyletab:tab-group-menu:hide',
+          windowId:  this.#windowId,
           timestamp: Date.now(),
         });
         return;
