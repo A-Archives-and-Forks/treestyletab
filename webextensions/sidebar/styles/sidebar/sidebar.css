@@ -136,7 +136,7 @@ tab-item-substance {
 }
 
 tab-item[type="group"] tab-item-substance {
-  max-width: calc(max(var(--tab-label-width), var(--favicon-size)) +
+  max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
                   2px + 3px /* padding-inline of tab-item-substance */ +
                   0.25em /* margin-inline of tab-label */ +
                   0.25em /* margin-inline of tab-label-content */);

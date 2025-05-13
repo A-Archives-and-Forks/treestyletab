@@ -1038,7 +1038,7 @@ tab-item[type="group"] .ui {
 }
 
 tab-item[type="group"] tab-item-substance {
-  max-width: calc(max(var(--tab-label-width), var(--favicon-size)) +
+  max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
                   0.25em /* margin-inline of tab-label */);
 }
 

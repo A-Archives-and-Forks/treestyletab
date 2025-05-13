@@ -269,7 +269,7 @@ tab-item-substance {
 }
 
 tab-item[type="group"] tab-item-substance {
-  max-width: calc(max(var(--tab-label-width), var(--favicon-size)) +
+  max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
                   0.25em /* margin-inline of tab-label */ +
                   var(--tab-border-radius-size) + var(--tab-border-radius-size) /* radius of tab-item-substance */ +
                   0.35em + 0.25em /* padding-inline of tab-item-substance */);
