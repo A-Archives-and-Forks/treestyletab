@@ -1082,14 +1082,15 @@ export async function reopenInContainer(sourceTabOrTabs, cookieStoreId, options 
   return tabs;
 }
 
-export async function addTabsToNativeTabGroup(tabs, groupId) {
-  const initialGroupId = groupId;
-  groupId = await addTabsToNativeTabGroupInternal(tabs, groupId);
+export async function addTabsToNativeTabGroup(tabs, groupIdOrProperties) {
+  const initialGroupId = typeof groupIdOrProperties == 'number' ? groupIdOrProperties : null;
+  const groupId = await addTabsToNativeTabGroupInternal(tabs, groupIdOrProperties);
   await Tree.maintainTreeForNativeTabGroup({ windowId: tabs[0].windowId, groupId });
   const created = groupId != initialGroupId;
   return { groupId, created };
 }
-async function addTabsToNativeTabGroupInternal(tabs, groupId) {
+async function addTabsToNativeTabGroupInternal(tabs, groupIdOrProperties) {
+  let groupId = typeof groupIdOrProperties == 'number' ? groupIdOrProperties : null;
   const tabsToGrouped = tabs.filter(tab => tab.groupId != groupId);
   if (tabsToGrouped.length == 0) {
     return groupId;
@@ -1125,6 +1126,10 @@ async function addTabsToNativeTabGroupInternal(tabs, groupId) {
       tabIds: toBeGroupedIds,
     });
   });
+  if (groupIdOrProperties &&
+      typeof groupIdOrProperties == 'object') {
+    await browser.tabGroups.update(groupId, groupIdOrProperties);
+  }
   for (const tab of tabsToGrouped) {
     win.internalMovingTabs.delete(tab.id);
   }
@@ -1171,6 +1176,17 @@ async function removeTabsFromNativeTabGroupInternal(tabs) {
     win.internalMovingTabs.delete(tab.id);
   }
   browser.tabs.onUpdated.removeListener(onUpdated);
+}
+
+async function moveGroupToNewWindow({ groupId, windowId }) {
+  log('moveGroupToNewWindow: ', groupId, windowId);
+  const group = TabGroup.get({ groupId, windowId });
+  const members = TabGroup.getMemberTabs({ windowId, groupId });
+  const movedTabs = await Tree.openNewWindowFromTabs(members);
+  await addTabsToNativeTabGroupInternal(movedTabs, {
+    title: group.id,
+    color: group.color,
+  });
 }
 
 
@@ -1287,6 +1303,10 @@ browser.runtime.onMessage.addListener((message, sender) => {
         })(); break;
 
         case 'moveGroupToNewWindow':
+          moveGroupToNewWindow({
+            windowId: message.windowId || sender.tab?.windowId,
+            groupId:  message.groupId,
+          });
           break;
 
         case 'saveAndCloseGroup':
@@ -1296,7 +1316,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
         case 'ungroupTabs':
         case 'cancel': {
           const members = TabGroup.getMemberTabs({
-            windowId: sender.tab?.windowId,
+            windowId: message.windowId || sender.tab?.windowId,
             groupId:  message.groupId,
           });
           removeTabsFromNativeTabGroup(members);
