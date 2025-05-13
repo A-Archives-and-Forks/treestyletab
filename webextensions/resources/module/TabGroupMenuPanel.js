@@ -262,39 +262,39 @@ export default class TabGroupMenuPanel {
         /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#286 */
         --text-color-error: light-dark(var(--color-red-70), var(--color-red-20));
 
-        .blue {
+        input[value="blue"] {
           --tabgroup-swatch-color: var(--tab-group-color-blue);
           --tabgroup-swatch-color-invert: var(--tab-group-color-blue-invert);
         }
-        .purple {
+        input[value="purple"] {
           --tabgroup-swatch-color: var(--tab-group-color-purple);
           --tabgroup-swatch-color-invert: var(--tab-group-color-purple-invert);
         }
-        .cyan {
+        input[value="cyan"] {
           --tabgroup-swatch-color: var(--tab-group-color-cyan);
           --tabgroup-swatch-color-invert: var(--tab-group-color-cyan-invert);
         }
-        .orange {
+        input[value="orange"] {
           --tabgroup-swatch-color: var(--tab-group-color-orange);
           --tabgroup-swatch-color-invert: var(--tab-group-color-orange-invert);
         }
-        .yellow {
+        input[value="yellow"] {
           --tabgroup-swatch-color: var(--tab-group-color-yellow);
           --tabgroup-swatch-color-invert: var(--tab-group-color-yellow-invert);
         }
-        .pink {
+        input[value="pink"] {
           --tabgroup-swatch-color: var(--tab-group-color-pink);
           --tabgroup-swatch-color-invert: var(--tab-group-color-pink-invert);
         }
-        .green {
+        input[value="green"] {
           --tabgroup-swatch-color: var(--tab-group-color-green);
           --tabgroup-swatch-color-invert: var(--tab-group-color-green-invert);
         }
-        .red {
+        input[value="red"] {
           --tabgroup-swatch-color: var(--tab-group-color-red);
           --tabgroup-swatch-color-invert: var(--tab-group-color-red-invert);
         }
-        .gray {
+        input[value="gray"] {
           --tabgroup-swatch-color: var(--tab-group-color-gray);
           --tabgroup-swatch-color-invert: var(--tab-group-color-gray-invert);
         }
@@ -640,39 +640,39 @@ export default class TabGroupMenuPanel {
               <div class="panel-body tab-group-editor-swatches" role="radiogroup"
                    aria-label=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector_aria_label)}>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_blue_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch blue"/>
+                  <input type="radio" name="tab-group-color" value="blue" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_blue)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_purple_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch purple"/>
+                  <input type="radio" name="tab-group-color" value="purple" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_purple)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_cyan_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch cyan"/>
+                  <input type="radio" name="tab-group-color" value="cyan" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_cyan)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_orange_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch orange"/>
+                  <input type="radio" name="tab-group-color" value="orange" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_orange)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_yellow_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch yellow"/>
+                  <input type="radio" name="tab-group-color" value="yellow" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_yellow)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_pink_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch pink"/>
+                  <input type="radio" name="tab-group-color" value="pink" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_pink)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_green_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch green"/>
+                  <input type="radio" name="tab-group-color" value="green" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_green)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_gray_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch gray"/>
+                  <input type="radio" name="tab-group-color" value="gray" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_gray)}</span>
                 </label>
                 <label title=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_color_selector2_red_title)}>
-                  <input type="radio" name="tab-group-color" class="tab-group-editor-swatch red"/>
+                  <input type="radio" name="tab-group-color" value="red" class="tab-group-editor-swatch"/>
                   <span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_color_selector2_red)}</span>
                 </label>
               </div>
@@ -709,9 +709,22 @@ export default class TabGroupMenuPanel {
     range.detach();
     const titleField = panelFragment.querySelector('.tab-group-menu-title-field');
     titleField.addEventListener('input', event => {
+      browser.runtime.sendMessage({
+        type:    'treestyletab:update-native-tab-group',
+        groupId: parseInt(this.#panel.dataset.groupId),
+        title:   event.target.value,
+      });
     });
     const colorRadioGroup = panelFragment.querySelector('.tab-group-editor-swatches');
     colorRadioGroup.addEventListener('change', event => {
+      if (!event.target.checked) {
+        return;
+      }
+      browser.runtime.sendMessage({
+        type:    'treestyletab:update-native-tab-group',
+        groupId: parseInt(this.#panel.dataset.groupId),
+        color:   event.target.value,
+      });
     });
     const panel = panelFragment.querySelector('.tab-group-menu-panel');
     panel.addEventListener('click', event => {
@@ -783,10 +796,19 @@ export default class TabGroupMenuPanel {
 
     this.#panel.classList.toggle('rtl', !!rtl);
 
+    const titleField = this.#panel.querySelector('.tab-group-menu-title-field');
+    titleField.value = groupTitle || '';
+
+    const colorRadio = this.#panel.querySelector(`.tab-group-editor-swatches input[value="${groupColor}"]`)
+    if (colorRadio) {
+      colorRadio.checked = true;
+    }
+
     const completeUpdate = () => {
       if (this.#panel.dataset.groupId != groupId ||
-          this.lastStartedAt != startAt)
+          this.lastStartedAt != startAt) {
         return;
+      }
 
       if (!anchorTabRect) {
         this.#panel.classList.remove('updating');
@@ -871,6 +893,8 @@ export default class TabGroupMenuPanel {
       }
 
       this.#panel.classList.remove('updating');
+
+      titleField.focus();
     };
     completeUpdate.retryCount = 0;
 

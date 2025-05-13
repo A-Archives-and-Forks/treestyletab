@@ -1252,12 +1252,23 @@ SidebarConnection.onMessage.addListener(async (windowId, message) => {
   }
 });
 
-// for automated tests
 browser.runtime.onMessage.addListener((message, _sender) => {
   switch (message.type) {
+    // for automated tests
     case Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP:
       performTabsDragDropWithMessage(message);
       break;
+
+    case Constants.kCOMMAND_UPDATE_NATIVE_TAB_GROUP: {
+      const updates = {};
+      if ('title' in message) {
+        updates.title = message.title;
+      }
+      if ('color' in message) {
+        updates.color = message.color;
+      }
+      browser.tabGroups.update(message.groupId, updates);
+    }; break;
   }
 });
 
