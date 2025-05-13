@@ -690,7 +690,7 @@ function cancelRunningScroll() {
 }
 
 function calculateScrollDeltaForItem(item, { over } = {}) {
-  item = Tab.get(item && item.id);
+  item = Tab.get(item?.id);
   if (!item)
     return 0;
 
@@ -728,7 +728,7 @@ function calculateScrollDeltaForItem(item, { over } = {}) {
 }
 
 export function isItemInViewport(item, { allowPartial } = {}) {
-  item = Tab.get(item && item.id);
+  item = Tab.get(item?.id);
   if (!TabsStore.ensureLivingItem(item))
     return false;
 
@@ -851,7 +851,7 @@ export function scrollToNewTab(item, options = {}) {
 }
 
 function canScrollToItem(item) {
-  item = Tab.get(item && item.id);
+  item = Tab.get(item?.id);
   return (TabsStore.ensureLivingItem(item) &&
           !item.hidden);
 }
@@ -859,7 +859,7 @@ function canScrollToItem(item) {
 export async function scrollToItem(item, options = {}) {
   scrollToItem.lastTargetId = null;
 
-  log('scrollToItem to ', item && item.id, options.anchor && options.anchor.id, options,
+  log('scrollToItem to ', item?.id, options.anchor?.id, options,
       { stack: configs.debug && new Error().stack });
   cancelRunningScroll();
   if (!canScrollToItem(item)) {
@@ -1035,7 +1035,7 @@ autoScrollOnMouseEvent.areaSize = 20;
 
 
 async function notifyOutOfViewItem(item) {
-  item = Tab.get(item && item.id);
+  item = Tab.get(item?.id);
   if (RestoringTabCount.hasMultipleRestoringTabs()) {
     log('notifyOutOfViewItem: skip until completely restored');
     wait(100).then(() => notifyOutOfViewItem(item));
@@ -1233,7 +1233,7 @@ async function onBackgroundMessage(message) {
       ]);
       const item = Tab.get(message.tabId);
       const parent = Tab.get(message.parentId);
-      if (item && parent && parent.active)
+      if (item && parent?.active)
         reserveToScrollToNewTab(item);
     }; break;
 
@@ -1287,7 +1287,7 @@ async function onBackgroundMessage(message) {
           needToWaitForTreeExpansion) {
         wait(10).then(() => { // wait until the tab is moved by TST itself
           const parent = item.$TST.parent;
-          if (parent && parent.$TST.subtreeCollapsed) // possibly collapsed by other trigger intentionally
+          if (parent?.$TST.subtreeCollapsed) // possibly collapsed by other trigger intentionally
             return;
           const active = item.active;
           item.$TST.collapsedOnCreated = false;
@@ -1608,10 +1608,10 @@ export function tryUnlockPosition(tabIds) {
 function tryFinishPositionLocking(event) {
   log('tryFinishPositionLocking ', tryLockPosition.tabIds, event);
 
-  switch (event && event.type) {
+  switch (event?.type) {
     case 'mouseout':
       const relatedTarget = event.relatedTarget;
-      if (relatedTarget && relatedTarget.ownerDocument == document) {
+      if (relatedTarget?.ownerDocument == document) {
         log(' => ignore mouseout in the tabbar window itself');
         return;
       }

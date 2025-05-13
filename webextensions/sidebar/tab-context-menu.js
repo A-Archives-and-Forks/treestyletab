@@ -579,7 +579,7 @@ function onMessageExternal(message, sender) {
       log('TSTAPI.kCONTEXT_MENU_OPEN:', message, { id: sender.id, url: sender.url });
       return (async () => {
         const tab      = message.tab ? Tab.get(message.tab) : null ;
-        const windowId = message.window || tab && tab.windowId;
+        const windowId = message.window || tab?.windowId;
         if (windowId != TabsStore.getCurrentWindowId())
           return;
         await onShown(tab);
@@ -690,7 +690,7 @@ async function onContextMenu(event) {
 
   const modifierKeyPressed = isMacOS() ? event.metaKey : event.ctrlKey;
 
-  const originalTargetBookmarkElement = originalTarget && originalTarget.closest('[data-bookmark-id]');
+  const originalTargetBookmarkElement = originalTarget?.closest('[data-bookmark-id]');
   const bookmarkId = originalTargetBookmarkElement?.dataset.bookmarkId;
   if (bookmarkId &&
       !modifierKeyPressed &&
@@ -703,7 +703,7 @@ async function onContextMenu(event) {
     return;
   }
 
-  const originalTargetTreeItemElement = originalTarget && originalTarget.closest('[data-tab-id]');
+  const originalTargetTreeItemElement = originalTarget?.closest('[data-tab-id]');
   const tab = originalTargetTreeItemElement ?
     TabsStore.ensureLivingItem(Tab.get(parseInt(originalTargetTreeItemElement.dataset.tabId))) :
     EventUtils.getTreeItemFromEvent(event);
@@ -729,7 +729,7 @@ async function onContextMenu(event) {
     return;
   }
 
-  const originalTargetNativeTabGroupElement = originalTarget && originalTarget.closest('[data-native-tab-group-id]');
+  const originalTargetNativeTabGroupElement = originalTarget?.closest('[data-native-tab-group-id]');
   const nativeTabGroup = originalTargetNativeTabGroupElement?.$TST.rawGroup;
   if (nativeTabGroup &&
       !modifierKeyPressed) {

@@ -338,7 +338,7 @@ function onMouseDown(event) {
       ctrlKey:  mousedownDetail.ctrlKey,
       metaKey:  mousedownDetail.metaKey,
       shiftKey: mousedownDetail.shiftKey,
-      tab:      tab && tab.$TST.export(true),
+      tab:      tab?.$TST.export(true),
     }).catch(ApiTabs.createErrorHandler()),
     (async () => {
       log('Sending message to mousedown listeners ', { extraContentsInfo });

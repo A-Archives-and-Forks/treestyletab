@@ -114,8 +114,8 @@ export function endMultiDrag(tab, coordinates) {
     TSTAPI.broadcastMessage({
       type:    TSTAPI.kNOTIFY_TAB_DRAGEND,
       tab,
-      window:  tab && tab.windowId,
-      windowId: tab && tab.windowId,
+      window:  tab?.windowId,
+      windowId: tab?.windowId,
       clientX: coordinates.clientX,
       clientY: coordinates.clientY
     }, { tabProperties: ['tab'] }).catch(_error => {});
@@ -126,8 +126,8 @@ export function endMultiDrag(tab, coordinates) {
     TSTAPI.broadcastMessage({
       type:    TSTAPI.kNOTIFY_TAB_DRAGCANCEL,
       tab,
-      window:  tab && tab.windowId,
-      windowId: tab && tab.windowId,
+      window:  tab?.windowId,
+      windowId: tab?.windowId,
       clientX: coordinates.clientX,
       clientY: coordinates.clientY
     }, { tabProperties: ['tab'] }).catch(_error => {});
@@ -175,8 +175,8 @@ function getDraggedTabsFromOneTab(tab, { asTree } = {}) {
 
 function sanitizeDragData(dragData) {
   return {
-    tab:      dragData.tab && dragData.tab.$TST.sanitized,
-    tabs:     dragData.tabs.map(tab => tab && tab.$TST.sanitized),
+    tab:      dragData.tab?.$TST.sanitized,
+    tabs:     dragData.tabs.map(tab => tab?.$TST.sanitized),
     structure:  dragData.structure,
     windowId:   dragData.windowId,
     instanceId: dragData.instanceId,
@@ -192,7 +192,7 @@ function getDropAction(event) {
   const info = {
     dragOverTab,
     targetTab,
-    substanceTargetTab: targetTab && targetTab.pinned && targetTab.$TST.bundledTab,
+    substanceTargetTab: targetTab?.pinned && targetTab.$TST.bundledTab,
     dropPosition:  null,
     action:        null,
     parent:        null,
@@ -216,20 +216,20 @@ function getDropAction(event) {
   });
   info.defineGetter('draggedTab', () => {
     const dragData = info.dragData;
-    if (dragData && dragData.instanceId != mInstanceId)
+    if (dragData?.instanceId != mInstanceId)
       return null;
-    const tab      = dragData && dragData.tab;
+    const tab      = dragData?.tab;
     return tab && Tab.get(tab.id) || tab;
   });
   info.defineGetter('draggedTabs', () => {
     const dragData = info.dragData;
-    if (dragData && dragData.instanceId != mInstanceId)
+    if (dragData?.instanceId != mInstanceId)
       return [];
-    const tabIds = dragData && dragData.tabs;
+    const tabIds = dragData?.tabs;
     return !tabIds ? [] : mapAndFilter(tabIds, id => Tab.get(id) || undefined);
   });
   info.defineGetter('draggedTabIds', () => {
-    return info.draggedTabs.map(tab => tab.id);
+    return info.draggedTabs.map(item => item.id);
   });
   info.defineGetter('firstTargetTab', () => {
     return Tab.getFirstNormalTab(TabsStore.getCurrentWindowId()) || Tab.getFirstTab(TabsStore.getCurrentWindowId());
@@ -243,8 +243,8 @@ function getDropAction(event) {
       return false;
     }
 
-    const draggedTab = info.dragData && info.dragData.tab;
-    const isPrivateBrowsingTabDragged = draggedTab && draggedTab.incognito;
+    const draggedTab = info.dragData?.tab;
+    const isPrivateBrowsingTabDragged = draggedTab?.incognito;
     const isPrivateBrowsingDropTarget = (info.dragOverTab || Tab.getFirstTab(TabsStore.getCurrentWindowId())).incognito;
     if (draggedTab &&
         isPrivateBrowsingTabDragged != isPrivateBrowsingDropTarget) {
@@ -387,8 +387,8 @@ function getDropAction(event) {
       info.action       = Constants.kACTION_ATTACH;
       info.parent       = info.substanceTargetTab || targetTab;
       info.insertBefore = insertAt == Constants.kINSERT_TOP ?
-        (info.parent && info.parent.$TST.firstChild || info.parent.$TST.unsafeNextTab /* instead of nearestVisibleFollowingTab, to avoid placing the tab after hidden tabs (too far from the target) */) :
-        (info.parent.$TST.nextSiblingTab || info.parent.$TST.unsafeNearestFollowingForeignerTab /* instead of nearestFollowingForeignerTab, to avoid placing the tab after hidden tabs (too far from the target) */);
+        (info.parent?.$TST.firstChild || info.parent?.$TST.unsafeNextTab /* instead of nearestVisibleFollowingTab, to avoid placing the tab after hidden tabs (too far from the target) */) :
+        (info.parent?.$TST.nextSiblingTab || info.parent?.$TST.unsafeNearestFollowingForeignerTab /* instead of nearestFollowingForeignerTab, to avoid placing the tab after hidden tabs (too far from the target) */);
       info.insertAfter  = insertAt == Constants.kINSERT_TOP ?
         info.parent :
         (info.parent.$TST.lastDescendant || info.parent);
@@ -576,9 +576,9 @@ async function handleDroppedNonTabItems(event, dropActionInfo) {
     type:           Constants.kCOMMAND_NEW_TABS,
     uris,
     windowId:       TabsStore.getCurrentWindowId(),
-    parentId:       dropActionInfo.parent && dropActionInfo.parent.id,
-    insertBeforeId: dropActionInfo.insertBefore && dropActionInfo.insertBefore.id,
-    insertAfterId:  dropActionInfo.insertAfter && dropActionInfo.insertAfter.id,
+    parentId:       dropActionInfo.parent?.id,
+    insertBeforeId: dropActionInfo.insertBefore?.id,
+    insertAfterId:  dropActionInfo.insertAfter?.id,
     active,
     discarded:      !active && configs.tabsLoadInBackgroundDiscarded,
   });
@@ -627,12 +627,12 @@ function onDragStart(event, options = {}) {
   if (configs.enableWorkaroundForBug1548949)
     configs.workaroundForBug1548949DroppedTabs = '';
 
-  let draggedTab = options.tab || EventUtils.getTreeItemFromEvent(event);
+  let draggedItem = options.tab || EventUtils.getTreeItemFromEvent(event);
   let behavior = 'behavior' in options ? options.behavior :
     event.shiftKey ? configs.tabDragBehaviorShift :
       configs.tabDragBehavior;
 
-  if (draggedTab && draggedTab.$TST.subtreeCollapsed)
+  if (draggedItem?.$TST.subtreeCollapsed)
     behavior |= Constants.kDRAG_BEHAVIOR_ENTIRE_TREE;
 
   mCurrentDragDataForExternalsId = `${parseInt(Math.random() * 65000)}-${Date.now()}`;
@@ -643,7 +643,7 @@ function onDragStart(event, options = {}) {
   });
 
   const originalTarget = EventUtils.getElementOriginalTarget(event);
-  const extraTabContentsDragData = originalTarget && JSON.parse(originalTarget.dataset && originalTarget.dataset.dragData || 'null');
+  const extraTabContentsDragData = originalTarget && JSON.parse(originalTarget.dataset?.dragData || 'null');
   log('onDragStart: extraTabContentsDragData = ', extraTabContentsDragData);
   let dataOverridden = false;
   if (extraTabContentsDragData) {
@@ -675,7 +675,7 @@ function onDragStart(event, options = {}) {
             const tab = Tab.get(data.data.id);
             if (tab) {
               tabIsGiven = true;
-              draggedTab = tab;
+              draggedItem = tab;
               behavior   = data.data.allowMove === false ? Constants.kDRAG_BEHAVIOR_NONE : Constants.kDRAG_BEHAVIOR_MOVE;
               if (data.data.allowDetach)
                 behavior |= Constants.kDRAG_BEHAVIOR_TEAR_OFF;
@@ -705,7 +705,7 @@ function onDragStart(event, options = {}) {
 
   const allowBookmark = !!(behavior & Constants.kDRAG_BEHAVIOR_ALLOW_BOOKMARK);
   const asTree = !!(behavior & Constants.kDRAG_BEHAVIOR_ENTIRE_TREE);
-  const dragData = getDragDataFromOneTab(draggedTab, { asTree });
+  const dragData = getDragDataFromOneTab(draggedItem, { asTree });
   dragData.individualOnOutside = dragData.tab && !dragData.tab.$TST.multiselected && !asTree
   dragData.behavior = behavior;
   if (!dragData.tab) {
@@ -734,14 +734,14 @@ function onDragStart(event, options = {}) {
     return;
   }
 
-  if (mousedown && mousedown.expired) {
+  if (mousedown?.expired) {
     log('onDragStart: canceled / expired');
     event.stopPropagation();
     event.preventDefault();
     mLastDragEnteredTarget = tab.$TST.element || null;
     const startOnClosebox = mDragTargetIsClosebox = mousedown.detail.closebox;
     if (startOnClosebox)
-      mLastDragEnteredTarget = tab.$TST.element && tab.$TST.element.closeBox || null;
+      mLastDragEnteredTarget = tab.$TST.element?.closeBox || null;
     const windowId = TabsStore.getCurrentWindowId();
     TSTAPI.broadcastMessage({
       type:   TSTAPI.kNOTIFY_TAB_DRAGSTART,
@@ -758,8 +758,8 @@ function onDragStart(event, options = {}) {
   }
 
   // dragging on clickable element will be expected to cancel the operation
-  if (EventUtils.isEventFiredOnClosebox(options.tab && options.tab.$TST.element || event) ||
-      EventUtils.isEventFiredOnClickable(options.tab && options.tab.$TST.element || event)) {
+  if (EventUtils.isEventFiredOnClosebox(options.tab?.$TST.element || event) ||
+      EventUtils.isEventFiredOnClickable(options.tab?.$TST.element || event)) {
     log('onDragStart: canceled / on undraggable element');
     event.stopPropagation();
     event.preventDefault();
@@ -793,14 +793,14 @@ function onDragStart(event, options = {}) {
     const urls    = [];
     const mozUrl  = [];
     const urlList = [];
-    for (const draggedTab of dragData.tabs) {
-      draggedTab.$TST.addState(Constants.kTAB_STATE_DRAGGING);
-      TabsStore.addDraggingTab(draggedTab);
+    for (const draggedItem of dragData.tabs) {
+      draggedItem.$TST.addState(Constants.kTAB_STATE_DRAGGING);
+      TabsStore.addDraggingTab(draggedItem);
       if (!dragData.individualOnOutside ||
           mozUrl.length == 0) {
-        urls.push(draggedTab.url);
-        mozUrl.push(`${draggedTab.url}\n${draggedTab.title}`);
-        urlList.push(`#${draggedTab.title}\n${draggedTab.url}`);
+        urls.push(draggedItem.url);
+        mozUrl.push(`${draggedItem.url}\n${draggedItem.title}`);
+        urlList.push(`#${draggedItem.title}\n${draggedItem.url}`);
       }
     }
     mCurrentDragDataForExternals[RetrieveURL.kTYPE_PLAIN_TEXT] = urls.join('\n');
@@ -1096,8 +1096,8 @@ function onDragEnter(event) {
     return;
 
   reserveToProcessLongHover({
-    dragOverTabId: info.targetTab && info.targetTab.id,
-    draggedTabId:  info.draggedTab && info.draggedTab.id,
+    dragOverTabId: info.targetTab?.id,
+    draggedTabId:  info.draggedTab?.id,
     dropEffect:    info.dropEffect
   });
 }
@@ -1230,7 +1230,7 @@ function onDrop(event) {
 
   let dragData = event.dataTransfer.getData(kTREE_DROP_TYPE);
   dragData = (dragData && JSON.parse(dragData)) || mCurrentDragData;
-  const sessionId = dragData && dragData.sessionId || '';
+  const sessionId = dragData?.sessionId || '';
   log(`onDrop ${sessionId}`, dropActionInfo, event.dataTransfer);
 
   if (!dropActionInfo.canDrop) {
@@ -1420,11 +1420,11 @@ async function onDragEnd(event) {
     // behavior from misdetection, but I decide to ignore it because it looks
     // quite rare case.
     await wait(250); // wait until "workaroundForBug1548949DroppedTabs" is synchronized
-    const draggedTabs = dragData.tabs.map(tab => `${mInstanceId}/${tab.id}`).join('\n');
+    const draggedItems = dragData.tabs.map(tab => `${mInstanceId}/${tab.id}`).join('\n');
     const lastDroppedTabs = configs.workaroundForBug1548949DroppedTabs;
-    handledBySomeone = draggedTabs == lastDroppedTabs;
+    handledBySomeone = draggedItems == lastDroppedTabs;
     log('workaround for bug 1548949: detect dragged tabs are handled by me or not.',
-        { handledBySomeone, draggedTabs, lastDroppedTabs });
+        { handledBySomeone, draggedItems, lastDroppedTabs });
     configs.workaroundForBug1548949DroppedTabs = null;
   }
 

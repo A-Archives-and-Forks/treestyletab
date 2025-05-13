@@ -358,7 +358,7 @@ export class TreeItemElement extends HTMLElement {
       return;
 
     const raw = this.$TST.raw;
-    const tabElement = raw && raw.$TST.element;
+    const tabElement = raw?.$TST.element;
     if (!tabElement)
       return;
 
@@ -700,7 +700,7 @@ windowId = ${raw.windowId}
     const tab = this.$TST.tab;
     if (tab) {
       const openerOfGroupTab = tab && this.$TST.isGroupTab && Tab.getOpenerFromGroupTab(tab);
-      this.favIconUrl = openerOfGroupTab && openerOfGroupTab.favIconUrl || tab?.favIconUrl;
+      this.favIconUrl = openerOfGroupTab?.favIconUrl || tab?.favIconUrl;
 
       for (const state of classList) {
         if (IGNORE_CLASSES.has(state) ||
@@ -803,7 +803,7 @@ windowId = ${raw.windowId}
 
   get overflow() {
     const label = this._labelElement;
-    return label && label.overflow;
+    return label?.overflow;
   }
 
   get label() {

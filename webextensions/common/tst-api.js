@@ -318,7 +318,7 @@ export function getAddon(id) {
 
 export function getGrantedPermissionsForAddon(id) {
   const addon = getAddon(id);
-  return addon && addon.grantedPermissions || new Set();
+  return addon?.grantedPermissions || new Set();
 }
 
 function registerAddon(id, addon) {
@@ -768,7 +768,7 @@ const mPromisedOnBeforeUnload = new Promise((resolve, _reject) => {
 const mWaitingShutdownMessages = new Map();
 
 function onBackendCommand(message, sender) {
-  if (message && message.messages)
+  if (message?.messages)
     return Promise.all(
       message.messages.map(oneMessage => onBackendCommand(oneMessage, sender))
     );
@@ -820,7 +820,7 @@ function onBackendCommand(message, sender) {
               return; // it is obsolete
 
             const addon          = getAddon(sender.id);
-            const lastRegistered = addon && addon.lastRegistered;
+            const lastRegistered = addon?.lastRegistered;
             setTimeout(() => {
               // if it is re-registered immediately, it was updated or reloaded.
               const addon = getAddon(sender.id);
@@ -930,7 +930,7 @@ function onFrontendCommand(message, sender) {
   if (!configs.APIEnabled)
     return;
 
-  if (message && message.messages)
+  if (message?.messages)
     return Promise.all(
       message.messages.map(oneMessage => onFrontendCommand(oneMessage, sender))
     );
@@ -1056,7 +1056,7 @@ export async function tryOperationAllowed(type, message = {}, { targets, except,
     log(`=> ${type}: allowed because no one responded`);
     return true;
   }
-  if (results.flat().some(result => result && result.result)) {
+  if (results.flat().some(result => result?.result)) {
     log(`=> ${type}: canceled by some helper addon`);
     return false;
   }
@@ -1228,7 +1228,7 @@ export function isSafeAtIncognito(addonId, { tab, windowId }) {
   if (addonId == browser.runtime.id)
     return true;
   const win = windowId && TabsStore.windows.get(windowId);
-  const hasIncognitoInfo = (win && win.incognito) || (tab && tab.incognito);
+  const hasIncognitoInfo = win?.incognito || tab?.incognito;
   return !hasIncognitoInfo || configs.incognitoAllowedExternalAddons.includes(addonId);
 }
 
@@ -1349,7 +1349,7 @@ export async function getTargetRenderedTabs(message, sender) {
     message.windowId ||
     await browser.windows.getLastFocused({
       windowTypes: ['normal']
-    }).catch(ApiTabs.createErrorHandler()).then(win => win && win.id);
+    }).catch(ApiTabs.createErrorHandler()).then(win => win?.id);
   const renderedTabIds = await browser.runtime.sendMessage({
     type: Constants.kCOMMAND_GET_RENDERED_TAB_IDS,
     windowId,
@@ -1459,7 +1459,7 @@ async function getTabsByQuery(query, { activeWindow, queryOptions, sender }) {
       return baseTab.$TST.lastDescendant;
 
     case 'sendertab':
-      return sender && sender.tab && Tab.get(sender.tab.id) || null;
+      return Tab.get(sender?.tab?.id) || null;
 
 
     case 'highlighted':
