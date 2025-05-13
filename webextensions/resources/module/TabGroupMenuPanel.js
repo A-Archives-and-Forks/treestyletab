@@ -136,21 +136,27 @@ export default class TabGroupMenuPanel {
         position: fixed;
         right: auto;
         z-index: var(--max-32bit-integer);
-      }
-      .tab-group-menu-panel:not(.open) {
-        pointer-events: none;
-      }
-      .tab-group-menu-panel.rtl {
-        direction: rtl;
-      }
-      .tab-group-menu-panel.animation {
-        transition: var(--tab-group-menu-panel-show-hide-animation),
-                    left 0.1s ease-out,
-                    margin-block-start 0.1s ease-out,
-                    right 0.1s ease-out;
-      }
-      .tab-group-menu-panel.open {
-        opacity: 1;
+
+        &:not(.open) {
+          pointer-events: none;
+        }
+        &.rtl {
+          direction: rtl;
+        }
+        &.animation {
+          transition: var(--tab-group-menu-panel-show-hide-animation),
+                      left 0.1s ease-out,
+                      margin-block-start 0.1s ease-out,
+                      right 0.1s ease-out;
+        }
+        &.open {
+          opacity: 1;
+        }
+
+        &.updating,
+        & .updating {
+          visibility: hidden;
+        }
       }
 
       .tab-group-menu-panel-contents/*,
@@ -161,11 +167,6 @@ export default class TabGroupMenuPanel {
 
       .tab-group-menu-panel-contents {
         max-height: calc(var(--panel-max-height) - (2px / var(--tab-group-menu-panel-scale)));
-      }
-
-      .tab-group-menu-panel.updating,
-      .tab-group-menu-panel .updating {
-        visibility: hidden;
       }
 
 
@@ -429,6 +430,10 @@ export default class TabGroupMenuPanel {
            &:hover {
              background-color: var(--tab-hover-background-color);
            }
+
+           &:focus {
+             box-shadow: none;
+           }
           }
         }
 
@@ -471,6 +476,10 @@ export default class TabGroupMenuPanel {
               color: var(--button-text-color-primary-active);
               background-color: var(--color-accent-primary-active);
             }
+          }
+
+          &:focus {
+            box-shadow: none;
           }
         }
       }

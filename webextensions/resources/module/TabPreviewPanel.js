@@ -51,10 +51,10 @@ export default class TabPreviewPanel {
         transition: var(--tab-preview-panel-show-hide-animation);
         width: 100%;
         z-index: calc(var(--max-32bit-integer) - 100 /* to put this panel below the tab group menu panel */);
-      }
 
-      .tab-preview-root:hover {
-        opacity: 0;
+        &:hover {
+          opacity: 0;
+        }
       }
 
       .tab-preview-panel {
@@ -148,52 +148,70 @@ export default class TabPreviewPanel {
         position: fixed;
         right: auto;
         z-index: var(--max-32bit-integer);
-      }
-      .tab-preview-panel.rtl {
-        direction: rtl;
-      }
-      .tab-preview-panel.animation {
-        transition: var(--tab-preview-panel-show-hide-animation),
-                    left 0.1s ease-out,
-                    margin-block-start 0.1s ease-out,
-                    right 0.1s ease-out;
-      }
-      .tab-preview-panel.extended {
-        max-width: min(100%, calc(var(--panel-width) * 2));
-      }
-      .tab-preview-panel.open {
-        opacity: 1;
-      }
-      .tab-preview-panel.animation.updating,
-      .tab-preview-panel.animation:not(.open) {
-        margin-block-start: 1ch; /* The native tab preview panel "popups up" on the vertical tab bar. */
-      }
-      /*
-      .tab-preview-panel[data-align="left"].updating,
-      .tab-preview-panel[data-align="left"]:not(.open) {
-        left: -1ch !important;
-      }
-      .tab-preview-panel[data-align="right"].updating,
-      .tab-preview-panel[data-align="right"]:not(.open) {
-        right: -1ch !important;
-      }
-      */
 
-      .tab-preview-panel.extended .tab-preview-title,
-      .tab-preview-panel.extended .tab-preview-url,
-      .tab-preview-panel.extended .tab-preview-image-container,
-      .tab-preview-panel:not(.extended) .tab-preview-extended-content {
-        display: none;
+        &.rtl {
+          direction: rtl;
+        }
+        &.animation {
+          transition: var(--tab-preview-panel-show-hide-animation),
+                      left 0.1s ease-out,
+                      margin-block-start 0.1s ease-out,
+                      right 0.1s ease-out;
+        }
+        &.extended {
+          max-width: min(100%, calc(var(--panel-width) * 2));
+        }
+        &.open {
+          opacity: 1;
+        }
+        &.animation.updating,
+        &.animation:not(.open) {
+          margin-block-start: 1ch; /* The native tab preview panel "popups up" on the vertical tab bar. */
+        }
+        /*
+        &[data-align="left"].updating,
+        &[data-align="left"]:not(.open) {
+          left: -1ch !important;
+        }
+        &[data-align="right"].updating,
+        &[data-align="right"]:not(.open) {
+          right: -1ch !important;
+        }
+        */
+
+        &.extended .tab-preview-title,
+        &.extended .tab-preview-url,
+        &.extended .tab-preview-image-container,
+        &:not(.extended) .tab-preview-extended-content {
+          display: none;
+        }
+        &.extended .tab-preview-panel-contents,
+        &.extended .tab-preview-panel-contents-inner-box {
+          max-width: calc(min(100%, calc(var(--panel-width) * 2)) - (2px / var(--tab-preview-panel-scale)));
+        }
+
+        &.blank,
+        & .blank,
+        &.hidden,
+        & .hidden {
+          display: none;
+        }
+
+        &.loading,
+        & .loading {
+          opacity: 0;
+        }
+
+        &.updating,
+        & .updating {
+          visibility: hidden;
+        }
       }
 
       .tab-preview-panel-contents,
       .tab-preview-panel-contents-inner-box {
         max-width: calc(var(--panel-width) - (2px / var(--tab-preview-panel-scale)));
         min-width: calc(var(--panel-width) - (2px / var(--tab-preview-panel-scale)));
-      }
-      .tab-preview-panel.extended .tab-preview-panel-contents,
-      .tab-preview-panel.extended .tab-preview-panel-contents-inner-box {
-        max-width: calc(min(100%, calc(var(--panel-width) * 2)) - (2px / var(--tab-preview-panel-scale)));
       }
 
       .tab-preview-panel-contents {
@@ -239,57 +257,46 @@ export default class TabPreviewPanel {
       .tab-preview-image {
         max-width: 100%;
         opacity: 1;
-      }
-      .tab-preview-panel.animation:not(.updating) .tab-preview-image {
-        transition: opacity 0.2s ease-out;
-      }
-      .tab-preview-image.loading {
-        min-height: ${this.BASE_PANEL_HEIGHT}px;
-      }
 
-      .tab-preview-panel.blank,
-      .tab-preview-panel .blank,
-      .tab-preview-panel.hidden,
-      .tab-preview-panel .hidden {
-        display: none;
-      }
+        .tab-preview-panel.animation:not(.updating) & {
+          transition: opacity 0.2s ease-out;
+        }
 
-      .tab-preview-panel.loading,
-      .tab-preview-panel .loading {
-        opacity: 0;
-      }
-
-      .tab-preview-panel.updating,
-      .tab-preview-panel .updating {
-        visibility: hidden;
+        &.loading {
+          min-height: ${this.BASE_PANEL_HEIGHT}px;
+        }
       }
 
 
       /* tree */
-      .tab-preview-extended-content ul,
-      .tab-preview-extended-content ul ul {
-        margin-block: 0;
-        margin-inline: 1em 0;
-        padding: 0;
-        list-style: disc;
-      }
+      .tab-preview-extended-content {
+        ul,
+        ul ul {
+          margin-block: 0;
+          margin-inline: 1em 0;
+          padding: 0;
+          list-style: disc;
+        }
 
-      .tab-preview-extended-content .title-line {
-        display: flex;
-        flex-direction: row;
-        max-width: 100%;
-        white-space: nowrap;
-      }
-      .tab-preview-extended-content .title-line .title {
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .tab-preview-extended-content .title-line .cookieStoreName {
-        display: flex;
-        margin-inline-start: 1ch;
-      }
-      .tab-preview-extended-content .title-line .cookieStoreName::before {
-        content: "- ";
+        .title-line {
+          display: flex;
+          flex-direction: row;
+          max-width: 100%;
+          white-space: nowrap;
+
+          &.title {
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .cookieStoreName {
+            display: flex;
+            margin-inline-start: 1ch;
+
+            &::before {
+              content: "- ";
+            }
+          }
       }
     `;
   }
