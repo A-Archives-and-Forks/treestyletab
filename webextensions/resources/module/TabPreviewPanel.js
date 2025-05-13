@@ -36,6 +36,7 @@ export default class TabPreviewPanel {
       .tab-preview-root {
         --tab-preview-panel-show-hide-animation: opacity 0.1s ease-out;
         --tab-preview-panel-scale: 1; /* Web contents may be zoomed by the user, and we need to cancel the zoom effect. */
+        --max-32bit-integer: 2147483647;
         background: transparent;
         border: 0 none;
         bottom: 0;
@@ -49,7 +50,7 @@ export default class TabPreviewPanel {
         top: 0;
         transition: var(--tab-preview-panel-show-hide-animation);
         width: 100%;
-        z-index: ${Number.MAX_SAFE_INTEGER};
+        z-index: calc(var(--max-32bit-integer) - 100 /* to put this panel below the tab group menu panel */);
       }
 
       .tab-preview-root:hover {
@@ -146,7 +147,7 @@ export default class TabPreviewPanel {
         pointer-events: none;
         position: fixed;
         right: auto;
-        z-index: ${Number.MAX_SAFE_INTEGER};
+        z-index: var(--max-32bit-integer);
       }
       .tab-preview-panel.rtl {
         direction: rtl;

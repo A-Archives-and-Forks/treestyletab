@@ -32,6 +32,7 @@ export default class TabGroupMenuPanel {
       .tab-group-menu-root {
         --tab-group-menu-panel-show-hide-animation: opacity 0.1s ease-out;
         --tab-group-menu-panel-scale: 1; /* Web contents may be zoomed by the user, and we need to cancel the zoom effect. */
+        --max-32bit-integer: 2147483647;
         background: transparent;
         border: 0 none;
         height: 0;
@@ -43,7 +44,7 @@ export default class TabGroupMenuPanel {
         top: 0;
         transition: var(--tab-group-menu-panel-show-hide-animation);
         width: 0;
-        z-index: ${Number.MAX_SAFE_INTEGER};
+        z-index: var(--max-32bit-integer);
       }
 
       .tab-group-menu-panel {
@@ -134,7 +135,7 @@ export default class TabGroupMenuPanel {
         padding: 0;
         position: fixed;
         right: auto;
-        z-index: ${Number.MAX_SAFE_INTEGER};
+        z-index: var(--max-32bit-integer);
       }
       .tab-group-menu-panel:not(.open) {
         pointer-events: none;
