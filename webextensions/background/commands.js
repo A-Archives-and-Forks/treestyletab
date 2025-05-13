@@ -1310,8 +1310,21 @@ browser.runtime.onMessage.addListener((message, sender) => {
           break;
 
         case 'saveAndCloseGroup':
-        case 'deleteGroup':
-          break;
+        case 'deleteGroup': (async () => {
+          const windowId = message.windowId || sender.tab?.windowId;
+          const members = TabGroup.getMemberTabs({
+            windowId,
+            groupId: message.groupId,
+          });
+          const canceled = (await browser.runtime.sendMessage({
+            type: Constants.kCOMMAND_NOTIFY_TABS_CLOSING,
+            tabs: members.map(tab => tab.$TST.sanitized),
+            windowId,
+          }).catch(ApiTabs.createErrorHandler())) === false;
+          if (canceled)
+            return;
+          TabsInternalOperation.removeTabs(members);
+        })(); break;
 
         case 'ungroupTabs':
         case 'cancel': {
