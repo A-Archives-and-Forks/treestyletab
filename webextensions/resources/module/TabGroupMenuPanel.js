@@ -600,8 +600,9 @@ export default class TabGroupMenuPanel {
       return;
     }
     browser.runtime.sendMessage({
-      type:    'treestyletab:invoke-native-tab-group-menu-panel-command',
-      groupId: parseInt(this.#panel.dataset.groupId),
+      type:     'treestyletab:invoke-native-tab-group-menu-panel-command',
+      windowId: this.#windowId,
+      groupId:  parseInt(this.#panel.dataset.groupId),
       command,
     });
     this.#onMessage({
@@ -625,9 +626,10 @@ export default class TabGroupMenuPanel {
       case 'Enter':
       case 'Return':
         browser.runtime.sendMessage({
-          type:    'treestyletab:invoke-native-tab-group-menu-panel-command',
-          groupId: parseInt(this.#panel.dataset.groupId),
-          command: target.dataset?.command,
+          type:     'treestyletab:invoke-native-tab-group-menu-panel-command',
+          windowId: this.#windowId,
+          groupId:  parseInt(this.#panel.dataset.groupId),
+          command:  target.dataset?.command,
         });
         this.#onMessage({
           type: 'treestyletab:tab-group-menu:hide',

@@ -375,7 +375,7 @@ export async function openNewTabAs(options = {}) {
 
     case Constants.kNEWTAB_OPEN_AS_SIBLING:
       parent      = activeTab.$TST.parent;
-      insertAfter = parent && parent.$TST.lastDescendant;
+      insertAfter = parent?.$TST.lastDescendant;
       break;
 
     case Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING_WITH_INHERITED_CONTAINER:
@@ -1272,8 +1272,19 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
     case Constants.kCOMMAND_INVOKE_NATIVE_TAB_GROUP_MENU_PANEL_COMMAND:
       switch (message.command) {
-        case 'addNewTabInGroup':
-          break;
+        case 'addNewTabInGroup': (async () => {
+          const windowId = message.windowId || sender.tab?.windowId;
+          const lastMember = TabGroup.getLastMemberTab({
+            windowId,
+            groupId: message.groupId,
+          });
+          const tab = await TabsOpen.openNewTab({
+            insertAfter:  lastMember.$TST?.lastDescendant || lastMember,
+            windowId,
+            inBackground: false,
+          });
+          addTabsToNativeTabGroup([tab], message.groupId);
+        })(); break;
 
         case 'moveGroupToNewWindow':
           break;
@@ -1285,7 +1296,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
         case 'ungroupTabs':
         case 'cancel': {
           const members = TabGroup.getMemberTabs({
-            windowId: sender.tab.windowId,
+            windowId: sender.tab?.windowId,
             groupId:  message.groupId,
           });
           removeTabsFromNativeTabGroup(members);

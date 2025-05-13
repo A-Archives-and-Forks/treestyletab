@@ -826,6 +826,18 @@ TabGroup.getFirstMemberTab = ({ windowId, groupId }, options = {}) => {
   });
 };
 
+TabGroup.getLastMemberTab = ({ windowId, groupId }, options = {}) => {
+  return TabsStore.query({
+    windowId,
+    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+    living: true,
+    groupId,
+    ...options,
+    ordered: true,
+    last: true,
+  });
+};
+
 
 export class Tab extends TreeItem {
   constructor(raw) {
