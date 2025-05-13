@@ -1946,9 +1946,9 @@ export class Tab extends TreeItem {
     if (!this.raw || !state)
       return;
 
-    super.addState(state);
-
     const modified = this.states && !this.states.has(state);
+
+    super.addState(state);
 
     switch (state) {
       case Constants.kTAB_STATE_HIGHLIGHTED:
@@ -2131,9 +2131,9 @@ export class Tab extends TreeItem {
     if (!this.raw || !state)
       return;
 
-    super.removeState(state);
-
     const modified = this.states && this.states.has(state);
+
+    super.removeState(state);
 
     switch (state) {
       case Constants.kTAB_STATE_HIGHLIGHTED:
