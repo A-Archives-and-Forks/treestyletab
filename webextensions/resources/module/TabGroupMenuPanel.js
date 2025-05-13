@@ -449,9 +449,7 @@ export default class TabGroupMenuPanel {
 
       @media not (prefers-contrast) {
         .tabGroupEditor_deleteGroup {
-          .label-text {
-            color: var(--text-color-error);
-          }
+          color: var(--text-color-error);
         }
       }
 
@@ -692,7 +690,7 @@ export default class TabGroupMenuPanel {
               <hr class="tab-group-edit-mode-only"/>
               <div class="tab-group-edit-mode-only panel-body tab-group-delete">
                 <button tabindex="0" class="tabGroupEditor_deleteGroup subviewbutton"
-                       ><span class="label-text">${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_delete_label)}</span></button>
+                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_action_delete_label)}</button>
               </div>
               <!-hr class="tab-group-create-mode-only"/>
               <div class="tab-group-create-actions tab-group-create-mode-only">
