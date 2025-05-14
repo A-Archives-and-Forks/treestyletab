@@ -515,6 +515,7 @@ async function performTabsDragDrop(tabs, params) {
   log('performTabsDragDrop ', () => ({
     tabs:                tabs.map(tab => tab.id),
     droppedOn:           dumpTab(params.droppedOn),
+    groupId:             params.groupId,
     attachTo:            dumpTab(params.attachTo),
     insertBefore:        dumpTab(params.insertBefore),
     insertAfter:         dumpTab(params.insertAfter),
@@ -530,16 +531,20 @@ async function performTabsDragDrop(tabs, params) {
     return tabs;
   }
 
-  const nativeTabGroupId = params.droppedOn?.type == 'group' ?
-    params.droppedOn.id :
-    params.attachTo ?
-      params.attachTo.groupId :
-      (params.insertAfter && params.insertAfter.groupId != -1) ?
-        params.insertAfter.groupId :
-        params.insertBefore ?
-          params.insertBefore.groupId :
-          -1;
-  log('performTreeItemsDragDrop: nativeTabGroupId = ', nativeTabGroupId);
+  const nativeTabGroupIdFromPositionDeterminedByBrowser = (params.insertAfter && params.insertAfter.groupId != -1) ?
+    params.insertAfter.groupId :
+    params.insertBefore ?
+      params.insertBefore.groupId :
+      -1;
+
+  const nativeTabGroupId = params.groupId || (
+    params.droppedOn?.type == 'group' ?
+      params.droppedOn.id :
+      params.attachTo ?
+        params.attachTo.groupId :
+        nativeTabGroupIdFromPositionDeterminedByBrowser
+  );
+  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, nativeTabGroupIdFromPositionDeterminedByBrowser);
 
   if (params.droppedOn?.type == 'group' &&
       tabs.some(tab => tab.groupId != -1 && tab.groupId != nativeTabGroupId)) {
@@ -550,12 +555,9 @@ async function performTabsDragDrop(tabs, params) {
   const isAcrossWindows = windowId != destinationWindowId;
 
   if (!isAcrossWindows) {
-    if (nativeTabGroupId == -1) {
-      await removeTabsFromNativeTabGroupInternal(tabs);
-    }
-    else {
-      await addTabsToNativeTabGroupInternal(tabs, nativeTabGroupId);
-    }
+    // On in-window tab move, we need to apply final group at first.
+    // Otherwise tab move after group modifications may break groups.
+    await matchTabsGrouped(tabs, nativeTabGroupId);
   }
 
   const movedTabs = await moveTabsWithStructure(tabs, {
@@ -564,23 +566,54 @@ async function performTabsDragDrop(tabs, params) {
     destinationWindowId,
     broadcast: true
   });
-  log('performTreeItemsDragDrop: movedTabs = ', movedTabs, { isAcrossWindows });
+  log('performTabsDragDrop: movedTabs = ', movedTabs, { isAcrossWindows });
 
   if (isAcrossWindows) {
-    if (nativeTabGroupId == -1) {
-      await removeTabsFromNativeTabGroupInternal(tabs);
-    }
-    else {
-      await addTabsToNativeTabGroupInternal(tabs, nativeTabGroupId);
-    }
+    // On tab move across windows, we need to apply final group after
+    // tabs are moved to the destination window.
+    await matchTabsGrouped(tabs, nativeTabGroupId);
   }
 
   if (nativeTabGroupId != -1 &&
       !isAcrossWindows) {
     await Tree.maintainTreeForNativeTabGroup({ windowId, groupId: nativeTabGroupId })
   }
+
+  if (nativeTabGroupId != nativeTabGroupIdFromPositionDeterminedByBrowser) {
+    // Automatic tree maintenance done by Firefox based on tabs' destination position
+    // may change groups. We need to override the result with the given group id.
+    log('performTabsDragDrop: final group id = ', nativeTabGroupId);
+    let onGroupModified;
+    const toBeModifiedTabs = new Set(movedTabs.map(tab => tab.id));
+    const startAt = Date.now();
+    await Promise.race([
+      new Promise((resolve, _reject) => {
+        onGroupModified = (tabId, updateInfo, _tab) => {
+          if (updateInfo.groupId != nativeTabGroupId) {
+            log(`performTabsDragDrop: tab group modifications detected (${updateInfo.groupId}) with delay ${Date.now() - startAt} msec.`);
+            toBeModifiedTabs.delete(tabId);
+          }
+          if (toBeModifiedTabs.size == 0) {
+            resolve();
+          }
+        };
+        browser.tabs.onUpdated.addListener(onGroupModified, {
+          properties: ['groupId'],
+          windowId:   destinationWindowId,
+        });
+      }),
+      wait(configs.nativeTabGroupModificationDetectionTimeoutAfterTabMove).then(() => {
+        log('performTabsDragDrop: tab group modifications detection timeout');
+      }),
+    ]);
+    browser.tabs.onUpdated.removeListener(onGroupModified);
+    log('performTabsDragDrop: match group with ', nativeTabGroupId);
+    await matchTabsGrouped(movedTabs, nativeTabGroupId);
+  }
+
   if (movedTabs.length == 0)
     return movedTabs;
+
   if (windowId != destinationWindowId) {
     // Firefox always focuses to the dropped (mvoed) tab if it is dragged from another window.
     // TST respects Firefox's the behavior.
@@ -589,9 +622,17 @@ async function performTabsDragDrop(tabs, params) {
   }
   return movedTabs;
 }
+async function matchTabsGrouped(tabs, groupId) {
+  if (groupId == -1) {
+    await removeTabsFromNativeTabGroupInternal(tabs);
+  }
+  else {
+    await addTabsToNativeTabGroupInternal(tabs, groupId);
+  }
+}
 
-async function performNativeTabGroupItemDragDrop(group, { droppedOn, attachTo, insertBefore, insertAfter, windowId, destinationWindowId, action, ...params }) {
-  log('performNativeTabGroupItemDragDrop ', () => ({ group, droppedOn, attachTo, insertBefore, insertAfter, windowId, destinationWindowId, action }));
+async function performNativeTabGroupItemDragDrop(group, { droppedOn, groupId, attachTo, insertBefore, insertAfter, windowId, destinationWindowId, ...params }) {
+  log('performNativeTabGroupItemDragDrop ', () => ({ group, groupId, droppedOn, attachTo, insertBefore, insertAfter, windowId, destinationWindowId }));
 
   const members = group.$TST.memberTabs;
   const groupParams = {
@@ -608,7 +649,7 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, attachTo, i
       ...params,
       windowId,
       destinationWindowId,
-      action,
+      groupId,
       attachTo:     null,
       insertAfter:  lastMember,
       insertBefore: lastMember.$TST.unsafeNextTab,
@@ -625,7 +666,7 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, attachTo, i
       ...params,
       windowId,
       destinationWindowId,
-      action,
+      groupId,
       attachTo,
       insertBefore,
       insertAfter,

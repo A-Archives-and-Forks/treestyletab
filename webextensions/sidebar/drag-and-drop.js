@@ -275,6 +275,21 @@ function getDropAction(event) {
     const items = Scroll.getRenderableTreeItems();
     return items[items.length - 1];
   });
+  info.defineGetter('groupId', () => {
+    if (targetItem.type == 'group') {
+      if (info.dropPosition == kDROP_BEFORE) {
+        const items = Scroll.getRenderableTreeItems();
+        const index = items.indexOf(targetItem);
+        if (index == 0) {
+          return -1;
+        }
+        const previousItem = items[index - 1];
+        return previousItem.groupId || previousItem.id;
+      }
+      return targetItem.id;
+    }
+    return targetItem.groupId;
+  });
   info.defineGetter('canDrop', () => {
     if (info.dropPosition == kDROP_IMPOSSIBLE) {
       log('canDrop:undroppable: dropPosition == kDROP_IMPOSSIBLE');
@@ -1332,6 +1347,7 @@ function onDrop(event) {
       windowId:            dropActionInfo.dragData.windowId,
       items:               draggedItems.map(item => item?.$TST?.sanitized || item),
       droppedOn:           dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem,
+      groupId:             dropActionInfo.groupId,
       structure,
       action:              dropActionInfo.action,
       allowedActions:      dropActionInfo.dragData.behavior,
@@ -1392,6 +1408,7 @@ function onDrop(event) {
         windowId:            recentTab.windowId,
         items:               draggedItems.map(item => item?.$TST?.sanitized || item),
         droppedOn:           dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem,
+        groupId:             dropActionInfo.groupId,
         structure,
         action:              dropActionInfo.action,
         allowedActions,
