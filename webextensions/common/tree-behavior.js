@@ -136,8 +136,8 @@ export function calculateReferenceItemsFromInsertionPosition(
 ) {
   let firstItem = (Array.isArray(item) ? item[0] : item) || item;
   let lastItem  = (Array.isArray(item) ? item[item.length - 1] : item) || item;
-  firstItem = firstItem.$TST.nativeTabGroup || firstItem;
-  lastItem = lastItem.$TST.nativeTabGroup?.collapsed && lastItem.$TST.nativeTabGroup || lastItem;
+  firstItem = firstItem.$TST?.nativeTabGroup || firstItem;
+  lastItem = lastItem.$TST?.nativeTabGroup?.collapsed && lastItem.$TST?.nativeTabGroup || lastItem;
   log('calculateReferenceItemsFromInsertionPosition ', {
     firstItem:    firstItem?.id,
     lastItem:     lastItem?.id,

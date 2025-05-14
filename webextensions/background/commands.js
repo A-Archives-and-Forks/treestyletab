@@ -517,7 +517,7 @@ async function performTreeItemsDragDropWithMessage(message) {
 
 async function performTabsDragDrop(tabs, params) {
   log('performTabsDragDrop ', () => ({
-    tabs:                tabs.map(tab => tab.id),
+    tabs:                tabs.map(tab => `${tab.groupId}/#{tab.id}`),
     droppedOn:           dumpTab(params.droppedOn),
     droppedBefore:       dumpTab(params.droppedBefore),
     droppedAfter:        dumpTab(params.droppedAfter),
@@ -542,17 +542,15 @@ async function performTabsDragDrop(tabs, params) {
     params.insertBefore ?
       params.insertBefore.groupId :
       -1;
-
   const nativeTabGroupId = params.groupId || (
-    params.droppedOn ? params.droppedOn?.groupId || params.droppedOn?.id :
-      params.droppedAfter?.type == 'group' ? params.droppedAfter?.id :
-        params.droppedAfter?.type == 'tab' ? params.droppedAfter?.groupId :
-          params.droppedBefore?.type == 'group' ? params.droppedBefore.$TST.unsafeNextTab?.$TST?.unsafePreviousTab?.groupId :
-            params.droppedBefore?.type == 'tab' ? params.droppedBefore?.groupId :
-              params.attachTo ? params.attachTo.groupId :
-                nativeTabGroupIdFromPositionDeterminedByBrowser
+    params.attachTo ? params.attachTo.groupId :
+      nativeTabGroupIdFromPositionDeterminedByBrowser
   );
-  log('performTabsDragDrop: nativeTabGroupId, nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupId, nativeTabGroupIdFromPositionDeterminedByBrowser);
+  const draggedGroupParams = nativeTabGroupId == tabs[0].groupId ?
+    tabs[0]?.$TST?.nativeTabGroup?.$TST?.createParams :
+    null;
+
+  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, ', nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupIdFromPositionDeterminedByBrowser, ', draggedGroupParams = ', draggedGroupParams);
 
   if ((params.droppedOn?.type == 'group' ||
        params.droppedAfter?.type == 'group' ||
@@ -583,7 +581,7 @@ async function performTabsDragDrop(tabs, params) {
   if (isAcrossWindows) {
     // On tab move across windows, we need to apply final group after
     // tabs are moved to the destination window.
-    await matchTabsGrouped(tabs, nativeTabGroupId);
+    await matchTabsGrouped(tabs, draggedGroupParams || nativeTabGroupId);
   }
 
   if (nativeTabGroupId != -1 &&
@@ -619,8 +617,8 @@ async function performTabsDragDrop(tabs, params) {
       }),
     ]);
     browser.tabs.onUpdated.removeListener(onGroupModified);
-    log('performTabsDragDrop: match group with ', nativeTabGroupId);
-    await matchTabsGrouped(movedTabs, nativeTabGroupId);
+    log('performTabsDragDrop: match group with ', draggedGroupParams || nativeTabGroupId);
+    await matchTabsGrouped(movedTabs, draggedGroupParams || nativeTabGroupId);
   }
 
   if (movedTabs.length == 0)
@@ -634,12 +632,12 @@ async function performTabsDragDrop(tabs, params) {
   }
   return movedTabs;
 }
-async function matchTabsGrouped(tabs, groupId) {
-  if (groupId == -1) {
+async function matchTabsGrouped(tabs, groupIdOrCreateParams) {
+  if (groupIdOrCreateParams == -1) {
     await removeTabsFromNativeTabGroupInternal(tabs);
   }
   else {
-    await addTabsToNativeTabGroupInternal(tabs, groupId);
+    await addTabsToNativeTabGroupInternal(tabs, groupIdOrCreateParams);
   }
 }
 
@@ -647,12 +645,6 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, groupId, at
   log('performNativeTabGroupItemDragDrop ', () => ({ group, groupId, droppedOn, attachTo, insertBefore, insertAfter, windowId, destinationWindowId }));
 
   const members = group.$TST.memberTabs;
-  const groupParams = {
-    title:     group.title,
-    color:     group.color,
-    collapsed: group.collapsed,
-    windowId:  destinationWindowId,
-  };
 
   if (droppedOn?.type == 'group') {
     log('performNativeTabGroupItemDragDrop: dropping onto another group, merge to it: ', droppedOn);
@@ -673,19 +665,15 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, groupId, at
 
   if (!attachTo) {
     log('performNativeTabGroupItemDragDrop: dropping at topl-evel, simply move the group');
-    await removeTabsFromNativeTabGroupInternal(members);
-    const movedTabs = await performTabsDragDrop(members, {
+    return performTabsDragDrop(members, {
       ...params,
       windowId,
       destinationWindowId,
-      groupId: null, // The dragged group will be deleted while performing, so we must not group tabs with the old group ID
+      groupId,
       attachTo,
       insertBefore,
       insertAfter,
     });
-    log('performNativeTabGroupItemDragDrop: movedTabs = ', movedTabs, groupParams);
-    await addTabsToNativeTabGroupInternal(movedTabs, groupParams);
-    return;
   }
 }
 

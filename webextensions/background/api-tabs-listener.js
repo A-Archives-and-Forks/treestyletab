@@ -1322,11 +1322,7 @@ async function onGroupUpdated(group) {
   if (!win) {
     throw new Error('tabGroups.onUpdated is called before the owner window is tracked');
   }
-  win.tabGroups.set(group.id, {
-    ...win.tabGroups.get(group.id),
-    ...group,
-  });
-
+  win.tabGroups.get(group.id).$TST.apply(group);
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED,
     windowId: group.windowId,

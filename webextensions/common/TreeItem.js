@@ -802,6 +802,15 @@ export class TabGroup extends TreeItem {
     this.raw.color = exported.color;
     this.raw.collapsed = exported.collapsed;
   }
+
+  get createParams() {
+    return {
+      title:     this.raw.title,
+      color:     this.raw.color,
+      collapsed: this.raw.collapsed,
+      windowId:  this.raw.windowId,
+    };
+  }
 }
 
 TabGroup.get = ({ windowId, groupId }) => TabsStore.windows.get(windowId)?.tabGroups.get(groupId);

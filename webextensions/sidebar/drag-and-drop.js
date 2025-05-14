@@ -275,39 +275,49 @@ function getDropAction(event) {
     const items = Scroll.getRenderableTreeItems();
     return items[items.length - 1];
   });
-  info.defineGetter('sanitizedDropOnTargetItem', () => {
+  info.defineGetter('sanitizedDropOnTargetItem', () => { // the drop target we are trying to drop on itself
     return info.dropPosition == kDROP_ON_SELF ?
       (targetItem?.$TST.sanitized || targetItem) :
       null;
   });
-  info.defineGetter('sanitizedDropBeforeTargetItem', () => {
+  info.defineGetter('sanitizedDropBeforeTargetItem', () => { // the drop target we are trying to drop before it
     return info.dropPosition == kDROP_BEFORE ?
       (targetItem?.$TST.sanitized || targetItem) :
       null;
   });
-  info.defineGetter('sanitizedDropAfterTargetItem', () => {
+  info.defineGetter('sanitizedDropAfterTargetItem', () => { // the drop target we are trying to drop after it
     return info.dropPosition == kDROP_AFTER ?
       (targetItem?.$TST.sanitized || targetItem) :
       null;
   });
-  info.defineGetter('groupId', () => {
-    if (targetItem.type == 'group') {
-      if (info.dropPosition == kDROP_BEFORE) {
-        const items = Scroll.getRenderableTreeItems();
-        const index = items.indexOf(targetItem);
-        if (index == 0) {
-          return -1;
+  info.defineGetter('groupId', () => { // the group ID the dropped items should be grouped under
+    const draggedGroup = info.draggedItem?.type == 'group' ? info.draggedItem : null;
+    switch (info.dropPosition) {
+      case kDROP_ON_SELF:
+      default:
+        return targetItem.groupId || targetItem.id;
+
+      case kDROP_AFTER:
+        if (targetItem.type == 'group') {
+          return targetItem.collapsed ?
+            draggedGroup?.id : // dropping after a collapsed group => keep the original group
+            targetItem.id; // otherwise we try to insert items at the top of a group
         }
-        const previousItem = items[index - 1];
-        return previousItem.groupId || previousItem.id;
-      }
-      return targetItem.id;
+        return targetItem.groupId == -1 ?
+          draggedGroup?.id : // dropping after ungrouped tab => keep the original group
+          targetItem.groupId; // otherwise we try to add items to the group of the tab
+
+      case kDROP_BEFORE:
+        if (targetItem.type == 'group') {
+          const groupId = targetItem.$TST?.firstMemberTab?.$TST?.unsafePreviousTab?.groupId;
+          return groupId == -1 ?
+            draggedGroup?.id : // a tab before the target group is ungrouped => keep the original group
+            groupId; // otherwise we try to insert items at the end of the group of the tab before the drop target
+        }
+        return targetItem.groupId == -1 ?
+          draggedGroup?.id : // dropping before ungrouped tab => keep the original group
+          targetItem.groupId; // otherwise we are trying to add items to the group of the tab
     }
-    if (info.draggedItem.type == 'group' &&
-        targetItem.groupId == -1) {
-      return info.draggedItem.id;
-    }
-    return targetItem.groupId;
   });
   info.defineGetter('canDrop', () => {
     if (info.dropPosition == kDROP_IMPOSSIBLE) {
