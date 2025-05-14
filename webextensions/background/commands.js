@@ -25,6 +25,7 @@ import * as TabsInternalOperation from '/common/tabs-internal-operation.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
+import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
@@ -552,6 +553,14 @@ async function performTabsDragDrop(tabs, params) {
 
   log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, ', nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupIdFromPositionDeterminedByBrowser, ', draggedGroupParams = ', draggedGroupParams);
 
+  let blocking = false;
+  if (tabs[0].groupId != -1 ||
+      (params.groupId &&
+       tabs[0].groupId != params.groupId)) {
+    UserOperationBlocker.blockIn(tabs[0].windowId, { throbber: true });
+    blocking = true;
+  }
+
   if ((params.droppedOn?.type == 'group' ||
        params.droppedAfter?.type == 'group' ||
        params.droppedBefore?.type == 'group') &&
@@ -619,6 +628,10 @@ async function performTabsDragDrop(tabs, params) {
     browser.tabs.onUpdated.removeListener(onGroupModified);
     log('performTabsDragDrop: match group with ', draggedGroupParams || nativeTabGroupId);
     await matchTabsGrouped(movedTabs, draggedGroupParams || nativeTabGroupId);
+  }
+
+  if (blocking) {
+    UserOperationBlocker.unblockIn(tabs[0].windowId, { throbber: true });
   }
 
   if (movedTabs.length == 0)
