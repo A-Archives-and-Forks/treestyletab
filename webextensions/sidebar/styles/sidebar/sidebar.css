@@ -189,10 +189,6 @@ tab-item.active tab-closebox {
   opacity: 1;
 }
 
-tab-item:not(.active):not(#dummy-tab) tab-item-substance:not(:hover) tab-closebox {
-  display: none;
-}
-
 /* Tab label is without special decoration except when selected: then
    the text is white and bold.
    We need to apply text-shadow for .label-content instead of tab-label

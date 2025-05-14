@@ -975,6 +975,11 @@ tab-item:not(.collapsed) tab-closebox:active {
   opacity: var(--button-active-opacity);
 }
 
+/* hide closebox on non-active and non-hover tabs, like vertical tabs of Firefox itself */
+tab-item:not(.active):not(#dummy-tab) tab-item-substance:not(:hover) tab-closebox {
+  display: none;
+}
+
 
 /* contextual identity (aka Container Tab) */
 
