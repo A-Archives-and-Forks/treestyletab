@@ -242,7 +242,7 @@ export function getTreeItemEventDetail(event, tab) {
     ...getEventDetail(event),
     tab:   tab?.id,
     tabId: tab?.id,
-    tabType: tab?.$TST.type,
+    tabType: tab?.$TST?.type || tab?.type,
   };
 }
 

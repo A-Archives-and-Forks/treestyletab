@@ -517,7 +517,7 @@ async function performTreeItemsDragDropWithMessage(message) {
 
 async function performTabsDragDrop(tabs, params) {
   log('performTabsDragDrop ', () => ({
-    tabs:                tabs.map(tab => `${tab.groupId}/#{tab.id}`),
+    tabs:                tabs.map(tab => `${tab.groupId}/#${tab.id}`),
     droppedOn:           dumpTab(params.droppedOn),
     droppedBefore:       dumpTab(params.droppedBefore),
     droppedAfter:        dumpTab(params.droppedAfter),
@@ -663,18 +663,40 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, groupId, at
     return;
   }
 
-  if (!attachTo) {
-    log('performNativeTabGroupItemDragDrop: dropping at topl-evel, simply move the group');
+  if (groupId && groupId != group.id) {
+    const dropTargetGroup = TabGroup.get({ windowId: group.windowId, groupId });
+    const dropTargetFirstMember = dropTargetGroup.$TST.firstMemberTab;
+    if (group.$TST.firstMemberTab.index < dropTargetFirstMember.index) {
+      log('performNativeTabGroupItemDragDrop: dropping into another group, move to below the target group');
+      insertAfter  = dropTargetGroup.$TST.lastMemberTab;
+      insertBefore = insertAfter?.$TST.unsafeNextTab;
+    }
+    else {
+      log('performNativeTabGroupItemDragDrop: dropping into another group, move to above the target group');
+      insertBefore = dropTargetFirstMember;
+      insertAfter  = insertBefore?.$TST.unsafePreviousTab;
+    }
     return performTabsDragDrop(members, {
       ...params,
       windowId,
       destinationWindowId,
-      groupId,
-      attachTo,
+      groupId: group.id,
+      attachTo: null,
       insertBefore,
       insertAfter,
     });
   }
+
+  log('performNativeTabGroupItemDragDrop: dropping at topl-evel, simply move the group');
+  return performTabsDragDrop(members, {
+    ...params,
+    windowId,
+    destinationWindowId,
+    groupId,
+    attachTo,
+    insertBefore,
+    insertAfter,
+  });
 }
 
 // useful utility for general purpose
@@ -762,13 +784,13 @@ export async function moveTabsWithStructure(tabs, params = {}) {
     }
   }
   else if (params.duplicate ||
-      windowId != destinationWindowId) {
+           windowId != destinationWindowId) {
     movedTabs = await Tree.moveTabs(movedTabs, {
       destinationWindowId,
       duplicate:    params.duplicate,
       insertBefore: params.insertBefore,
       insertAfter:  params.insertAfter,
-      broadcast:    params.broadcast
+      broadcast:    params.broadcast,
     });
     movedRoots = Tab.collectRootTabs(movedTabs);
   }
@@ -798,13 +820,19 @@ export async function moveTabsWithStructure(tabs, params = {}) {
     await TabsMove.moveTabsBefore(
       movedTabs,
       params.insertBefore,
-      { broadcast: params.broadcast }
+      {
+        doNotOptimize: !!params.doNotOptimize,
+        broadcast:     !!params.broadcast,
+      }
     );
   else if (params.insertAfter)
     await TabsMove.moveTabsAfter(
       movedTabs,
       params.insertAfter,
-      { broadcast: params.broadcast }
+      {
+        doNotOptimize: !!params.doNotOptimize,
+        broadcast:     !!params.broadcast,
+      }
     );
   else
     log('=> already placed at expected position');
