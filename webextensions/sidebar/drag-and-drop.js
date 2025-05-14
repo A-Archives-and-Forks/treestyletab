@@ -249,23 +249,6 @@ function getDropAction(event) {
   info.defineGetter('draggedItemIds', () => {
     return info.draggedItems.map(item => item.id);
   });
-  info.defineGetter('draggedTab', () => {
-    const dragData = info.dragData;
-    if (dragData?.instanceId != mInstanceId)
-      return null;
-    const tab = dragData?.tab;
-    return Tab.get(tab?.id) || tab;
-  });
-  info.defineGetter('draggedTabs', () => {
-    const dragData = info.dragData;
-    if (dragData?.instanceId != mInstanceId)
-      return [];
-    const tabIds = dragData?.tabs;
-    return !tabIds ? [] : mapAndFilter(tabIds, id => Tab.get(id) || undefined);
-  });
-  info.defineGetter('draggedTabIds', () => {
-    return info.draggedTabs.map(item => item.id);
-  });
   info.defineGetter('firstTargetItem', () => {
     //return Tab.getFirstNormalTab(TabsStore.getCurrentWindowId()) || Tab.getFirstTab(TabsStore.getCurrentWindowId());
     return Scroll.getRenderableTreeItems()[0];
