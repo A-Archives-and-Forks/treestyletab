@@ -801,7 +801,7 @@ async function onShown(info, contextTab) {
       contextTab ?
         [contextTab] :
         [];
-    const hasChild              = contextTab?.some(tab => tab.$TST.hasChild);
+    const hasChild              = contextTab && contextTabs.some(tab => tab.$TST.hasChild);
     const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
     const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
     const hasChoosableNativeTabGroup = contextTab && getEffectiveTabGroups(windowId).filter(group => group.id != contextTab.groupId).length > 0;

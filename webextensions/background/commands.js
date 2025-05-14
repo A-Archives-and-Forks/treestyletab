@@ -527,47 +527,113 @@ async function performTabsDragDrop(tabs, params) {
   if (!(params.allowedActions & Constants.kDRAG_BEHAVIOR_MOVE) &&
       !params.duplicate) {
     log(' => not allowed action');
-    return;
+    return tabs;
   }
 
-  const nativeTabGroupId = params.attachTo ?
-    params.attachTo.groupId :
-    (params.insertAfter && params.insertAfter.groupId != -1) ?
-      params.insertAfter.groupId :
-      params.insertBefore ?
-        params.insertBefore.groupId :
-        -1;
+  const nativeTabGroupId = params.droppedOn?.type == 'group' ?
+    params.droppedOn.id :
+    params.attachTo ?
+      params.attachTo.groupId :
+      (params.insertAfter && params.insertAfter.groupId != -1) ?
+        params.insertAfter.groupId :
+        params.insertBefore ?
+          params.insertBefore.groupId :
+          -1;
   log('performTreeItemsDragDrop: nativeTabGroupId = ', nativeTabGroupId);
-  if (nativeTabGroupId == -1) {
+
+  if (params.droppedOn?.type == 'group' &&
+      tabs.some(tab => tab.groupId != -1 && tab.groupId != nativeTabGroupId)) {
     await removeTabsFromNativeTabGroupInternal(tabs);
-  }
-  else {
-    await addTabsToNativeTabGroupInternal(tabs, nativeTabGroupId);
   }
 
   const { windowId, destinationWindowId } = params;
+  const isAcrossWindows = windowId != destinationWindowId;
+
+  if (!isAcrossWindows) {
+    if (nativeTabGroupId == -1) {
+      await removeTabsFromNativeTabGroupInternal(tabs);
+    }
+    else {
+      await addTabsToNativeTabGroupInternal(tabs, nativeTabGroupId);
+    }
+  }
+
   const movedTabs = await moveTabsWithStructure(tabs, {
     ...params,
     windowId,
     destinationWindowId,
     broadcast: true
   });
-  log('performTreeItemsDragDrop: movedTabs = ', movedTabs);
-  if (nativeTabGroupId != -1) {
+  log('performTreeItemsDragDrop: movedTabs = ', movedTabs, { isAcrossWindows });
+
+  if (isAcrossWindows) {
+    if (nativeTabGroupId == -1) {
+      await removeTabsFromNativeTabGroupInternal(tabs);
+    }
+    else {
+      await addTabsToNativeTabGroupInternal(tabs, nativeTabGroupId);
+    }
+  }
+
+  if (nativeTabGroupId != -1 &&
+      !isAcrossWindows) {
     await Tree.maintainTreeForNativeTabGroup({ windowId, groupId: nativeTabGroupId })
   }
   if (movedTabs.length == 0)
-    return;
+    return movedTabs;
   if (windowId != destinationWindowId) {
     // Firefox always focuses to the dropped (mvoed) tab if it is dragged from another window.
     // TST respects Firefox's the behavior.
-    browser.tabs.update(movedTabs[0].id, { active: true })
+    await browser.tabs.update(movedTabs[0].id, { active: true })
       .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
   }
+  return movedTabs;
 }
 
-async function performNativeTabGroupItemDragDrop(group, { droppedOn, insertBefore,insertAfter, windowId, destinationWindowId }) {
-  log('performNativeTabGroupItemDragDrop ', () => ({ group, droppedOn, insertBefore,insertAfter, windowId, destinationWindowId }));
+async function performNativeTabGroupItemDragDrop(group, { droppedOn, attachTo, insertBefore, insertAfter, windowId, destinationWindowId, action, ...params }) {
+  log('performNativeTabGroupItemDragDrop ', () => ({ group, droppedOn, attachTo, insertBefore, insertAfter, windowId, destinationWindowId, action }));
+
+  const members = group.$TST.memberTabs;
+  const groupParams = {
+    title:     group.title,
+    color:     group.color,
+    collapsed: group.collapsed,
+    windowId:  destinationWindowId,
+  };
+
+  if (droppedOn?.type == 'group') {
+    log('performNativeTabGroupItemDragDrop: dropping onto another group, merge to it: ', droppedOn);
+    const lastMember = droppedOn.$TST.lastMemberTab;
+    const movedTabs = await performTabsDragDrop(members, {
+      ...params,
+      windowId,
+      destinationWindowId,
+      action,
+      attachTo:     null,
+      insertAfter:  lastMember,
+      insertBefore: lastMember.$TST.unsafeNextTab,
+    });
+    log('performNativeTabGroupItemDragDrop: movedTabs = ', movedTabs);
+    await addTabsToNativeTabGroupInternal(movedTabs, droppedOn.id);
+    return;
+  }
+
+  if (!attachTo) {
+    log('performNativeTabGroupItemDragDrop: dropping at topl-evel, simply move the group');
+    await removeTabsFromNativeTabGroupInternal(members);
+    const movedTabs = await performTabsDragDrop(members, {
+      ...params,
+      windowId,
+      destinationWindowId,
+      action,
+      attachTo,
+      insertBefore,
+      insertAfter,
+    });
+    log('performNativeTabGroupItemDragDrop: movedTabs = ', movedTabs, groupParams);
+    await addTabsToNativeTabGroupInternal(movedTabs, groupParams);
+    return;
+  }
 }
 
 // useful utility for general purpose
@@ -1150,13 +1216,26 @@ async function addTabsToNativeTabGroupInternal(tabs, groupIdOrProperties) {
     };
     browser.tabs.onUpdated.addListener(onUpdated, { properties: ['groupId'] });
     browser.tabs.group({
+      createProperties: !groupId && {
+        windowId: win.id, // We must specify the window ID explicitly, otherwise tabs moved across windows may be reverted and grouped in the old window!
+      },
       groupId,
       tabIds: toBeGroupedIds,
     });
   });
   if (groupIdOrProperties &&
       typeof groupIdOrProperties == 'object') {
-    await browser.tabGroups.update(groupId, groupIdOrProperties);
+    const updateProperties = {};
+    if ('title' in groupIdOrProperties) {
+      updateProperties.title = groupIdOrProperties.title;
+    }
+    if ('color' in groupIdOrProperties) {
+      updateProperties.color = groupIdOrProperties.color;
+    }
+    if ('collapsed' in groupIdOrProperties) {
+      updateProperties.collapsed = groupIdOrProperties.collapsed;
+    }
+    await browser.tabGroups.update(groupId, updateProperties);
   }
   for (const tab of tabsToGrouped) {
     win.internalMovingTabs.delete(tab.id);

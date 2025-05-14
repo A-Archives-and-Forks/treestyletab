@@ -1462,6 +1462,7 @@ export async function moveTabs(tabs, { duplicate, ...options } = {}) {
   }
 
   const isAcrossWindows = windowId != destinationWindowId || !!newWindow;
+  log('moveTabs: isAcrossWindows = ', isAcrossWindows, `${windowId} => ${destinationWindowId}`);
 
   options.insertAfter = options.insertAfter || Tab.getLastTab(destinationWindowId);
 
