@@ -739,9 +739,10 @@ TreeItem.uniqTabsAndDescendantsSet = tabs => {
 
 TreeItem.compare = (a, b) => {
   const delta = a.index - b.index;
-  const aIsGroup = a.$TST?.isNativeTabGroup;
+  const aIsGroup = a.type == TreeItem.TYPE_GROUP || !!a.color;
+  const bIsGroup = b.type == TreeItem.TYPE_GROUP || !!b.color;
   if (delta != 0 ||
-      aIsGroup == b.$TST?.isNativeTabGroup) {
+      aIsGroup == bIsGroup) {
     return delta;
   }
   if (aIsGroup) {
@@ -757,12 +758,10 @@ TreeItem.sort = tabs => tabs.length == 0 ? tabs : tabs.sort(TreeItem.compare);
 export class TabGroup extends TreeItem {
   constructor(raw) {
     super(raw);
-
-    this.isNativeTabGroup = true;
   }
 
   get type() {
-    return 'group';
+    return TreeItem.TYPE_GROUP;
   }
 
   get group() {
@@ -1016,7 +1015,7 @@ export class Tab extends TreeItem {
   }
 
   get type() {
-    return 'tab';
+    return TreeItem.TYPE_TAB;
   }
 
   get tab() {
@@ -3647,14 +3646,16 @@ Tab.dumpAll = windowId => {
 };
 
 // utility
+TreeItem.TYPE_TAB   = 'tab';
+TreeItem.TYPE_GROUP = 'group';
 TreeItem.get = item => {
   if (!item) {
     return null;
   }
-  if (item?.type == 'tab') {
+  if (item?.type == TreeItem.TYPE_TAB) {
     return Tab.get(item.id);
   }
-  if (item?.type == 'group') {
+  if (item?.type == TreeItem.TYPE_GROUP) {
     return TabGroup.get({ windowId: item.windowId, groupId: item.id });
   }
   return Tab.get(item);

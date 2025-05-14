@@ -12,6 +12,8 @@ import {
 import * as Constants from './constants.js';
 import * as SidebarConnection from './sidebar-connection.js';
 
+import { TreeItem } from './TreeItem.js';
+
 function log(...args) {
   internalLogger('common/tree-behavior', ...args);
 }
@@ -117,7 +119,7 @@ export function getParentTabOperationBehavior(tab, { context, byInternalOperatio
 
 export function getClosingTabsFromParent(tab, removeInfo = {}) {
   log('getClosingTabsFromParent: ', tab, removeInfo);
-  if (tab?.$TST.isNativeTabGroup) {
+  if (tab?.type == TreeItem.TYPE_GROUP) {
     return tab.$TST.descendants;
   }
   const closeParentBehavior = getParentTabOperationBehavior(tab, {
@@ -181,7 +183,7 @@ export function calculateReferenceItemsFromInsertionPosition(
          |  [TARGET]
          +-----------------------------------------------------
     */
-    if (insertBefore.type == 'group') {
+    if (insertBefore.type == TreeItem.TYPE_GROUP) {
       log('calculateReferenceItemsFromInsertionPosition: from insertBefore, special case for a group item');
       return {
         insertBefore,

@@ -15,6 +15,8 @@ import * as Constants from '/common/constants.js';
 import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
+import { TreeItem } from '/common/TreeItem.js';
+
 import { kTAB_CLOSE_BOX_ELEMENT_NAME } from './components/TabCloseBoxElement.js';
 import { kTAB_SHARING_STATE_ELEMENT_NAME } from './components/TabSharingStateElement.js';
 import { kTAB_SOUND_BUTTON_ELEMENT_NAME } from './components/TabSoundButtonElement.js';
@@ -176,7 +178,7 @@ function getTreeItemFromCoordinates(event, options = {}) {
   for (const x of trialPoints) {
     const item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY), options);
     if (item)
-      return item.type == 'tab' && item; // we should find only tabs from their indent space
+      return item.type == TreeItem.TYPE_TAB && item; // we should find only tabs from their indent space
   }
 
   // document.elementFromPoint cannot find elements being in animation effect,
@@ -186,13 +188,13 @@ function getTreeItemFromCoordinates(event, options = {}) {
     let item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
     item = SidebarItems.getItemFromDOMNode(item?.$TST.element.nextSibling, options);
     if (item)
-      return item.type == 'tab' && item; // we should find only tabs from their indent space
+      return item.type == TreeItem.TYPE_TAB && item; // we should find only tabs from their indent space
   }
   for (const x of trialPoints) {
     let item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
     item = SidebarItems.getItemFromDOMNode(item?.$TST.element.previousSibling, options);
     if (item)
-      return item.type == 'tab' && item; // we should find only tabs from their indent space
+      return item.type == TreeItem.TYPE_TAB && item; // we should find only tabs from their indent space
   }
 
   return null;

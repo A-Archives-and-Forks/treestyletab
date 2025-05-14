@@ -494,14 +494,14 @@ async function performTreeItemsDragDrop(params = {}) {
 }
 
 async function performTreeItemsDragDropWithMessage(message) {
-  const draggedTabIds = message.import ? [] : message.items.map(item => item.type == 'tab' && item.id || null);
+  const draggedTabIds = message.import ? [] : message.items.map(item => item.type == TreeItem.TYPE_TAB && item.id || null);
   await Tab.waitUntilTracked(draggedTabIds.concat([
-    message.droppedOn?.type == 'tab' && message.droppedOn.id,
-    message.droppedBefore?.type == 'tab' && message.droppedBefore.id,
-    message.droppedAfter?.type == 'tab' && message.droppedAfter.id,
+    message.droppedOn?.type == TreeItem.TYPE_TAB && message.droppedOn.id,
+    message.droppedBefore?.type == TreeItem.TYPE_TAB && message.droppedBefore.id,
+    message.droppedAfter?.type == TreeItem.TYPE_TAB && message.droppedAfter.id,
     message.attachToId,
-    message.insertBefore?.type == 'tab' && message.insertBefore.id,
-    message.insertAfter?.type == 'tab' && message.insertAfter.id,
+    message.insertBefore?.type == TreeItem.TYPE_TAB && message.insertBefore.id,
+    message.insertAfter?.type == TreeItem.TYPE_TAB && message.insertAfter.id,
   ]));
   log('perform tabs dragdrop requested: ', message);
   return performTreeItemsDragDrop({
@@ -561,9 +561,9 @@ async function performTabsDragDrop(tabs, params) {
     blocking = true;
   }
 
-  if ((params.droppedOn?.type == 'group' ||
-       params.droppedAfter?.type == 'group' ||
-       params.droppedBefore?.type == 'group') &&
+  if ((params.droppedOn?.type == TreeItem.TYPE_GROUP ||
+       params.droppedAfter?.type == TreeItem.TYPE_GROUP ||
+       params.droppedBefore?.type == TreeItem.TYPE_GROUP) &&
       tabs.some(tab => tab.groupId != -1 && tab.groupId != nativeTabGroupId)) {
     await removeTabsFromNativeTabGroupInternal(tabs);
   }
@@ -659,7 +659,7 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
 
   const members = group.$TST.memberTabs;
 
-  if (droppedOn?.type == 'group') {
+  if (droppedOn?.type == TreeItem.TYPE_GROUP) {
     log('performNativeTabGroupItemDragDrop: dropping onto another group, merge to it: ', droppedOn);
     const lastMember = droppedOn.$TST.lastMemberTab;
     const movedTabs = await performTabsDragDrop(members, {

@@ -242,7 +242,7 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     item.$TST.setAttribute('id', getItemElementId(item));
     item.$TST.setAttribute('type', item.$TST.type);
     item.$TST.setAttribute(Constants.kAPI_WINDOW_ID, item.windowId || -1);
-    if (item.$TST.isNativeTabGroup) {
+    if (item.type == TreeItem.TYPE_GROUP) {
       item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
       item.$TST.removeAttribute(Constants.kGROUP_ID);
     }
@@ -366,7 +366,7 @@ export function unrenderItem(item) {
 
   const itemElement = item.$TST.element;
 
-  if (!item.$TST.isNativeTabGroup) {
+  if (item.type == TreeItem.TYPE_TAB) {
     item.$TST.removeState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
     TabsStore.removeUnsynchronizedTab(item);
   }

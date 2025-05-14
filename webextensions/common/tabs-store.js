@@ -730,7 +730,7 @@ export function assertValidTab(tab) {
 }
 
 export function ensureLivingItem(tab) {
-  const isNativeTabGroup = tab?.$TST?.isNativeTabGroup;
+  const isNativeTabGroup = tab?.type == 'group';
   if (!tab ||
       !tab.id ||
       !tab.$TST ||

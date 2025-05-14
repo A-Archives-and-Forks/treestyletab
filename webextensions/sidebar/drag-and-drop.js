@@ -291,14 +291,14 @@ function getDropAction(event) {
       null;
   });
   info.defineGetter('groupId', () => { // the group ID the dropped items should be grouped under
-    const draggedGroup = info.draggedItem?.type == 'group' ? info.draggedItem : null;
+    const draggedGroup = info.draggedItem?.type == TreeItem.TYPE_GROUP ? info.draggedItem : null;
     switch (info.dropPosition) {
       case kDROP_ON_SELF:
       default:
         return targetItem.groupId || targetItem.id;
 
       case kDROP_AFTER:
-        if (targetItem.type == 'group') {
+        if (targetItem.type == TreeItem.TYPE_GROUP) {
           return targetItem.collapsed ?
             draggedGroup?.id : // dropping after a collapsed group => keep the original group
             targetItem.id; // otherwise we try to insert items at the top of a group
@@ -308,7 +308,7 @@ function getDropAction(event) {
           targetItem.groupId; // otherwise we try to add items to the group of the tab
 
       case kDROP_BEFORE:
-        if (targetItem.type == 'group') {
+        if (targetItem.type == TreeItem.TYPE_GROUP) {
           const groupId = targetItem.$TST?.firstMemberTab?.$TST?.unsafePreviousTab?.groupId;
           return groupId == -1 ?
             draggedGroup?.id : // a tab before the target group is ungrouped => keep the original group
@@ -427,8 +427,8 @@ function getDropAction(event) {
   const dropAreasCount      = (
     info.draggedItem &&
     ((targetItem.pinned && !info.substanceTargetItem) ||
-     (info.draggedItem.type == 'group' &&
-      targetItem.type != 'group'))
+     (info.draggedItem.type == TreeItem.TYPE_GROUP &&
+      targetItem.type != TreeItem.TYPE_GROUP))
   ) ? 2 : 3 ;
   const targetItemRect       = Scroll.getItemRect(targetItem);
   const targetItemCoordinate = onFaviconizedTab ? targetItemRect.left : targetItemRect.top ;
@@ -481,8 +481,8 @@ function getDropAction(event) {
       if ((info.draggedItem && // we cannot drop pinned tab on unpinned tab, or unpinned tab on pinned tab
            !!info.draggedItem.pinned != !!targetItem.pinned &&
            !info.substanceTargetItem) ||
-          (info.draggedItem?.type == 'group' && // we cannot drop group on tab
-           targetItem.type == 'tab'))
+          (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on tab
+           targetItem.type == TreeItem.TYPE_TAB))
         info.dropPosition = kDROP_IMPOSSIBLE;
       if (info.draggedItem &&
           info.insertBefore == info.draggedItem) // failsafe
@@ -514,8 +514,8 @@ function getDropAction(event) {
              targetItem.$TST.followsUnpinnedTab) ||
             (!info.draggedItem.pinned &&
              targetItem.pinned))) ||
-          (info.draggedItem?.type == 'group' && // we cannot drop group on its member
-           targetItem.type == 'tab' &&
+          (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on its member
+           targetItem.type == TreeItem.TYPE_TAB &&
            targetItem.groupId == info.draggedItem.id))
         info.dropPosition = kDROP_IMPOSSIBLE;
       if (configs.debug)
@@ -564,8 +564,8 @@ function getDropAction(event) {
              !targetItem.pinned) ||
             (!info.draggedItem.pinned &&
              targetItem.$TST.precedesPinnedTab))) ||
-          (info.draggedItem?.type == 'group' && // we cannot drop group on its member
-           targetItem.type == 'tab' &&
+          (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on its member
+           targetItem.type == TreeItem.TYPE_TAB &&
            targetItem.groupId == info.draggedItem.id))
         info.dropPosition = kDROP_IMPOSSIBLE;
       if (configs.debug)

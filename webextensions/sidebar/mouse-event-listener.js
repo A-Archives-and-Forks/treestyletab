@@ -46,7 +46,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
 import MetricsData from '/common/MetricsData.js';
-import { Tab, TabGroup } from '/common/TreeItem.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 import * as EventUtils from './event-utils.js';
@@ -382,7 +382,7 @@ function onMouseDown(event) {
     if (mousedown.detail.button == 0 &&
         onRegularArea &&
         !wasMultiselectionAction &&
-        tab?.$TST.type == 'tab') {
+        tab?.$TST.type == TreeItem.TYPE_TAB) {
       BackgroundConnection.sendMessage({
         type:  Constants.kCOMMAND_ACTIVATE_TAB,
         tabId: tab.id,
@@ -727,7 +727,7 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
       byInternalOperation: true
     });
     log('tabs: ', tabs);
-    const sanitizedTabsToClose = mapAndFilter(tabs, tab => tab.$TST.isNativeTabGroup ? undefined : tab.$TST.sanitized);
+    const sanitizedTabsToClose = mapAndFilter(tabs, tab => tab.type == TreeItem.TYPE_GROUP ? undefined : tab.$TST.sanitized);
     log('sanitizedTabsToClose: ', sanitizedTabsToClose);
     Sidebar.confirmToCloseTabs(sanitizedTabsToClose)
       .then(async confirmed => {
