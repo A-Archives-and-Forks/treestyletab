@@ -2221,6 +2221,8 @@ export async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
     return;
   }
 
+  UserOperationBlocker.blockIn(windowId, { throbber: true });
+
   const membersAndStructures = new Map();
   const groupedTabs = new Set();
   const others = [];
@@ -2250,6 +2252,7 @@ export async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
 
   if (others.length == 0) {
     log('maintainTreeForNativeTabGroup: there is no other tabs need to be moved, so we do nothing.');
+    UserOperationBlocker.unblockIn(windowId, { throbber: true });
     return;
   }
 
@@ -2291,6 +2294,8 @@ export async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
   }
   applyTreeStructureToTabs(others, othersStructure);
   browser.tabs.ungroup(others.map(tab => tab.id));
+
+  UserOperationBlocker.unblockIn(windowId, { throbber: true });
 }
 maintainTreeForNativeTabGroup.resolversForWindow = new Map();
 
