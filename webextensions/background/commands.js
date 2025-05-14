@@ -641,8 +641,8 @@ async function matchTabsGrouped(tabs, groupIdOrCreateParams) {
   }
 }
 
-async function performNativeTabGroupItemDragDrop(group, { droppedOn, groupId, attachTo, insertBefore, insertAfter, windowId, destinationWindowId, ...params }) {
-  log('performNativeTabGroupItemDragDrop ', () => ({ group, groupId, droppedOn, attachTo, insertBefore, insertAfter, windowId, destinationWindowId }));
+async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefore, droppedAfter, groupId, attachTo, insertBefore, insertAfter, windowId, destinationWindowId, ...params }) {
+  log('performNativeTabGroupItemDragDrop ', () => ({ group, groupId, droppedOn, droppedBefore, droppedAfter, attachTo, insertBefore, insertAfter, windowId, destinationWindowId }));
 
   const members = group.$TST.memberTabs;
 
@@ -663,28 +663,58 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, groupId, at
     return;
   }
 
-  if (groupId && groupId != group.id) {
-    const dropTargetGroup = TabGroup.get({ windowId: group.windowId, groupId });
-    const dropTargetFirstMember = dropTargetGroup.$TST.firstMemberTab;
-    if (group.$TST.firstMemberTab.index < dropTargetFirstMember.index) {
-      log('performNativeTabGroupItemDragDrop: dropping into another group, move to below the target group');
-      insertAfter  = dropTargetGroup.$TST.lastMemberTab;
-      insertBefore = insertAfter?.$TST.unsafeNextTab;
+  if (groupId) {
+    if (groupId != group.id) {
+      const dropTargetGroup = TabGroup.get({ windowId: group.windowId, groupId });
+      const dropTargetFirstMember = dropTargetGroup.$TST.firstMemberTab;
+      if (group.$TST.firstMemberTab.index < dropTargetFirstMember.index) {
+        log('performNativeTabGroupItemDragDrop: dropping into another group, move to below the target group');
+        insertAfter  = dropTargetGroup.$TST.lastMemberTab;
+        insertBefore = insertAfter?.$TST.unsafeNextTab;
+      }
+      else {
+        log('performNativeTabGroupItemDragDrop: dropping into another group, move to above the target group');
+        insertBefore = dropTargetFirstMember;
+        insertAfter  = insertBefore?.$TST.unsafePreviousTab;
+      }
+      return performTabsDragDrop(members, {
+        ...params,
+        windowId,
+        destinationWindowId,
+        groupId: group.id,
+        attachTo: null,
+        insertBefore,
+        insertAfter,
+      });
     }
-    else {
-      log('performNativeTabGroupItemDragDrop: dropping into another group, move to above the target group');
-      insertBefore = dropTargetFirstMember;
-      insertAfter  = insertBefore?.$TST.unsafePreviousTab;
+
+    if (droppedOn ||
+        droppedBefore?.$TST.parent ||
+        (droppedAfter &&
+         droppedAfter.$TST.rootTab != droppedAfter.$TST.unsafeNextTab?.$TST.rootTab)) {
+      const root = (droppedOn || droppedBefore || droppedAfter).$TST.rootTab;
+      if (root) {
+        if (group.$TST.firstMemberTab.index < root.index) {
+          log('performNativeTabGroupItemDragDrop: dropping into ungrouped tree, move to below the target tree');
+          insertAfter  = root.$TST.lastDescendant || root;
+          insertBefore = insertAfter?.$TST.unsafeNextTab;
+        }
+        else {
+          log('performNativeTabGroupItemDragDrop: dropping into ungrouped tree, move to above the target tree');
+          insertBefore = root;
+          insertAfter  = insertBefore?.$TST.unsafePreviousTab;
+        }
+        return performTabsDragDrop(members, {
+          ...params,
+          windowId,
+          destinationWindowId,
+          groupId: group.id,
+          attachTo: null,
+          insertBefore,
+          insertAfter,
+        });
+      }
     }
-    return performTabsDragDrop(members, {
-      ...params,
-      windowId,
-      destinationWindowId,
-      groupId: group.id,
-      attachTo: null,
-      insertBefore,
-      insertAfter,
-    });
   }
 
   log('performNativeTabGroupItemDragDrop: dropping at topl-evel, simply move the group');
