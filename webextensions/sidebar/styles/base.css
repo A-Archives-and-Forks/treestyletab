@@ -1082,6 +1082,11 @@ tab-closebox {
       opacity: var(--button-active-opacity);
     }
   }
+
+  /* hide closebox on non-active and non-hover tabs, like vertical tabs of Firefox itself */
+  tab-item:not(.active):not(#dummy-tab) tab-item-substance:not(:hover) & {
+    display: none;
+  }
 }
 
 /* hide closebox on non-active and non-hover tabs, like vertical tabs of Firefox itself */
