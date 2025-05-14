@@ -122,7 +122,6 @@
     /* Show internal tab id in the debug mode */
     tab-item::after {
       bottom: 0;
-      content: attr(data-tab-id) !important; /* override definition for the highlighting marker */
       inset-inline-end: 0;
       opacity: 0.65;
       overflow: hidden;
@@ -130,6 +129,13 @@
       position: absolute;
       text-align: end;
       z-index: var(--tab-favicon-z-index);
+    }
+    /* override definition for the highlighting marker */
+    tab-item[data-tab-id]::after {
+      content: attr(data-tab-id) !important;
+    }
+    tab-item[data-native-tab-group-id]::after {
+      content: attr(data-native-tab-group-id) !important;
     }
   }
 }
