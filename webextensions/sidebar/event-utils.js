@@ -156,16 +156,16 @@ export function getTreeItemFromTabbarEvent(event, options = {}) {
 }
 
 function getTreeItemFromCoordinates(event, options = {}) {
-  const tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(event.clientX, event.clientY), options);
-  if (tab)
-    return tab;
+  const item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(event.clientX, event.clientY), options);
+  if (item)
+    return item;
 
   const container = getTabbarFromEvent(event);
   if (!container ||
       container.classList.contains('pinned'))
     return null;
 
-  // because tab style can be modified, we try to find tab from
+  // because item style can be modified, we try to find item from
   // left, middle, and right.
   const containerRect = container.getBoundingClientRect();
   const trialPoints = [
@@ -174,25 +174,25 @@ function getTreeItemFromCoordinates(event, options = {}) {
     containerRect.width - Size.getFavIconSize()
   ];
   for (const x of trialPoints) {
-    const tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY), options);
-    if (tab)
-      return tab;
+    const item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY), options);
+    if (item)
+      return item.type == 'tab' && item; // we should find only tabs from their indent space
   }
 
   // document.elementFromPoint cannot find elements being in animation effect,
-  // so I try to find a tab from previous or next tab.
+  // so I try to find a item from previous or next item.
   const height = Size.getTabHeight();
   for (const x of trialPoints) {
-    let tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
-    tab = SidebarItems.getItemFromDOMNode(tab?.$TST.element.nextSibling, options);
-    if (tab)
-      return tab;
+    let item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
+    item = SidebarItems.getItemFromDOMNode(item?.$TST.element.nextSibling, options);
+    if (item)
+      return item.type == 'tab' && item; // we should find only tabs from their indent space
   }
   for (const x of trialPoints) {
-    let tab = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
-    tab = SidebarItems.getItemFromDOMNode(tab?.$TST.element.previousSibling, options);
-    if (tab)
-      return tab;
+    let item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
+    item = SidebarItems.getItemFromDOMNode(item?.$TST.element.previousSibling, options);
+    if (item)
+      return item.type == 'tab' && item; // we should find only tabs from their indent space
   }
 
   return null;
