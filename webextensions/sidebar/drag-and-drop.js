@@ -1371,7 +1371,6 @@ function onDrop(event) {
       isCopy:       dt.dropEffect == 'copy',
     });
     const fromOtherProfile = dropActionInfo.dragData.instanceId != mInstanceId;
-    const dropTargetItem = dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem;
     BackgroundConnection.sendMessage({
       type:                Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP,
       windowId:            dropActionInfo.dragData.windowId,
@@ -1435,7 +1434,6 @@ function onDrop(event) {
       const allowedActions = event.shiftKey ?
         configs.tabDragBehaviorShift :
         configs.tabDragBehavior;
-      const dropTargetItem = dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem;
       BackgroundConnection.sendMessage({
         type:                Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP,
         windowId:            recentTab.windowId,
