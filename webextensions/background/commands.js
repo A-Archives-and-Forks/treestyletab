@@ -496,6 +496,8 @@ async function performTreeItemsDragDropWithMessage(message) {
   const draggedTabIds = message.import ? [] : message.items.map(item => item.type == 'tab' && item.id || null);
   await Tab.waitUntilTracked(draggedTabIds.concat([
     message.droppedOn?.type == 'tab' && message.droppedOn.id,
+    message.droppedBefore?.type == 'tab' && message.droppedBefore.id,
+    message.droppedAfter?.type == 'tab' && message.droppedAfter.id,
     message.attachToId,
     message.insertBefore?.type == 'tab' && message.insertBefore.id,
     message.insertAfter?.type == 'tab' && message.insertAfter.id,
@@ -503,11 +505,13 @@ async function performTreeItemsDragDropWithMessage(message) {
   log('perform tabs dragdrop requested: ', message);
   return performTreeItemsDragDrop({
     ...message,
-    items:        message.import ? message.items : message.items.map(TreeItem.get),
-    droppedOn:    TreeItem.get(message.droppedOn),
-    attachTo:     Tab.get(message.attachToId),
-    insertBefore: TreeItem.get(message.insertBefore),
-    insertAfter:  TreeItem.get(message.insertAfter),
+    items:         message.import ? message.items : message.items.map(TreeItem.get),
+    droppedOn:     TreeItem.get(message.droppedOn),
+    droppedBefore: TreeItem.get(message.droppedBefore),
+    droppedAfter:  TreeItem.get(message.droppedAfter),
+    attachTo:      Tab.get(message.attachToId),
+    insertBefore:  TreeItem.get(message.insertBefore),
+    insertAfter:   TreeItem.get(message.insertAfter),
   });
 }
 
@@ -515,6 +519,8 @@ async function performTabsDragDrop(tabs, params) {
   log('performTabsDragDrop ', () => ({
     tabs:                tabs.map(tab => tab.id),
     droppedOn:           dumpTab(params.droppedOn),
+    droppedBefore:       dumpTab(params.droppedBefore),
+    droppedAfter:        dumpTab(params.droppedAfter),
     groupId:             params.groupId,
     attachTo:            dumpTab(params.attachTo),
     insertBefore:        dumpTab(params.insertBefore),
@@ -538,15 +544,19 @@ async function performTabsDragDrop(tabs, params) {
       -1;
 
   const nativeTabGroupId = params.groupId || (
-    params.droppedOn?.type == 'group' ?
-      params.droppedOn.id :
-      params.attachTo ?
-        params.attachTo.groupId :
-        nativeTabGroupIdFromPositionDeterminedByBrowser
+    params.droppedOn ? params.droppedOn?.groupId || params.droppedOn?.id :
+      params.droppedAfter?.type == 'group' ? params.droppedAfter?.id :
+        params.droppedAfter?.type == 'tab' ? params.droppedAfter?.groupId :
+          params.droppedBefore?.type == 'group' ? params.droppedBefore.$TST.unsafeNextTab?.$TST?.unsafePreviousTab?.groupId :
+            params.droppedBefore?.type == 'tab' ? params.droppedBefore?.groupId :
+              params.attachTo ? params.attachTo.groupId :
+                nativeTabGroupIdFromPositionDeterminedByBrowser
   );
-  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, nativeTabGroupIdFromPositionDeterminedByBrowser);
+  log('performTabsDragDrop: nativeTabGroupId, nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupId, nativeTabGroupIdFromPositionDeterminedByBrowser);
 
-  if (params.droppedOn?.type == 'group' &&
+  if ((params.droppedOn?.type == 'group' ||
+       params.droppedAfter?.type == 'group' ||
+       params.droppedBefore?.type == 'group') &&
       tabs.some(tab => tab.groupId != -1 && tab.groupId != nativeTabGroupId)) {
     await removeTabsFromNativeTabGroupInternal(tabs);
   }
@@ -957,7 +967,7 @@ export async function moveBefore(tab, options = {}) {
     );
   }
   else {
-    const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(tab, {
+    const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(tab, {
       context: Constants.kINSERTION_CONTEXT_MOVED,
       insertBefore
     });
@@ -991,7 +1001,7 @@ export async function moveAfter(tab, options = {}) {
     );
   }
   else {
-    const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(tab, {
+    const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(tab, {
       context: Constants.kINSERTION_CONTEXT_MOVED,
       insertAfter
     });
@@ -1568,7 +1578,7 @@ export async function openBookmarksWithStructure(items, { activeIndex = 0, disca
     await Tree.applyTreeStructureToTabs(tabs, structure);
 
   // tabs can be opened at middle of an existing tree due to browser.tabs.insertAfterCurrent=true
-  const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(tabs, {
+  const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(tabs, {
     context:      Constants.kINSERTION_CONTEXT_CREATED,
     insertAfter:  tabs[0].$TST.previousTab,
     insertBefore: tabs[tabs.length - 1].$TST.nextTab

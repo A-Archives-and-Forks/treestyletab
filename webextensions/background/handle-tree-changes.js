@@ -103,7 +103,7 @@ function reserveAttachShownTab(tab) {
         tab.$TST.removeState(Constants.kTAB_STATE_SHOWING);
         continue;
       }
-      const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(tab, {
+      const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(tab, {
         context:      Constants.kINSERTION_CONTEXT_SHOWN,
         insertAfter:  tab.$TST.nearestVisiblePrecedingTab,
         // Instead of nearestFollowingForeignerTab, to avoid placing the tab

@@ -275,6 +275,21 @@ function getDropAction(event) {
     const items = Scroll.getRenderableTreeItems();
     return items[items.length - 1];
   });
+  info.defineGetter('sanitizedDropOnTargetItem', () => {
+    return info.dropPosition == kDROP_ON_SELF ?
+      (targetItem?.$TST.sanitized || targetItem) :
+      null;
+  });
+  info.defineGetter('sanitizedDropBeforeTargetItem', () => {
+    return info.dropPosition == kDROP_BEFORE ?
+      (targetItem?.$TST.sanitized || targetItem) :
+      null;
+  });
+  info.defineGetter('sanitizedDropAfterTargetItem', () => {
+    return info.dropPosition == kDROP_AFTER ?
+      (targetItem?.$TST.sanitized || targetItem) :
+      null;
+  });
   info.defineGetter('groupId', () => {
     if (targetItem.type == 'group') {
       if (info.dropPosition == kDROP_BEFORE) {
@@ -471,16 +486,16 @@ function getDropAction(event) {
 
     case kDROP_BEFORE: {
       log('drop position = before ', info.targetItem.id);
-      const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(info.draggedItem, {
+      const referenceItems = TreeBehavior.calculateReferenceItemsFromInsertionPosition(info.draggedItem, {
         context:      Constants.kINSERTION_CONTEXT_MOVED,
         insertBefore: targetItem.$TST.firstMemberTab || targetItem,
       });
-      if (referenceTabs.parent)
-        info.parent = referenceTabs.parent;
-      if (referenceTabs.insertBefore)
-        info.insertBefore = referenceTabs.insertBefore;
-      if (referenceTabs.insertAfter)
-        info.insertAfter = referenceTabs.insertAfter;
+      if (referenceItems.parent)
+        info.parent = referenceItems.parent;
+      if (referenceItems.insertBefore)
+        info.insertBefore = referenceItems.insertBefore;
+      if (referenceItems.insertAfter)
+        info.insertAfter = referenceItems.insertAfter;
       info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH );
       //if (info.insertBefore)
       //  log('insertBefore = ', dumpTab(info.insertBefore));
@@ -499,15 +514,15 @@ function getDropAction(event) {
 
     case kDROP_AFTER: {
       log('drop position = after ', info.targetItem.id);
-      const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(info.draggedItem, {
+      const referenceItems = TreeBehavior.calculateReferenceItemsFromInsertionPosition(info.draggedItem, {
         insertAfter: targetItem.$TST.lastMemberTab || (targetItem.$TST.subtreeCollapsed && targetItem.$TST.lastDescendant || targetItem),
       });
-      if (referenceTabs.parent)
-        info.parent = referenceTabs.parent;
-      if (referenceTabs.insertBefore)
-        info.insertBefore = referenceTabs.insertBefore;
-      if (referenceTabs.insertAfter)
-        info.insertAfter = referenceTabs.insertAfter;
+      if (referenceItems.parent)
+        info.parent = referenceItems.parent;
+      if (referenceItems.insertBefore)
+        info.insertBefore = referenceItems.insertBefore;
+      if (referenceItems.insertAfter)
+        info.insertAfter = referenceItems.insertAfter;
       info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH );
       if (info.insertBefore) {
         /* strategy
@@ -1092,7 +1107,7 @@ function onDragOver(event) {
   }
 
   let dropPositionTargetItem = info.targetItem;
-  if (dropPositionTargetItem?.$TST.collapsed)
+  if (dropPositionTargetItem?.$TST?.collapsed)
     dropPositionTargetItem = info.targetItem.$TST.nearestVisiblePrecedingTab || info.targetItem;
   if (!dropPositionTargetItem) {
     log(`onDragOver: no drop target item sessionId=${sessionId}`);
@@ -1346,11 +1361,14 @@ function onDrop(event) {
       isCopy:       dt.dropEffect == 'copy',
     });
     const fromOtherProfile = dropActionInfo.dragData.instanceId != mInstanceId;
+    const dropTargetItem = dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem;
     BackgroundConnection.sendMessage({
       type:                Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP,
       windowId:            dropActionInfo.dragData.windowId,
       items:               draggedItems.map(item => item?.$TST?.sanitized || item),
-      droppedOn:           dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem,
+      droppedOn:           dropActionInfo.sanitizedDropOnTargetItem,
+      droppedBefore:       dropActionInfo.sanitizedDropBeforeTargetItem,
+      droppedAfter:        dropActionInfo.sanitizedDropAfterTargetItem,
       groupId:             dropActionInfo.groupId,
       structure,
       action:              dropActionInfo.action,
@@ -1407,11 +1425,14 @@ function onDrop(event) {
       const allowedActions = event.shiftKey ?
         configs.tabDragBehaviorShift :
         configs.tabDragBehavior;
+      const dropTargetItem = dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem;
       BackgroundConnection.sendMessage({
         type:                Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP,
         windowId:            recentTab.windowId,
         items:               draggedItems.map(item => item?.$TST?.sanitized || item),
-        droppedOn:           dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem,
+        droppedOn:           dropActionInfo.sanitizedDropOnTargetItem,
+        droppedBefore:       dropActionInfo.sanitizedDropBeforeTargetItem,
+        droppedAfter:        dropActionInfo.sanitizedDropAfterTargetItem,
         groupId:             dropActionInfo.groupId,
         structure,
         action:              dropActionInfo.action,
