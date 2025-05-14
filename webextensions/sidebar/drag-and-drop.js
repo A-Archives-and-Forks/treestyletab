@@ -288,6 +288,10 @@ function getDropAction(event) {
       }
       return targetItem.id;
     }
+    if (info.draggedItem.type == 'group' &&
+        targetItem.groupId == -1) {
+      return info.draggedItem.id;
+    }
     return targetItem.groupId;
   });
   info.defineGetter('canDrop', () => {

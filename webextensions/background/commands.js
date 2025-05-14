@@ -564,6 +564,8 @@ async function performTabsDragDrop(tabs, params) {
     ...params,
     windowId,
     destinationWindowId,
+    // TST automatically optimize rearrangement of tabs, but we need to disable it here to avoid unexpected group modifications by moved other tabs.
+    doNotOptimize: TabsStore.windows.get(destinationWindowId).tabGroups.size > 0 || nativeTabGroupId != -1,
     broadcast: true
   });
   log('performTabsDragDrop: movedTabs = ', movedTabs, { isAcrossWindows });
@@ -666,7 +668,7 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, groupId, at
       ...params,
       windowId,
       destinationWindowId,
-      groupId,
+      groupId: null, // The dragged group will be deleted while performing, so we must not group tabs with the old group ID
       attachTo,
       insertBefore,
       insertAfter,

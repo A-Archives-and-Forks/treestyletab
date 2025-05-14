@@ -2266,7 +2266,8 @@ export async function maintainTreeForNativeTabGroup({ windowId, groupId }) {
     await moveTabs(others, {
       insertAfter: lastMember,
       insertBefore: others[others.length - 1].unsafeNextTab,
-      doNotOptimize: true, // TST automatically optimize rearrangement of tabs, but we need to disable it here to keep grouped tabs there.
+      // TST automatically optimize rearrangement of tabs, but we need to disable it here to keep grouped tabs there.
+      doNotOptimize: TabsStore.windows.get(windowId).tabGroups.size > 0,
     });
     log('maintainTreeForNativeTabGroup: moved others = ',
         others.map(tab => `#${tab.id}(@${tab.index})[${tab.groupId}]`));
