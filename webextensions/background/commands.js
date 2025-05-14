@@ -1215,13 +1215,16 @@ async function addTabsToNativeTabGroupInternal(tabs, groupIdOrProperties) {
       }
     };
     browser.tabs.onUpdated.addListener(onUpdated, { properties: ['groupId'] });
-    browser.tabs.group({
-      createProperties: !groupId && {
-        windowId: win.id, // We must specify the window ID explicitly, otherwise tabs moved across windows may be reverted and grouped in the old window!
-      },
+    const groupParams = {
       groupId,
       tabIds: toBeGroupedIds,
-    });
+    };
+    if (!groupId) {
+      groupParams.createProperties = {
+        windowId: win.id, // We must specify the window ID explicitly, otherwise tabs moved across windows may be reverted and grouped in the old window!
+      };
+    }
+    browser.tabs.group(groupParams);
   });
   if (groupIdOrProperties &&
       typeof groupIdOrProperties == 'object') {
