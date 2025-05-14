@@ -966,7 +966,7 @@ Tab.onActivated.addListener((tab, _info = {}) => {
 function onClick(_event) {
   // clear unexpectedly left "dragging" state
   // (see also https://github.com/piroor/treestyletab/issues/1921 )
-  DragAndDrop.clearDraggingTabsState();
+  DragAndDrop.clearDraggingItemsState();
 }
 onClick = EventUtils.wrapWithErrorHandler(onClick);
 

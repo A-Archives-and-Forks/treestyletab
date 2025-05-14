@@ -221,7 +221,10 @@ let mLastRenderedVirtualScrollItemIds = [];
 const STICKY_SPACER_MATCHER = /^tab:(\d+):sticky$/;
 let mScrollPosition = 0;
 
-function getRenderableTreeItems(windowId = null) {
+export function getRenderableTreeItems(windowId = null) {
+  if (!windowId) {
+    windowId = TabsStore.getCurrentWindowId();
+  }
   if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
     log('getRenderableTreeItems: no native tab group');
     return TabsStore.queryAll({

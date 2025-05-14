@@ -766,7 +766,7 @@ windowId = ${raw.windowId}
       }
     }
 
-    const group = this.$TST.nativeTabGroup || this.$TST.rawGroup;
+    const group = this.$TST.nativeTabGroup || this.$TST.group;
     if (group) {
       this.style.setProperty('--tab-group-color', `var(--tab-group-color-${group.color})`);
       this.style.setProperty('--tab-group-color-pale', `var(--tab-group-color-${group.color}-pale)`);

@@ -730,7 +730,7 @@ async function onContextMenu(event) {
   }
 
   const originalTargetNativeTabGroupElement = originalTarget?.closest('[data-native-tab-group-id]');
-  const nativeTabGroup = originalTargetNativeTabGroupElement?.$TST.rawGroup;
+  const nativeTabGroup = originalTargetNativeTabGroupElement?.$TST.group;
   if (nativeTabGroup &&
       !modifierKeyPressed) {
     log('onContextMenu: on native tab group');

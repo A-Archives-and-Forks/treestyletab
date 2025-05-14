@@ -443,7 +443,7 @@ export const configs = new Configs({
   enableWorkaroundForBug1767165_fixDragEndCoordinates: null, // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1767165
   enableWorkaroundForBug1763420_reloadMaskImage: true, // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1763420
   maximumDelayForBug1561879: 500,
-  workaroundForBug1548949DroppedTabs: null,
+  workaroundForBug1548949DroppedItems: null,
   heartbeatInterval: 5000,
   connectionTimeoutDelay: 500,
   maximumAcceptableDelayForTabDuplication: 10 * 1000,

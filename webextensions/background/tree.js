@@ -1445,12 +1445,12 @@ browser.runtime.getBrowserInfo().then(browserInfo => {
     mSlowDuplication = true;
 });
 
-export async function moveTabs(tabs, options = {}) {
+export async function moveTabs(tabs, { duplicate, ...options } = {}) {
   tabs = tabs.filter(TabsStore.ensureLivingItem);
   if (tabs.length == 0)
     return [];
 
-  log('moveTabs: ', () => ({ tabs: tabs.map(dumpTab), options }));
+  log('moveTabs: ', () => ({ tabs: tabs.map(dumpTab), duplicate, options }));
 
   const windowId = parseInt(tabs[0].windowId || TabsStore.getCurrentWindowId());
 
@@ -1474,14 +1474,14 @@ export async function moveTabs(tabs, options = {}) {
     if (tab.active)
       hasActive = true;
     if (isAcrossWindows &&
-        !options.duplicate)
+        !duplicate)
       tab.$TST.temporaryMetadata.set('movingAcrossWindows', true);
   }
 
-  if (!options.duplicate)
+  if (!duplicate)
     await detachTabsFromTree(tabs, options);
 
-  if (isAcrossWindows || options.duplicate) {
+  if (isAcrossWindows || duplicate) {
     if (mSlowDuplication)
       UserOperationBlocker.blockIn(windowId, { throbber: true });
     try {
@@ -1513,7 +1513,7 @@ export async function moveTabs(tabs, options = {}) {
         newWindow,
         (async () => {
           const sourceWindow = TabsStore.windows.get(tabs[0].windowId);
-          if (options.duplicate) {
+          if (duplicate) {
             sourceWindow.toBeOpenedTabsWithPositions += tabs.length;
             sourceWindow.toBeOpenedOrphanTabs += tabs.length;
             sourceWindow.duplicatingTabsCount += tabs.length;
@@ -1525,7 +1525,7 @@ export async function moveTabs(tabs, options = {}) {
           }
 
           log('preparing tabs');
-          if (options.duplicate) {
+          if (duplicate) {
             const startTime = Date.now();
             // This promise will be resolved with very large delay.
             // (See also https://bugzilla.mozilla.org/show_bug.cgi?id=1394376 )
@@ -1643,7 +1643,7 @@ export async function moveTabs(tabs, options = {}) {
         await applyTreeStructureToTabs(newTabs, structure, {
           broadcast: true
         });
-        if (options.duplicate) {
+        if (duplicate) {
           for (const tab of newTabs) {
             tab.$TST.removeState(Constants.kTAB_STATE_DUPLICATING, { broadcast: true });
             TabsStore.removeDuplicatingTab(tab);

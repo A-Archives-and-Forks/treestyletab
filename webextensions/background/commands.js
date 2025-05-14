@@ -475,7 +475,7 @@ async function performTabsDragDrop(params = {}) {
   const destinationWindowId = params.destinationWindowId || windowId;
 
   log('performTabsDragDrop ', () => ({
-    tabs:                params.tabs.map(dumpTab),
+    items:               params.items.map(item => item.id),
     attachTo:            dumpTab(params.attachTo),
     insertBefore:        dumpTab(params.insertBefore),
     insertAfter:         dumpTab(params.insertAfter),
@@ -506,7 +506,8 @@ async function performTabsDragDrop(params = {}) {
     await addTabsToNativeTabGroupInternal(params.tabs, nativeTabGroupId);
   }
 
-  const movedTabs = await moveTabsWithStructure(params.tabs, {
+  const draggedTabs = params.items.map(tabOrGroup => tabOrGroup.$TST.memberTabs || tabOrGroup).flat();
+  const movedTabs = await moveTabsWithStructure(draggedTabs, {
     ...params,
     windowId, destinationWindowId,
     broadcast: true
@@ -535,7 +536,7 @@ async function performTabsDragDropWithMessage(message) {
   log('perform tabs dragdrop requested: ', message);
   return performTabsDragDrop({
     ...message,
-    tabs:         message.import ? message.tabs : draggedTabIds.map(id => Tab.get(id)),
+    items:        message.import ? message.items : message.items.map(item => item.color ? TabGroup.get(item.id) : Tab.get(item.id)),
     attachTo:     Tab.get(message.attachToId),
     insertBefore: Tab.get(message.insertBeforeId),
     insertAfter:  Tab.get(message.insertAfterId),
@@ -1178,13 +1179,13 @@ async function removeTabsFromNativeTabGroupInternal(tabs) {
   browser.tabs.onUpdated.removeListener(onUpdated);
 }
 
-async function moveGroupToNewWindow({ groupId, windowId }) {
+async function moveGroupToNewWindow({ groupId, windowId, duplicate, left, top }) {
   log('moveGroupToNewWindow: ', groupId, windowId);
   const group = TabGroup.get({ groupId, windowId });
   const members = TabGroup.getMemberTabs({ windowId, groupId });
-  const movedTabs = await Tree.openNewWindowFromTabs(members);
+  const movedTabs = await Tree.openNewWindowFromTabs(members, { duplicate, left, top });
   await addTabsToNativeTabGroupInternal(movedTabs, {
-    title: group.id,
+    title: group.title,
     color: group.color,
   });
 }
@@ -1264,6 +1265,10 @@ SidebarConnection.onMessage.addListener(async (windowId, message) => {
 
     case Constants.kCOMMAND_TOGGLE_STICKY:
       toggleSticky([Tab.get(message.tabId)]);
+      return;
+
+    case Constants.kCOMMAND_NEW_WINDOW_FROM_NATIVE_TAB_GROUP:
+      moveGroupToNewWindow(message);
       return;
   }
 });

@@ -461,8 +461,10 @@ document.querySelector('#tabbar').addEventListener('mousedown', event => {
   });
 
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-  sendTabGroupMenuMessage(activeTab.id, {
-    type: 'treestyletab:tab-group-menu:hide-if-shown',
-    timestamp: startAt,
-  });
+  if (activeTab) {
+    sendTabGroupMenuMessage(activeTab.id, {
+      type: 'treestyletab:tab-group-menu:hide-if-shown',
+      timestamp: startAt,
+    });
+  }
 }, { capture: true });

@@ -63,7 +63,7 @@ tab-item.faviconized[data-drop-position="after"] tab-item-substance::before {
 }
 
 
-.tab-drop-blocker {
+.item-drop-blocker {
   display: none;
   min-height: calc(var(--favicon-size) / 5);
   min-width: calc(var(--favicon-size) / 5);
@@ -79,25 +79,25 @@ tab-item.faviconized[data-drop-position="after"] tab-item-substance::before {
     display: block;
   }
 
-  &#tab-drop-blocker-top {
+  &#item-drop-blocker-top {
     inset-inline-start: 0;
     inset-inline-end: 0;
     top: 0;
   }
 
-  &#tab-drop-blocker-right {
+  &#item-drop-blocker-right {
     bottom: 0;
     inset-inline-end: 0;
     top: 0;
   }
 
-  &#tab-drop-blocker-bottom {
+  &#item-drop-blocker-bottom {
     bottom: 0;
     inset-inline-start: 0;
     inset-inline-end: 0;
   }
 
-  &#tab-drop-blocker-left {
+  &#item-drop-blocker-left {
     bottom: 0;
     inset-inline-start: 0;
     top: 0;

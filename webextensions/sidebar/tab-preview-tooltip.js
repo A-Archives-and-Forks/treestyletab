@@ -567,8 +567,10 @@ document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
   });
 
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-  sendTabPreviewMessage(activeTab.id, {
-    type: 'treestyletab:tab-preview:hide',
-    timestamp: startAt,
-  });
+  if (activeTab) {
+    sendTabPreviewMessage(activeTab.id, {
+      type: 'treestyletab:tab-preview:hide',
+      timestamp: startAt,
+    });
+  }
 });

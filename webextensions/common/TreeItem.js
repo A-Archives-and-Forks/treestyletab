@@ -71,6 +71,8 @@ export class TreeItem {
     this.raw = raw;
     this.id  = raw.id;
 
+    raw.type = this.type || 'unknown';
+
     this.trackedAt = Date.now();
     this.opened = Promise.resolve(true);
 
@@ -763,7 +765,7 @@ export class TabGroup extends TreeItem {
     return 'group';
   }
 
-  get rawGroup() {
+  get group() {
     return this.raw;
   }
 
@@ -771,16 +773,28 @@ export class TabGroup extends TreeItem {
     return this.raw;
   }
 
+  get memberTabs() {
+    return TabGroup.getMemberTabs({ windowId: this.raw.windowId, groupId: this.raw.id });
+  }
+
+  get firstMemberTab() {
+    return TabGroup.getFirstMemberTab({ windowId: this.raw.windowId, groupId: this.raw.id });
+  }
+
+  get lastMemberTab() {
+    return TabGroup.getLastMemberTab({ windowId: this.raw.windowId, groupId: this.raw.id });
+  }
+
   get children() {
-    return TabGroup.getMemberTabs({ windowId: this.raw.windowId, groupId: this.raw.id }).filter(tab => !tab.$TST.parentId);
+    return this.memberTabs.filter(tab => !tab.$TST.parentId);
   }
 
   get hasChild() {
-    return !!TabGroup.getFirstMemberTab({ windowId: this.raw.windowId, groupId: this.raw.id });
+    return !!this.firstMemberTab;
   }
 
   get descendants() {
-    return TabGroup.getMemberTabs({ windowId: this.raw.windowId, groupId: this.raw.id });
+    return this.memberTabs;
   }
 
   apply(exported) {
@@ -790,7 +804,7 @@ export class TabGroup extends TreeItem {
   }
 }
 
-TabGroup.get = ({ windowId, groupId }) => TabsStore.windows.get(windowId).tabGroups.get(groupId);
+TabGroup.get = ({ windowId, groupId }) => TabsStore.windows.get(windowId)?.tabGroups.get(groupId);
 
 TabGroup.init = group => {
   if (group.$TST instanceof TabGroup) {
@@ -798,6 +812,9 @@ TabGroup.init = group => {
   }
   if ('index' in group) {
     group.index = -1;
+  }
+  if ('incognito' in group) {
+    group.incognito = false;
   }
   group.$TST = new TabGroup(group);
   return group;
@@ -2461,6 +2478,11 @@ export class Tab extends TreeItem {
 
     this.setAttribute(Constants.kGROUP_ID, this.raw.groupId);
 
+    const group = this.nativeTabGroup;
+    if (group) {
+      group.incognito = this.tab.incognito;
+    }
+
     Tab.onNativeGroupModified.dispatch(this.raw);
   }
 
@@ -2646,7 +2668,7 @@ Tab.get = tabId =>  {
   if (!tabId) {
     return null;
   }
-  if (typeof tabId?.color !== 'undefined') { // for backward compatibility
+  if (tabId && typeof tabId.color !== 'undefined') { // for backward compatibility
     return TabGroup.get({ windowId: tabId.windowId, groupId: tabId.id });
   }
   return TabsStore.tabs.get(typeof tabId == 'number' ? tabId : tabId?.id);
