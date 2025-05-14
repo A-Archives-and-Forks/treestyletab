@@ -554,9 +554,9 @@ async function performTabsDragDrop(tabs, params) {
   log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, ', nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupIdFromPositionDeterminedByBrowser, ', draggedGroupParams = ', draggedGroupParams);
 
   let blocking = false;
-  if (tabs[0].groupId != -1 ||
-      (params.groupId &&
-       tabs[0].groupId != params.groupId)) {
+  if ((params.groupId &&
+       tabs[0].groupId != params.groupId) ||
+      (tabs[0].groupId != (params.droppedOn || params.droppedBefore || params.droppedAfter)?.groupId)) {
     UserOperationBlocker.blockIn(tabs[0].windowId, { throbber: true });
     blocking = true;
   }
