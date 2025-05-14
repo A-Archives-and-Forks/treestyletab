@@ -2792,6 +2792,9 @@ function onWaitingTabRemoved(removedTabId, _removeInfo) {
 browser.tabs.onRemoved.addListener(onWaitingTabRemoved);
 
 async function waitUntilTracked(tabId, options = {}) {
+  if (!tabId) {
+    return null;
+  }
   const stack = configs.debug && new Error().stack;
   const tab = Tab.get(tabId);
   if (tab) {
@@ -3632,4 +3635,18 @@ Tab.dumpAll = windowId => {
                              ' => ');
   }
   log(output);
+};
+
+// utility
+TreeItem.get = item => {
+  if (!item) {
+    return null;
+  }
+  if (item?.type == 'tab') {
+    return Tab.get(item.id);
+  }
+  if (item?.type == 'group') {
+    return TabGroup.get({ windowId: item.windowId, groupId: item.id });
+  }
+  return Tab.get(item);
 };

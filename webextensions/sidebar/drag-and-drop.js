@@ -50,7 +50,7 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab, TabGroup } from '/common/TreeItem.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as Notifications from './notifications.js';
 //import * as Size from './size.js';
@@ -232,9 +232,7 @@ function getDropAction(event) {
     if (dragData?.instanceId != mInstanceId)
       return null;
     const item = dragData?.item;
-    return item.type == 'tab' ? (Tab.get(item?.id) || item) :
-      item.type == 'group' ? (TabGroup.get({ windowId: item.windowId, groupId: item.id }) || item) :
-        item;
+    return TreeItem.get(item) || item;
   });
   info.defineGetter('draggedItems', () => {
     const dragData = info.dragData;
@@ -1333,12 +1331,13 @@ function onDrop(event) {
       type:                Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP,
       windowId:            dropActionInfo.dragData.windowId,
       items:               draggedItems.map(item => item?.$TST?.sanitized || item),
+      droppedOn:           dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem,
       structure,
       action:              dropActionInfo.action,
       allowedActions:      dropActionInfo.dragData.behavior,
       attachToId:          dropActionInfo.parent?.id,
-      insertBeforeId:      insertBefore?.id,
-      insertAfterId:       insertAfter?.id,
+      insertBefore:        insertBefore?.$TST?.sanitized || insertBefore,
+      insertAfter:         insertAfter?.$TST?.sanitized || insertAfter,
       destinationWindowId: TabsStore.getCurrentWindowId(),
       duplicate:           !fromOtherProfile && dt.dropEffect == 'copy',
       import:              fromOtherProfile
@@ -1392,12 +1391,13 @@ function onDrop(event) {
         type:                Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP,
         windowId:            recentTab.windowId,
         items:               draggedItems.map(item => item?.$TST?.sanitized || item),
+        droppedOn:           dropActionInfo.targetItem?.$TST.sanitized || dropActionInfo.targetItem,
         structure,
         action:              dropActionInfo.action,
         allowedActions,
         attachToId:          dropActionInfo.parent?.id,
-        insertBeforeId:      insertBefore?.id,
-        insertAfterId:       insertAfter?.id,
+        insertBefore:        insertBefore?.$TST?.sanitized || insertBefore,
+        insertAfter:         insertAfter?.$TST?.sanitized || insertAfter,
         destinationWindowId: TabsStore.getCurrentWindowId(),
         duplicate:           dt.dropEffect == 'copy',
         import:              false
@@ -1445,8 +1445,8 @@ async function onDragEnd(event) {
   let dragData = event.dataTransfer?.getData(kTREE_DROP_TYPE);
   dragData = (dragData && JSON.parse(dragData)) || mCurrentDragData;
   if (dragData) {
-    dragData.item  = (dragData.item?.type == 'group' ? TabGroup.get({ windowId: dragData.item.windowId, groupId: dragData.item.id }) : Tab.get(dragData.item.id)) || dragData.item;
-    dragData.items = dragData.items && dragData.items.map(item => (item?.type == 'group' ? TabGroup.get({ windowId: item.windowId, groupId: item.id }) : Tab.get(item.id)) || item);
+    dragData.item  = TreeItem.get(dragData.item) || dragData.item;
+    dragData.items = dragData.items && dragData.items.map(item => TreeItem.get(item) || item);
     log(`onDragEnd: finishing drag session ${dragData.sessionId}`);
   }
 

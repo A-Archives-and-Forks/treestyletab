@@ -470,12 +470,51 @@ export async function outdent(tab, options = {}) {
 }
 
 // drag and drop helper
-async function performTabsDragDrop(params = {}) {
+async function performTreeItemsDragDrop(params = {}) {
   const windowId = params.windowId || TabsStore.getCurrentWindowId();
   const destinationWindowId = params.destinationWindowId || windowId;
 
+  switch (params.items[0].type) {
+    case 'group':
+      return performNativeTabGroupItemDragDrop(params.items[0], {
+        windowId,
+        destinationWindowId,
+        ...params,
+      });
+
+    case 'tab':
+    default:
+      return performTabsDragDrop(params.items, {
+        windowId,
+        destinationWindowId,
+        ...params,
+      });
+  }
+}
+
+async function performTreeItemsDragDropWithMessage(message) {
+  const draggedTabIds = message.import ? [] : message.items.map(item => item.type == 'tab' && item.id || null);
+  await Tab.waitUntilTracked(draggedTabIds.concat([
+    message.droppedOn?.type == 'tab' && message.droppedOn.id,
+    message.attachToId,
+    message.insertBefore?.type == 'tab' && message.insertBefore.id,
+    message.insertAfter?.type == 'tab' && message.insertAfter.id,
+  ]));
+  log('perform tabs dragdrop requested: ', message);
+  return performTreeItemsDragDrop({
+    ...message,
+    items:        message.import ? message.items : message.items.map(TreeItem.get),
+    droppedOn:    TreeItem.get(message.droppedOn),
+    attachTo:     Tab.get(message.attachToId),
+    insertBefore: TreeItem.get(message.insertBefore),
+    insertAfter:  TreeItem.get(message.insertAfter),
+  });
+}
+
+async function performTabsDragDrop(tabs, params) {
   log('performTabsDragDrop ', () => ({
-    items:               params.items.map(item => item.id),
+    tabs:                tabs.map(tab => tab.id),
+    droppedOn:           dumpTab(params.droppedOn),
     attachTo:            dumpTab(params.attachTo),
     insertBefore:        dumpTab(params.insertBefore),
     insertAfter:         dumpTab(params.insertAfter),
@@ -498,21 +537,22 @@ async function performTabsDragDrop(params = {}) {
       params.insertBefore ?
         params.insertBefore.groupId :
         -1;
-  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId);
+  log('performTreeItemsDragDrop: nativeTabGroupId = ', nativeTabGroupId);
   if (nativeTabGroupId == -1) {
-    await removeTabsFromNativeTabGroupInternal(params.tabs);
+    await removeTabsFromNativeTabGroupInternal(tabs);
   }
   else {
-    await addTabsToNativeTabGroupInternal(params.tabs, nativeTabGroupId);
+    await addTabsToNativeTabGroupInternal(tabs, nativeTabGroupId);
   }
 
-  const draggedTabs = params.items.map(tabOrGroup => tabOrGroup.$TST.memberTabs || tabOrGroup).flat();
-  const movedTabs = await moveTabsWithStructure(draggedTabs, {
+  const { windowId, destinationWindowId } = params;
+  const movedTabs = await moveTabsWithStructure(tabs, {
     ...params,
-    windowId, destinationWindowId,
+    windowId,
+    destinationWindowId,
     broadcast: true
   });
-  log('performTabsDragDrop: movedTabs = ', movedTabs);
+  log('performTreeItemsDragDrop: movedTabs = ', movedTabs);
   if (nativeTabGroupId != -1) {
     await Tree.maintainTreeForNativeTabGroup({ windowId, groupId: nativeTabGroupId })
   }
@@ -526,21 +566,8 @@ async function performTabsDragDrop(params = {}) {
   }
 }
 
-async function performTabsDragDropWithMessage(message) {
-  const draggedTabIds = message.import ? [] : message.tabs.map(tab => tab.id);
-  await Tab.waitUntilTracked(draggedTabIds.concat([
-    message.attachToId,
-    message.insertBeforeId,
-    message.insertAfterId
-  ]));
-  log('perform tabs dragdrop requested: ', message);
-  return performTabsDragDrop({
-    ...message,
-    items:        message.import ? message.items : message.items.map(item => item.color ? TabGroup.get(item.id) : Tab.get(item.id)),
-    attachTo:     Tab.get(message.attachToId),
-    insertBefore: Tab.get(message.insertBeforeId),
-    insertAfter:  Tab.get(message.insertAfterId),
-  });
+async function performNativeTabGroupItemDragDrop(group, { droppedOn, insertBefore,insertAfter, windowId, destinationWindowId }) {
+  log('performNativeTabGroupItemDragDrop ', () => ({ group, droppedOn, insertBefore,insertAfter, windowId, destinationWindowId }));
 }
 
 // useful utility for general purpose
@@ -1206,7 +1233,7 @@ SidebarConnection.onMessage.addListener(async (windowId, message) => {
     }; break;
 
     case Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP:
-      performTabsDragDropWithMessage(message);
+      performTreeItemsDragDropWithMessage(message);
       break;
 
     case Constants.kCOMMAND_TOGGLE_MUTED_FROM_SOUND_BUTTON: {
@@ -1277,7 +1304,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
   switch (message.type) {
     // for automated tests
     case Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP:
-      performTabsDragDropWithMessage(message);
+      performTreeItemsDragDropWithMessage(message);
       break;
 
     case Constants.kCOMMAND_UPDATE_NATIVE_TAB_GROUP: {
