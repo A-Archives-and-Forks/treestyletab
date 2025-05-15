@@ -54,6 +54,7 @@ import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import { Tab } from '/common/TreeItem.js';
 
+import InContentPanel from '/resources/module/InContentPanel.js';
 import TabGroupMenuPanel from '/resources/module/TabGroupMenuPanel.js'; // the IMPL
 import * as InContentClosedContainer from '/resources/module/in-content-closed-container.js';
 
@@ -110,6 +111,7 @@ async function prepareMenu(tabId) {
     matchAboutBlank: true,
     runAt: 'document_start',
     code: `(() => { // the LOADER
+      ${InContentPanel.toString()}
       ${TabGroupMenuPanel.toString()}
 
       const logging = ${!!logging};
@@ -141,7 +143,7 @@ async function prepareMenu(tabId) {
         if (logging)
           console.log('mouse down on out of tab group menu panel, destroy tab group menu container');
         browser.runtime.sendMessage({
-          type: 'treestyletab:tab-group-menu:hide',
+          type: 'treestyletab:${TabGroupMenuPanel.TYPE}:hide',
           timestamp: Date.now(),
         });
         destroyClosedContents(destroy);
@@ -166,7 +168,7 @@ async function prepareMenu(tabId) {
 }
 
 function shouldMessageSend(message) {
-  return message.type != 'treestyletab:tab-group-menu:show';
+  return message.type != `treestyletab:${TabGroupMenuPanel.TYPE}:show`;
 }
 
 // returns succeeded or not (boolean)
@@ -214,7 +216,7 @@ async function sendTabGroupMenuMessage(tabId, message, deferredResultResolver) {
         // now we fall back to the in-sidebar tab group menu.
         if (!shouldFallbackToSidebar ||
             !shouldMessageSend(message)) {
-          log(` => no response after retrying, give up to send `, shouldFallbackToSidebar, message.type, message.type == 'treestyletab:tab-group-menu:show');
+          log(` => no response after retrying, give up to send `, shouldFallbackToSidebar, message.type, message.type == `treestyletab:${TabGroupMenuPanel.TYPE}:show`);
           deferredResultResolver(false);
           return false;
         }
@@ -251,7 +253,7 @@ async function sendTabGroupMenuMessage(tabId, message, deferredResultResolver) {
 
   // hide in-sidebar tab group menu if in-content tab group menu is available
   sendInSidebarTabGroupMenuMessage({
-    type: 'treestyletab:tab-group-menu:hide',
+    type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide`,
   });
 
   let response;
@@ -282,7 +284,7 @@ async function sendTabGroupMenuMessage(tabId, message, deferredResultResolver) {
       // now we fall back to the in-sidebar tab group menu.
       if (!shouldFallbackToSidebar ||
           !shouldMessageSend(message)) {
-        log(` => no response after retrying, give up to send`, message.type, message.type == 'treestyletab:tab-group-menu:show');
+        log(` => no response after retrying, give up to send`, message.type, message.type == `treestyletab:${TabGroupMenuPanel.TYPE}:show`);
         deferredResultResolver(false);
         return false;
       }
@@ -326,7 +328,7 @@ async function waitUntilTabGroupMenuPanelContainerReadyInTab(tabId) {
   });
   let timeout;
   const onMessage = (message, sender) => {
-    if (message?.type != 'treestyletab:tab-group-menu:ready' ||
+    if (message?.type != `treestyletab:${TabGroupMenuPanel.TYPE}:ready` ||
         sender.tab?.id != tabId)
       return;
     log('waitUntilTabGroupMenuPanelContainerReadyInTab: ready in the tab ', tabId);
@@ -399,8 +401,8 @@ export async function show(group, creating = false) {
     window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
 
   const succeeded = await sendTabGroupMenuMessage(targetTabId, {
-    type: 'treestyletab:tab-group-menu:show',
-    groupId:    group.id,
+    type: `treestyletab:${TabGroupMenuPanel.TYPE}:show`,
+    targetId:   group.id,
     groupTitle: group.title,
     groupColor: group.color,
     creating: !!creating,
@@ -429,15 +431,15 @@ browser.tabs.onActivated.addListener(activeInfo => {
     return;
 
   sendInSidebarTabGroupMenuMessage({
-    type: 'treestyletab:tab-group-menu:hide',
+    type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide`,
     timestamp: startAt,
   });
   sendTabGroupMenuMessage(activeInfo.tabId, {
-    type: 'treestyletab:tab-group-menu:hide',
+    type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide`,
     timestamp: startAt,
   });
   sendTabGroupMenuMessage(activeInfo.previousTabId, {
-    type: 'treestyletab:tab-group-menu:hide',
+    type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide`,
     timestamp: startAt,
   });
 });
@@ -456,14 +458,14 @@ document.querySelector('#tabbar').addEventListener('mousedown', event => {
 
   const startAt = Date.now();
   sendInSidebarTabGroupMenuMessage({
-    type: 'treestyletab:tab-group-menu:hide',
+    type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide`,
     timestamp: startAt,
   });
 
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
   if (activeTab) {
     sendTabGroupMenuMessage(activeTab.id, {
-      type: 'treestyletab:tab-group-menu:hide-if-shown',
+      type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide-if-shown`,
       timestamp: startAt,
     });
   }
