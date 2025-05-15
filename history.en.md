@@ -1,6 +1,10 @@
 # History
 
  - master/HEAD
+   * Suppress tab preview panels while dragging.
+   * Move dropped tab correctly when a tab is dropped after a collapsed tree at the end of the tab bar.
+   * Highlight active tab correctly after the active tab is moved across windows by Firefox's native tab bar.
+   * Add "Unload Tab" context menu command simulating the one on Firefox 140. Two secret options `fadeOutPendingTabs` (corresponding to `browser.tabs.fadeOutUnloadedTabs`) and `fadeOutDiscardedTabs` (corresponding to `browser.tabs.fadeOutExplicitlyUnloadedTabs`) are also introduced.
  - 4.1.6 (2025.5.7)
    * Apply animation effect to expanding tree correctly.
    * Open dialogs correctly even if the `<all_urls>` permission is granted. (regression at 4.1.5)
