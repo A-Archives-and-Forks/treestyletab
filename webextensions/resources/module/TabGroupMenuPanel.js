@@ -454,7 +454,7 @@ export default class TabGroupMenuPanel {
       }
 
       .tab-group-create-actions {
-        text-align: right;
+        text-align: end;
 
         button {
           appearance: none;
@@ -707,6 +707,18 @@ export default class TabGroupMenuPanel {
     const i18n = this.#i18n;
     const range = document.createRange();
     range.selectNodeContents(this.#root);
+    const doneButton = `
+      <button class="primary tab-group-editor-button-done"
+              data-command="done"
+              accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_done_accesskey)}
+             >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_done_label)}</button>
+    `;
+    const cancelButton = `
+      <button class="tab-group-editor-button-cancel"
+              data-command="cancel"
+              accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_cancel_accesskey)}
+             >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_cancel_label)}</button>
+    `;
     const panelFragment = range.createContextualFragment(`
       <div class="tab-group-menu-panel">
         <div class="tab-group-menu-panel-contents">
@@ -792,14 +804,7 @@ export default class TabGroupMenuPanel {
               </div>
               <!-hr class="tab-group-create-mode-only"/>
               <div class="tab-group-create-actions tab-group-create-mode-only">
-                <button class="primary tab-group-editor-button-done"
-                        data-command="done"
-                        accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_done_accesskey)}
-                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_done_label)}</button>
-                <button class="tab-group-editor-button-cancel"
-                        data-command="cancel"
-                        accesskey=${JSON.stringify(i18n.tabGroupMenu_tab_group_editor_cancel_accesskey)}
-                       >${this.sanitizeForHTMLText(i18n.tabGroupMenu_tab_group_editor_cancel_label)}</button>
+                ${ this.isWindows ? doneButton + cancelButton : cancelButton + doneButton /* https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/toolkit/content/widgets/moz-button-group/moz-button-group.mjs#74 */ }
               </div>
             </div>
           </div>
