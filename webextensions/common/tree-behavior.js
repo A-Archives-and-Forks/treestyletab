@@ -202,7 +202,7 @@ export function calculateReferenceItemsFromInsertionPosition(
       log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 1/5');
       // allow to move pinned item to beside of another pinned item
       if (!firstItem ||
-          firstItem.pinned == insertBefore?.pinned) {
+          !!firstItem.pinned == !!insertBefore?.pinned) {
         return {
           insertBefore
         };
