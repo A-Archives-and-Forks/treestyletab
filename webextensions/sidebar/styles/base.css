@@ -1175,9 +1175,14 @@ tab-item[data-group-id]:not([data-group-id="-1"]) {
     display: block;
     max-width: 2px;
     min-width: 2px;
+    opacity: 1;
+  }
+  &.collapsed .native-tab-group-line {
+    opacity: 0;
   }
   &.animation-ready .native-tab-group-line {
-    transition: var(--tab-indent-positioning-animation);
+    transition: var(--tab-indent-positioning-animation),
+                opacity var(--collapse-animation);
   }
 }
 
