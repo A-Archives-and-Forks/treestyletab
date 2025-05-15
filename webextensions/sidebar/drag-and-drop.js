@@ -274,6 +274,9 @@ function getDropAction(event) {
       null;
   });
   info.defineGetter('groupId', () => { // the group ID the dropped items should be grouped under
+    if (!targetItem) {
+      return null;
+    }
     const draggedGroup = info.draggedItem?.type == TreeItem.TYPE_GROUP ? info.draggedItem : null;
     switch (info.dropPosition) {
       case kDROP_ON_SELF:

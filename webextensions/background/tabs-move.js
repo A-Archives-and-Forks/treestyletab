@@ -38,7 +38,7 @@ import { SequenceMatcher } from '/extlib/diff.js';
 import * as SidebarConnection from '/common/sidebar-connection.js';
 import * as TabsStore from '/common/tabs-store.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('background/tabs-move', ...args);
@@ -74,7 +74,15 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
 
   const win = TabsStore.windows.get(tabs[0].windowId);
 
-  log('moveTabsInternallyBefore: ', tabs, referenceTab, options);
+  log('moveTabsInternallyBefore: ', tabs, `${referenceTab.id}(index=${referenceTab.index})`, options);
+  if (referenceTab.type == TreeItem.TYPE_GROUP) {
+    referenceTab = referenceTab.$TST?.firstMemberTab;
+    if (!TabsStore.ensureLivingItem(referenceTab)) {
+      log('missing reference tab');
+      return [];
+    }
+    log(`  => reference tab: ${referenceTab.id}(index=${referenceTab.index})`);
+  }
 
   const precedingReferenceTab = referenceTab.$TST.previousTab;
   if (referenceTab.pinned) {
@@ -189,7 +197,19 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
 
   const win = TabsStore.windows.get(tabs[0].windowId);
 
-  log('moveTabsInternallyAfter: ', tabs, `${referenceTab.id}(index=${referenceTab.index}`, options);
+  log('moveTabsInternallyAfter: ', tabs, `${referenceTab.id}(index=${referenceTab.index})`, options);
+  if (referenceTab.type == TreeItem.TYPE_GROUP) {
+    if (!referenceTab.collapsed) {
+      log('  => move before the first member tab of the reference group');
+      return moveTabsInternallyBefore(tabs, referenceTab.$TST?.firstMemberTab, options = {});
+    }
+    referenceTab = referenceTab.$TST?.lastMemberTab;
+    if (!TabsStore.ensureLivingItem(referenceTab)) {
+      log('missing reference tab');
+      return [];
+    }
+    log(`  => reference tab: ${referenceTab.id}(index=${referenceTab.index})`);
+  }
 
   const followingReferenceTab = referenceTab.$TST.nextTab;
   if (followingReferenceTab &&
