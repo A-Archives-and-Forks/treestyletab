@@ -200,6 +200,7 @@ export const kTAB_STATE_SUBTREE_COLLAPSED         = 'subtree-collapsed';
 export const kTAB_STATE_SUBTREE_EXPANDED_MANUALLY = 'subtree-expanded-manually';
 export const kTAB_STATE_FAVICONIZED               = 'faviconized';
 export const kTAB_STATE_UNREAD                    = 'unread';
+export const kTAB_STATE_PENDING                   = 'pending';
 export const kTAB_STATE_HIGHLIGHTED               = 'highlighted';
 export const kTAB_STATE_BUNDLED_ACTIVE            = 'bundled-active';
 export const kTAB_STATE_SOME_DESCENDANTS_HIGHLIGHTED = 'some-descendants-highlighted';
@@ -242,6 +243,7 @@ export const kTAB_INTERNAL_STATES = new Set([ // TST specific states
   kTAB_STATE_OPENED_FOR_SAME_WEBSITE,
   kTAB_STATE_STICKY,
   kTAB_STATE_STUCK,
+  kTAB_STATE_PENDING,
 ]);
 export const kTAB_TEMPORARY_STATES = new Set([ // states not trigger updating of cache
   kTAB_STATE_CREATING,
@@ -259,6 +261,7 @@ export const kTAB_TEMPORARY_STATES = new Set([ // states not trigger updating of
   kTAB_STATE_FROM_EXTERNAL,
   kTAB_STATE_FROM_FIREFOX_VIEW,
   kTAB_STATE_OPENED_FOR_SAME_WEBSITE,
+  kTAB_STATE_PENDING,
 ]);
 export const kTAB_SAFE_STATES = new Set([ // exportable via API
   kTAB_STATE_COLLAPSED,

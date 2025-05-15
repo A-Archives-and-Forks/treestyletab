@@ -896,6 +896,7 @@
 
   "tabContextMenu_pin_label":         { "message": "タブをピン留め(&P)" },
   "tabContextMenu_unpin_label":       { "message": "タブのピン留めを外す(&P)" },
+  "tabContextMenu_unload_label":      { "message": "タブをアンロード(&U)" },
   "tabContextMenu_duplicate_label":   { "message": "タブを複製(&D)" },
   "tabContextMenu_selectAllTabs_label": { "message": "すべてのタブを選択(&S)" },
   "tabContextMenu_bookmark_label":    { "message": "タブをブックマーク...(&B)" },
@@ -925,6 +926,8 @@
   "tabContextMenu_unblockAutoplay_label_multiselected": { "message": "タブのメディアを再生(&L)" },
   "tabContextMenu_mute_label_multiselected":        { "message": "タブをミュート(&M)" },
   "tabContextMenu_unmute_label_multiselected":      { "message": "タブのミュートを解除(&M)" },
+
+  "tabContextMenu_unload_label_multiselected":      { "message": "%S 個のタブをアンロード(&U)" },
 
   "tabContextMenu_duplicate_label_multiselected":   { "message": "選択したタブを複製(&D)" },
 

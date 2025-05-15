@@ -234,6 +234,8 @@ export async function init() {
       onConfigChange('showContextualIdentitiesSelector');
       onConfigChange('showNewTabActionSelector');
       onConfigChange('shiftTabsForScrollbarOnlyOnHover');
+      onConfigChange('fadeOutPendingTabs');
+      onConfigChange('fadeOutDiscardedTabs');
 
       document.addEventListener('focus', onFocus);
       document.addEventListener('blur', onBlur);
@@ -964,6 +966,14 @@ async function onConfigChange(changedKey) {
     case 'maxPinnedTabsRowsAreaPercentage':
       rootClasses.toggle(Constants.kTABBAR_STATE_FAVICONIZE_PINNED_TABS, configs[changedKey]);
       PinnedTabs.reserveToReposition();
+      break;
+
+    case 'fadeOutPendingTabs':
+      document.documentElement.classList.toggle('fade-out-pending-tabs', !!configs[changedKey]);
+      break;
+
+    case 'fadeOutDiscardedTabs':
+      document.documentElement.classList.toggle('fade-out-discarded-tabs', !!configs[changedKey]);
       break;
 
     case 'style':

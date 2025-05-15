@@ -72,7 +72,7 @@ export async function activateTab(tab, { byMouseOperation, keepMultiselection, s
   }
 }
 
-export async function blurTab(bluredTabs, { windowId, silently } = {}) {
+export async function blurTab(bluredTabs, { windowId, silently, keepDiscarded } = {}) {
   if (bluredTabs &&
       !Array.isArray(bluredTabs))
     bluredTabs = [bluredTabs];
@@ -82,7 +82,10 @@ export async function blurTab(bluredTabs, { windowId, silently } = {}) {
   // First, try to find successor based on successorTabId from left tabs.
   let successorTab = Tab.get(bluredTabs.find(tab => tab.active)?.successorTabId);
   const scannedTabIds = new Set();
-  while (successorTab && bluredTabIds.has(successorTab.id)) {
+  while (successorTab &&
+         (bluredTabIds.has(successorTab.id) ||
+          (keepDiscarded &&
+           successorTab.discarded))) {
     if (scannedTabIds.has(successorTab.id))
       break; // prevent infinite loop!
     scannedTabIds.add(successorTab.id);
@@ -101,6 +104,10 @@ export async function blurTab(bluredTabs, { windowId, silently } = {}) {
       log(' => it cannot become the successor, find again');
     let bluredTabsFound = false;
     for (const tab of Tab.getVisibleTabs(windowId || bluredTabs[0].windowId)) {
+      if (keepDiscarded &&
+          tab.discarded) {
+        continue;
+      }
       const blured = bluredTabIds.has(tab.id);
       if (blured)
         bluredTabsFound = true;
@@ -209,6 +216,7 @@ export function setTabActive(tab) {
   tab.active = true;
   tab.$TST.removeState(Constants.kTAB_STATE_NOT_ACTIVATED_SINCE_LOAD);
   tab.$TST.removeState(Constants.kTAB_STATE_UNREAD, { permanently: true });
+  tab.$TST.removeState(Constants.kTAB_STATE_PENDING, { broadcast: Constants.IS_BACKGROUND });
   TabsStore.activeTabsInWindow.get(tab.windowId).add(tab);
   return oldActiveTabs;
 }

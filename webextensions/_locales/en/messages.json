@@ -900,6 +900,7 @@
 
   "tabContextMenu_pin_label":         { "message": "&Pin Tab" },
   "tabContextMenu_unpin_label":       { "message": "Un&pin Tab" },
+  "tabContextMenu_unload_label":      { "message": "&Unload Tab" },
   "tabContextMenu_duplicate_label":   { "message": "&Duplicate Tab" },
   "tabContextMenu_selectAllTabs_label": { "message": "&Select All Tabs" },
   "tabContextMenu_bookmark_label":    { "message": "&Bookmark Tab…" },
@@ -933,6 +934,8 @@
 
   "tabContextMenu_pin_label_multiselected":         { "message": "&Pin Tabs" },
   "tabContextMenu_unpin_label_multiselected":       { "message": "Un&pin Tabs" },
+
+  "tabContextMenu_unload_label_multiselected":      { "message": "&Unload %S Tabs" },
 
   "tabContextMenu_duplicate_label_multiselected":   { "message": "&Duplicate Tabs" },
 

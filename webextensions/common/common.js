@@ -184,6 +184,8 @@ export const configs = new Configs({
   maxFaviconizedPinnedTabsInOneRow: 0, // auto
   faviconizedTabScale: 1.75,
   maxPinnedTabsRowsAreaPercentage: 50,
+  fadeOutPendingTabs: false, // simulates browser.tabs.fadeOutUnloadedTabs
+  fadeOutDiscardedTabs: true, // simulates browser.tabs.fadeOutExplicitlyUnloadedTabs
 
   counterRole: Constants.kCOUNTER_ROLE_CONTAINED_TABS,
 

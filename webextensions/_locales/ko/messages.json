@@ -2286,6 +2286,7 @@
         "message": "탭 고정 해제(&P)",
         "hash": "60571db0ccb087c30009dadd2042ebd8"
     },
+    "tabContextMenu_unload_label":      { "message": "탭 언로드(&U)" },
     "tabContextMenu_duplicate_label": {
         "message": "탭 복제(&D)",
         "hash": "80666f37f8702cba5b66d3e8d816ea5c"
@@ -2387,6 +2388,7 @@
         "message": "탭 고정 해제(&P)",
         "hash": "b6bb715b523238636abe60c06c9679e6"
     },
+    "tabContextMenu_unload_label_multiselected":      { "message": "탭 %S개 언로드" },
     "tabContextMenu_duplicate_label_multiselected": {
         "message": "선택한 탭 복제(&D)",
         "hash": "0c30a83f8bcc07500df79d0596d99597"

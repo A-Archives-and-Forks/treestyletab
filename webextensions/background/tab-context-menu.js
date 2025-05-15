@@ -117,6 +117,10 @@ const mItemsById = {
     titleUnstick:              browser.i18n.getMessage('context_toggleSticky_label_unstick'),
     titleMultiselectedUnstick: browser.i18n.getMessage('context_toggleSticky_label_multiselected_unstick')
   },
+  'context_unloadTab': {
+    title:              browser.i18n.getMessage('tabContextMenu_unload_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_unload_label_multiselected'),
+  },
   'context_duplicateTab': {
     title:              browser.i18n.getMessage('tabContextMenu_duplicate_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_duplicate_label_multiselected')
@@ -806,6 +810,12 @@ async function onShown(info, contextTab) {
         sticky: contextTab?.$TST.sticky,
       }),
     }) && modifiedItemsCount++;
+    const unloadableCount = Commands.filterUnloadableTabs(contextTabs).length;
+    updateItem('context_unloadTab', {
+      visible: emulate && unloadableCount > 0,
+      multiselected: unloadableCount > 1,
+      count: unloadableCount,
+    }) && modifiedItemsCount++;
     updateItem('context_duplicateTab', {
       visible: emulate && !!contextTab,
       multiselected
@@ -1218,6 +1228,9 @@ async function onClick(info, contextTab) {
       break;
     case 'context_toggleSticky':
       Commands.toggleSticky(multiselectedTabs, !(contextTab || activeTab).$TST.sticky);
+      break;
+    case 'context_unloadTab':
+      Commands.unloadTabs(multiselectedTabs || [contextTab]);
       break;
     case 'context_duplicateTab':
       Commands.duplicateTab(contextTab, {

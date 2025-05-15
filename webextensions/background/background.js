@@ -319,6 +319,7 @@ async function rebuildAll(windows) {
             tab.$TST.getPermanentStates()
               .then(states => {
                 tab.$TST.states = new Set(states);
+                tab.$TST.addState(Constants.kTAB_STATE_PENDING);
               })
               .catch(console.error)
               .then(() => {

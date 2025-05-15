@@ -853,6 +853,23 @@ export async function moveAfter(tab, options = {}) {
 
 /* commands to simulate Firefox's native tab cocntext menu */
 
+export async function unloadTabs(tabs) {
+  tabs = filterUnloadableTabs(tabs);
+  if (tabs.length == 0) {
+    return;
+  }
+  await TabsInternalOperation.blurTab(tabs, { keepDiscarded: true });
+  return browser.tabs.discard(tabs.map(tab => tab.id));
+}
+
+// Only remote browsers can be unloadable.
+// See also:
+//   https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/browser/components/tabbrowser/content/tabbrowser.js#1983
+//   https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/toolkit/modules/E10SUtils.sys.mjs#394
+export function filterUnloadableTabs(tabs) {
+  return tabs.filter(tab => !/^(about|chrome):/i.test(tab.url));
+}
+
 export async function duplicateTab(sourceTab, options = {}) {
   /*
     Due to difference between Firefox's "duplicate tab" implementation,
