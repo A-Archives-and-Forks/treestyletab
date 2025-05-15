@@ -99,7 +99,10 @@ export async function blurTab(bluredTabs, { windowId, silently, keepDiscarded } 
   log('blurTab/step 1: found successor = ', successorTab?.id);
 
   // Second, try to detect successor based on their order.
-  if (!successorTab || bluredTabIds.has(successorTab.id)) {
+  if (!successorTab ||
+      bluredTabIds.has(successorTab.id) ||
+      (keepDiscarded &&
+       successorTab.discarded)) {
     if (successorTab)
       log(' => it cannot become the successor, find again');
     let bluredTabsFound = false;
