@@ -38,22 +38,22 @@ tab-favicon {
 .favicon-image {
   max-height: var(--favicon-size);
   max-width: var(--favicon-size);
-}
 
-/* https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/browser/themes/shared/tabbrowser/tabs.css#466-503 */
-:root.fade-out-pending-tabs tab-item.pending .favicon-image,
-:root.fade-out-discarded-tabs tab-item:not(.pending).discarded .favicon-image {
-  filter: grayscale(100%);
-  @media (prefers-color-scheme: dark) {
-    filter: grayscale(100%) invert();
+  /* https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/browser/themes/shared/tabbrowser/tabs.css#466-503 */
+  :root.fade-out-pending-tabs tab-item.pending &,
+  :root.fade-out-discarded-tabs tab-item:not(.pending).discarded & {
+    filter: grayscale(100%);
+    @media (prefers-color-scheme: dark) {
+      filter: grayscale(100%) invert();
+    }
+    opacity: 0.5;
+    transition-property: filter, opacity;
+    transition-duration: 1s;
   }
-  opacity: 0.5;
-  transition-property: filter, opacity;
-  transition-duration: 1s;
-}
-:root.fade-out-pending-tabs tab-item:not(.pending) .favicon-image,
-:root.fade-out-discarded-tabs tab-item:not(.pending) .favicon-image {
-  transition: none;
+  :root.fade-out-pending-tabs tab-item:not(.pending) &,
+  :root.fade-out-discarded-tabs tab-item:not(.pending) & {
+    transition: none;
+  }
 }
 
 .favicon-builtin::before,
