@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+   * Show closebox in tabs only when it is active or hover, like Firefox's native vertical tabs.
    * Suppress tab preview panels while dragging.
    * Move dropped tab correctly when a tab is dropped after a collapsed tree at the end of the tab bar.
    * Highlight active tab correctly after the active tab is moved across windows by Firefox's native tab bar.
