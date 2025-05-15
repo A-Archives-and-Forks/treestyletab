@@ -1,6 +1,8 @@
 # History
 
  - master/HEAD
+   * Drop support of Firefox older than 139.
+   * Add support of native tab groups feature of Firefox itself.
  - 4.1.7 (2025.5.16)
    * Show closebox in tabs only when it is active or hover, like Firefox's native vertical tabs.
    * Suppress tab preview panels while dragging.
