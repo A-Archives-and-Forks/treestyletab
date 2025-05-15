@@ -265,7 +265,7 @@ export class TreeItem {
     for (const child of this.children) {
       if (!child)
         continue;
-      children.push(child.$TST.tooltipHtmlWithDescendantsInternal);
+      children.push(child.$TST._generateTooltipHtmlWithDescendants());
     }
     if (children.length > 0)
       tooltip += `<ul>${children.join('')}</ul>`;
