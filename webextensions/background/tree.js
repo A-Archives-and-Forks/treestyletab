@@ -643,6 +643,7 @@ export async function detachTabsFromTree(tabs, options = {}) {
     options.partial :
     getWholeTree(tabs).length != tabs.length;
   const promisedAttach = [];
+  const tabsSet = new Set(tabs);
   for (const tab of tabs) {
     let behavior = partial ?
       TreeBehavior.getParentTabOperationBehavior(tab, {
@@ -656,6 +657,10 @@ export async function detachTabsFromTree(tabs, options = {}) {
       behavior,
       ignoreTabs: tabs,
     }));
+    if (options.fromParent &&
+        !tabsSet.has(tab.$TST.parent)) {
+      promisedAttach.push(detachTab(tab, options));
+    }
   }
   if (promisedAttach.length > 0)
     await Promise.all(promisedAttach);

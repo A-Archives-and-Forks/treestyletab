@@ -595,7 +595,7 @@ async function performTabsDragDrop(tabs, params) {
 
   if (nativeTabGroupId != -1 &&
       !isAcrossWindows) {
-    await NativeTabGroups.maintainTree({ windowId, groupId: nativeTabGroupId })
+    await NativeTabGroups.rejectGroupFromTree({ windowId, groupId: nativeTabGroupId })
   }
 
   if (nativeTabGroupId != nativeTabGroupIdFromPositionDeterminedByBrowser) {
