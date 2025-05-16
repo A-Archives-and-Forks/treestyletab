@@ -116,19 +116,9 @@ const mController = new InContentPanelController({
   UIClass: TabGroupMenuPanel,
   inSidebarUI: mTabGroupMenuPanel,
   initializerCode: `
-    if (window.tabGroupMenuPanel) {
-      try {
-        const root = window.tabGroupMenuPanel.root;
-        window.tabGroupMenuPanel.destroy();
-        removeClosedContents(root);
-      }
-      catch(_error) {
-      }
-    }
-
     const root = document.createElement('div');
     appendClosedContents(root);
-    window.tabGroupMenuPanel = new TabGroupMenuPanel(root, ${TAB_GROUP_MENU_LABELS_CODE});
+    const tabGroupMenuPanel = new TabGroupMenuPanel(root, ${TAB_GROUP_MENU_LABELS_CODE});
 
     let destroy;
 
@@ -146,13 +136,11 @@ const mController = new InContentPanelController({
     };
     document.documentElement.addEventListener('mousedown', onMouseDown, { captuer: true });
 
-    destroy = createClosedContentsDestructor(root, '${TabGroupMenuPanel.TYPE}', () => {
-      if (tabGroupMenuPanel) {
-        tabGroupMenuPanel.destroy();
-        tabGroupMenuPanel = null;
-      }
+    destroy = createClosedContentsDestructor(tabGroupMenuPanel, () => {
       document.documentElement.removeEventListener('mousedown', onMouseDown, { captuer: true });
     });
+
+    return tabGroupMenuPanel;
   `,
 });
 

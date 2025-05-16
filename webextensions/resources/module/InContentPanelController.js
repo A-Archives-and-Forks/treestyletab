@@ -192,12 +192,12 @@ export default class InContentPanelController {
             window.lastClosedContainer.parentNode.removeChild(window.lastClosedContainer);
             window.lastClosedContainer = null;
           };
-          window.createClosedContentsDestructor = (root, type, onDestroy) => {
+          window.createClosedContentsDestructor = (instance, onDestroy) => {
             let destructor;
 
             const onMessage = (message, _sender) => {
               switch (message?.type) {
-                case 'treestyletab:' + type + ':ask-container-ready':
+                case 'treestyletab:' + instance.type + ':ask-container-ready':
                   return Promise.resolve(true); // S.1.1. Responds to the CONTROLLER
 
                 case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
@@ -208,6 +208,9 @@ export default class InContentPanelController {
             browser.runtime.onMessage.addListener(onMessage);
 
             destructor = () => {
+              const root = instance.root;
+              UIInstances.delete(instance.type);
+              instance.destroy();
               onDestroy();
               browser.runtime.onMessage.removeListener(onMessage);
               window.removeEventListener('unload', destructor);
@@ -228,7 +231,21 @@ export default class InContentPanelController {
           document.documentElement.appendChild(window.lastClosedContainer);
         }
 
-        ${this.initializerCode}
+        window.UIInstances = window.UIInstances || new Map();
+        const oldInstance = UIInstances.get('${this.type}');
+        if (oldInstance) {
+          try {
+            const root = oldInstance.root;
+            oldInstance.destroy();
+            removeClosedContents(root);
+          }
+          catch(_error) {
+          }
+        }
+
+        UIInstances.set('${this.type}', (() => {
+          ${this.initializerCode}
+        })());
       })()`,
     });
   }

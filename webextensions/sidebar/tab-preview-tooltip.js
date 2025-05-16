@@ -109,19 +109,9 @@ const mController = new InContentPanelController({
   UIClass: TabPreviewPanel,
   inSidebarUI: mTabPreviewPanel,
   initializerCode: `
-    if (window.tabPreviewPanel) {
-      try {
-        const root = window.tabPreviewPanel.root;
-        window.tabPreviewPanel.destroy();
-        removeClosedContents(root);
-      }
-      catch(_error) {
-      }
-    }
-
     const root = document.createElement('div');
     appendClosedContents(root);
-    window.tabPreviewPanel = new TabPreviewPanel(root);
+    const tabPreviewPanel = new TabPreviewPanel(root);
 
     let destroy;
 
@@ -136,13 +126,11 @@ const mController = new InContentPanelController({
     };
     document.documentElement.addEventListener('mousemove', onMouseMove, { once: true });
 
-    destroy = createClosedContentsDestructor(root, '${TabPreviewPanel.TYPE}', () => {
-      if (tabPreviewPanel) {
-        tabPreviewPanel.destroy();
-        tabPreviewPanel = null;
-      }
+    destroy = createClosedContentsDestructor(tabPreviewPanel, () => {
       window.removeEventListener('mousemove', onMouseMove);
     });
+
+    return tabPreviewPanel;
   `,
 });
 
