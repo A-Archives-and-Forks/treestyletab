@@ -22,6 +22,8 @@ function log(...args) {
   internalLogger('background/native-tab-groups', ...args);
 }
 
+export const internallyMovingNativeTabGroups = new Map();
+
 export async function addTabsToGroup(tabs, groupIdOrProperties) {
   const initialGroupId = typeof groupIdOrProperties == 'number' ? groupIdOrProperties : null;
   const groupId = await addTabsToGroupInternal(tabs, groupIdOrProperties);
@@ -89,6 +91,15 @@ export async function rejectGroupFromTree(group) {
   if (!group) {
     return;
   }
+  group = TabGroup.get({
+    windowId: group.windowId,
+    groupId:  group.id,
+  });
+  if (!group?.$TST) {
+    log('rejectGroupFromTree: failed to reject untracked group');
+    return;
+  }
+
   const firstMember = group.$TST.firstMemberTab;
   const lastMember  = group.$TST.lastMemberTab;
   const prevTab = firstMember.$TST.previousTab;
@@ -103,6 +114,7 @@ export async function rejectGroupFromTree(group) {
     return;
   }
 
+  log('rejectGroupFromTree ', group.id);
   await Tree.detachTabsFromTree(group.$TST.memberTabs, {
     fromParent: true,
     partial: true,
@@ -111,9 +123,11 @@ export async function rejectGroupFromTree(group) {
   // The group is in a middle of a tree. We need to move the new group away from the tree.
   const lastDescendant = rootTab.$TST.lastDescendant;
   if (firstMember.index - rootTab.index <= lastDescendant.index - lastMember.index) { // move above the tree
+    log('rejectGroupFromTree: move ', group.id, ' before ', rootTab.id);
     await moveGroupBefore(group, rootTab);
   }
   else { // move below the tree
+    log('rejectGroupFromTree: move ', group.id, ' after ', lastDescendant.id);
     await moveGroupAfter(group, lastDescendant);
   }
 }
@@ -230,6 +244,10 @@ export async function moveGroupToNewWindow({ groupId, windowId, duplicate, left,
 }
 
 export async function moveGroupBefore(group, insertBefore) {
+  log('moveGroupBefore: ', group, insertBefore);
+  const beforeCount = internallyMovingNativeTabGroups.get(group.id) || 0;
+  internallyMovingNativeTabGroups.set(group.id, beforeCount + 1);
+
   const { promisedMoved, finish } = waitUntilMoved(group, insertBefore.windowId);
 
   const members = group.$TST.memberTabs;
@@ -248,9 +266,22 @@ export async function moveGroupBefore(group, insertBefore) {
     }),
   ]);
   finish();
+
+  const afterCount = internallyMovingNativeTabGroups.get(group.id) || 0;
+  if (afterCount <= 1) {
+    internallyMovingNativeTabGroups.delete(group.id);
+  }
+  else {
+    internallyMovingNativeTabGroups.set(group.id, afterCount - 1);
+  }
+  log('moveGroupBefore: finish');
 }
 
 export async function moveGroupAfter(group, insertAfter) {
+  log('moveGroupAfter: ', group, insertAfter);
+  const beforeCount = internallyMovingNativeTabGroups.get(group.id) || 0;
+  internallyMovingNativeTabGroups.set(group.id, beforeCount + 1);
+
   const { promisedMoved, finish } = waitUntilMoved(group, insertAfter.windowId);
 
   const members = group.$TST.memberTabs;
@@ -269,6 +300,15 @@ export async function moveGroupAfter(group, insertAfter) {
     }),
   ]);
   finish();
+
+  const afterCount = internallyMovingNativeTabGroups.get(group.id) || 0;
+  if (afterCount <= 1) {
+    internallyMovingNativeTabGroups.delete(group.id);
+  }
+  else {
+    internallyMovingNativeTabGroups.set(group.id, afterCount - 1);
+  }
+  log('moveGroupAfter: finish');
 }
 
 export function waitUntilMoved(groupOrMembers, destinationWindowId) {
@@ -323,7 +363,7 @@ function reserveToMaintainTree({ windowId, groupId }, options = {}) {
     reserveToMaintainTree.delayed.delete(groupId);
     const group = TabGroup.get({ windowId, groupId });
     rejectGroupFromTree(group);
-  }, 100);
+  }, configs.nativeTabGroupModificationDetectionTimeoutAfterTabMove);
   reserveToMaintainTree.delayed.set(groupId, timer);
 }
 reserveToMaintainTree.delayed = new Map();
@@ -339,6 +379,27 @@ export async function startToMaintainTree() {
   }
 
   // after all we start tracking of dynamic changes of tab groups
+
+  browser.tabGroups.onMoved.addListener(group => {
+    group = TabGroup.get({
+      windowId: group.windowId,
+      groupId:  group.id,
+    });
+    if (!group) {
+      return;
+    }
+    log('detected tab group move: ', group);
+    const internalMoveCount = internallyMovingNativeTabGroups.get(group.id);
+    if (internalMoveCount) {
+      log(' => ignore internal move ', internalMoveCount);
+      return;
+    }
+    reserveToMaintainTree({
+      windowId: group.windowId,
+      groupId:  group.id,
+    });
+  });
+
   Tab.onNativeGroupModified.addListener(tab => {
     const win = TabsStore.windows.get(tab.windowId);
     if (win.internallyMovingTabsForUpdatedNativeTabGroups.has(tab.id)) {

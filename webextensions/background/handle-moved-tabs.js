@@ -21,6 +21,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import { Tab } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabsGroup from './tabs-group.js';
 import * as Tree from './tree.js';
 import * as TreeStructure from './tree-structure.js';
@@ -90,6 +91,11 @@ Tab.onMoving.addListener((tab, moveInfo) => {
 });
 
 async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
+  const internalGroupMoveCount = NativeTabGroups.internallyMovingNativeTabGroups.get(tab.groupId);
+  if (internalGroupMoveCount) {
+    log('ignore internal move of tab groups ', internalGroupMoveCount);
+    return;
+  }
   const parentTabOperationBehavior = TreeBehavior.getParentTabOperationBehavior(tab, {
     context: Constants.kPARENT_TAB_OPERATION_CONTEXT_MOVE,
     ...moveInfo,
