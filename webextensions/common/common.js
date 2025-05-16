@@ -583,6 +583,7 @@ export const configs = new Configs({
     'background/handle-tab-multiselect': false,
     'background/handle-tree-changes': false,
     'background/migration': false,
+    'background/native-tab-groups': false,
     'background/successor-tab': false,
     'background/tab-context-menu': false,
     'background/tabs-group': false,

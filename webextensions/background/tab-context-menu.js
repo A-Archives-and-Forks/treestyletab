@@ -26,6 +26,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabsOpen from './tabs-open.js';
 
 function log(...args) {
@@ -1283,7 +1284,7 @@ async function onClick(info, contextTab) {
 
     case 'context_newGroup':
     case 'context_addToGroup_newGroup':
-      Commands.addTabsToNativeTabGroup(multiselectedTabs || [contextTab]).then(({ groupId, created }) => {
+      NativeTabGroups.addTabsToGroup(multiselectedTabs || [contextTab]).then(({ groupId, created }) => {
         if (!created) {
           return;
         }
@@ -1296,7 +1297,7 @@ async function onClick(info, contextTab) {
       break;
 
     case 'context_removeFromGroup':
-      Commands.removeTabsFromNativeTabGroup(multiselectedTabs || [contextTab]);
+      NativeTabGroups.removeTabsFromGroup(multiselectedTabs || [contextTab]);
       break;
 
     case 'context_reloadTab':
@@ -1524,7 +1525,7 @@ async function onClick(info, contextTab) {
       const nativeTabGroupMatch = info.menuItemId.match(/^context_addToGroup:group:(.+)$/);
       if (contextTab &&
           nativeTabGroupMatch)
-        Commands.addTabsToNativeTabGroup(multiselectedTabs || [contextTab], parseInt(nativeTabGroupMatch[1]));
+        NativeTabGroups.addTabsToGroup(multiselectedTabs || [contextTab], parseInt(nativeTabGroupMatch[1]));
 
       const contextualIdentityMatch = info.menuItemId.match(/^context_reopenInContainer:(.+)$/);
       if (contextTab &&
