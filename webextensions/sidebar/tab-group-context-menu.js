@@ -162,16 +162,14 @@ async function sendTabGroupMenuMessage(tabId, message, deferredResultResolver) {
 
   const shouldFallbackToSidebar = canRenderInSidebar;
 
-  let ready;
   let rawTab;
   try {
-    const [gotReady, gotRawTab] = await Promise.all([
+    const [ready, gotRawTab] = await Promise.all([
       browser.tabs.sendMessage(tabId, {
         type: `treestyletab:${TabGroupMenuPanel.TYPE}:ask-container-ready`,
       }).catch(_error => {}),
       browser.tabs.get(tabId),
     ]);
-    ready = gotReady;
     rawTab = gotRawTab;
     log(`sendTabGroupMenuMessage(${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });
     if (!ready) {

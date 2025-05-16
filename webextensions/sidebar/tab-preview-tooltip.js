@@ -151,16 +151,14 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
   const promisedPreviewURL = typeof message.previewURL == 'function' && message.previewURL();
   const shouldFallbackToSidebar = canRenderInSidebar && !message.hasCustomTooltip;
 
-  let ready;
   let rawTab;
   try {
-    const [gotReady, gotRawTab] = await Promise.all([
+    const [ready, gotRawTab] = await Promise.all([
       browser.tabs.sendMessage(tabId, {
         type: `treestyletab:${TabPreviewPanel.TYPE}:ask-container-ready`,
       }).catch(_error => {}),
       browser.tabs.get(tabId),
     ]);
-    ready = gotReady;
     rawTab = gotRawTab;
     log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });
     if (!ready) {
@@ -184,11 +182,6 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
             deferredResultResolver(true);
             return true;
           });
-      }
-
-      if (!shouldMessageSend(message)) {
-        log(` => no response, already canceled, give up to send`);
-        return false;
       }
 
       // We prepare tab preview panel now, and retry sending after that.
