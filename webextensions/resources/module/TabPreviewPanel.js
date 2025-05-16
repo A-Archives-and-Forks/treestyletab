@@ -19,6 +19,7 @@ export default class TabPreviewPanel extends InContentPanel {
         bottom: 0;
         height: 100%;
         pointer-events: none;
+        z-index: calc(var(--max-32bit-integer) - 100); /* put preview panel below tab group menu always */
 
         &:hover {
           opacity: 0;
