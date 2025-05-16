@@ -36,6 +36,7 @@ import * as BackgroundCache from './background-cache.js';
 import * as Commands from './commands.js';
 import * as ContextMenu from './context-menu.js';
 import * as Migration from './migration.js';
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabContextMenu from './tab-context-menu.js';
 import * as Tree from './tree.js';
 import * as TreeStructure from './tree-structure.js';
@@ -186,7 +187,7 @@ export async function init() {
 
   Sync.init();
 
-  await Tree.startToMaintainTreeForNativeTabGroups();
+  await NativeTabGroups.startToMaintainTree();
 
   await MetricsData.addAsync('init: exporting tabs to sidebars', notifyReadyToSidebars());
 
