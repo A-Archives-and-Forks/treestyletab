@@ -156,6 +156,8 @@ export default class InContentPanelController {
             window.addEventListener('pagehide', destructor, { once: true });
 
             window.closedContentsDestructors.add(destructor);
+
+            return destructor;
           };
         }
 
