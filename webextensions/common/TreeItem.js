@@ -259,13 +259,13 @@ export class TreeItem {
   get tooltipHtmlWithDescendants() {
     return `<ul>${this._generateTooltipHtmlWithDescendants()}</ul>`;
   }
-  _generateTooltipHtmlWithDescendants() {
+  generateTooltipHtmlWithDescendants() {
     let tooltip = `<li>${this.tooltipHtml}`;
     const children = [];
     for (const child of this.children) {
       if (!child)
         continue;
-      children.push(child.$TST._generateTooltipHtmlWithDescendants());
+      children.push(child.$TST.generateTooltipHtmlWithDescendants());
     }
     if (children.length > 0)
       tooltip += `<ul>${children.join('')}</ul>`;
