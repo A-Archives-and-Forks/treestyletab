@@ -5,52 +5,6 @@
 */
 'use strict';
 
-// Overview of the tab preview tooltip:
-//
-// Tab preview tooltips are processed by the combination of this script
-// and content scripts. Players are:
-//
-// * This script (CONTROLLER)
-// * The content script of the active tab to load tab preview provider
-//   (LOADER): injected by preparePlaygroundTab()
-// * The content script of the tab preview implementation (IMPL): loaded
-//   from `/resources/TabPreviewPanel.js` and injected by preparePlaygroundTab()
-// * The tab A: a tab to be shown in the preview tooltip.
-// * The tab B: the active tab which is used to show the preview tooltip.
-//
-// When we need to show a tab preview:
-//
-// 1. The CONTROLLER detects `tab-item-substance-enter` (`mouseenter`) event
-//    on a tab substance.
-// 2. The CONTROLLER sends a message to the LOADER of the active tab,
-//    like "do you have already prepared panel in your paeg?"
-//    1. If no response, the CONTROLLER loads a content script LOADER
-//       (and IMPL) into the active tab.
-//    2. The LOADER of the active tab responds to the CONTROLLER, like
-//       "OK, I'm ready!"
-//    3. If these operation is not finished until some seconds, the
-//       CONTROLLER gives up to show the preview.
-// 3. The CONTROLLER receives the "I'm ready" response from the LOADER of
-//    the active tab.
-// 4. The CONTROLLER generates a thumbnail image for the tab A, and sends
-//    a message to the IMPL in the active tab, like "show a preview with a
-//    thumbnail image 'data:image/png,...' at the position (x,y)"
-// 5. The IMPL shows the preview.
-//
-// When we need to hide a tab preview:
-//
-// 1. The CONTROLLER detects `tab-item-substance-leave` (`mouseleave`) event
-//    on a tab substance.
-// 2. The CONTROLLER sends a message to the LOADER of the active tab, like
-//    "do you have already prepared panel in your paeg?"
-//    1. If no response, the CONTROLLER gives up to hide the preview.
-//       We have nothing to do.
-// 3. The CONTROLLER receives the "I'm ready" response from the LOADER of
-//    the active tab.
-// 4. The CONTROLLER sends a message to the IMPL in the active tab, like
-//    "hide a preview"
-// 5. The IMPL hides the preview.
-
 import {
   configs,
   log as internalLogger,

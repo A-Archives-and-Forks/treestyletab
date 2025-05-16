@@ -5,44 +5,6 @@
 */
 'use strict';
 
-// Overview of the tab group context menu:
-//
-// Tab group context menu is processed by the combination of this script
-// and content scripts. Players are:
-//
-// * This script (CONTROLLER)
-// * The content script of the active tab to load panel provider
-//   (LOADER): injected by preparePlaygroundTab()
-// * The content script of the tab group menu panel implementation (IMPL):
-//   loaded from `/resources/TabGroupMenuPanel.js` and injected by preparePlaygroundTab()
-// * The tab B: the active tab which is used to show the tab group menu panel.
-//
-// When we need to show the tab group menu:
-//
-// 1. The CONTROLLER sends a message to the LOADER of the active tab,
-//    like "do you have already prepared panel in your paeg?"
-//    1. If no response, the CONTROLLER loads a content script LOADER
-//       (and IMPL) into the active tab.
-//    2. The LOADER of the active tab responds to the CONTROLLER, like
-//       "OK, I'm ready!"
-//    3. If these operation is not finished until some seconds, the
-//       CONTROLLER gives up to show the menu.
-// 2. The CONTROLLER receives the "I'm ready" response from the LOADER of
-//    the active tab.
-// 3. The IMPL shows the tab group menu panel.
-//
-// When we need to hide the tab group menu:
-//
-// 1. The CONTROLLER sends a message to the LOADER of the active tab, like
-//    "do you have already prepared panel in your paeg?"
-//    1. If no response, the CONTROLLER gives up to hide the panel.
-//       We have nothing to do.
-// 3. The CONTROLLER receives the "I'm ready" response from the LOADER of
-//    the active tab.
-// 4. The CONTROLLER sends a message to the IMPL in the active tab, like
-//    "hide the panel"
-// 5. The IMPL hides the panel.
-
 import {
   configs,
   log as internalLogger,
