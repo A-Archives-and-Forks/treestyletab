@@ -204,7 +204,6 @@ export default class TabPreviewPanel extends InContentPanel {
 
   generateUI() {
     const panelFragment = super.generateUI();
-    console.log('panelFragment ', panelFragment);
 
     const preview = panelFragment.querySelector('.in-content-panel-image');
     preview.addEventListener('load', () => {

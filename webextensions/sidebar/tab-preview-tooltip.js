@@ -53,7 +53,6 @@
 
 import {
   configs,
-  shouldApplyAnimation,
   log as internalLogger,
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
@@ -80,12 +79,32 @@ function log(...args) {
   internalLogger('sidebar/tab-preview-tooltip', ...args);
 }
 
+const hoveringTabIds = new Set();
+
 const mTabPreviewPanel = new TabPreviewPanel(document.querySelector('#tabPreviewRoot'));
 const mController = new InContentPanelController({
   type:    TabPreviewPanel.TYPE,
   logger:  log,
   shouldLog() {
     return configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug;
+  },
+  canRenderInSidebar() {
+    return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
+  },
+  canRenderInContent() {
+    return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT);
+  },
+  shouldFallbackToSidebar() {
+    return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
+  },
+  canSendMaybeExpiredMessage(message) {
+    return (
+      message.type != `treestyletab:${TabPreviewPanel.TYPE}:show` ||
+      hoveringTabIds.has(message.targetId)
+    );
+  },
+  fixedOffsetTop() {
+    return configs.tabPreviewTooltipOffsetTop;
   },
   UIClass: TabPreviewPanel,
   inSidebarUI: mTabPreviewPanel,
@@ -115,192 +134,7 @@ const mController = new InContentPanelController({
       window.removeEventListener('mousemove', onMouseMove);
     });
   `,
-  sendMessage: sendTabPreviewMessage,
 });
-
-const hoveringTabIds = new Set();
-
-function shouldMessageSend(message) {
-  return (
-    message.type != `treestyletab:${TabPreviewPanel.TYPE}:show` ||
-    hoveringTabIds.has(message.targetId)
-  );
-}
-
-// returns succeeded or not (boolean)
-async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
-  const canRenderInSidebar = !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
-  if (!tabId ||
-      !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT)) { // in-sidebar mode
-    if (canRenderInSidebar &&
-        !message.hasCustomTooltip) {
-      log(`sendTabPreviewMessage(${message.type}): no tab specified or sidebar only mode, fallback to in-sidebar preview`);
-      return mController.sendInSidebarMessage(message);
-    }
-    else {
-      log(`sendTabPreviewMessage(${message.type}): no tab specified or not allowed, cancel`);
-      return false;
-    }
-  }
-
-  const retrying = !!deferredResultResolver;
-  const tab = Tab.get(tabId);
-  if (!tab)
-    return false;
-
-  const promisedPreviewURL = typeof message.previewURL == 'function' && message.previewURL();
-  const shouldFallbackToSidebar = canRenderInSidebar && !message.hasCustomTooltip;
-
-  let rawTab;
-  try {
-    const [ready, gotRawTab] = await Promise.all([
-      browser.tabs.sendMessage(tabId, {
-        type: `treestyletab:${TabPreviewPanel.TYPE}:ask-container-ready`,
-      }).catch(_error => {}),
-      browser.tabs.get(tabId),
-    ]);
-    rawTab = gotRawTab;
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });
-    if (!ready) {
-      if (!message.canRetry) {
-        log(` => no response, give up to send`);
-        return false;
-      }
-
-      if (retrying) {
-        // Retried to init tab preview panel, but failed, so
-        // now we fall back to the in-sidebar tab preview.
-        if (!shouldFallbackToSidebar ||
-            !shouldMessageSend(message)) {
-          log(` => no response after retrying, give up to send`);
-          deferredResultResolver(false);
-          return false;
-        }
-        log(` => no response after retrying, fall back to in-sidebar previes`);
-        return mController.sendInSidebarMessage(message)
-          .then(() => {
-            deferredResultResolver(true);
-            return true;
-          });
-      }
-
-      // We prepare tab preview panel now, and retry sending after that.
-      log(` => no response, retry`);
-      let resultResolver;
-      const promisedResult = new Promise((resolve, _reject) => {
-        resultResolver = resolve;
-      });
-      mController.waitUntilUIContainerReadyInTab(tabId).then(() => {
-        sendTabPreviewMessage(tabId, message, resultResolver);
-      });
-      await mController.prepareUIInTab(tabId);
-      return promisedResult;
-    }
-  }
-  catch (error) {
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): failed to ask to the tab `, error);
-    // We cannot show tab preview tooltip in a tab with privileged contents.
-    // Let's fall back to the in-sidebar tab preview.
-    await mController.sendInSidebarMessage(message);
-    if (deferredResultResolver)
-      deferredResultResolver(true);
-    return true;
-  }
-
-  // hide in-sidebar tab preview if in-content tab preview is available
-  mController.sendInSidebarMessage({
-    type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-  });
-
-  let response;
-  try {
-    const timestamp = Date.now();
-    response = await browser.tabs.sendMessage(tabId, {
-      tabId,
-      timestamp,
-      ...message,
-      ...mTabPreviewPanel.getColors(),
-      ...(promisedPreviewURL ? { previewURL: null } : {}),
-      widthInOuterWorld: rawTab.width,
-      fixedOffsetTop: configs.tabPreviewTooltipOffsetTop,
-      animation: shouldApplyAnimation(),
-      logging: configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug,
-    });
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): message was sent, response=`, response, ', promisedPreviewURL=', promisedPreviewURL);
-    if (deferredResultResolver)
-      deferredResultResolver(!!response);
-
-    if (response && promisedPreviewURL) {
-      log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}, with previewURL): trying to get preview URL`);
-      promisedPreviewURL.then(async previewURL => {
-        const response = await browser.tabs.sendMessage(tabId, {
-          tabId,
-          timestamp,
-          ...message,
-          previewURL,
-          ...mTabPreviewPanel.getColors(),
-          widthInOuterWorld: rawTab.width,
-          fixedOffsetTop: configs.tabPreviewTooltipOffsetTop,
-          animation: shouldApplyAnimation(),
-          logging: configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug,
-        });
-        log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}, with previewURL): message was sent again, response=`, response);
-      });
-    }
-  }
-  catch (error) {
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): failed to send message `, error);
-    if (!message.canRetry) {
-      log(` => no response, give up to send`);
-      return false;
-    }
-
-    if (retrying) {
-      // Retried to initialize tab preview panel, but failed, so
-      // now we fall back to the in-sidebar tab preview.
-      if (!shouldFallbackToSidebar ||
-          !shouldMessageSend(message)) {
-        log(` => no response after retrying, give up to send`);
-        deferredResultResolver(false);
-        return false;
-      }
-      log(` => no response after retrying, fall back to in-sidebar previes`);
-      return mController.sendInSidebarMessage(message)
-        .then(() => {
-          deferredResultResolver(true);
-          return true;
-        });
-    }
-
-    if (!shouldMessageSend(message)) {
-      log(` => no response, already canceled, give up to send`);
-      return false;
-    }
-
-    // the panel was destroyed unexpectedly, so we re-prepare it.
-    log(` => no response, retry`);
-    let resultResolver;
-    const promisedResult = new Promise((resolve, _reject) => {
-      resultResolver = resolve;
-    });
-    mController.waitUntilUIContainerReadyInTab(tabId).then(() => {
-      sendTabPreviewMessage(tabId, message, resultResolver);
-    });
-    await mController.prepareUIInTab(tabId);
-    return promisedResult;
-  }
-
-  if (typeof response != 'boolean' &&
-      shouldMessageSend(message)) {
-    log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): got invalid response, fallback to in-sidebar preview`);
-    // Failed to send message to the in-content tab preview panel, so
-    // now we fall back to the in-sidebar tab preview.
-    return mController.sendInSidebarMessage(message);
-  }
-
-  // Everything is OK!
-  return !!response;
-}
 
 async function onTabSubstanceEnter(event) {
   const timestamp = Date.now();
@@ -313,9 +147,7 @@ async function onTabSubstanceEnter(event) {
 
   if (!configs.tabPreviewTooltip ||
       !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE)) {;
-    sendTabPreviewMessage(activeTab.id, {
-      type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-    });
+    mController.hideIn(activeTab.id);
     return;
   }
 
@@ -359,7 +191,6 @@ async function onTabSubstanceEnter(event) {
   const succeeded = await mController.show({
     anchorItem: event.target.tab,
     targetItem: event.target.tab,
-    sendMessage: sendTabPreviewMessage,
     messageParams: {
       hasCustomTooltip,
       ...(hasCustomTooltip ?
@@ -372,10 +203,22 @@ async function onTabSubstanceEnter(event) {
         }
       ),
       hasPreview,
-      previewURL,
+      previewURL: null,
       // This is required to simulate the behavior:
       // show tab preview panel with delay only when the panel is not shown yet.
       waitInitialShowUntil: timestamp + Math.max(configs.tabPreviewTooltipDelayMsec, 0),
+    },
+    promisedMessageParams: new Promise(async (resolve, _reject) => {
+      const promisedPreviewURL = typeof previewURL == 'function' && previewURL();
+      if (!promisedPreviewURL) {
+        return resolve(null);
+      }
+      resolve({
+        previewURL: await promisedPreviewURL,
+      });
+    }),
+    shouldFallbackToSidebar() {
+      return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR) && !hasCustomTooltip;
     },
   });
 
@@ -395,20 +238,10 @@ async function onTabSubstanceLeave(event) {
 
   hoveringTabIds.delete(event.target.tab.id);
 
-  const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-  const targetTabId = await Permissions.canInjectScriptToTab(activeTab) ?
-    activeTab.id :
-    null;
-
   if (!event.target.tab) // the tab was closed while waiting
     return;
 
-  log(`onTabSubstanceLeave(${event.target.tab.id}}) hide tab preview in ${targetTabId || 'sidebar'} `, timestamp);
-  sendTabPreviewMessage(targetTabId, {
-    type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-    targetId: event.target.tab.id,
-    timestamp,
-  });
+  mController.hide({ targetItem: event.target.tab, timestamp });
 }
 onTabSubstanceLeave = EventUtils.wrapWithErrorHandler(onTabSubstanceLeave);
 
@@ -423,16 +256,10 @@ document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
 
   hoveringTabIds.clear();
 
-  mController.sendInSidebarMessage({
-    type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-    timestamp,
-  });
+  mController.hideInSidebar({ timestamp });
 
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
   if (activeTab) {
-    sendTabPreviewMessage(activeTab.id, {
-      type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-      timestamp,
-    });
+    mController.hide({ timestamp });
   }
 });

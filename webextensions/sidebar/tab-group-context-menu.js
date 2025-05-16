@@ -45,7 +45,6 @@
 
 import {
   configs,
-  shouldApplyAnimation,
   log as internalLogger,
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
@@ -102,6 +101,18 @@ const mController = new InContentPanelController({
   shouldLog() {
     return configs.logFor['sidebar/tab-group-context-menu'] && configs.debug;
   },
+  canRenderInSidebar() {
+    return !!(configs.tabGroupMenuPanelRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
+  },
+  canRenderInContent() {
+    return !!(configs.tabGroupMenuPanelRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT);
+  },
+  shouldFallbackToSidebar() {
+    return !!(configs.tabGroupMenuPanelRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
+  },
+  fixedOffsetTop() {
+    return configs.tabGroupMenuPanelOffsetTop;
+  },
   UIClass: TabGroupMenuPanel,
   inSidebarUI: mTabGroupMenuPanel,
   initializerCode: `
@@ -133,160 +144,7 @@ const mController = new InContentPanelController({
       document.documentElement.removeEventListener('mousedown', onMouseDown, { captuer: true });
     });
   `,
-  sendMessage: sendTabGroupMenuMessage,
 });
-
-function shouldMessageSend(message) {
-  return message.type != `treestyletab:${TabGroupMenuPanel.TYPE}:show`;
-}
-
-// returns succeeded or not (boolean)
-async function sendTabGroupMenuMessage(tabId, message, deferredResultResolver) {
-  const canRenderInSidebar = !!(configs.tabGroupMenuPanelRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
-  if (!tabId ||
-      !(configs.tabGroupMenuPanelRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT)) { // in-sidebar mode
-    if (canRenderInSidebar) {
-      log(`sendTabGroupMenuMessage(${message.type}): no tab specified or sidebar only mode, fallback to in-sidebar preview`);
-      return mController.sendInSidebarMessage(message);
-    }
-    else {
-      log(`sendTabGroupMenuMessage(${message.type}): no tab specified or not allowed, cancel`);
-      return false;
-    }
-  }
-
-  const retrying = !!deferredResultResolver;
-  const tab = Tab.get(tabId);
-  if (!tab)
-    return false;
-
-  const shouldFallbackToSidebar = canRenderInSidebar;
-
-  let rawTab;
-  try {
-    const [ready, gotRawTab] = await Promise.all([
-      browser.tabs.sendMessage(tabId, {
-        type: `treestyletab:${TabGroupMenuPanel.TYPE}:ask-container-ready`,
-      }).catch(_error => {}),
-      browser.tabs.get(tabId),
-    ]);
-    rawTab = gotRawTab;
-    log(`sendTabGroupMenuMessage(${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });
-    if (!ready) {
-      if (!message.canRetry) {
-        log(` => no response, give up to send`);
-        return false;
-      }
-
-      if (retrying) {
-        // Retried to init tab group menu panel, but failed, so
-        // now we fall back to the in-sidebar tab group menu.
-        if (!shouldFallbackToSidebar ||
-            !shouldMessageSend(message)) {
-          log(` => no response after retrying, give up to send `, shouldFallbackToSidebar, message.type, message.type == `treestyletab:${TabGroupMenuPanel.TYPE}:show`);
-          deferredResultResolver(false);
-          return false;
-        }
-        log(` => no response after retrying, fall back to in-sidebar previes`);
-        return mController.sendInSidebarMessage(message)
-          .then(() => {
-            deferredResultResolver(true);
-            return true;
-          });
-      }
-
-      // We prepare tab group menu panel now, and retry sending after that.
-      log(` => no response, retry`);
-      let resultResolver;
-      const promisedResult = new Promise((resolve, _reject) => {
-        resultResolver = resolve;
-      });
-      mController.waitUntilUIContainerReadyInTab(tabId).then(() => {
-        sendTabGroupMenuMessage(tabId, message, resultResolver);
-      });
-      await mController.prepareUIInTab(tabId);
-      return promisedResult;
-    }
-  }
-  catch (error) {
-    log(`sendTabGroupMenuMessage(${message.type}${retrying ? ', retrying' : ''}): failed to ask to the tab `, error);
-    // We cannot show tab group menu tooltip in a tab with privileged contents.
-    // Let's fall back to the in-sidebar tab group menu.
-    await mController.sendInSidebarMessage(message);
-    if (deferredResultResolver)
-      deferredResultResolver(true);
-    return true;
-  }
-
-  // hide in-sidebar tab group menu if in-content tab group menu is available
-  mController.sendInSidebarMessage({
-    type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide`,
-  });
-
-  let response;
-  try {
-    const timestamp = Date.now();
-    response = await browser.tabs.sendMessage(tabId, {
-      tabId,
-      timestamp,
-      ...message,
-      ...mTabGroupMenuPanel.getColors(),
-      widthInOuterWorld: rawTab.width,
-      fixedOffsetTop: configs.tabGroupMenuPanelOffsetTop,
-      animation: shouldApplyAnimation(),
-      logging: configs.logFor['sidebar/tab-group-context-menu'] && configs.debug,
-    });
-    if (deferredResultResolver)
-      deferredResultResolver(!!response);
-  }
-  catch (error) {
-    log(`sendTabGroupMenuMessage(${message.type}${retrying ? ', retrying' : ''}): failed to send message `, error);
-    if (!message.canRetry) {
-      log(` => no response, give up to send`);
-      return false;
-    }
-
-    if (retrying) {
-      // Retried to initialize tab group menu panel, but failed, so
-      // now we fall back to the in-sidebar tab group menu.
-      if (!shouldFallbackToSidebar ||
-          !shouldMessageSend(message)) {
-        log(` => no response after retrying, give up to send`, message.type, message.type == `treestyletab:${TabGroupMenuPanel.TYPE}:show`);
-        deferredResultResolver(false);
-        return false;
-      }
-      log(` => no response after retrying, fall back to in-sidebar previes`);
-      return mController.sendInSidebarMessage(message)
-        .then(() => {
-          deferredResultResolver(true);
-          return true;
-        });
-    }
-
-    // the panel was destroyed unexpectedly, so we re-prepare it.
-    log(` => no response, retry`);
-    let resultResolver;
-    const promisedResult = new Promise((resolve, _reject) => {
-      resultResolver = resolve;
-    });
-    mController.waitUntilUIContainerReadyInTab(tabId).then(() => {
-      sendTabGroupMenuMessage(tabId, message, resultResolver);
-    });
-    await mController.prepareUIInTab(tabId);
-    return promisedResult;
-  }
-
-  if (typeof response != 'boolean' &&
-      shouldMessageSend(message)) {
-    log(`sendTabGroupMenuMessage(${message.type}${retrying ? ', retrying' : ''}): got invalid response, fallback to in-sidebar preview`);
-    // Failed to send message to the in-content tab group menu panel, so
-    // now we fall back to the in-sidebar tab group menu.
-    return mController.sendInSidebarMessage(message);
-  }
-
-  // Everything is OK!
-  return !!response;
-}
 
 export async function show(group, creating = false) {
   if (!group?.id) {
@@ -301,7 +159,6 @@ export async function show(group, creating = false) {
   mController.show({
     anchorItem: group,
     targetItem: group,
-    sendMessage: sendTabGroupMenuMessage,
     messageParams: {
       groupTitle: group.title,
       groupColor: group.color,
@@ -323,7 +180,7 @@ document.querySelector('#tabbar').addEventListener('mousedown', event => {
 
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
   if (activeTab) {
-    sendTabGroupMenuMessage(activeTab.id, {
+    mController.sendMessage(activeTab.id, {
       type: `treestyletab:${TabGroupMenuPanel.TYPE}:hide-if-shown`,
       timestamp,
     });
