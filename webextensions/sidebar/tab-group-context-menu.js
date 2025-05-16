@@ -116,9 +116,19 @@ const mController = new InContentPanelController({
   UIClass: TabGroupMenuPanel,
   inSidebarUI: mTabGroupMenuPanel,
   initializerCode: `
+    if (window.tabGroupMenuPanel) {
+      try {
+        const root = window.tabGroupMenuPanel.root;
+        window.tabGroupMenuPanel.destroy();
+        removeClosedContents(root);
+      }
+      catch(_error) {
+      }
+    }
+
     const root = document.createElement('div');
     appendClosedContents(root);
-    let tabGroupMenuPanel = new TabGroupMenuPanel(root, ${TAB_GROUP_MENU_LABELS_CODE});
+    window.tabGroupMenuPanel = new TabGroupMenuPanel(root, ${TAB_GROUP_MENU_LABELS_CODE});
 
     let destroy;
 

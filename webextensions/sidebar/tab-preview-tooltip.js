@@ -109,9 +109,19 @@ const mController = new InContentPanelController({
   UIClass: TabPreviewPanel,
   inSidebarUI: mTabPreviewPanel,
   initializerCode: `
+    if (window.tabPreviewPanel) {
+      try {
+        const root = window.tabPreviewPanel.root;
+        window.tabPreviewPanel.destroy();
+        removeClosedContents(root);
+      }
+      catch(_error) {
+      }
+    }
+
     const root = document.createElement('div');
     appendClosedContents(root);
-    let tabPreviewPanel = new TabPreviewPanel(root);
+    window.tabPreviewPanel = new TabPreviewPanel(root);
 
     let destroy;
 
