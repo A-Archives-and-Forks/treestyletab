@@ -187,7 +187,7 @@ export default class InContentPanel {
       this.root = this.onMessageSelf = this.destroySelf = null;
     }
   }
-  init(givenRoot) {
+  init(givenRoot) { // this can be overridden by subclasses
     this.destroySelf = this.destroy.bind(this);
     this.onMessageSelf = this.onMessage.bind(this);
 
@@ -204,7 +204,7 @@ export default class InContentPanel {
     window.addEventListener('pagehide', this.destroySelf, { once: true });
   }
 
-  async onBeforeShow(_message, _sender) {}
+  async onBeforeShow(_message, _sender) {} // this can be overridden by subclasses
 
   onMessage(message, sender) {
     if ((this.windowId &&
@@ -229,7 +229,6 @@ export default class InContentPanel {
           this.lastTimestamp = message.timestamp;
           this.lastTimestampFor.set(message.targetId, message.timestamp);
           this.prepareUI();
-          console.log('UPDATE UI WITH MESSAGE ', message);
           this.updateUI(message);
           this.panel.classList.add('open');
           return true;
@@ -278,7 +277,7 @@ export default class InContentPanel {
     }
   }
 
-  onBeforeDestroy() {}
+  onBeforeDestroy() {} // this can be overridden by subclasses
 
   destroy() {
     this.onBeforeDestroy();
@@ -299,7 +298,7 @@ export default class InContentPanel {
     this.root = this.onMessageSelf = this.destroySelf = null;
   }
 
-  get UISource() {
+  get UISource() { // this can be overridden by subclasses
     return '';
   }
 
@@ -327,10 +326,10 @@ export default class InContentPanel {
     this.panel = this.root.querySelector('.in-content-panel');
   }
 
-  onUpdateUI() {}
-  onBeforeCompleteUpdate() {}
-  onCompleteUpdate() {}
-  onShown() {}
+  onUpdateUI() {} // this can be overridden by subclasses
+  onBeforeCompleteUpdate() {} // this can be overridden by subclasses
+  onCompleteUpdate() {} // this can be overridden by subclasses
+  onShown() {} // this can be overridden by subclasses
 
   updateUI({ targetId, anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop, ...params }) {
     if (!this.panel)
@@ -486,8 +485,24 @@ export default class InContentPanel {
     complete.retryCount = 0;
 
     const completed = this.onUpdateUI({
-      anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop,
-      sidebarContentsOffset, offsetFromWindowEdge, complete,
+      // common args
+      align,
+      anchorTabRect,
+      animation,
+      backgroundColor,
+      borderColor,
+      color,
+      fixedOffsetTop,
+      logging,
+      offsetTop,
+      rtl,
+      scale,
+      widthInOuterWorld,
+      // calculated values
+      complete,
+      offsetFromWindowEdge,
+      sidebarContentsOffset,
+      // extra args for subclasses
       ...params,
     });
     if (!completed) {
@@ -513,9 +528,9 @@ export default class InContentPanel {
 
     const style = window.getComputedStyle(this.panel, null);
     try {
-    // Computed style's colors may be unexpected value if the element
-    // is not rendered on the screen yet and it has colors for light
-    // and dark schemes. So we need to get preferred colors manually.
+      // Computed style's colors may be unexpected value if the element
+      // is not rendered on the screen yet and it has colors for light
+      // and dark schemes. So we need to get preferred colors manually.
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       return {
         backgroundColor: this.getPreferredColor(style.getPropertyValue('--panel-background'), { isDark }),
