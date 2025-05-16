@@ -12,9 +12,9 @@
 //
 // * This script (CONTROLLER)
 // * The content script of the active tab to load tab preview provider
-//   (LOADER): injected by prepareUIInTab()
+//   (LOADER): injected by preparePlaygroundTab()
 // * The content script of the tab preview implementation (IMPL): loaded
-//   from `/resources/TabPreviewPanel.js` and injected by prepareUIInTab()
+//   from `/resources/TabPreviewPanel.js` and injected by preparePlaygroundTab()
 // * The tab A: a tab to be shown in the preview tooltip.
 // * The tab B: the active tab which is used to show the preview tooltip.
 //
@@ -97,7 +97,7 @@ const mController = new InContentPanelController({
   shouldFallbackToSidebar() {
     return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
   },
-  canSendMaybeExpiredMessage(message) {
+  canSendPossibleExpiredMessage(message) {
     return (
       message.type != `treestyletab:${TabPreviewPanel.TYPE}:show` ||
       hoveringTabIds.has(message.targetId)

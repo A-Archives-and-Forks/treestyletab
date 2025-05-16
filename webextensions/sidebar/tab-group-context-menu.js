@@ -12,9 +12,9 @@
 //
 // * This script (CONTROLLER)
 // * The content script of the active tab to load panel provider
-//   (LOADER): injected by prepareUIInTab()
+//   (LOADER): injected by preparePlaygroundTab()
 // * The content script of the tab group menu panel implementation (IMPL):
-//   loaded from `/resources/TabGroupMenuPanel.js` and injected by prepareUIInTab()
+//   loaded from `/resources/TabGroupMenuPanel.js` and injected by preparePlaygroundTab()
 // * The tab B: the active tab which is used to show the tab group menu panel.
 //
 // When we need to show the tab group menu:

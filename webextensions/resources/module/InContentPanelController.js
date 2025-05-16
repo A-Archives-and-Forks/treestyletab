@@ -5,6 +5,51 @@
 */
 'use strict';
 
+// Overview of the in-content UI implementation:
+//
+// In-content UI is processed by the combination of this script
+// and content scripts. Players are:
+//
+// * The playground tab (TAB): tab active tab which the in-content UI is
+//   rendered in.
+// * The controller module (CONTROLLER): this class.
+// * The playground manager (MANAGER): a small content script injected to the
+//   playground tab by InContentPanelController#preparePlaygroundTab().
+// * The UI implementation module (IMPL): imported as a class (based on
+//   `./InContentPanel.js`) and injected to the playground tab by
+//   InContentPanelController#preparePlaygroundTab().
+//
+// When we need to show an in-content UI:
+//
+// S.1. The CONTROLLER sends a message to the MANAGER in the TAB, like
+//      "are you already have a playground to embed in-content UI?"
+//      We move toward if the MANAGER responces like "OK, I'm ready!".
+//   S.1.1. If no response, the CONTROLLER injects MANAGER and IMPL into
+//          the TAB and waits until the IMPL respond.
+//   S.1.2. The MANAGER in the TAB starts to instanciate the IMPL.
+//   S.1.3. The IMPL responds to the CONTROLLER, like "OK, I'm ready!"
+//     S.1.3.1. If these operation is not finished until some seconds, the
+//              CONTROLLER gives up and falls back to the UI in sidebar.
+//   S.1.4. The CONTROLLER receives the "I'm ready" response from the IMPL
+//          in the TAB, and moves toward.
+// S.2. The CONTROLLER sends a message to show the UI with less delay.
+// S.3. The IMPL shows the UI as soon as possible, for better user experience.
+// S.4. If there is more UI parts which require longer load time,
+//      we wait until the required resource is prepared successfully.
+// S.5. The CONTROLLER sends a follow-up messaeg to the IMPL to complete the
+//      UI initialization.
+//
+// When we need to hide the UI:
+//
+// H.1. The CONTROLLER sends a message to the MANAGER in the TAB, like
+//      "are you already prepared as a playground?"
+//      We move toward if the MANAGER responces like "OK, I'm ready!".
+//   H.1.1. If no response, the MANAGER gives up to hide the UI.
+//          We have nothing to do.
+// H.2. The CONTROLLER sends a message to hide the UI in the TAB, to the IMPL,
+//      like "hide the UI"
+// H.3. The IMPL hides the panel.
+
 import {
   shouldApplyAnimation,
   isRTL,
@@ -30,7 +75,7 @@ export default class InContentPanelController {
     // optional
     logger,
     shouldLog,
-    canSendMaybeExpiredMessage,
+    canSendPossibleExpiredMessage,
     fixedOffsetTop,
   }) {
     this.type            = type;
@@ -40,7 +85,7 @@ export default class InContentPanelController {
     this.canRenderInContent      = canRenderInContent;
     this.shouldFallbackToSidebar = shouldFallbackToSidebar;
     this.fixedOffsetTop          = fixedOffsetTop;
-    this.canSendMaybeExpiredMessage = canSendMaybeExpiredMessage || (message => message.type != `treestyletab:${this.type}:show`);
+    this.canSendPossibleExpiredMessage = canSendPossibleExpiredMessage || (message => message.type != `treestyletab:${this.type}:show`);
     this.UIClass         = UIClass;
     this.inSidebarUI     = inSidebarUI;
     this.initializerCode = initializerCode;
@@ -73,16 +118,17 @@ export default class InContentPanelController {
     return prefix + '-' + Date.now() + '-' + Math.round(Math.random() * 65000);
   }
 
-  async prepareUIInTab(tabId) {
-    const tab = Tab.get(tabId);
-    if (!tab)
+  // S.1.1. Injects the MANAGER and IMPL into the TAB
+  async preparePlaygroundTab(playgroundTabId) {
+    const playgroundTab = Tab.get(playgroundTabId);
+    if (!playgroundTab)
       return;
 
-    this.log(`prepareUIInTab (${this.type}): insert container to the tab contents `, tab.url);
-    await browser.tabs.executeScript(tabId, {
+    this.log(`preparePlaygroundTab (${this.type}): insert container to the tab contents `, playgroundTab.url);
+    await browser.tabs.executeScript(playgroundTabId, {
       matchAboutBlank: true,
       runAt: 'document_start',
-      code: `(() => { // the LOADER
+      code: `(() => { // the MANAGER
         const logging = ${!!this.value(this.shouldLog)};
 
         ${InContentPanel.toString()}
@@ -152,7 +198,7 @@ export default class InContentPanelController {
             const onMessage = (message, _sender) => {
               switch (message?.type) {
                 case 'treestyletab:' + type + ':ask-container-ready':
-                  return Promise.resolve(true);
+                  return Promise.resolve(true); // S.1.1. Responds to the CONTROLLER
 
                 case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
                   window.destroyClosedContents(destructor);
@@ -187,7 +233,8 @@ export default class InContentPanelController {
     });
   }
 
-  async waitUntilUIContainerReadyInTab(tabId) {
+  // S.1.4 Wait until "I'm ready" message from the IMPL
+  async waitUntilPlaygroundTabIsReady(playgroundTabId) {
     let resolver;
     const promisedLoaded = new Promise((resolve, _reject) => {
       resolver = resolve;
@@ -195,9 +242,9 @@ export default class InContentPanelController {
     let timeout;
     const onMessage = (message, sender) => {
       if (message?.type != `treestyletab:${this.type}:ready` ||
-          sender.tab?.id != tabId)
+          sender.tab?.id != playgroundTabId)
         return;
-      this.log(`waitUntilUIContainerReadyInTab(${this.type}): ready in the tab `, tabId);
+      this.log(`waitUntilPlaygroundTabIsReady(${this.type}): ready in the tab `, playgroundTabId);
       if (timeout) {
         clearTimeout(timeout);
         timeout = null;
@@ -208,7 +255,7 @@ export default class InContentPanelController {
     timeout = setTimeout(() => {
       if (!timeout)
         return;
-      this.log(`waitUntilUIContainerReadyInTab(${this.type}): timeout for the tab `, tabId);
+      this.log(`waitUntilPlaygroundTabIsReady(${this.type}): timeout for the tab `, playgroundTabId);
       timeout = null;
       browser.runtime.onMessage.removeListener(onMessage);
       resolver();
@@ -216,9 +263,10 @@ export default class InContentPanelController {
     return promisedLoaded;
   }
 
+  // S.1. - S.5.
   // returns succeeded or not (boolean)
-  async sendMessage(tabId, message, { promisedMessage, shouldFallbackToSidebar, deferredResultResolver } = {}) {
-    if (!tabId ||
+  async sendMessage(playgroundTabId, message, { promisedMessage, shouldFallbackToSidebar, deferredResultResolver } = {}) {
+    if (!playgroundTabId ||
         !this.value(this.canRenderInContent)) { // in-sidebar mode
       if (this.value(this.canRenderInSidebar)) {
         this.log(`sendMessage (${this.type}) (${message.type}): no tab specified or sidebar only mode, fallback to in-sidebar UI`);
@@ -231,17 +279,18 @@ export default class InContentPanelController {
     }
 
     const retrying = !!deferredResultResolver;
-    const tab = Tab.get(tabId);
-    if (!tab)
+    const playgroundTab = Tab.get(playgroundTabId);
+    if (!playgroundTab)
       return false;
 
+    // S.1. Sends a messaeg to the MANAGER
     let rawTab;
     try {
       const [ready, gotRawTab] = await Promise.all([
-        browser.tabs.sendMessage(tabId, {
+        browser.tabs.sendMessage(playgroundTabId, {
           type: `treestyletab:${this.type}:ask-container-ready`,
         }).catch(_error => {}),
-        browser.tabs.get(tabId),
+        browser.tabs.get(playgroundTabId),
       ]);
       rawTab = gotRawTab;
       this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });
@@ -255,7 +304,7 @@ export default class InContentPanelController {
           // Retried to init tab preview panel, but failed, so
           // now we fall back to the in-sidebar tab preview.
           if (!this.value(shouldFallbackToSidebar || this.shouldFallbackToSidebar) ||
-              !this.canSendMaybeExpiredMessage(message)) {
+              !this.canSendPossibleExpiredMessage(message)) {
             this.log(`sendMessage (${this.type}) => no response after retrying, give up to send`);
             deferredResultResolver(false);
             return false;
@@ -274,10 +323,15 @@ export default class InContentPanelController {
         const promisedResult = new Promise((resolve, _reject) => {
           resultResolver = resolve;
         });
-        this.waitUntilUIContainerReadyInTab(tabId).then(() => {
-          this.sendMessage(tabId, message, { promisedMessage, shouldFallbackToSidebar, deferredResultResolver: resultResolver });
+        this.waitUntilPlaygroundTabIsReady(playgroundTabId).then(() => {
+          this.sendMessage(playgroundTabId, message, {
+            promisedMessage,
+            shouldFallbackToSidebar,
+            deferredResultResolver: resultResolver,
+          });
         });
-        await this.prepareUIInTab(tabId);
+        // S.1.1. Injects the IMPL
+        await this.preparePlaygroundTab(playgroundTabId);
         return promisedResult;
       }
     }
@@ -296,9 +350,9 @@ export default class InContentPanelController {
 
     let response;
     try {
+      // S.2. Sends a message to the UI with less delay.
       const timestamp = Date.now();
-      response = await browser.tabs.sendMessage(tabId, {
-        tabId,
+      response = await browser.tabs.sendMessage(playgroundTabId, {
         timestamp,
         ...message,
         ...this.inSidebarUI.getColors(),
@@ -312,10 +366,10 @@ export default class InContentPanelController {
         deferredResultResolver(!!response);
 
       if (response && promisedMessage) {
+        // S.5. Sends a follow-up message.
         this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}, with proimsed properties): trying to wait until promised properties are resolved`);
         promisedMessage.then(async resolvedMessage => {
-          const response = await browser.tabs.sendMessage(tabId, {
-            tabId,
+          const response = await browser.tabs.sendMessage(playgroundTabId, {
             timestamp,
             ...message,
             ...(resolvedMessage || {}),
@@ -340,7 +394,7 @@ export default class InContentPanelController {
         // Retried to initialize in-content UI, but failed, so
         // now we fall back to the in-sidebar UI.
         if (!this.value(shouldFallbackToSidebar || this.shouldFallbackToSidebar) ||
-            !this.canSendMaybeExpiredMessage(message)) {
+            !this.canSendPossibleExpiredMessage(message)) {
           this.log(`sendMessage (${this.type}) => no response after retrying, give up to send`);
           deferredResultResolver(false);
           return false;
@@ -353,7 +407,7 @@ export default class InContentPanelController {
           });
       }
 
-      if (!this.canSendMaybeExpiredMessage(message)) {
+      if (!this.canSendPossibleExpiredMessage(message)) {
         this.log(`sendMessage (${this.type}) => no response, already canceled, give up to send`);
         return false;
       }
@@ -364,15 +418,19 @@ export default class InContentPanelController {
       const promisedResult = new Promise((resolve, _reject) => {
         resultResolver = resolve;
       });
-      this.waitUntilUIContainerReadyInTab(tabId).then(() => {
-        this.sendMessage(tabId, message, { promisedMessage, shouldFallbackToSidebar, deferredResultResolver: resultResolver });
+      this.waitUntilPlaygroundTabIsReady(playgroundTabId).then(() => {
+        this.sendMessage(playgroundTabId, message, {
+          promisedMessage,
+          shouldFallbackToSidebar,
+          deferredResultResolver: resultResolver,
+        });
       });
-      await this.prepareUIInTab(tabId);
+      await this.preparePlaygroundTab(playgroundTabId);
       return promisedResult;
     }
 
     if (typeof response != 'boolean' &&
-        this.canSendMaybeExpiredMessage(message)) {
+        this.canSendPossibleExpiredMessage(message)) {
       this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): got invalid response, fallback to in-sidebar preview`);
       // Failed to send message to the in-content UI, so
       // now we fall back to the in-sidebar UI.
