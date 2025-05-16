@@ -18,9 +18,23 @@ import { Tab } from '/common/TreeItem.js';
 import InContentPanel from './InContentPanel.js';
 
 export default class InContentPanelController {
-  constructor({ type, logger, shouldLog, canRenderInSidebar, canRenderInContent, shouldFallbackToSidebar, canSendMaybeExpiredMessage, fixedOffsetTop, UIClass, inSidebarUI, initializerCode }) {
+  constructor({
+    // required
+    type,
+    UIClass,
+    inSidebarUI,
+    initializerCode,
+    canRenderInSidebar,
+    canRenderInContent,
+    shouldFallbackToSidebar,
+    // optional
+    logger,
+    shouldLog,
+    canSendMaybeExpiredMessage,
+    fixedOffsetTop,
+  }) {
     this.type            = type;
-    this.log             = logger;
+    this.log             = logger || ((...messages) => console.log(...messages));
     this.shouldLog       = shouldLog;
     this.canRenderInSidebar      = canRenderInSidebar;
     this.canRenderInContent      = canRenderInContent;
@@ -289,7 +303,7 @@ export default class InContentPanelController {
         ...message,
         ...this.inSidebarUI.getColors(),
         widthInOuterWorld: rawTab.width,
-        fixedOffsetTop: this.value(this.fixedOffsetTop),
+        fixedOffsetTop: this.value(this.fixedOffsetTop) || 0,
         animation: shouldApplyAnimation(),
         logging: this.value(this.shouldLog),
       });
@@ -307,7 +321,7 @@ export default class InContentPanelController {
             ...(resolvedMessage || {}),
             ...this.inSidebarUI.getColors(),
             widthInOuterWorld: rawTab.width,
-            fixedOffsetTop: this.value(this.fixedOffsetTop),
+            fixedOffsetTop: this.value(this.fixedOffsetTop) || 0,
             animation: shouldApplyAnimation(),
             logging: this.value(this.shouldLog),
           });
@@ -397,7 +411,16 @@ export default class InContentPanelController {
     return true;
   }
 
-  async show({ timestamp, anchorItem, targetItem, messageParams, promisedMessageParams, shouldFallbackToSidebar }) {
+  async show({
+    // required
+    anchorItem,
+    targetItem,
+    // optional
+    messageParams,
+    promisedMessageParams,
+    shouldFallbackToSidebar,
+    timestamp,
+  }) {
     if (!timestamp) {
       timestamp = Date.now();
     }
@@ -470,7 +493,7 @@ export default class InContentPanelController {
       this.hideIn(playgroundTabId, { timestamp, targetItem });
     }
     else {
-      this.hideInSidebar(playgroundTabId, { timestamp, targetItem });
+      this.hideInSidebar({ timestamp, targetItem });
     }
   }
 
