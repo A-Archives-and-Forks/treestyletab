@@ -1351,6 +1351,7 @@ async function addTabsToNativeTabGroupInternal(tabs, groupIdOrProperties) {
     win.internallyMovingTabsForUpdatedNativeTabGroups.add(tab.id);
     win.internalMovingTabs.set(tab.id, -1);
   }
+  const structure = TreeBehavior.getTreeStructureFromTabs(tabs);
   const toBeGroupedIds = tabsToGrouped.map(tab => tab.id);
   let onUpdated = null;
   await new Promise((resolve, _reject) => {
@@ -1401,6 +1402,9 @@ async function addTabsToNativeTabGroupInternal(tabs, groupIdOrProperties) {
     win.internalMovingTabs.delete(tab.id);
   }
   browser.tabs.onUpdated.removeListener(onUpdated);
+  await Tree.applyTreeStructureToTabs(tabs, structure, {
+    broadcast: true
+  });
   return groupId;
 }
 
