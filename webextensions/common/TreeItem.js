@@ -257,7 +257,7 @@ export class TreeItem {
   }
 
   get tooltipHtmlWithDescendants() {
-    return `<ul>${this._generateTooltipHtmlWithDescendants()}</ul>`;
+    return `<ul>${this.generateTooltipHtmlWithDescendants()}</ul>`;
   }
   generateTooltipHtmlWithDescendants() {
     let tooltip = `<li>${this.tooltipHtml}`;
