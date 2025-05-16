@@ -282,10 +282,10 @@ export default class InContentPanelController {
 
   // S.1. - S.5.
   // returns succeeded or not (boolean)
-  async sendMessage(playgroundTabId, message, { promisedMessage, shouldFallbackToSidebar, deferredResultResolver } = {}) {
+  async sendMessage(playgroundTabId, message, { promisedMessage, canRenderInSidebar, shouldFallbackToSidebar, deferredResultResolver } = {}) {
     if (!playgroundTabId ||
         !this.value(this.canRenderInContent)) { // in-sidebar mode
-      if (this.value(this.canRenderInSidebar)) {
+      if (this.value(canRenderInSidebar || this.canRenderInSidebar)) {
         this.log(`sendMessage (${this.type}) (${message.type}): no tab specified or sidebar only mode, fallback to in-sidebar UI`);
         return this.sendInSidebarMessage(message, { promisedMessage });
       }
@@ -343,6 +343,7 @@ export default class InContentPanelController {
         this.waitUntilPlaygroundTabIsReady(playgroundTabId).then(() => {
           this.sendMessage(playgroundTabId, message, {
             promisedMessage,
+            canRenderInSidebar,
             shouldFallbackToSidebar,
             deferredResultResolver: resultResolver,
           });
@@ -438,6 +439,7 @@ export default class InContentPanelController {
       this.waitUntilPlaygroundTabIsReady(playgroundTabId).then(() => {
         this.sendMessage(playgroundTabId, message, {
           promisedMessage,
+          canRenderInSidebar,
           shouldFallbackToSidebar,
           deferredResultResolver: resultResolver,
         });
@@ -493,6 +495,7 @@ export default class InContentPanelController {
     // optional
     messageParams,
     promisedMessageParams,
+    canRenderInSidebar,
     shouldFallbackToSidebar,
     timestamp,
   }) {
@@ -545,6 +548,7 @@ export default class InContentPanelController {
       },
       {
         promisedMessage: promisedMessageParams,
+        canRenderInSidebar,
         shouldFallbackToSidebar,
       }
     ).catch(error => {

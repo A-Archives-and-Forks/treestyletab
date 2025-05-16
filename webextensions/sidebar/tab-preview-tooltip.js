@@ -169,8 +169,13 @@ async function onTabSubstanceEnter(event) {
         previewURL: await promisedPreviewURL,
       });
     }),
+    canRenderInSidebar() {
+      return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR) &&
+        !hasCustomTooltip;
+    },
     shouldFallbackToSidebar() {
-      return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR) && !hasCustomTooltip;
+      return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR) &&
+        !hasCustomTooltip;
     },
   });
 

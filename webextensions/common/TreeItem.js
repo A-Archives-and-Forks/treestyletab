@@ -1288,7 +1288,7 @@ export class Tab extends TreeItem {
   }
 
   get defaultTooltipText() {
-    return this.cookieStoreName ? `${this.raw.title} - ${this.cookieStoreName}` : super.title;
+    return this.cookieStoreName ? `${this.raw.title} - ${this.cookieStoreName}` : super.defaultTooltipText;
   }
 
   get tooltipHtml() {
