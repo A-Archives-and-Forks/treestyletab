@@ -729,7 +729,8 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
     log('tabs: ', tabs);
     const sanitizedTabsToClose = mapAndFilter(tabs, tab => tab.type == TreeItem.TYPE_GROUP ? undefined : tab.$TST.sanitized);
     log('sanitizedTabsToClose: ', sanitizedTabsToClose);
-    Sidebar.confirmToCloseTabs(sanitizedTabsToClose)
+    (tab.type == TreeItem.TYPE_GROUP ? Promise.resolve(true) : // on Firefox 139, middle click on a group closes it with no warning!
+      Sidebar.confirmToCloseTabs(sanitizedTabsToClose))
       .then(async confirmed => {
         if (!confirmed)
           return;

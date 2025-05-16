@@ -120,7 +120,7 @@ export function getParentTabOperationBehavior(tab, { context, byInternalOperatio
 export function getClosingTabsFromParent(tab, removeInfo = {}) {
   log('getClosingTabsFromParent: ', tab, removeInfo);
   if (tab?.type == TreeItem.TYPE_GROUP) {
-    return tab.$TST.descendants;
+    return tab.$TST.memberTabs;
   }
   const closeParentBehavior = getParentTabOperationBehavior(tab, {
     ...removeInfo,
