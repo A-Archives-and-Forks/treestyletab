@@ -456,7 +456,7 @@ export default class InContentPanelController {
     return succeeded;
   }
 
-  async hide({ timestamp, targetItem }) {
+  async hide({ timestamp, targetItem } = {}) {
     if (!timestamp) {
       timestamp = Date.now();
     }
@@ -474,7 +474,7 @@ export default class InContentPanelController {
     }
   }
 
-  async hideIn(playgroundTabId, { timestamp, targetItem }) {
+  async hideIn(playgroundTabId, { timestamp, targetItem } = {}) {
     if (!timestamp) {
       timestamp = Date.now();
     }
@@ -487,7 +487,7 @@ export default class InContentPanelController {
     });
   }
 
-  async hideInSidebar({ timestamp, targetItem }) {
+  async hideInSidebar({ timestamp, targetItem } = {}) {
     if (!timestamp) {
       timestamp = Date.now();
     }
