@@ -771,6 +771,8 @@ windowId = ${raw.windowId}
       this.style.setProperty('--tab-group-color', `var(--tab-group-color-${group.color})`);
       this.style.setProperty('--tab-group-color-pale', `var(--tab-group-color-${group.color}-pale)`);
       this.style.setProperty('--tab-group-color-invert', `var(--tab-group-color-${group.color}-invert)`);
+    }
+    if (this.$TST.group) {
       classList.toggle(Constants.kTAB_STATE_SUBTREE_COLLAPSED, group.collapsed);
     }
   }
