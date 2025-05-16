@@ -12,9 +12,9 @@
 //
 // * This script (CONTROLLER)
 // * The content script of the active tab to load tab preview provider
-//   (LOADER): injected by preparePreview()
+//   (LOADER): injected by prepareUIInTab()
 // * The content script of the tab preview implementation (IMPL): loaded
-//   from `/resources/TabPreviewPanel.js` and injected by preparePreview()
+//   from `/resources/TabPreviewPanel.js` and injected by prepareUIInTab()
 // * The tab A: a tab to be shown in the preview tooltip.
 // * The tab B: the active tab which is used to show the preview tooltip.
 //
@@ -55,16 +55,14 @@ import {
   configs,
   shouldApplyAnimation,
   log as internalLogger,
-  isRTL,
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
 import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import { Tab } from '/common/TreeItem.js';
 
-import InContentPanel from '/resources/module/InContentPanel.js';
+import InContentPanelController from '/resources/module/InContentPanelController.js';
 import TabPreviewPanel from '/resources/module/TabPreviewPanel.js'; // the IMPL
-import * as InContentClosedContainer from '/resources/module/in-content-closed-container.js';
 
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
@@ -83,71 +81,42 @@ function log(...args) {
 }
 
 const mTabPreviewPanel = new TabPreviewPanel(document.querySelector('#tabPreviewRoot'));
+const mController = new InContentPanelController({
+  type:    TabPreviewPanel.TYPE,
+  logger:  log,
+  shouldLog() {
+    return configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug;
+  },
+  UIClass: TabPreviewPanel,
+  inSidebarUI: mTabPreviewPanel,
+  initializerCode: `
+    const root = document.createElement('div');
+    appendClosedContents(root);
+    let tabPreviewPanel = new TabPreviewPanel(root);
 
-async function preparePreview(tabId) {
-  const tab = Tab.get(tabId);
-  if (!tab)
-    return;
+    let destroy;
 
-  log('preparePreview: insert container to the tab contents ', tab.url);
-  const logging = configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug;
-  await browser.tabs.executeScript(tabId, {
-    matchAboutBlank: true,
-    runAt: 'document_start',
-    code: `(() => { // the LOADER
-      ${InContentPanel.toString()}
-      ${TabPreviewPanel.toString()}
+    const onMouseMove = () => {
+      if (logging)
+        console.log('mouse move on the content area, destroy tab preview container');
+      browser.runtime.sendMessage({
+        type: 'treestyletab:${TabPreviewPanel.TYPE}:hide',
+        timestamp: Date.now(),
+      });
+      destroyClosedContents(destroy);
+    };
+    document.documentElement.addEventListener('mousemove', onMouseMove, { once: true });
 
-      const logging = ${!!logging};
-
-      ${InContentClosedContainer.getProviderCode()};
-
-      const root = document.createElement('div');
-      appendClosedContents(root);
-      let tabPreviewPanel = new TabPreviewPanel(root);
-
-      const onMessage = (message, _sender) => {
-        switch (message?.type) {
-          case 'treestyletab:ask-tab-preview-container-ready':
-            return Promise.resolve(true);
-
-          case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
-            if (logging)
-              console.log('tab detached from window, destroy tab preview container');
-            destroyClosedContents(destroy);
-            break;
-        }
-      };
-      browser.runtime.onMessage.addListener(onMessage);
-
-      const onMouseMove = () => {
-        if (logging)
-          console.log('mouse move on the content area, destroy tab preview container');
-        browser.runtime.sendMessage({
-          type: 'treestyletab:${TabPreviewPanel.TYPE}:hide',
-          timestamp: Date.now(),
-        });
-        destroyClosedContents(destroy);
-      };
-      document.documentElement.addEventListener('mousemove', onMouseMove, { once: true });
-
-      const destroy = () => {
-        if (tabPreviewPanel) {
-          tabPreviewPanel.destroy();
-          tabPreviewPanel = null;
-          removeClosedContents(root);
-        }
-        browser.runtime.onMessage.removeListener(onMessage);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('unload', destroy);
-        window.removeEventListener('pagehide', destroy);
-      };
-      window.addEventListener('unload', destroy, { once: true });
-      window.addEventListener('pagehide', destroy, { once: true });
-      closedContentsDestructors.add(destroy);
-    })()`,
-  });
-}
+    destroy = createClosedContentsDestructor(root, '${TabPreviewPanel.TYPE}', () => {
+      if (tabPreviewPanel) {
+        tabPreviewPanel.destroy();
+        tabPreviewPanel = null;
+      }
+      window.removeEventListener('mousemove', onMouseMove);
+    });
+  `,
+  sendMessage: sendTabPreviewMessage,
+});
 
 const hoveringTabIds = new Set();
 
@@ -166,7 +135,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
     if (canRenderInSidebar &&
         !message.hasCustomTooltip) {
       log(`sendTabPreviewMessage(${message.type}): no tab specified or sidebar only mode, fallback to in-sidebar preview`);
-      return sendInSidebarTabPreviewMessage(message);
+      return mController.sendInSidebarMessage(message);
     }
     else {
       log(`sendTabPreviewMessage(${message.type}): no tab specified or not allowed, cancel`);
@@ -187,7 +156,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
   try {
     const [gotReady, gotRawTab] = await Promise.all([
       browser.tabs.sendMessage(tabId, {
-        type: 'treestyletab:ask-tab-preview-container-ready',
+        type: `treestyletab:${TabPreviewPanel.TYPE}:ask-container-ready`,
       }).catch(_error => {}),
       browser.tabs.get(tabId),
     ]);
@@ -210,7 +179,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
           return false;
         }
         log(` => no response after retrying, fall back to in-sidebar previes`);
-        return sendInSidebarTabPreviewMessage(message)
+        return mController.sendInSidebarMessage(message)
           .then(() => {
             deferredResultResolver(true);
             return true;
@@ -228,10 +197,10 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
       const promisedResult = new Promise((resolve, _reject) => {
         resultResolver = resolve;
       });
-      waitUntilPreviewContainerReadyInTab(tabId).then(() => {
+      mController.waitUntilUIContainerReadyInTab(tabId).then(() => {
         sendTabPreviewMessage(tabId, message, resultResolver);
       });
-      await preparePreview(tabId);
+      await mController.prepareUIInTab(tabId);
       return promisedResult;
     }
   }
@@ -239,14 +208,14 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
     log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): failed to ask to the tab `, error);
     // We cannot show tab preview tooltip in a tab with privileged contents.
     // Let's fall back to the in-sidebar tab preview.
-    await sendInSidebarTabPreviewMessage(message);
+    await mController.sendInSidebarMessage(message);
     if (deferredResultResolver)
       deferredResultResolver(true);
     return true;
   }
 
   // hide in-sidebar tab preview if in-content tab preview is available
-  sendInSidebarTabPreviewMessage({
+  mController.sendInSidebarMessage({
     type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
   });
 
@@ -303,7 +272,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
         return false;
       }
       log(` => no response after retrying, fall back to in-sidebar previes`);
-      return sendInSidebarTabPreviewMessage(message)
+      return mController.sendInSidebarMessage(message)
         .then(() => {
           deferredResultResolver(true);
           return true;
@@ -321,10 +290,10 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
     const promisedResult = new Promise((resolve, _reject) => {
       resultResolver = resolve;
     });
-    waitUntilPreviewContainerReadyInTab(tabId).then(() => {
+    mController.waitUntilUIContainerReadyInTab(tabId).then(() => {
       sendTabPreviewMessage(tabId, message, resultResolver);
     });
-    await preparePreview(tabId);
+    await mController.prepareUIInTab(tabId);
     return promisedResult;
   }
 
@@ -333,60 +302,15 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
     log(`sendTabPreviewMessage(${message.type}${retrying ? ', retrying' : ''}): got invalid response, fallback to in-sidebar preview`);
     // Failed to send message to the in-content tab preview panel, so
     // now we fall back to the in-sidebar tab preview.
-    return sendInSidebarTabPreviewMessage(message);
+    return mController.sendInSidebarMessage(message);
   }
 
   // Everything is OK!
   return !!response;
 }
 
-async function waitUntilPreviewContainerReadyInTab(tabId) {
-  let resolver;
-  const promisedLoaded = new Promise((resolve, _reject) => {
-    resolver = resolve;
-  });
-  let timeout;
-  const onMessage = (message, sender) => {
-    if (message?.type != `treestyletab:${TabPreviewPanel.TYPE}:ready` ||
-        sender.tab?.id != tabId)
-      return;
-    log('waitUntilPreviewContainerReadyInTab: ready in the tab ', tabId);
-    if (timeout) {
-      clearTimeout(timeout);
-      timeout = null;
-    }
-    resolver();
-  };
-  browser.runtime.onMessage.addListener(onMessage);
-  timeout = setTimeout(() => {
-    if (!timeout)
-      return;
-    log('waitUntilPreviewContainerReadyInTab: timeout for the tab ', tabId);
-    timeout = null;
-    browser.runtime.onMessage.removeListener(onMessage);
-    resolver();
-  }, 1000);
-  return promisedLoaded;
-}
-
-
-async function sendInSidebarTabPreviewMessage(message) {
-  const startAt = message.startAt || Date.now();
-  log(`sendInSidebarTabPreviewMessage(${message.type}})`);
-  if (typeof message.previewURL == 'function')
-    message.previewURL = await message.previewURL();
-  await mTabPreviewPanel.handleMessage({
-    timestamp: startAt,
-    ...message,
-    windowId: TabsStore.getCurrentWindowId(),
-    animation: shouldApplyAnimation(),
-    logging: configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug,
-  });
-  return true;
-}
-
 async function onTabSubstanceEnter(event) {
-  const startAt = Date.now();
+  const timestamp = Date.now();
 
   const canCaptureTab = Permissions.isGrantedSync(Permissions.ALL_URLS);
   if (!canCaptureTab)
@@ -435,68 +359,32 @@ async function onTabSubstanceEnter(event) {
   if (!event.target.tab)
     return;
 
-  log(`onTabSubstanceEnter(${event.target.tab.id}}) start `, startAt);
+  log(`onTabSubstanceEnter(${event.target.tab.id}}) start `, timestamp);
 
   hoveringTabIds.add(event.target.tab.id);
-  const tooltipText = event.target.appliedTooltipText;
-  const tooltipHtml = event.target.appliedTooltipHtml;
-  const targetTabId = Permissions.canInjectScriptToTabSync(activeTab) ?
-    activeTab.id :
-    null;
 
-  const anchorTabRawRect = event.target.tab.$TST.element?.substanceElement?.getBoundingClientRect();
-  const anchorTabRect = {
-    bottom: anchorTabRawRect?.bottom || 0,
-    height: anchorTabRawRect?.height || 0,
-    left:   anchorTabRawRect?.left || 0,
-    right:  anchorTabRawRect?.right || 0,
-    top:    anchorTabRawRect?.top || 0,
-    width:  anchorTabRawRect?.width || 0,
-  };
-
-  // This calculation logic is buggy for a window in a screen placed at
-  // left of the primary display and scaled. As the result, a sidebar
-  // placed at left can be mis-detected as placed at right. For safety
-  // I ignore such cases and always treat such cases as "left side placed".
-  // See also: https://github.com/piroor/treestyletab/issues/2984#issuecomment-901907503
-  const mayBeRight = window.screenX < 0 && window.devicePixelRatio > 1 ?
-    false :
-    window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
-
-  log(`onTabSubstanceEnter(${event.target.tab.id}}) [${Date.now() - startAt}msec from start]: show tab preview in ${targetTabId || 'sidebar'} `, { hasCustomTooltip, tooltipText, hasPreview });
-  const succeeded = await sendTabPreviewMessage(targetTabId, {
-    type: `treestyletab:${TabPreviewPanel.TYPE}:show`,
-    targetId: event.target.tab.id,
-    anchorTabRect,
-    /* These information is used to calculate offset of the sidebar header */
-    offsetTop: window.mozInnerScreenY - window.screenY,
-    offsetLeft: window.mozInnerScreenX - window.screenX,
-    align: mayBeRight ? 'right' : 'left',
-    rtl: isRTL(),
-    scale: 1 / window.devicePixelRatio,
-    hasCustomTooltip,
-    ...(hasCustomTooltip ?
-      {
-        tooltipHtml,
-      } :
-      {
-        title: event.target.tab.title,
-        url,
-      }
-    ),
-    hasPreview,
-    previewURL,
-    // This is required to simulate the behavior:
-    // show tab preview panel with delay only when the panel is not shown yet.
-    waitInitialShowUntil: startAt + Math.max(configs.tabPreviewTooltipDelayMsec, 0),
-    // Don't call Date.now() here, because it can become larger than
-    // the timestamp on mouseleave.
-    timestamp: startAt,
-    canRetry: !!targetTabId,
-  }).catch(error => {
-    log(`onTabSubstanceEnter(${event.target.tab.id}}) failed: `, error);
+  const succeeded = await mController.show({
+    anchorItem: event.target.tab,
+    targetItem: event.target.tab,
+    sendMessage: sendTabPreviewMessage,
+    messageParams: {
+      hasCustomTooltip,
+      ...(hasCustomTooltip ?
+        {
+          tooltipHtml: event.target.appliedTooltipHtml,
+        } :
+        {
+          title: event.target.tab.title,
+          url,
+        }
+      ),
+      hasPreview,
+      previewURL,
+      // This is required to simulate the behavior:
+      // show tab preview panel with delay only when the panel is not shown yet.
+      waitInitialShowUntil: timestamp + Math.max(configs.tabPreviewTooltipDelayMsec, 0),
+    },
   });
-  log(` => ${succeeded ? 'succeeded' : 'failed'}`);
 
   if (!event.target.tab) // the tab may be destroyied while we capturing tab preview
     return;
@@ -508,7 +396,7 @@ async function onTabSubstanceEnter(event) {
 onTabSubstanceEnter = EventUtils.wrapWithErrorHandler(onTabSubstanceEnter);
 
 async function onTabSubstanceLeave(event) {
-  const startAt = Date.now();
+  const timestamp = Date.now();
   if (!event.target.tab)
     return;
 
@@ -522,35 +410,14 @@ async function onTabSubstanceLeave(event) {
   if (!event.target.tab) // the tab was closed while waiting
     return;
 
-  log(`onTabSubstanceLeave(${event.target.tab.id}}) hide tab preview in ${targetTabId || 'sidebar'} `, startAt);
+  log(`onTabSubstanceLeave(${event.target.tab.id}}) hide tab preview in ${targetTabId || 'sidebar'} `, timestamp);
   sendTabPreviewMessage(targetTabId, {
     type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
     targetId: event.target.tab.id,
-    timestamp: startAt,
+    timestamp,
   });
 }
 onTabSubstanceLeave = EventUtils.wrapWithErrorHandler(onTabSubstanceLeave);
-
-
-browser.tabs.onActivated.addListener(activeInfo => {
-  const startAt = Date.now();
-
-  if (activeInfo.windowId != TabsStore.getCurrentWindowId())
-    return;
-
-  sendInSidebarTabPreviewMessage({
-    type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-    timestamp: startAt,
-  });
-  sendTabPreviewMessage(activeInfo.tabId, {
-    type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-    timestamp: startAt,
-  });
-  sendTabPreviewMessage(activeInfo.previousTabId, {
-    type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-    timestamp: startAt,
-  });
-});
 
 Sidebar.onReady.addListener(() => {
   const windowId = TabsStore.getCurrentWindowId();
@@ -558,21 +425,21 @@ Sidebar.onReady.addListener(() => {
 });
 
 document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
-  const startAt = Date.now();
-  log('mouse is left from the tab bar ', startAt);
+  const timestamp = Date.now();
+  log('mouse is left from the tab bar ', timestamp);
 
   hoveringTabIds.clear();
 
-  sendInSidebarTabPreviewMessage({
+  mController.sendInSidebarMessage({
     type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-    timestamp: startAt,
+    timestamp,
   });
 
   const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
   if (activeTab) {
     sendTabPreviewMessage(activeTab.id, {
       type: `treestyletab:${TabPreviewPanel.TYPE}:hide`,
-      timestamp: startAt,
+      timestamp,
     });
   }
 });
