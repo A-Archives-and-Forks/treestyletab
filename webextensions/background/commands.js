@@ -690,7 +690,7 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
     else if (droppedOn ||
              droppedBefore?.$TST.parent ||
              (droppedAfter?.$TST.parent &&
-              droppedAfter.$TST.rootTab != droppedAfter.$TST.unsafeNextTab?.$TST.rootTab)) {
+              droppedAfter.$TST.rootTab == droppedAfter.$TST.unsafeNextTab?.$TST.rootTab)) {
       const root = (droppedOn || droppedBefore || droppedAfter).$TST.rootTab;
       if (root) {
         if (firstMemberTab.index < root.index) {
