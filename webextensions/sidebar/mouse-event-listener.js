@@ -382,7 +382,7 @@ function onMouseDown(event) {
     if (mousedown.detail.button == 0 &&
         onRegularArea &&
         !wasMultiselectionAction &&
-        tab?.$TST.type == TreeItem.TYPE_TAB) {
+        tab?.$TST?.type == TreeItem.TYPE_TAB) {
       BackgroundConnection.sendMessage({
         type:  Constants.kCOMMAND_ACTIVATE_TAB,
         tabId: tab.id,
