@@ -688,10 +688,14 @@ function reserveToRefreshNativeTabGroup(id) {
 reserveToRefreshNativeTabGroup.invoked = new Set();
 
 Tab.onNativeGroupModified.addListener(async tab => {
-  const collapsed = tab.groupId == -1 ?
-    !!tab.$TST.topmostSubtreeCollapsedAncestor :
-    (tab.$TST.nativeTabGroup ||
-     await browser.tabGroups.get(tab.groupId)/* failsafe: the group can be not tracked yet! */).collapsed;
+  const subtreeCollapsedAncestor = tab.$TST.topmostSubtreeCollapsedAncestor;
+  const collapsed = (
+    !!subtreeCollapsedAncestor ||
+    (tab.groupId == -1 ?
+       !!subtreeCollapsedAncestor :
+       (tab.$TST.nativeTabGroup ||
+        await browser.tabGroups.get(tab.groupId)/* failsafe: the group can be not tracked yet! */).collapsed)
+  );
   CollapseExpand.setCollapsed(tab, {
     collapsed,
   });

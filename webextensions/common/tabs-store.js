@@ -510,7 +510,8 @@ export function updateVirtualScrollRenderabilityIndexForTab(tab) {
        ((tab.url == 'about:firefoxview' &&
          tab.cookieStoreId == 'firefox-default') ||
         !configs.renderHiddenTabs)) ||
-      tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE))
+      tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) ||
+      tabGroups.get(tab.groupId)?.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE))
     removeVirtualScrollRenderableTab(tab);
   else
     addVirtualScrollRenderableTab(tab);
