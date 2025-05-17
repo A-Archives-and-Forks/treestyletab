@@ -541,18 +541,18 @@ export function removeTabFromIndexes(tab) {
   //removeVirtualScrollRenderableTab(tab);
 }
 
-function addTabToIndex(tab, indexes) {
+function addTabToIndex(tab, indexes, windowId = null) {
   if (!tab)
     throw new Error(`TabsStore.addTabToIndex gets non-tab parameter!: ${JSON.stringify(tab)} : ${new Error().stack}`);
-  const tabs = indexes.get(tab.windowId);
+  const tabs = indexes.get(windowId || tab.windowId);
   if (tabs)
     tabs.set(tab.id, tab);
 }
 
-function removeTabFromIndex(tab, indexes) {
+function removeTabFromIndex(tab, indexes, windowId = null) {
   if (!tab)
     throw new Error(`TabsStore.removeTabFromIndex gets non-tab parameter!: ${JSON.stringify(tab)} : ${new Error().stack}`);
-  const tabs = indexes.get(tab.windowId);
+  const tabs = indexes.get(windowId || tab.windowId);
   if (tabs)
     tabs.delete(tab.id);
 }
@@ -681,11 +681,11 @@ export function removeToBeGroupedTab(tab) {
   removeTabFromIndex(tab, toBeGroupedTabsInWindow);
 }
 
-export function addNativelyGroupedTab(tab) {
-  addTabToIndex(tab, nativelyGroupedTabsInWindow);
+export function addNativelyGroupedTab(tab, windowId = null) {
+  addTabToIndex(tab, nativelyGroupedTabsInWindow, windowId);
 }
-export function removeNativelyGroupedTab(tab) {
-  removeTabFromIndex(tab, nativelyGroupedTabsInWindow);
+export function removeNativelyGroupedTab(tab, windowId = null) {
+  removeTabFromIndex(tab, nativelyGroupedTabsInWindow, windowId);
 }
 
 export function addLoadingTab(tab) {

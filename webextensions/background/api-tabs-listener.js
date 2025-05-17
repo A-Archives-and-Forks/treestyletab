@@ -1150,6 +1150,22 @@ async function onAttached(tabId, attachInfo) {
     tab.index    = attachedTab.index;
     tab.reindexedBy = `tabs.onAttached (${tab.index})`;
 
+    if (tab.groupId != -1) {
+      // tabGroups.onMoved may be notified after all tabs are moved across windows,
+      // but we need to use group information in the destination window, thus we
+      // simulate native events here.
+      const group = TabGroup.get(tab.groupId);
+      if (group) {
+        onGroupMoved({
+          ...group.$TST.sanitized,
+          windowId: attachInfo.newWindowId,
+        });
+      }
+      else {
+        browser.tabGroups.get(tab.groupId).then(onGroupCreated);
+      }
+    }
+
     TabsInternalOperation.clearOldActiveStateInWindow(attachInfo.newWindowId);
     const info = {
       ...attachInfo,
@@ -1352,24 +1368,31 @@ async function onGroupMoved(group) {
 
   log('onGroupMoved ', group);
   const trackedGroup = TabGroup.get(group.id);
-  if (trackedGroup) {
+  if (!trackedGroup) {
     return;
   }
 
-  if (group.windowId != trackedGroup.windowId) {
+  const oldWindowId = trackedGroup.windowId;
+  const newWindowId = group.windowId;
+  if (newWindowId != oldWindowId) {
+    const members = trackedGroup.$TST.members;
+    for (const tab of members) {
+      TabsStore.removeNativelyGroupedTab(tab, oldWindowId);
+      TabsStore.addNativelyGroupedTab(tab, newWindowId);
+    }
     SidebarConnection.sendMessage({
       type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
-      windowId: trackedGroup.windowId,
+      windowId: oldWindowId,
       group:    trackedGroup.$TST.sanitized,
     });
-    TabsStore.windows.get(trackedGroup.windowId).tabGroups.delete(group.id);
-    trackedGroup.windowId = group.windowId;
-    TabsStore.windows.get(trackedGroup.windowId).tabGroups.set(group.id, group);
+    TabsStore.windows.get(oldWindowId).tabGroups.delete(group.id);
+    trackedGroup.windowId = newWindowId;
+    TabsStore.windows.get(newWindowId).tabGroups.set(group.id, trackedGroup);
   }
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
-    windowId: trackedGroup.windowId,
+    windowId: newWindowId,
     group:    trackedGroup.$TST.sanitized,
   });
 }

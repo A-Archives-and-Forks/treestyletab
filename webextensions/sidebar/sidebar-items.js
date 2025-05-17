@@ -1383,14 +1383,7 @@ BackgroundConnection.onMessage.addListener(async message => {
 
     case Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED: {
       const group = TabGroup.get(message.group.id);
-      group.destroy();
-      const win = TabsStore.windows.get(message.windowId);
-      win.tabGroups.delete(message.group.id);
-    }; break;
-
-    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED: {
-      const group = TabGroup.get(message.group.id);
-      group.destroy();
+      group?.$TST.destroy();
       const win = TabsStore.windows.get(message.windowId);
       win.tabGroups.delete(message.group.id);
     }; break;
