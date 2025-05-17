@@ -692,9 +692,9 @@ Tab.onNativeGroupModified.addListener(async tab => {
   const collapsed = (
     !!subtreeCollapsedAncestor ||
     (tab.groupId == -1 ?
-       !!subtreeCollapsedAncestor :
-       (tab.$TST.nativeTabGroup ||
-        await browser.tabGroups.get(tab.groupId)/* failsafe: the group can be not tracked yet! */).collapsed)
+      !!subtreeCollapsedAncestor :
+      (tab.$TST.nativeTabGroup ||
+       await browser.tabGroups.get(tab.groupId)/* failsafe: the group can be not tracked yet! */).collapsed)
   );
   CollapseExpand.setCollapsed(tab, {
     collapsed,
