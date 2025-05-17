@@ -158,7 +158,7 @@ function getDragDataFromOneItem(item, options = {}) {
     };
   const items = getDraggedItemsFromOneItem(item, options);
   const tab  = item.$TST.tab;
-  const tabs = items.filter(item => item.$TST.group);
+  const tabs = items.filter(item => item.type == TreeItem.TYPE_TAB);
   return {
     item,
     items,
