@@ -739,16 +739,10 @@ TreeItem.uniqTabsAndDescendantsSet = tabs => {
 
 TreeItem.compare = (a, b) => {
   const delta = a.index - b.index;
-  const aIsGroup = a.type == TreeItem.TYPE_GROUP || !!a.color;
-  const bIsGroup = b.type == TreeItem.TYPE_GROUP || !!b.color;
-  if (delta != 0 ||
-      aIsGroup == bIsGroup) {
-    return delta;
+  if (delta == 0) {
+    return (a.type == TreeItem.TYPE_GROUP || !!a.color) ? -1 : 1;
   }
-  if (aIsGroup) {
-    return -1;
-  }
-  return 1;
+  return delta;
 }
 
 TreeItem.sort = tabs => tabs.length == 0 ? tabs : tabs.sort(TreeItem.compare);
