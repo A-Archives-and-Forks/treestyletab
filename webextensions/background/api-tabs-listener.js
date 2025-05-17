@@ -1154,15 +1154,17 @@ async function onAttached(tabId, attachInfo) {
       // tabGroups.onMoved may be notified after all tabs are moved across windows,
       // but we need to use group information in the destination window, thus we
       // simulate native events here.
-      const group = TabGroup.get(tab.groupId);
-      if (group) {
-        onGroupMoved({
-          ...group.$TST.sanitized,
-          windowId: attachInfo.newWindowId,
-        });
-      }
-      else {
-        browser.tabGroups.get(tab.groupId).then(onGroupCreated);
+      TabsStore.addNativelyGroupedTab(tab, attachInfo.newWindowId);
+      if (TabGroup.getMembers(tab.groupId, { windowId: attachInfo.newWindowId }).length == 1) {
+        const group = TabGroup.get(tab.groupId);
+        if (group) {
+          TabsStore.windows.get(attachInfo.newWindowId).tabGroups.set(group.id, group);
+          SidebarConnection.sendMessage({
+            type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
+            windowId: attachInfo.newWindowId,
+            group:    group.$TST.sanitized,
+          });
+        }
       }
     }
 
@@ -1234,6 +1236,21 @@ async function onDetached(tabId, detachInfo) {
     const alreadyMovedAcrossWindows = Array.from(mTreeInfoForTabsMovingAcrossWindows.values(), info => info.descendants.map(tab => tab.id)).some(tabIds => tabIds.includes(tabId));
     if (!alreadyMovedAcrossWindows)
       mTreeInfoForTabsMovingAcrossWindows.set(tabId, info);
+
+    if (oldTab.groupId != -1) {
+      TabsStore.removeNativelyGroupedTab(oldTab, detachInfo.oldWindowId);
+      if (TabGroup.getMembers(oldTab.groupId, { windowId: detachInfo.oldWindowId }).length == 0) {
+        const group = TabGroup.get(oldTab.groupId);
+        if (group) {
+          TabsStore.windows.get(detachInfo.oldWindowId).tabGroups.delete(group.id);
+          SidebarConnection.sendMessage({
+            type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
+            windowId: detachInfo.oldWindowId,
+            group:    group.$TST.sanitized,
+          });
+        }
+      }
+    }
 
     if (!byInternalOperation) // we should process only tabs detached by others.
       Tab.onDetached.dispatch(oldTab, info);
