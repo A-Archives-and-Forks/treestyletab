@@ -758,6 +758,14 @@ TreeItem.sort = tabs => tabs.length == 0 ? tabs : tabs.sort(TreeItem.compare);
 export class TabGroup extends TreeItem {
   constructor(raw) {
     super(raw);
+
+    TabsStore.tabGroups.set(raw.id, raw);
+  }
+
+  destroy() {
+    TabsStore.tabGroups.delete(this.id);
+
+    super.destroy();
   }
 
   get type() {
@@ -772,28 +780,28 @@ export class TabGroup extends TreeItem {
     return this.raw;
   }
 
-  get memberTabs() {
-    return TabGroup.getMemberTabs({ windowId: this.raw.windowId, groupId: this.raw.id });
+  get members() {
+    return TabGroup.getMembers(this.raw.id);
   }
 
-  get firstMemberTab() {
-    return TabGroup.getFirstMemberTab({ windowId: this.raw.windowId, groupId: this.raw.id });
+  get firstMember() {
+    return TabGroup.getFirstMember(this.raw.id);
   }
 
-  get lastMemberTab() {
-    return TabGroup.getLastMemberTab({ windowId: this.raw.windowId, groupId: this.raw.id });
+  get lastMember() {
+    return TabGroup.getLastMember(this.raw.id);
   }
 
   get children() {
-    return this.memberTabs.filter(tab => !tab.$TST.parentId);
+    return this.members.filter(tab => !tab.$TST.parentId);
   }
 
   get hasChild() {
-    return !!this.firstMemberTab;
+    return !!this.firstMember;
   }
 
   get descendants() {
-    return this.memberTabs;
+    return this.members;
   }
 
   apply(exported) {
@@ -812,7 +820,7 @@ export class TabGroup extends TreeItem {
   }
 }
 
-TabGroup.get = ({ windowId, groupId }) => TabsStore.windows.get(windowId)?.tabGroups.get(groupId);
+TabGroup.get = groupId => TabsStore.tabGroups.get(groupId);
 
 TabGroup.init = group => {
   if (group.$TST instanceof TabGroup) {
@@ -828,7 +836,8 @@ TabGroup.init = group => {
   return group;
 };
 
-TabGroup.getMemberTabs = ({ windowId, groupId }, options = {}) => {
+TabGroup.getMembers = (groupId, options = {}) => {
+  const windowId = TabGroup.get(groupId).windowId;
   return TabsStore.queryAll({
     windowId,
     tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
@@ -839,7 +848,8 @@ TabGroup.getMemberTabs = ({ windowId, groupId }, options = {}) => {
   });
 };
 
-TabGroup.getFirstMemberTab = ({ windowId, groupId }, options = {}) => {
+TabGroup.getFirstMember = (groupId, options = {}) => {
+  const windowId = TabGroup.get(groupId).windowId;
   return TabsStore.query({
     windowId,
     tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
@@ -851,7 +861,8 @@ TabGroup.getFirstMemberTab = ({ windowId, groupId }, options = {}) => {
   });
 };
 
-TabGroup.getLastMemberTab = ({ windowId, groupId }, options = {}) => {
+TabGroup.getLastMember = (groupId, options = {}) => {
+  const windowId = TabGroup.get(groupId).windowId;
   return TabsStore.query({
     windowId,
     tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
@@ -1026,7 +1037,7 @@ export class Tab extends TreeItem {
     if (this.raw.groupId == -1) {
       return null;
     }
-    return TabGroup.get(this.raw);
+    return TabGroup.get(this.raw.groupId);
   }
 
   //===================================================================
@@ -2677,7 +2688,7 @@ Tab.get = tabId =>  {
     return null;
   }
   if (tabId && typeof tabId.color !== 'undefined') { // for backward compatibility
-    return TabGroup.get({ windowId: tabId.windowId, groupId: tabId.id });
+    return TabGroup.get(tabId.id);
   }
   return TabsStore.tabs.get(typeof tabId == 'number' ? tabId : tabId?.id);
 };
@@ -3656,7 +3667,7 @@ TreeItem.get = item => {
     return Tab.get(item.id);
   }
   if (item?.type == TreeItem.TYPE_GROUP) {
-    return TabGroup.get({ windowId: item.windowId, groupId: item.id });
+    return TabGroup.get(item.id);
   }
   return Tab.get(item);
 };

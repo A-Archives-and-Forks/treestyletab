@@ -91,17 +91,14 @@ export async function rejectGroupFromTree(group) {
   if (!group) {
     return;
   }
-  group = TabGroup.get({
-    windowId: group.windowId,
-    groupId:  group.id,
-  });
+  group = TabGroup.get(group.id);
   if (!group?.$TST) {
     log('rejectGroupFromTree: failed to reject untracked group');
     return;
   }
 
-  const firstMember = group.$TST.firstMemberTab;
-  const lastMember  = group.$TST.lastMemberTab;
+  const firstMember = group.$TST.firstMember;
+  const lastMember  = group.$TST.lastMember;
   const prevTab = firstMember.$TST.previousTab;
   const nextTab = lastMember.$TST.nextTab;
   const rootTab = prevTab?.$TST.rootTab;
@@ -115,7 +112,7 @@ export async function rejectGroupFromTree(group) {
   }
 
   log('rejectGroupFromTree ', group.id);
-  await Tree.detachTabsFromTree(group.$TST.memberTabs, {
+  await Tree.detachTabsFromTree(group.$TST.members, {
     fromParent: true,
     partial: true,
   });
@@ -185,7 +182,7 @@ function waitUntilGrouped(tabs, { groupId, windowId } = {}) {
     ]).then(([groupId]) => {
       finish();
       finishMoved();
-      return win.tabGroups.get(groupId);
+      return TabGroup.get(groupId);
     }),
     finish,
   };
@@ -234,8 +231,8 @@ export async function matchTabsGrouped(tabs, groupIdOrCreateParams) {
 
 export async function moveGroupToNewWindow({ groupId, windowId, duplicate, left, top }) {
   log('moveGroupToNewWindow: ', groupId, windowId);
-  const group = TabGroup.get({ groupId, windowId });
-  const members = TabGroup.getMemberTabs({ windowId, groupId });
+  const group     = TabGroup.get(groupId);
+  const members   = group.$TST.members;
   const movedTabs = await Tree.openNewWindowFromTabs(members, { duplicate, left, top });
   await addTabsToGroupInternal(movedTabs, {
     title: group.title,
@@ -251,13 +248,13 @@ export async function moveGroupBefore(group, insertBefore) {
   const { promisedMoved, finish } = waitUntilMoved(group, insertBefore.windowId);
 
   if (insertBefore.type == TreeItem.TYPE_GROUP) {
-    insertBefore = insertBefore.$TST.firstMemberTab;
+    insertBefore = insertBefore.$TST.firstMember;
   }
 
-  const members = group.$TST.memberTabs;
-  const firstMemberTab = group.$TST.firstMemberTab;
+  const members = group.$TST.members;
+  const firstMember = group.$TST.firstMember;
   await browser.tabGroups.move(group.id, {
-    index:    insertBefore.index - (insertBefore.windowId == group.windowId && insertBefore.index > firstMemberTab.index ? members.length : 0),
+    index:    insertBefore.index - (insertBefore.windowId == group.windowId && insertBefore.index > firstMember.index ? members.length : 0),
     windowId: insertBefore.windowId,
   });
 
@@ -290,17 +287,17 @@ export async function moveGroupAfter(group, insertAfter) {
 
   if (insertAfter.type == TreeItem.TYPE_GROUP) {
     if (insertAfter.collapsed) {
-      insertAfter = insertAfter.$TST.lastMemberTab;
+      insertAfter = insertAfter.$TST.lastMember;
     }
     else {
-      return moveGroupBefore(group, insertAfter.$TST.firstMemberTab);
+      return moveGroupBefore(group, insertAfter.$TST.firstMember);
     }
   }
 
-  const members = group.$TST.memberTabs;
-  const firstMemberTab = group.$TST.firstMemberTab;
+  const members = group.$TST.members;
+  const firstMember = group.$TST.firstMember;
   await browser.tabGroups.move(group.id, {
-    index:    insertAfter.index + 1 - (insertAfter.windowId == group.windowId && insertAfter.index > firstMemberTab.index ? members.length : 0),
+    index:    insertAfter.index + 1 - (insertAfter.windowId == group.windowId && insertAfter.index > firstMember.index ? members.length : 0),
     windowId: insertAfter.windowId,
   });
 
@@ -327,7 +324,7 @@ export async function moveGroupAfter(group, insertAfter) {
 export function waitUntilMoved(groupOrMembers, destinationWindowId) {
   const members = Array.isArray(groupOrMembers) ?
     groupOrMembers :
-    groupOrMembers.$TST.memberTabs;
+    groupOrMembers.$TST.members;
   const win = TabsStore.windows.get(destinationWindowId || members[0].windowId);
   const toBeMovedTabs = new Set();
   for (const tab of members) {
@@ -364,40 +361,34 @@ export function waitUntilMoved(groupOrMembers, destinationWindowId) {
 }
 
 
-function reserveToMaintainTree({ windowId, groupId }, options = {}) {
-  let timer = reserveToMaintainTree.delayed.get(groupId);
+function reserveToMaintainTreeForGroup(groupId, options = {}) {
+  let timer = reserveToMaintainTreeForGroup.delayed.get(groupId);
   if (timer)
     clearTimeout(timer);
   if (options.justNow || !shouldApplyAnimation()) {
-    const group = TabGroup.get({ windowId, groupId });
+    const group = TabGroup.get(groupId);
     rejectGroupFromTree(group);
   }
   timer = setTimeout(() => {
-    reserveToMaintainTree.delayed.delete(groupId);
-    const group = TabGroup.get({ windowId, groupId });
+    reserveToMaintainTreeForGroup.delayed.delete(groupId);
+    const group = TabGroup.get(groupId);
     rejectGroupFromTree(group);
   }, configs.nativeTabGroupModificationDetectionTimeoutAfterTabMove);
-  reserveToMaintainTree.delayed.set(groupId, timer);
+  reserveToMaintainTreeForGroup.delayed.set(groupId, timer);
 }
-reserveToMaintainTree.delayed = new Map();
+reserveToMaintainTreeForGroup.delayed = new Map();
 
 export async function startToMaintainTree() {
   // fixup mismatched tree structure and tab groups constructed while TST is disabled
   const groups = await browser.tabGroups.query({});
   for (const group of groups) {
-    await rejectGroupFromTree(TabGroup.get({
-      windowId: group.windowId,
-      groupId:  group.id,
-    }));
+    await rejectGroupFromTree(TabGroup.get(group.id));
   }
 
   // after all we start tracking of dynamic changes of tab groups
 
   browser.tabGroups.onMoved.addListener(group => {
-    group = TabGroup.get({
-      windowId: group.windowId,
-      groupId:  group.id,
-    });
+    group = TabGroup.get(group.id);
     if (!group) {
       return;
     }
@@ -407,10 +398,7 @@ export async function startToMaintainTree() {
       log(' => ignore internal move ', internalMoveCount);
       return;
     }
-    reserveToMaintainTree({
-      windowId: group.windowId,
-      groupId:  group.id,
-    });
+    reserveToMaintainTreeForGroup(group.id);
   });
 
   Tab.onNativeGroupModified.addListener(tab => {
@@ -418,6 +406,6 @@ export async function startToMaintainTree() {
     if (win.internallyMovingTabsForUpdatedNativeTabGroups.has(tab.id)) {
       return;
     }
-    reserveToMaintainTree(tab);
+    reserveToMaintainTreeForGroup(tab.groupId);
   });
 }

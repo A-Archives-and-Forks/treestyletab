@@ -652,13 +652,13 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
 
   if (droppedOn?.type == TreeItem.TYPE_GROUP) {
     log('performNativeTabGroupItemDragDrop: dropping onto another group, merge to it: ', droppedOn);
-    const members = group.$TST.memberTabs;
-    const firstMember = droppedOn.$TST.firstMemberTab;
-    if (group.$TST.firstMemberTab.index < firstMember.index) {
+    const members = group.$TST.members;
+    const firstMember = droppedOn.$TST.firstMember;
+    if (group.$TST.firstMember.index < firstMember.index) {
       await NativeTabGroups.moveGroupBefore(group, firstMember);
     }
     else{
-      await NativeTabGroups.moveGroupAfter(group, droppedOn.$TST.lastMemberTab);
+      await NativeTabGroups.moveGroupAfter(group, droppedOn.$TST.lastMember);
     }
     await NativeTabGroups.addTabsToGroup(members, droppedOn.id);
     return;
@@ -666,15 +666,15 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
 
   let insertAfter  = droppedAfter;
   let insertBefore = droppedBefore;
-  const firstMemberTab = group.$TST.firstMemberTab;
+  const firstMember = group.$TST.firstMember;
 
   if (groupId) {
     if (groupId != group.id) {
-      const dropTargetGroup = TabGroup.get({ windowId: group.windowId, groupId });
-      const dropTargetFirstMember = dropTargetGroup.$TST.firstMemberTab;
-      if (firstMemberTab.index < dropTargetFirstMember.index) {
+      const dropTargetGroup = TabGroup.get(groupId);
+      const dropTargetFirstMember = dropTargetGroup.$TST.firstMember;
+      if (firstMember.index < dropTargetFirstMember.index) {
         log('performNativeTabGroupItemDragDrop: dropping into another group, move to below the target group');
-        insertAfter = dropTargetGroup.$TST.lastMemberTab;
+        insertAfter = dropTargetGroup.$TST.lastMember;
         if (insertAfter) {
           insertBefore = null;
         }
@@ -693,7 +693,7 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
               droppedAfter.$TST.rootTab == droppedAfter.$TST.unsafeNextTab?.$TST.rootTab)) {
       const root = (droppedOn || droppedBefore || droppedAfter).$TST.rootTab;
       if (root) {
-        if (firstMemberTab.index < root.index) {
+        if (firstMember.index < root.index) {
           log('performNativeTabGroupItemDragDrop: dropping into ungrouped tree, move to below the target tree');
           insertAfter = root.$TST.lastDescendant || root;
           if (insertAfter) {
@@ -1388,10 +1388,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
       switch (message.command) {
         case 'addNewTabInGroup': (async () => {
           const windowId = message.windowId || sender.tab?.windowId;
-          const lastMember = TabGroup.getLastMemberTab({
-            windowId,
-            groupId: message.groupId,
-          });
+          const lastMember = TabGroup.getLastMember(message.groupId);
           const tab = await TabsOpen.openNewTab({
             insertAfter:  lastMember.$TST?.lastDescendant || lastMember,
             windowId,
@@ -1410,10 +1407,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
         case 'saveAndCloseGroup':
         case 'deleteGroup': (async () => {
           const windowId = message.windowId || sender.tab?.windowId;
-          const members = TabGroup.getMemberTabs({
-            windowId,
-            groupId: message.groupId,
-          });
+          const members = TabGroup.getMembers(message.groupId);
           const canceled = (await browser.runtime.sendMessage({
             type: Constants.kCOMMAND_NOTIFY_TABS_CLOSING,
             tabs: members.map(tab => tab.$TST.sanitized),
@@ -1426,10 +1420,7 @@ browser.runtime.onMessage.addListener((message, sender) => {
 
         case 'ungroupTabs':
         case 'cancel': {
-          const members = TabGroup.getMemberTabs({
-            windowId: message.windowId || sender.tab?.windowId,
-            groupId:  message.groupId,
-          });
+          const members = TabGroup.getMembers(message.groupId);
           NativeTabGroups.removeTabsFromGroup(members);
         }; break;
 

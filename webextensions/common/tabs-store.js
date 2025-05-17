@@ -34,6 +34,7 @@ export function getCurrentWindowId() {
 
 export const windows        = new Map();
 export const tabs           = new Map();
+export const tabGroups      = new Map();
 export const tabsByUniqueId = new Map();
 
 export function clear() {

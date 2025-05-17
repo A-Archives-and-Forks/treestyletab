@@ -215,7 +215,7 @@ export default class TabPreviewPanel extends InContentPanel {
     return panelFragment;
   }
 
-  onUpdateUI({ targetId, title, url, tooltipHtml, hasPreview, previewURL, logging, complete, anchorTabRect, scale, ...params }) {
+  onUpdateUI({ targetId, title, url, tooltipHtml, hasPreview, previewURL, logging, complete, scale, ...params }) {
     if (logging)
       console.log(`${this.type} onUpdateUI `, { panel: this.panel, targetId, title, url, tooltipHtml, hasPreview, previewURL, ...params });
 

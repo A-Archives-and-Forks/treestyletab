@@ -1302,16 +1302,14 @@ browser.windows.onFocusChanged.addListener(windowId => {
 
 async function onGroupCreated(group) {
   log('onGroupCreated ', group);
-  const win = TabsStore.windows.get(group.windowId);
-  if (!win) {
-    throw new Error('tabGroups.onCreated is called before the owner window is tracked');
-  }
-  win.tabGroups.set(group.id, TabGroup.init(group));
+
+  const trackedGroup = TabGroup.init(group);
+  TabsStore.windows.get(trackedGroup.windowId).tabGroups.set(group.id, trackedGroup);
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
-    windowId: group.windowId,
-    group: { ...group, $TST: null },
+    windowId: trackedGroup.windowId,
+    group:    trackedGroup.$TST.sanitized,
   });
 }
 
@@ -1320,15 +1318,14 @@ async function onGroupUpdated(group) {
     await mPromisedStarted;
 
   log('onGroupUpdated ', group);
-  const win = TabsStore.windows.get(group.windowId);
-  if (!win) {
-    throw new Error('tabGroups.onUpdated is called before the owner window is tracked');
-  }
-  win.tabGroups.get(group.id).$TST.apply(group);
+
+  const trackedGroup = TabGroup.get(group.id);
+  trackedGroup.$TST.apply(group);
+
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED,
-    windowId: group.windowId,
-    group,
+    windowId: trackedGroup.windowId,
+    group:    trackedGroup.$TST.sanitized,
   });
 }
 
@@ -1337,17 +1334,15 @@ async function onGroupRemoved(group) {
     await mPromisedStarted;
 
   log('onGroupRemoved ', group);
-  const win = TabsStore.windows.get(group.windowId);
-  if (!win) {
-    throw new Error('tabGroups.onRemoved is called before the owner window is tracked');
-  }
-  win.tabGroups.get(group.id).destroy();
-  win.tabGroups.delete(group.id);
+
+  const trackedGroup = TabGroup.get(group.id);
+  const sanitized    = trackedGroup.$TST.sanitized;
+  trackedGroup.destroy();
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
-    windowId: group.windowId,
-    group,
+    windowId: sanitized.windowId,
+    group:    sanitized,
   });
 }
 
@@ -1356,21 +1351,25 @@ async function onGroupMoved(group) {
     await mPromisedStarted;
 
   log('onGroupMoved ', group);
-  const win = TabsStore.windows.get(group.windowId);
-  if (!win) {
-    throw new Error('tabGroups.onMoved is called before the owner window is tracked');
-  }
-  const trackedGroup = win.tabGroups.get(group.id);
+  const trackedGroup = TabGroup.get(group.id);
   if (trackedGroup) {
     return;
   }
 
-  // how should we reattach group from its old window? the group has no such information about its old group...
-  win.tabGroups.set(group.id, TabGroup.init(group));
+  if (group.windowId != trackedGroup.windowId) {
+    SidebarConnection.sendMessage({
+      type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
+      windowId: trackedGroup.windowId,
+      group:    trackedGroup.$TST.sanitized,
+    });
+    TabsStore.windows.get(trackedGroup.windowId).tabGroups.delete(group.id);
+    trackedGroup.windowId = group.windowId;
+    TabsStore.windows.get(trackedGroup.windowId).tabGroups.set(group.id, group);
+  }
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
-    windowId: group.windowId,
-    group: { ...group, $TST: null },
+    windowId: trackedGroup.windowId,
+    group:    trackedGroup.$TST.sanitized,
   });
 }

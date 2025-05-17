@@ -286,7 +286,7 @@ export default class Window {
     }
     return {
       tabs,
-      tabGroups: [...this.tabGroups.values()].map(group => ({ ...group, $TST: null })),
+      tabGroups: [...this.tabGroups.values()].map(group => group.$TST.sanitized),
     };
   }
 }

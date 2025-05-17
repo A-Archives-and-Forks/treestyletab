@@ -76,7 +76,7 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
 
   log('moveTabsInternallyBefore: ', tabs, `${referenceTab.id}(index=${referenceTab.index})`, options);
   if (referenceTab.type == TreeItem.TYPE_GROUP) {
-    referenceTab = referenceTab.$TST?.firstMemberTab;
+    referenceTab = referenceTab.$TST?.firstMember;
     if (!TabsStore.ensureLivingItem(referenceTab)) {
       log('missing reference tab');
       return [];
@@ -201,9 +201,9 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
   if (referenceTab.type == TreeItem.TYPE_GROUP) {
     if (!referenceTab.collapsed) {
       log('  => move before the first member tab of the reference group');
-      return moveTabsInternallyBefore(tabs, referenceTab.$TST?.firstMemberTab, options = {});
+      return moveTabsInternallyBefore(tabs, referenceTab.$TST?.firstMember, options = {});
     }
-    referenceTab = referenceTab.$TST?.lastMemberTab;
+    referenceTab = referenceTab.$TST?.lastMember;
     if (!TabsStore.ensureLivingItem(referenceTab)) {
       log('missing reference tab');
       return [];

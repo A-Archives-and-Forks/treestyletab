@@ -26,7 +26,7 @@ import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab } from '/common/TreeItem.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 
 import EventListenerManager from '/extlib/EventListenerManager.js';
 
@@ -784,7 +784,7 @@ BackgroundConnection.onMessage.addListener(async message => {
     case Constants.kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL: {
       close();
       mNewTabButtonUI.close();
-      const group = TabsStore.windows.get(message.windowId).tabGroups.get(message.groupId);
+      const group = TabGroup.get(message.groupId);
       Promise.race([
         group.$TST?.promisedElement,
         wait(250),

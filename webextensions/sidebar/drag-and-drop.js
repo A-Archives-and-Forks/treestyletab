@@ -242,7 +242,6 @@ function getDropAction(event) {
     return !itemIds ? [] : mapAndFilter(itemIds, id =>
       Tab.get(id) ||
       TabGroup.get(id) ||
-      TabGroup.get({ windowId: TabsStore.getCurrentWindowId(), groupId: id }) ||
       undefined
     );
   });
@@ -295,7 +294,7 @@ function getDropAction(event) {
 
       case kDROP_BEFORE:
         if (targetItem.type == TreeItem.TYPE_GROUP) {
-          const groupId = targetItem.$TST?.firstMemberTab?.$TST?.unsafePreviousTab?.groupId;
+          const groupId = targetItem.$TST?.firstMember?.$TST?.unsafePreviousTab?.groupId;
           return groupId == -1 ?
             draggedGroup?.id : // a tab before the target group is ungrouped => keep the original group
             groupId; // otherwise we try to insert items at the end of the group of the tab before the drop target
@@ -484,7 +483,7 @@ function getDropAction(event) {
       log('drop position = before ', info.targetItem.id);
       const referenceItems = TreeBehavior.calculateReferenceItemsFromInsertionPosition(info.draggedItem, {
         context:      Constants.kINSERTION_CONTEXT_MOVED,
-        insertBefore: targetItem.$TST.firstMemberTab || targetItem,
+        insertBefore: targetItem.$TST.firstMember || targetItem,
       });
       if (referenceItems.parent)
         info.parent = referenceItems.parent;
@@ -511,7 +510,7 @@ function getDropAction(event) {
     case kDROP_AFTER: {
       log('drop position = after ', info.targetItem.id);
       const referenceItems = TreeBehavior.calculateReferenceItemsFromInsertionPosition(info.draggedItem, {
-        insertAfter: targetItem.$TST.lastMemberTab || (targetItem.$TST.subtreeCollapsed && targetItem.$TST.lastDescendant || targetItem),
+        insertAfter: targetItem.$TST.lastMember || (targetItem.$TST.subtreeCollapsed && targetItem.$TST.lastDescendant || targetItem),
       });
       if (referenceItems.parent)
         info.parent = referenceItems.parent;
@@ -1623,7 +1622,7 @@ async function onDragEnd(event) {
   }
 
   if (dragData.item?.$TST.group) {
-    if (dragData.item?.$TST.memberTabs.length == TabsStore.windows.get(dragData.item.windowId).tabs.size) {
+    if (dragData.item?.$TST.members.length == TabsStore.windows.get(dragData.item.windowId).tabs.size) {
       log('the last one group containing all tabs is dragged, so it is nonsence to tear off it from the window');
       return;
     }

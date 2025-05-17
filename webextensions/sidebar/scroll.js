@@ -244,7 +244,7 @@ export function getRenderableTreeItems(windowId = null) {
     ...mapAndFilter(
       [...TabsStore.windows.get(windowId).tabGroups.values()],
       group => {
-        const firstMember = TabGroup.getFirstMemberTab({ windowId, groupId: group.id });
+        const firstMember = TabGroup.getFirstMember(group.id);
         if (!firstMember) {
           return undefined;
         }
@@ -468,10 +468,7 @@ function getRenderableItemById(id) {
   const [type, rawId] = id.split(':');
   switch (type) {
     case 'group':
-      return TabGroup.get({
-        windowId: TabsStore.getCurrentWindowId(),
-        groupId:  parseInt(rawId),
-      });
+      return TabGroup.get(parseInt(rawId));
 
     case 'tab':
     default:

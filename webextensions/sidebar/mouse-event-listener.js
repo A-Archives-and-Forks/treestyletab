@@ -492,7 +492,7 @@ async function onMouseUp(event) {
     promisedCanceled = lastMousedown.promisedMousedownNotified;
 
   const lastMousedownTab = lastMousedown.detail.tabType == 'group' ?
-    TabGroup.get({ windowId: lastMousedown.detail.windowId, groupId: lastMousedown.detail.tabId }) :
+    TabGroup.get(lastMousedown.detail.tabId) :
     Tab.get(lastMousedown.detail.tabId);
   if (lastMousedown.expired ||
       lastMousedown.detail.targetType != EventUtils.getEventTargetType(event) || // when the cursor was moved before mouseup

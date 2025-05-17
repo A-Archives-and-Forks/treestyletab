@@ -23,7 +23,7 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
 import * as NativeTabGroups from './native-tab-groups.js';
@@ -466,7 +466,7 @@ function updateNativeTabGroups(contextTab) {
 function getEffectiveTabGroups(windowId) {
   return TreeItem.sort(
     [...TabsStore.windows.get(windowId).tabGroups.values()]
-      .filter(group => !!TabGroup.getFirstMemberTab({ windowId, groupId: group.id }))
+      .filter(group => !!group.$TST.firstMember)
   );
 }
 
