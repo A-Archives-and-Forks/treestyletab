@@ -467,10 +467,10 @@ function getRenderableItemById(id) {
 
   const [type, rawId] = id.split(':');
   switch (type) {
-    case 'group':
+    case TreeItem.TYPE_GROUP:
       return TabGroup.get(parseInt(rawId));
 
-    case 'tab':
+    case TreeItem.TYPE_TAB:
     default:
       return Tab.get(parseInt(rawId));
   }
@@ -1212,7 +1212,10 @@ function onMessage(message, _sender, _respond) {
     case Constants.kCOMMAND_GET_RENDERED_TAB_IDS:
       return Promise.resolve([...new Set([
         ...Tab.getPinnedTabs(message.windowId).map(tab => tab.id),
-        ...mLastRenderedVirtualScrollItemIds,
+        ...mapAndFilter(mLastRenderedVirtualScrollItemIds, id => {
+          const [type, rawId] = id.split(':');
+          return type == TreeItem.TYPE_TAB ? parseInt(rawId) : undefined;
+        }),
       ])]);
 
     case Constants.kCOMMAND_ASK_TAB_IS_IN_VIEWPORT:
