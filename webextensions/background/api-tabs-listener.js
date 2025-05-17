@@ -70,6 +70,7 @@ export function init() {
   browser.tabGroups.onCreated.addListener(onGroupCreated);
   browser.tabGroups.onUpdated.addListener(onGroupUpdated);
   browser.tabGroups.onRemoved.addListener(onGroupRemoved);
+  browser.tabGroups.onMoved.addListener(onGroupMoved);
 
   browser.windows.getAll({}).then(windows => {
     mAppIsActive = windows.some(win => win.focused);
@@ -97,6 +98,7 @@ export function destroy() {
   browser.tabGroups.onCreated.removeListener(onGroupCreated);
   browser.tabGroups.onUpdated.removeListener(onGroupUpdated);
   browser.tabGroups.onRemoved.removeListener(onGroupRemoved);
+  browser.tabGroups.onMoved.removeListener(onGroupMoved);
 }
 
 export function start() {
@@ -1349,3 +1351,26 @@ async function onGroupRemoved(group) {
   });
 }
 
+async function onGroupMoved(group) {
+  if (mPromisedStarted)
+    await mPromisedStarted;
+
+  log('onGroupMoved ', group);
+  const win = TabsStore.windows.get(group.windowId);
+  if (!win) {
+    throw new Error('tabGroups.onMoved is called before the owner window is tracked');
+  }
+  const trackedGroup = win.tabGroups.get(group.id);
+  if (trackedGroup) {
+    return;
+  }
+
+  // how should we reattach group from its old window? the group has no such information about its old group...
+  win.tabGroups.set(group.id, TabGroup.init(group));
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
+    windowId: group.windowId,
+    group: { ...group, $TST: null },
+  });
+}
