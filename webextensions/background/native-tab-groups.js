@@ -14,7 +14,7 @@ import {
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 
-import { Tab, TabGroup } from '/common/TreeItem.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as Tree from './tree.js';
 
@@ -250,10 +250,14 @@ export async function moveGroupBefore(group, insertBefore) {
 
   const { promisedMoved, finish } = waitUntilMoved(group, insertBefore.windowId);
 
+  if (insertBefore.type == TreeItem.TYPE_GROUP) {
+    insertBefore = insertBefore.$TST.firstMemberTab;
+  }
+
   const members = group.$TST.memberTabs;
   const firstMemberTab = group.$TST.firstMemberTab;
   await browser.tabGroups.move(group.id, {
-    index:    insertBefore.index - (insertBefore.index > firstMemberTab.index ? members.length : 0),
+    index:    insertBefore.index - (insertBefore.windowId == group.windowId && insertBefore.index > firstMemberTab.index ? members.length : 0),
     windowId: insertBefore.windowId,
   });
 
@@ -284,10 +288,19 @@ export async function moveGroupAfter(group, insertAfter) {
 
   const { promisedMoved, finish } = waitUntilMoved(group, insertAfter.windowId);
 
+  if (insertAfter.type == TreeItem.TYPE_GROUP) {
+    if (insertAfter.collapsed) {
+      insertAfter = insertAfter.$TST.lastMemberTab;
+    }
+    else {
+      return moveGroupBefore(group, insertAfter.$TST.firstMemberTab);
+    }
+  }
+
   const members = group.$TST.memberTabs;
   const firstMemberTab = group.$TST.firstMemberTab;
   await browser.tabGroups.move(group.id, {
-    index:    insertAfter.index + 1 - (insertAfter.index > firstMemberTab.index ? members.length : 0),
+    index:    insertAfter.index + 1 - (insertAfter.windowId == group.windowId && insertAfter.index > firstMemberTab.index ? members.length : 0),
     windowId: insertAfter.windowId,
   });
 
