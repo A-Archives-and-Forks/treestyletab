@@ -18,6 +18,8 @@ export default class TabGroupMenuPanel extends InContentPanel {
             pointer-events: none;
           }
 
+          overflow-y: auto;
+
           /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/browser/themes/shared/tabbrowser/tabs.css#1145 */
 
           /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#266 */
@@ -609,9 +611,9 @@ export default class TabGroupMenuPanel extends InContentPanel {
       .replace(/"/g, '&quot;');
   }
 
-  onUpdateUI({ targetId, groupTitle, groupColor, creating, logging, complete, ...params }) {
+  onUpdateUI({ targetId, groupTitle, groupColor, creating, anchorTabRect, logging, complete, ...params }) {
     if (logging)
-      console.log(`${this.type} updateUI `, { panel: this.panel, targetId, groupTitle, groupColor, creating, ...params });
+      console.log(`${this.type} updateUI `, { panel: this.panel, targetId, groupTitle, groupColor, creating, anchorTabRect, ...params });
 
     this.panel.classList.toggle('tab-group-editor-mode-create', creating);
 

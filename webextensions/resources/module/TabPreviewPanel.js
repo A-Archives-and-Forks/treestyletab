@@ -215,23 +215,13 @@ export default class TabPreviewPanel extends InContentPanel {
     return panelFragment;
   }
 
-  onUpdateUI({ targetId, title, url, tooltipHtml, hasPreview, previewURL, logging, complete, anchorTabRect, sidebarContentsOffset, offsetFromWindowEdge, scale, ...params }) {
+  onUpdateUI({ targetId, title, url, tooltipHtml, hasPreview, previewURL, logging, complete, anchorTabRect, scale, ...params }) {
     if (logging)
       console.log(`${this.type} onUpdateUI `, { panel: this.panel, targetId, title, url, tooltipHtml, hasPreview, previewURL, ...params });
 
     const hasLoadablePreviewURL = previewURL && /^((https?|moz-extension):|data:image\/[^,]+,.+)/.test(previewURL);
     if (previewURL)
       hasPreview = hasLoadablePreviewURL;
-
-    if (anchorTabRect) {
-      const panelTopEdge = this.windowId ? anchorTabRect.bottom : anchorTabRect.top;
-      const panelBottomEdge = this.windowId ? anchorTabRect.bottom : anchorTabRect.top;
-      const panelMaxHeight = Math.max(window.innerHeight - panelTopEdge - sidebarContentsOffset, panelBottomEdge);
-      this.panel.style.maxHeight = `${panelMaxHeight}px`;
-      this.panel.style.setProperty('--panel-max-height', `${panelMaxHeight}px`);
-      if (logging)
-        console.log('updateUI: limit panel height to ', this.panel.style.maxHeight, { anchorTabRect, maxHeight: window.innerHeight, sidebarContentsOffset, offsetFromWindowEdge });
-    }
 
     const previewImage = this.panel.querySelector('.in-content-panel-image');
     previewImage.classList.toggle('blank', !hasPreview && !hasLoadablePreviewURL);

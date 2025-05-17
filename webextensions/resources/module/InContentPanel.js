@@ -377,6 +377,16 @@ export default class InContentPanel {
       (fixedOffsetTop || 0) :
       (offsetTop - offsetFromWindowEdge) / scale;
 
+    if (anchorTabRect) {
+      const panelTopEdge = this.windowId ? anchorTabRect.bottom : anchorTabRect.top;
+      const panelBottomEdge = this.windowId ? anchorTabRect.bottom : anchorTabRect.top;
+      const panelMaxHeight = Math.max(window.innerHeight - panelTopEdge - sidebarContentsOffset, panelBottomEdge);
+      this.panel.style.maxHeight = `${panelMaxHeight}px`;
+      this.panel.style.setProperty('--panel-max-height', `${panelMaxHeight}px`);
+      if (logging)
+        console.log('updateUI: limit panel height to ', this.panel.style.maxHeight, { anchorTabRect, maxHeight: window.innerHeight, sidebarContentsOffset, offsetFromWindowEdge });
+    }
+
     this.panel.classList.toggle('rtl', !!rtl);
 
     this.panel.dataset.targetId = targetId;
@@ -436,14 +446,14 @@ export default class InContentPanel {
           console.log(`${this.type}  => top=`, top);
       }
       else { // in-content
-      // We need to shift the position with the height of the sidebar header.
+        // We need to shift the position with the height of the sidebar header.
         const alignToTopPosition = Math.max(0, anchorTabRect.top / scale) + sidebarContentsOffset;
         const alignToBottomPosition = Math.min(maxY, anchorTabRect.bottom + sidebarContentsOffset / scale) - panelHeight;
 
         if (logging)
           console.log(`${this.type} updateUI/complete: in-content, alignment calculating: `, { offsetFromWindowEdge, sidebarContentsOffset, alignToTopPosition, panelHeight, maxY, scale });
         if (alignToTopPosition + panelHeight >= maxY &&
-          alignToBottomPosition >= 0) { // align to bottom edge of the tab
+            alignToBottomPosition >= 0) { // align to bottom edge of the tab
           top = `${alignToBottomPosition}px`;
           if (logging)
             console.log(`${this.type}  => align to bottom edge of the tab, top=`, top);
@@ -500,8 +510,6 @@ export default class InContentPanel {
       widthInOuterWorld,
       // calculated values
       complete,
-      offsetFromWindowEdge,
-      sidebarContentsOffset,
       // extra args for subclasses
       ...params,
     });
