@@ -403,6 +403,7 @@ duplicated = <${!!this.$TST.uniqueId.duplicated}> / <${this.$TST.uniqueId.origin
 restored = <${!!this.$TST.uniqueId.restored}>
 rawId = ${raw.id}
 windowId = ${raw.windowId}
+index = ${raw.index}
 `.trim();
       this.$TST.setAttribute('title', debugTooltip);
       if (!this.useTabPreviewTooltip) {

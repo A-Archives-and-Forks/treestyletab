@@ -1374,21 +1374,25 @@ async function onGroupMoved(group) {
 
   const oldWindowId = trackedGroup.windowId;
   const newWindowId = group.windowId;
-  if (newWindowId != oldWindowId) {
-    const members = trackedGroup.$TST.members;
-    for (const tab of members) {
-      TabsStore.removeNativelyGroupedTab(tab, oldWindowId);
-      TabsStore.addNativelyGroupedTab(tab, newWindowId);
-    }
-    SidebarConnection.sendMessage({
-      type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
-      windowId: oldWindowId,
-      group:    trackedGroup.$TST.sanitized,
-    });
-    TabsStore.windows.get(oldWindowId).tabGroups.delete(group.id);
-    trackedGroup.windowId = newWindowId;
-    TabsStore.windows.get(newWindowId).tabGroups.set(group.id, trackedGroup);
+  if (newWindowId == oldWindowId) {
+    return;
   }
+
+  const members = trackedGroup.$TST.members;
+  for (const tab of members) {
+    TabsStore.removeNativelyGroupedTab(tab, oldWindowId);
+    TabsStore.addNativelyGroupedTab(tab, newWindowId);
+  }
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
+    windowId: oldWindowId,
+    group:    trackedGroup.$TST.sanitized,
+  });
+
+  TabsStore.windows.get(oldWindowId).tabGroups.delete(group.id);
+  trackedGroup.windowId = newWindowId;
+  TabsStore.windows.get(newWindowId).tabGroups.set(group.id, trackedGroup);
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
