@@ -770,6 +770,7 @@
   
     "tabContextMenu_pin_label":         { "message": "釘選分頁 (&P)" },
     "tabContextMenu_unpin_label":       { "message": "還原成普通分頁 (&P)" },
+    "tabContextMenu_unload_label":      { "message": "卸載分頁 (&U)" },
     "tabContextMenu_duplicate_label":   { "message": "複製分頁 (&D)" },
     "tabContextMenu_selectAllTabs_label": { "message": "選擇所有分頁 (&S)" },
     "tabContextMenu_bookmark_label":    { "message": "將分頁加入書籤 (&B)" },
@@ -801,6 +802,8 @@
   
     "tabContextMenu_pin_label_multiselected":         { "message": "釘選分頁(&P)" },
     "tabContextMenu_unpin_label_multiselected":       { "message": "還原成普通分頁(&P)" },
+
+    "tabContextMenu_unload_label_multiselected":      { "message": "卸載 %S 個分頁(&U)" },
 
     "tabContextMenu_duplicate_label_multiselected":   { "message": "複製分頁(&D)" },
   

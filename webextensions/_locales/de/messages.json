@@ -880,6 +880,7 @@
 
   "tabContextMenu_pin_label":         { "message": "Tab an&heften" },
   "tabContextMenu_unpin_label":       { "message": "Ta&b ablösen" },
+  "tabContextMenu_unload_label":      { "message": "Tab &entladen" },
   "tabContextMenu_duplicate_label":   { "message": "Tab &klonen" },
   "tabContextMenu_selectAllTabs_label": { "message": "&Alle Tabs auswählen" },
   "tabContextMenu_bookmark_label":    { "message": "Tab als &Lesezeichen hinzufügen" },
@@ -913,6 +914,8 @@
 
   "tabContextMenu_pin_label_multiselected":         { "message": "Tabs an&heften" },
   "tabContextMenu_unpin_label_multiselected":       { "message": "Ta&bs ablösen" },
+
+  "tabContextMenu_unload_label_multiselected":      { "message": "%S Tabs &entladen" },
 
   "tabContextMenu_duplicate_label_multiselected":   { "message": "Tabs &klonen" },
 

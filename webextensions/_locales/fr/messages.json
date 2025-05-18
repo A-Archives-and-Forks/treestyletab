@@ -1449,6 +1449,7 @@
     "message": "Désé&pingler l'onglet",
     "hash": "60571db0ccb087c30009dadd2042ebd8"
   },
+  "tabContextMenu_unload_label":      { "message": "&Décharger l’onglet" },
   "tabContextMenu_duplicate_label": {
     "message": "D&upliquer l'onglet",
     "hash": "80666f37f8702cba5b66d3e8d816ea5c"
@@ -1530,6 +1531,7 @@
     "message": "Désépingler les onglets",
     "hash": "b6bb715b523238636abe60c06c9679e6"
   },
+  "tabContextMenu_unload_label_multiselected":      { "message": "&Décharger %S onglets" },
   "tabContextMenu_duplicate_label_multiselected": {
     "message": "Dupliquer les onglets",
     "hash": "0c30a83f8bcc07500df79d0596d99597"

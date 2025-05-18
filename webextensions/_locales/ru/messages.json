@@ -879,6 +879,7 @@
 
   "tabContextMenu_pin_label":         { "message": "Закрепи&ть вкладку" },
   "tabContextMenu_unpin_label":       { "message": "Открепи&ть вкладку" },
+  "tabContextMenu_unload_label":      { "message": "Вы&грузить вкладку" },
   "tabContextMenu_duplicate_label":   { "message": "&Дублировать вкладку" },
   "tabContextMenu_selectAllTabs_label": { "message": "&Выбрать все вкладки" },
   "tabContextMenu_bookmark_label":    { "message": "Добавить вкладку в зак&ладки" },
@@ -912,6 +913,8 @@
 
   "tabContextMenu_pin_label_multiselected":         { "message": "Закрепи&ть вкладки" },
   "tabContextMenu_unpin_label_multiselected":       { "message": "Открепи&ть вкладки" },
+
+  "tabContextMenu_unload_label_multiselected":      { "message": "Вы&грузить %S вкладок" },
 
   "tabContextMenu_duplicate_label_multiselected":   { "message": "&Дублировать вкладки" },
 

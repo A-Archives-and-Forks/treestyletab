@@ -2758,6 +2758,7 @@
     "message": "Ta&bblad losmaken",
     "hash": "60571db0ccb087c30009dadd2042ebd8"
   },
+  "tabContextMenu_unload_label":      { "message": "Tabblad &ontladen" },
   "tabContextMenu_duplicate_label": {
     "message": "Tabbla&d klonen",
     "hash": "80666f37f8702cba5b66d3e8d816ea5c"
@@ -2870,6 +2871,7 @@
     "message": "Tab&bladen losmaken",
     "hash": "b6bb715b523238636abe60c06c9679e6"
   },
+  "tabContextMenu_unload_label_multiselected":      { "message": "%S tabbladen &ontladen" },
   "tabContextMenu_duplicate_label_multiselected": {
     "message": "Tabbla&den klonen",
     "hash": "0c30a83f8bcc07500df79d0596d99597"
