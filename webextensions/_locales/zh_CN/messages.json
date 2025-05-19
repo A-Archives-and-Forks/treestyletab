@@ -2157,6 +2157,7 @@
   "tabContextMenu_unpin_label": {
     "message": "取消标签页固定(&P)"
   },
+  "tabContextMenu_unload_label":      { "message": "卸载标签页(&U)" },
   "tabContextMenu_duplicate_label": {
     "message": "复制标签页(&D)"
   },
@@ -2239,6 +2240,7 @@
   "tabContextMenu_unpin_label_multiselected": {
     "message": "取消标签页固定(&P)"
   },
+  "tabContextMenu_unload_label_multiselected":      { "message": "卸载 %S 个标签页(&U)" },
   "tabContextMenu_duplicate_label_multiselected": {
     "message": "复制标签页(&D)"
   },
