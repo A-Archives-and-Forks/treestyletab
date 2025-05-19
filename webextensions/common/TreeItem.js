@@ -66,6 +66,27 @@ browser.windows.onRemoved.addListener(windowId => {
 });
 
 export class TreeItem {
+  static TYPE_TAB   = 'tab';
+  static TYPE_GROUP = 'group';
+
+  static onElementBound = new EventListenerManager();
+
+  // The list of properties which should be ignored when synchronization from the
+  // background to sidebars.
+  static UNSYNCHRONIZABLE_PROPERTIES = new Set([
+    'id',
+    // Ignore "index" on synchronization, because it maybe wrong for the sidebar.
+    // Index of tabs are managed and fixed by other sections like handling of
+    // "kCOMMAND_NOTIFY_TAB_CREATING", Window.prototype.trackTab, and others.
+    // See also: https://github.com/piroor/treestyletab/issues/2119
+    'index',
+    'reindexedBy'
+  ]);
+
+  // key = addon ID
+  // value = Set of states
+  static autoStickyStates = new Map();
+
   constructor(raw) {
     raw.$TST = this;
     this.raw = raw;
@@ -659,94 +680,82 @@ export class TreeItem {
     if (this.element?.update)
       this.element.update(targets);
   }
-}
 
-TreeItem.onElementBound = new EventListenerManager();
 
-// The list of properties which should be ignored when synchronization from the
-// background to sidebars.
-TreeItem.UNSYNCHRONIZABLE_PROPERTIES = new Set([
-  'id',
-  // Ignore "index" on synchronization, because it maybe wrong for the sidebar.
-  // Index of tabs are managed and fixed by other sections like handling of
-  // "kCOMMAND_NOTIFY_TAB_CREATING", Window.prototype.trackTab, and others.
-  // See also: https://github.com/piroor/treestyletab/issues/2119
-  'index',
-  'reindexedBy'
-]);
+  //===================================================================
+  // class methods
+  //===================================================================
 
-// key = addon ID
-// value = Set of states
-TreeItem.autoStickyStates = new Map();
+  static registerAutoStickyState(providerId, statesToAdd) {
+    if (!statesToAdd) {
+      statesToAdd = providerId;
+      providerId = browser.runtime.id;
+    }
+    const states = TreeItem.autoStickyStates.get(providerId) || new Set();
+    if (!Array.isArray(statesToAdd))
+      statesToAdd = [statesToAdd];
+    for (const state of statesToAdd) {
+      states.add(state)
+    }
+    if (states.size == 0)
+      return;
 
-TreeItem.registerAutoStickyState = (providerId, statesToAdd) => {
-  if (!statesToAdd) {
-    statesToAdd = providerId;
-    providerId = browser.runtime.id;
-  }
-  const states = TreeItem.autoStickyStates.get(providerId) || new Set();
-  if (!Array.isArray(statesToAdd))
-    statesToAdd = [statesToAdd];
-  for (const state of statesToAdd) {
-    states.add(state)
-  }
-  if (states.size == 0)
-    return;
-
-  TreeItem.autoStickyStates.set(providerId, states);
-
-  if (Constants.IS_BACKGROUND) {
-    SidebarConnection.sendMessage({
-      type: Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
-      providerId,
-      add:  [...statesToAdd],
-    });
-  }
-};
-
-TreeItem.unregisterAutoStickyState = (providerId, statesToRemove) => {
-  if (!statesToRemove) {
-    statesToRemove = providerId;
-    providerId = browser.runtime.id;
-  }
-  const states = TreeItem.autoStickyStates.get(providerId);
-  if (!states)
-    return;
-  if (!Array.isArray(statesToRemove))
-    statesToRemove = [statesToRemove];
-  for (const state of statesToRemove) {
-    states.delete(state)
-  }
-  if (states.size > 0)
     TreeItem.autoStickyStates.set(providerId, states);
-  else
-    TreeItem.autoStickyStates.delete(providerId);
 
-  if (Constants.IS_BACKGROUND) {
-    SidebarConnection.sendMessage({
-      type:   Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
-      providerId,
-      remove: [...statesToRemove],
-    });
+    if (Constants.IS_BACKGROUND) {
+      SidebarConnection.sendMessage({
+        type: Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
+        providerId,
+        add:  [...statesToAdd],
+      });
+    }
   }
-};
 
-TreeItem.uniqTabsAndDescendantsSet = tabs => {
-  if (!Array.isArray(tabs))
-    tabs = [tabs];
-  return Array.from(new Set(tabs.map(tab => [tab].concat(tab.$TST.descendants)).flat())).sort(TreeItem.compare);
-}
+  static unregisterAutoStickyState(providerId, statesToRemove) {
+    if (!statesToRemove) {
+      statesToRemove = providerId;
+      providerId = browser.runtime.id;
+    }
+    const states = TreeItem.autoStickyStates.get(providerId);
+    if (!states)
+      return;
+    if (!Array.isArray(statesToRemove))
+      statesToRemove = [statesToRemove];
+    for (const state of statesToRemove) {
+      states.delete(state)
+    }
+    if (states.size > 0)
+      TreeItem.autoStickyStates.set(providerId, states);
+    else
+      TreeItem.autoStickyStates.delete(providerId);
 
-TreeItem.compare = (a, b) => {
-  const delta = a.index - b.index;
-  if (delta == 0) {
-    return (a.type == TreeItem.TYPE_GROUP || !!a.color) ? -1 : 1;
+    if (Constants.IS_BACKGROUND) {
+      SidebarConnection.sendMessage({
+        type:   Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
+        providerId,
+        remove: [...statesToRemove],
+      });
+    }
   }
-  return delta;
+
+  static uniqTabsAndDescendantsSet(tabs) {
+    if (!Array.isArray(tabs))
+      tabs = [tabs];
+    return Array.from(new Set(tabs.map(tab => [tab].concat(tab.$TST.descendants)).flat())).sort(TreeItem.compare);
+  }
+
+  static compare(a, b) {
+    const delta = a.index - b.index;
+    if (delta == 0) {
+      return (a.type == TreeItem.TYPE_GROUP || !!a.color) ? -1 : 1;
+    }
+    return delta;
+  }
+
+  static sort(tabs) {
+    return tabs.length == 0 ? tabs : tabs.sort(TreeItem.compare);
+  }
 }
-
-TreeItem.sort = tabs => tabs.length == 0 ? tabs : tabs.sort(TreeItem.compare);
-
 
 
 export class TabGroup extends TreeItem {
@@ -812,64 +821,118 @@ export class TabGroup extends TreeItem {
       windowId:  this.raw.windowId,
     };
   }
-}
 
-TabGroup.get = groupId => TabsStore.tabGroups.get(groupId);
 
-TabGroup.init = group => {
-  if (group.$TST instanceof TabGroup) {
+  //===================================================================
+  // class methods
+  //===================================================================
+
+  static get(groupId) {
+    return TabsStore.tabGroups.get(groupId);
+  }
+
+  static init(group) {
+    if (group.$TST instanceof TabGroup) {
+      return group;
+    }
+    if ('index' in group) {
+      group.index = -1;
+    }
+    if ('incognito' in group) {
+      group.incognito = false;
+    }
+    group.$TST = new TabGroup(group);
     return group;
   }
-  if ('index' in group) {
-    group.index = -1;
+
+  static getMembers(groupId, options = {}) {
+    const windowId = TabGroup.get(groupId).windowId;
+    return TabsStore.queryAll({
+      windowId,
+      tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+      living: true,
+      groupId,
+      ordered: true,
+      ...options
+    });
   }
-  if ('incognito' in group) {
-    group.incognito = false;
+
+  static getFirstMember(groupId, options = {}) {
+    const windowId = TabGroup.get(groupId).windowId;
+    return TabsStore.query({
+      windowId,
+      tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+      living: true,
+      groupId,
+      ...options,
+      ordered: true,
+      first: true,
+    });
   }
-  group.$TST = new TabGroup(group);
-  return group;
-};
 
-TabGroup.getMembers = (groupId, options = {}) => {
-  const windowId = TabGroup.get(groupId).windowId;
-  return TabsStore.queryAll({
-    windowId,
-    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-    living: true,
-    groupId,
-    ordered: true,
-    ...options
-  });
-};
-
-TabGroup.getFirstMember = (groupId, options = {}) => {
-  const windowId = TabGroup.get(groupId).windowId;
-  return TabsStore.query({
-    windowId,
-    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-    living: true,
-    groupId,
-    ...options,
-    ordered: true,
-    first: true,
-  });
-};
-
-TabGroup.getLastMember = (groupId, options = {}) => {
-  const windowId = TabGroup.get(groupId).windowId;
-  return TabsStore.query({
-    windowId,
-    tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-    living: true,
-    groupId,
-    ...options,
-    ordered: true,
-    last: true,
-  });
-};
+  static getLastMember(groupId, options = {}) {
+    const windowId = TabGroup.get(groupId).windowId;
+    return TabsStore.query({
+      windowId,
+      tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+      living: true,
+      groupId,
+      ...options,
+      ordered: true,
+      last: true,
+    });
+  }
+}
 
 
 export class Tab extends TreeItem {
+  //===================================================================
+  // tab tracking events
+  //===================================================================
+
+  static onTracked      = new EventListenerManager();
+  static onDestroyed    = new EventListenerManager();
+  static onInitialized  = new EventListenerManager();
+
+  //===================================================================
+  // general tab events
+  //===================================================================
+
+  static onGroupTabDetected = new EventListenerManager();
+  static onLabelUpdated     = new EventListenerManager();
+  static onStateChanged     = new EventListenerManager();
+  static onPinned           = new EventListenerManager();
+  static onUnpinned         = new EventListenerManager();
+  static onHidden           = new EventListenerManager();
+  static onShown            = new EventListenerManager();
+  static onTabInternallyMoved     = new EventListenerManager();
+  static onCollapsedStateChanged  = new EventListenerManager();
+  static onMutedStateChanged      = new EventListenerManager();
+  static onAutoplayBlockedStateChanged = new EventListenerManager();
+  static onSharingStateChanged    = new EventListenerManager();
+
+  static onBeforeCreate     = new EventListenerManager();
+  static onCreating         = new EventListenerManager();
+  static onCreated          = new EventListenerManager();
+  static onRemoving         = new EventListenerManager();
+  static onRemoved          = new EventListenerManager();
+  static onMoving           = new EventListenerManager();
+  static onMoved            = new EventListenerManager();
+  static onActivating       = new EventListenerManager();
+  static onActivated        = new EventListenerManager();
+  static onUpdated          = new EventListenerManager();
+  static onRestored         = new EventListenerManager();
+  static onWindowRestoring  = new EventListenerManager();
+  static onAttached         = new EventListenerManager();
+  static onDetached         = new EventListenerManager();
+
+  static onMultipleTabsRemoving = new EventListenerManager();
+  static onMultipleTabsRemoved  = new EventListenerManager();
+  static onChangeMultipleTabsRestorability = new EventListenerManager();
+  static onStateChanged  = new EventListenerManager();
+  static onNativeGroupModified = new EventListenerManager();
+
+
   constructor(raw) {
     const alreadyTracked = Tab.get(raw.id);
     if (alreadyTracked)
@@ -2636,88 +2699,843 @@ export class Tab extends TreeItem {
       this.element.favIconUrl = url;
     this.invalidateCache();
   }
-}
 
 
-//===================================================================
-// tracking of tabs
-//===================================================================
+  //===================================================================
+  // class methods
+  //===================================================================
 
-Tab.onTracked      = new EventListenerManager();
-Tab.onDestroyed    = new EventListenerManager();
-Tab.onInitialized  = new EventListenerManager();
-Tab.onStateChanged  = new EventListenerManager();
-Tab.onNativeGroupModified = new EventListenerManager();
-
-Tab.track = tab => {
-  const trackedTab = Tab.get(tab.id);
-  if (!trackedTab ||
-      !(tab.$TST instanceof Tab)) {
-    new Tab(tab);
+  static track(tab) {
+    const trackedTab = Tab.get(tab.id);
+    if (!trackedTab ||
+        !(tab.$TST instanceof Tab)) {
+      new Tab(tab);
+    }
+    else {
+      if (trackedTab)
+        tab = trackedTab;
+      const win = TabsStore.windows.get(tab.windowId);
+      win.trackTab(tab);
+    }
+    return trackedTab || tab;
   }
-  else {
+
+  static untrack(tabId) {
+    const tab = Tab.get(tabId);
+    if (!tab) // already untracked
+      return;
+    const win = TabsStore.windows.get(tab.windowId);
+    if (win)
+      win.untrackTab(tabId);
+  }
+
+  static isTracked(tabId) {
+    return TabsStore.tabs.has(tabId);
+  }
+
+  static get(tabId) {
+    if (!tabId) {
+      return null;
+    }
+    if (tabId && typeof tabId.color !== 'undefined') { // for backward compatibility
+      return TabGroup.get(tabId.id);
+    }
+    return TabsStore.tabs.get(typeof tabId == 'number' ? tabId : tabId?.id);
+  }
+
+  static getByUniqueId(id) {
+    if (!id)
+      return null;
+    return TabsStore.ensureLivingItem(TabsStore.tabsByUniqueId.get(id));
+  }
+
+  static needToWaitTracked(windowId) {
+    if (windowId) {
+      const tabs = mIncompletelyTrackedTabs.get(windowId);
+      return tabs && tabs.size > 0;
+    }
+    for (const tabs of mIncompletelyTrackedTabs.values()) {
+      if (tabs && tabs.size > 0)
+        return true;
+    }
+    return false;
+  }
+
+  static async waitUntilTrackedAll(windowId, options = {}) {
+    const tabSets = windowId ?
+      [mIncompletelyTrackedTabs.get(windowId)] :
+      [...mIncompletelyTrackedTabs.values()];
+    return Promise.all(tabSets.map(tabs => {
+      if (!tabs)
+        return;
+      let tabIds = Array.from(tabs, tab => tab.id);
+      if (options.exceptionTabId)
+        tabIds = tabIds.filter(id => id != options.exceptionTabId);
+      return Tab.waitUntilTracked(tabIds, options);
+    }));
+  }
+
+  static async waitUntilTracked(tabId, options = {}) {
+    if (!tabId)
+      return null;
+
+    if (Array.isArray(tabId))
+      return Promise.all(tabId.map(id => Tab.waitUntilTracked(id, options)));
+
+    const windowId = TabsStore.getCurrentWindowId();
+    if (windowId) {
+      const tabs = TabsStore.removedTabsInWindow.get(windowId);
+      if (tabs?.has(tabId))
+        return null; // already removed tab
+    }
+
+    const key = `${tabId}:${!!options.element}`;
+    if (mPromisedTrackedTabs.has(key))
+      return mPromisedTrackedTabs.get(key);
+
+    const promisedTracked = waitUntilTracked(tabId, options);
+    mPromisedTrackedTabs.set(key, promisedTracked);
+    return promisedTracked.then(tab => {
+      // Don't claer the last promise, because it is required to process following "waitUntilTracked" callbacks sequentically.
+      //if (mPromisedTrackedTabs.get(key) == promisedTracked)
+      //  mPromisedTrackedTabs.delete(key);
+      return tab;
+    }).catch(_error => {
+      //if (mPromisedTrackedTabs.get(key) == promisedTracked)
+      //  mPromisedTrackedTabs.delete(key);
+      return null;
+    });
+  }
+
+  static needToWaitMoved(windowId) {
+    if (windowId) {
+      const tabs = mMovingTabs.get(windowId);
+      return tabs && tabs.size > 0;
+    }
+    for (const tabs of mMovingTabs.values()) {
+      if (tabs && tabs.size > 0)
+        return true;
+    }
+    return false;
+  }
+
+  static async waitUntilMovedAll(windowId) {
+    const tabSets = [];
+    if (windowId) {
+      tabSets.push(mMovingTabs.get(windowId));
+    }
+    else {
+      for (const tabs of mMovingTabs.values()) {
+        tabSets.push(tabs);
+      }
+    }
+    return Promise.all(tabSets.map(tabs => tabs && Promise.all(tabs)));
+  }
+
+  static init(tab, options = {}) {
+    log('initalize tab ', tab);
+    if (!tab) {
+      const error = new Error('Fatal error: invalid tab is given to Tab.init()');
+      console.log(error, error.stack);
+      throw error;
+    }
+    const trackedTab = Tab.get(tab.id);
     if (trackedTab)
       tab = trackedTab;
-    const win = TabsStore.windows.get(tab.windowId);
-    win.trackTab(tab);
+    tab.$TST = trackedTab?.$TST || new Tab(tab);
+    tab.$TST.updateUniqueId().then(tab.$TST.onUniqueIdGenerated);
+
+    if (tab.active)
+      tab.$TST.addState(Constants.kTAB_STATE_ACTIVE);
+
+    // When a new "child" tab was opened and the "parent" tab was closed
+    // immediately by someone outside of TST, both new "child" and the
+    // "parent" were closed by TST because all new tabs had
+    // "subtree-collapsed" state initially and such an action was detected
+    // as "closing of a collapsed tree".
+    // The initial state was introduced in old versions, but I forgot why
+    // it was required. "When new child tab is attached, collapse other
+    // tree" behavior works as expected even if the initial state is not
+    // there. Thus I remove the initial state for now, to avoid the
+    // annoying problem.
+    // See also: https://github.com/piroor/treestyletab/issues/2162
+    // tab.$TST.addState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
+
+    Tab.onInitialized.dispatch(tab, options);
+
+    if (options.existing) {
+      tab.$TST.addState(Constants.kTAB_STATE_ANIMATION_READY);
+      tab.$TST.opened = Promise.resolve(true).then(() => {
+        tab.$TST.resolveOpened();
+      });
+      tab.$TST.temporaryMetadata.delete('opening');
+      tab.$TST.temporaryMetadata.set('openedCompletely', true);
+    }
+    else {
+      tab.$TST.temporaryMetadata.set('opening', true);
+      tab.$TST.temporaryMetadata.delete('openedCompletely');
+      tab.$TST.opened = new Promise((resolve, reject) => {
+        tab.$TST.opening = false;
+        const resolvers = mOpenedResolvers.get(tab.id) || new Set();
+        resolvers.add({ resolve, reject });
+        mOpenedResolvers.set(tab.id, resolvers);
+      }).then(() => {
+        tab.$TST.temporaryMetadata.set('openedCompletely', true);
+      });
+    }
+
+    return tab;
   }
-  return trackedTab || tab;
-};
 
-Tab.untrack = tabId => {
-  const tab = Tab.get(tabId);
-  if (!tab) // already untracked
-    return;
-  const win = TabsStore.windows.get(tab.windowId);
-  if (win)
-    win.untrackTab(tabId);
-};
-
-Tab.isTracked = tabId =>  {
-  return TabsStore.tabs.has(tabId);
-};
-
-Tab.get = tabId =>  {
-  if (!tabId) {
-    return null;
+  static import(tab) {
+    const existingTab = Tab.get(tab.id);
+    if (!existingTab) {
+      return Tab.init(tab);
+    }
+    existingTab.$TST.apply(tab);
+    return existingTab;
   }
-  if (tabId && typeof tabId.color !== 'undefined') { // for backward compatibility
-    return TabGroup.get(tabId.id);
-  }
-  return TabsStore.tabs.get(typeof tabId == 'number' ? tabId : tabId?.id);
-};
 
-Tab.getByUniqueId = id => {
-  if (!id)
-    return null;
-  return TabsStore.ensureLivingItem(TabsStore.tabsByUniqueId.get(id));
-};
+  //===================================================================
+  // get single tab
+  //===================================================================
 
-Tab.needToWaitTracked = (windowId) => {
-  if (windowId) {
-    const tabs = mIncompletelyTrackedTabs.get(windowId);
-    return tabs && tabs.size > 0;
+  // Note that this function can return null if it is the first tab of
+  // a new window opened by the "move tab to new window" command.
+  static getActiveTab(windowId) {
+    return TabsStore.ensureLivingItem(TabsStore.activeTabInWindow.get(windowId));
   }
-  for (const tabs of mIncompletelyTrackedTabs.values()) {
-    if (tabs && tabs.size > 0)
-      return true;
-  }
-  return false;
-};
 
-Tab.waitUntilTrackedAll = async (windowId, options = {}) => {
-  const tabSets = windowId ?
-    [mIncompletelyTrackedTabs.get(windowId)] :
-    [...mIncompletelyTrackedTabs.values()];
-  return Promise.all(tabSets.map(tabs => {
-    if (!tabs)
+  static getFirstTab(windowId) {
+    return TabsStore.query({
+      windowId,
+      tabs:    TabsStore.livingTabsInWindow.get(windowId),
+      living:  true,
+      ordered: true
+    });
+  }
+
+  static getLastTab(windowId) {
+    return TabsStore.query({
+      windowId,
+      tabs:   TabsStore.livingTabsInWindow.get(windowId),
+      living: true,
+      last:   true
+    });
+  }
+
+  static getFirstVisibleTab(windowId) { // visible, not-collapsed, not-hidden
+    return TabsStore.query({
+      windowId,
+      tabs:    TabsStore.visibleTabsInWindow.get(windowId),
+      visible: true,
+      ordered: true
+    });
+  }
+
+  static getLastVisibleTab(windowId) { // visible, not-collapsed, not-hidden
+    return TabsStore.query({
+      windowId,
+      tabs:    TabsStore.visibleTabsInWindow.get(windowId),
+      visible: true,
+      last:    true,
+    });
+  }
+
+  static getLastOpenedTab(windowId) {
+    const tabs = Tab.getTabs(windowId);
+    return tabs.length > 0 ?
+      tabs.sort((a, b) => b.id - a.id)[0] :
+      null ;
+  }
+
+  static getLastPinnedTab(windowId) { // visible, pinned
+    return TabsStore.query({
+      windowId,
+      tabs:    TabsStore.pinnedTabsInWindow.get(windowId),
+      living:  true,
+      ordered: true,
+      last:    true
+    });
+  }
+
+  static getFirstUnpinnedTab(windowId) { // not-pinned
+    return TabsStore.query({
+      windowId,
+      tabs:    TabsStore.unpinnedTabsInWindow.get(windowId),
+      ordered: true
+    });
+  }
+
+  static getLastUnpinnedTab(windowId) { // not-pinned
+    return TabsStore.query({
+      windowId,
+      tabs:    TabsStore.unpinnedTabsInWindow.get(windowId),
+      ordered: true,
+      last:    true
+    });
+  }
+
+  static getFirstNormalTab(windowId) { // visible, not-collapsed, not-pinned
+    return TabsStore.query({
+      windowId,
+      tabs:    TabsStore.unpinnedTabsInWindow.get(windowId),
+      normal:  true,
+      ordered: true
+    });
+  }
+
+  static getGroupTabForOpener(opener) {
+    if (!opener)
+      return null;
+    TabsStore.assertValidTab(opener);
+    const groupTab = TabsStore.query({
+      windowId:   opener.windowId,
+      tabs:       TabsStore.groupTabsInWindow.get(opener.windowId),
+      living:     true,
+      attributes: [
+        Constants.kCURRENT_URI,
+        new RegExp(`openerTabId=${opener.$TST.uniqueId.id}($|[#&])`)
+      ]
+    });
+    if (!groupTab ||
+        groupTab == opener ||
+        groupTab.pinned == opener.pinned)
+      return null;
+    return groupTab;
+  }
+
+  static getOpenerFromGroupTab(groupTab) {
+    if (!groupTab.$TST.isGroupTab)
+      return null;
+    TabsStore.assertValidTab(groupTab);
+    const openerTabId = (new URL(groupTab.url)).searchParams.get('openerTabId');
+    const openerTab = Tab.getByUniqueId(openerTabId);
+    if (!openerTab ||
+        openerTab == groupTab ||
+        openerTab.pinned == groupTab.pinned)
+      return null;
+    return openerTab;
+  }
+
+  static getSubstanceFromAliasGroupTab(groupTab) {
+    if (!groupTab.$TST.isGroupTab)
+      return null;
+    TabsStore.assertValidTab(groupTab);
+    const aliasTabId = (new URL(groupTab.url)).searchParams.get('aliasTabId');
+    const aliasTab = Tab.getByUniqueId(aliasTabId);
+    if (!aliasTab ||
+        aliasTab == groupTab ||
+        aliasTab.pinned == groupTab.pinned)
+      return null;
+    return aliasTab;
+  }
+
+  //===================================================================
+  // grap tabs
+  //===================================================================
+
+  static getActiveTabs() {
+    return Array.from(TabsStore.activeTabInWindow.values(), TabsStore.ensureLivingItem);
+  }
+
+  static getAllTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:     TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living:   true,
+      ordered:  true,
+      ...options
+    });
+  }
+
+  static getTabAt(windowId, index) {
+    const tabs    = TabsStore.livingTabsInWindow.get(windowId);
+    const allTabs = TabsStore.windows.get(windowId).tabs;
+    return TabsStore.query({
+      windowId,
+      tabs,
+      living:       true,
+      fromIndex:    Math.max(0, index - (allTabs.size - tabs.size)),
+      logicalIndex: index,
+      first:        true
+    });
+  }
+
+  static getTabs(windowId = null, options = {}) { // only visible, including collapsed and pinned
+    return TabsStore.queryAll({
+      windowId,
+      tabs:         TabsStore.getTabsMap(TabsStore.controllableTabsInWindow, windowId),
+      controllable: true,
+      ordered:      true,
+      ...options
+    });
+  }
+
+  static getTabsBetween(begin, end) {
+    if (!begin || !TabsStore.ensureLivingItem(begin) ||
+        !end || !TabsStore.ensureLivingItem(end))
+      throw new Error('getTabsBetween requires valid two tabs');
+    if (begin.windowId != end.windowId)
+      throw new Error('getTabsBetween requires two tabs in same window');
+
+    if (begin == end)
+      return [];
+    if (begin.index > end.index)
+      [begin, end] = [end, begin];
+    return TabsStore.queryAll({
+      windowId: begin.windowId,
+      tabs:     TabsStore.getTabsMap(TabsStore.controllableTabsInWindow, begin.windowId),
+      id:       (id => id != begin.id && id != end.id),
+      fromId:   begin.id,
+      toId:     end.id
+    });
+  }
+
+  static getNormalTabs(windowId = null, options = {}) { // only visible, including collapsed, not pinned
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.unpinnedTabsInWindow, windowId),
+      normal:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getVisibleTabs(windowId = null, options = {}) { // visible, not-collapsed, not-hidden
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.visibleTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getHiddenTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      hidden:  true,
+      ...options
+    });
+  }
+
+  static getPinnedTabs(windowId = null, options = {}) { // visible, pinned
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.pinnedTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getUnpinnedTabs(windowId = null, options = {}) { // visible, not pinned
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.unpinnedTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getRootTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:         TabsStore.getTabsMap(TabsStore.rootTabsInWindow, windowId),
+      controllable: true,
+      ordered:      true,
+      ...options
+    });
+  }
+
+  static getLastRootTab(windowId, options = {}) {
+    const tabs = Tab.getRootTabs(windowId, options);
+    return tabs[tabs.length - 1];
+  }
+
+  static collectRootTabs(tabs) {
+    const tabsSet = new Set(tabs);
+    return tabs.filter(tab => {
+      if (!TabsStore.ensureLivingItem(tab))
+        return false;
+      const parent = tab.$TST.parent;
+      return !parent || !tabsSet.has(parent);
+    });
+  }
+
+  static getSubtreeCollapsedTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:     TabsStore.getTabsMap(TabsStore.subtreeCollapsableTabsInWindow, windowId),
+      living:   true,
+      hidden:   false,
+      ordered:  true,
+      ...options
+    });
+  }
+
+  static getGroupTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.groupTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getLoadingTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.loadingTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getDraggingTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.draggingTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getRemovingTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.removingTabsInWindow, windowId),
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getDuplicatingTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.duplicatingTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getHighlightedTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.highlightedTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
+      ...options
+    });
+  }
+
+  static getSelectedTabs(windowId = null, options = {}) {
+    const tabs = TabsStore.getTabsMap(TabsStore.selectedTabsInWindow, windowId);
+    const selectedTabs = TabsStore.queryAll({
+      windowId,
+      tabs,
+      living:  true,
+      ordered: true,
+      ...options
+    });
+    const highlightedTabs = TabsStore.getTabsMap(TabsStore.highlightedTabsInWindow, windowId);
+    if (!highlightedTabs ||
+        highlightedTabs.size < 2)
+      return selectedTabs;
+
+    if (options.iterator)
+      return (function* () {
+        const alreadyReturnedTabs = new Set();
+        for (const tab of selectedTabs) {
+          yield tab;
+          alreadyReturnedTabs.add(tab);
+        }
+        for (const tab of highlightedTabs.values()) {
+          if (!alreadyReturnedTabs.has(tab))
+            yield tab;
+        }
+      })();
+    else
+      return TreeItem.sort(Array.from(new Set([...selectedTabs, ...Array.from(highlightedTabs.values())])));
+  }
+
+  static getNeedToBeSynchronizedTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:    TabsStore.getTabsMap(TabsStore.unsynchronizedTabsInWindow, windowId),
+      visible: true,
+      ...options
+    });
+  }
+
+  static hasNeedToBeSynchronizedTab(windowId) {
+    return !!TabsStore.query({
+      windowId,
+      tabs:     TabsStore.getTabsMap(TabsStore.unsynchronizedTabsInWindow, windowId),
+      visible:  true
+    });
+  }
+
+  static hasLoadingTab(windowId) {
+    return !!TabsStore.query({
+      windowId,
+      tabs:     TabsStore.getTabsMap(TabsStore.loadingTabsInWindow, windowId),
+      visible:  true
+    });
+  }
+
+  static hasDuplicatedTabs(windowId, options = {}) {
+    const tabs = TabsStore.queryAll({
+      windowId,
+      tabs:   TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living: true,
+      ...options,
+      iterator: true
+    });
+    const tabKeys = new Set();
+    for (const tab of tabs) {
+      const key = `${tab.cookieStoreId}\n${tab.url}`;
+      if (tabKeys.has(key))
+        return true;
+      tabKeys.add(key);
+    }
+    return false;
+  }
+
+  static hasMultipleTabs(windowId, options = {}) {
+    const tabs = TabsStore.queryAll({
+      windowId,
+      tabs:   TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living: true,
+      ...options,
+      iterator: true
+    });
+    let count = 0;
+    // eslint-disable-next-line no-unused-vars
+    for (const tab of tabs) {
+      count++;
+      if (count > 1)
+        return true;
+    }
+    return false;
+  }
+
+  // "Recycled tab" is an existing but reused tab for session restoration.
+  static getRecycledTabs(windowId = null, options = {}) {
+    const userNewTabUrls = configs.guessNewOrphanTabAsOpenedByNewTabCommandUrl.split('|').map(part => sanitizeForRegExpSource(part.trim())).join('|');
+    return TabsStore.queryAll({
+      windowId,
+      tabs:       TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living:     true,
+      states:     [Constants.kTAB_STATE_RESTORED, false],
+      attributes: [Constants.kCURRENT_URI, new RegExp(`^(|${userNewTabUrls}|about:newtab|about:blank|about:privatebrowsing)$`)],
+      ...options
+    });
+  }
+
+  //===================================================================
+  // utilities
+  //===================================================================
+
+  static bufferedTooltipTextChanges = new Map();
+  static broadcastTooltipText(tabs) {
+    if (!Constants.IS_BACKGROUND ||
+        !Tab.broadcastTooltipText.enabled)
       return;
-    let tabIds = Array.from(tabs, tab => tab.id);
-    if (options.exceptionTabId)
-      tabIds = tabIds.filter(id => id != options.exceptionTabId);
-    return Tab.waitUntilTracked(tabIds, options);
-  }));
-};
+
+    if (!Array.isArray(tabs))
+      tabs = [tabs];
+
+    if (tabs.length == 0)
+      return;
+
+    for (const tab of tabs) {
+      Tab.bufferedTooltipTextChanges.set(tab.id, {
+        windowId: tab.windowId,
+        tabId:    tab.id,
+        high:     tab.$TST.highPriorityTooltipText,
+        low:      tab.$TST.lowPriorityTooltipText,
+      });
+    }
+
+    const triedAt = `${Date.now()}-${parseInt(Math.random() * 65000)}`;
+    Tab.broadcastTooltipText.triedAt = triedAt;
+    (Constants.IS_BACKGROUND ?
+      setTimeout : // because window.requestAnimationFrame is decelerate for an invisible document.
+      window.requestAnimationFrame)(() => {
+      if (Tab.broadcastTooltipText.triedAt != triedAt)
+        return;
+
+      // Let's flush buffered changes!
+      const messageForWindows = new Map();
+      for (const change of Tab.bufferedTooltipTextChanges.values()) {
+        const message = messageForWindows.get(change.windowId) || {
+          type:     Constants.kCOMMAND_BROADCAST_TAB_TOOLTIP_TEXT,
+          windowId: change.windowId,
+          tabIds:   [],
+          changes:  [],
+        };
+        message.tabIds.push(change.tabId);
+        message.changes.push(change);
+      }
+      for (const message of messageForWindows) {
+        SidebarConnection.sendMessage(message);
+      }
+      Tab.bufferedTooltipTextChanges.clear();
+    }, 0);
+  }
+
+  static bufferedStatesChanges = new Map();
+  static broadcastState(tabs, { add, remove } = {}) {
+    if (!Constants.IS_BACKGROUND ||
+        !Tab.broadcastState.enabled)
+      return;
+
+    if (!Array.isArray(tabs))
+      tabs = [tabs];
+
+    if (tabs.length == 0)
+      return;
+
+    for (const tab of tabs) {
+      const message = Tab.bufferedStatesChanges.get(tab.id) || {
+        windowId: tab.windowId,
+        tabId:    tab.id,
+        add:      new Set(),
+        remove:   new Set(),
+      };
+      if (add)
+        for (const state of add) {
+          message.add.add(state);
+          message.remove.delete(state);
+        }
+      if (remove)
+        for (const state of remove) {
+          message.add.delete(state);
+          message.remove.add(state);
+        }
+
+      Tab.bufferedStatesChanges.set(tab.id, message);
+    }
+
+    const triedAt = `${Date.now()}-${parseInt(Math.random() * 65000)}`;
+    Tab.broadcastState.triedAt = triedAt;
+    (Constants.IS_BACKGROUND ?
+      setTimeout : // because window.requestAnimationFrame is decelerate for an invisible document.
+      window.requestAnimationFrame)(() => {
+      if (Tab.broadcastState.triedAt != triedAt)
+        return;
+
+      // Let's flush buffered changes!
+
+      // Unify buffered changes only if same type changes are consecutive.
+      // Otherwise the order of changes would be mixed and things may become broken.
+      const unifiedMessages = [];
+      let lastKey;
+      let unifiedMessage = null;
+      for (const message of Tab.bufferedStatesChanges.values()) {
+        const key = `${message.windowId}/add:${[...message.add]}/remove:${[...message.remove]}`;
+        if (key != lastKey) {
+          if (unifiedMessage)
+            unifiedMessages.push(unifiedMessage);
+          unifiedMessage = null;
+        }
+        lastKey = key;
+        unifiedMessage = unifiedMessage || {
+          type:     Constants.kCOMMAND_BROADCAST_TAB_STATE,
+          windowId: message.windowId,
+          tabIds:   new Set(),
+          add:      message.add,
+          remove:   message.remove,
+        };
+        unifiedMessage.tabIds.add(message.tabId);
+      }
+      if (unifiedMessage)
+        unifiedMessages.push(unifiedMessage);
+      Tab.bufferedStatesChanges.clear();
+
+      // SidebarConnection.sendMessage() has its own bulk-send mechanism,
+      // so we don't need to bundle them like an array.
+      for (const message of unifiedMessages) {
+        SidebarConnection.sendMessage({
+          type:     Constants.kCOMMAND_BROADCAST_TAB_STATE,
+          windowId: message.windowId,
+          tabIds:   [...message.tabIds],
+          add:      [...message.add],
+          remove:   [...message.remove],
+        });
+      }
+    }, 0);
+  }
+
+  static getOtherTabs(windowId, ignoreTabs, options = {}) {
+    const query = {
+      windowId: windowId,
+      tabs:     TabsStore.livingTabsInWindow.get(windowId),
+      ordered:  true
+    };
+    if (Array.isArray(ignoreTabs) &&
+        ignoreTabs.length > 0)
+      query['!id'] = ignoreTabs.map(tab => tab.id);
+    return TabsStore.queryAll({ ...query, ...options });
+  };
+
+  static getIndex(tab, { ignoreTabs } = {}) {
+    if (!TabsStore.ensureLivingItem(tab))
+      return -1;
+    TabsStore.assertValidTab(tab);
+    return Tab.getOtherTabs(tab.windowId, ignoreTabs).indexOf(tab);
+  }
+
+  static calculateNewTabIndex({ insertAfter, insertBefore, ignoreTabs } = {}) {
+    // We need to calculate new index based on "insertAfter" at first, to avoid
+    // placing of the new tab after hidden tabs (too far from the location it
+    // should be.)
+    if (insertAfter)
+      return Tab.getIndex(insertAfter, { ignoreTabs }) + 1;
+    if (insertBefore)
+      return Tab.getIndex(insertBefore, { ignoreTabs });
+    return -1;
+  }
+
+  static async doAndGetNewTabs(asyncTask, windowId) {
+    const tabsQueryOptions = {
+      windowType: 'normal'
+    };
+    if (windowId) {
+      tabsQueryOptions.windowId = windowId;
+    }
+    const beforeTabs = await browser.tabs.query(tabsQueryOptions).catch(ApiTabs.createErrorHandler());
+    const beforeIds  = mapAndFilterUniq(beforeTabs, tab => tab.id, { set: true });
+    await asyncTask();
+    const afterTabs = await browser.tabs.query(tabsQueryOptions).catch(ApiTabs.createErrorHandler());
+    const addedTabs = mapAndFilter(afterTabs,
+                                   tab => !beforeIds.has(tab.id) && Tab.get(tab.id) || undefined);
+    return addedTabs;
+  }
+
+  static dumpAll(windowId) {
+    if (!configs.debug)
+      return;
+    let output = 'dumpAllTabs';
+    for (const tab of Tab.getAllTabs(windowId, {iterator: true })) {
+      output += '\n' + toLines([...tab.$TST.ancestors.reverse(), tab],
+                               tab => `${tab.id}${tab.pinned ? ' [pinned]' : ''}`,
+                               ' => ');
+    }
+    log(output);
+  }
+}
+
 
 const mWaitingTasks = new Map();
 
@@ -2847,812 +3665,10 @@ async function waitUntilTracked(tabId, options = {}) {
   }).then(() => destroyWaitingTabTask(task));
 }
 
-Tab.waitUntilTracked = async (tabId, options = {}) => {
-  if (!tabId)
-    return null;
-
-  if (Array.isArray(tabId))
-    return Promise.all(tabId.map(id => Tab.waitUntilTracked(id, options)));
-
-  const windowId = TabsStore.getCurrentWindowId();
-  if (windowId) {
-    const tabs = TabsStore.removedTabsInWindow.get(windowId);
-    if (tabs?.has(tabId))
-      return null; // already removed tab
-  }
-
-  const key = `${tabId}:${!!options.element}`;
-  if (mPromisedTrackedTabs.has(key))
-    return mPromisedTrackedTabs.get(key);
-
-  const promisedTracked = waitUntilTracked(tabId, options);
-  mPromisedTrackedTabs.set(key, promisedTracked);
-  return promisedTracked.then(tab => {
-    // Don't claer the last promise, because it is required to process following "waitUntilTracked" callbacks sequentically.
-    //if (mPromisedTrackedTabs.get(key) == promisedTracked)
-    //  mPromisedTrackedTabs.delete(key);
-    return tab;
-  }).catch(_error => {
-    //if (mPromisedTrackedTabs.get(key) == promisedTracked)
-    //  mPromisedTrackedTabs.delete(key);
-    return null;
-  });
-};
-
-Tab.needToWaitMoved = (windowId) => {
-  if (windowId) {
-    const tabs = mMovingTabs.get(windowId);
-    return tabs && tabs.size > 0;
-  }
-  for (const tabs of mMovingTabs.values()) {
-    if (tabs && tabs.size > 0)
-      return true;
-  }
-  return false;
-};
-
-Tab.waitUntilMovedAll = async windowId => {
-  const tabSets = [];
-  if (windowId) {
-    tabSets.push(mMovingTabs.get(windowId));
-  }
-  else {
-    for (const tabs of mMovingTabs.values()) {
-      tabSets.push(tabs);
-    }
-  }
-  return Promise.all(tabSets.map(tabs => tabs && Promise.all(tabs)));
-};
-
-Tab.init = (tab, options = {}) => {
-  log('initalize tab ', tab);
-  if (!tab) {
-    const error = new Error('Fatal error: invalid tab is given to Tab.init()');
-    console.log(error, error.stack);
-    throw error;
-  }
-  const trackedTab = Tab.get(tab.id);
-  if (trackedTab)
-    tab = trackedTab;
-  tab.$TST = trackedTab?.$TST || new Tab(tab);
-  tab.$TST.updateUniqueId().then(tab.$TST.onUniqueIdGenerated);
-
-  if (tab.active)
-    tab.$TST.addState(Constants.kTAB_STATE_ACTIVE);
-
-  // When a new "child" tab was opened and the "parent" tab was closed
-  // immediately by someone outside of TST, both new "child" and the
-  // "parent" were closed by TST because all new tabs had
-  // "subtree-collapsed" state initially and such an action was detected
-  // as "closing of a collapsed tree".
-  // The initial state was introduced in old versions, but I forgot why
-  // it was required. "When new child tab is attached, collapse other
-  // tree" behavior works as expected even if the initial state is not
-  // there. Thus I remove the initial state for now, to avoid the
-  // annoying problem.
-  // See also: https://github.com/piroor/treestyletab/issues/2162
-  // tab.$TST.addState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
-
-  Tab.onInitialized.dispatch(tab, options);
-
-  if (options.existing) {
-    tab.$TST.addState(Constants.kTAB_STATE_ANIMATION_READY);
-    tab.$TST.opened = Promise.resolve(true).then(() => {
-      tab.$TST.resolveOpened();
-    });
-    tab.$TST.temporaryMetadata.delete('opening');
-    tab.$TST.temporaryMetadata.set('openedCompletely', true);
-  }
-  else {
-    tab.$TST.temporaryMetadata.set('opening', true);
-    tab.$TST.temporaryMetadata.delete('openedCompletely');
-    tab.$TST.opened = new Promise((resolve, reject) => {
-      tab.$TST.opening = false;
-      const resolvers = mOpenedResolvers.get(tab.id) || new Set();
-      resolvers.add({ resolve, reject });
-      mOpenedResolvers.set(tab.id, resolvers);
-    }).then(() => {
-      tab.$TST.temporaryMetadata.set('openedCompletely', true);
-    });
-  }
-
-  return tab;
-};
-
-Tab.import = tab => {
-  const existingTab = Tab.get(tab.id);
-  if (!existingTab) {
-    return Tab.init(tab);
-  }
-  existingTab.$TST.apply(tab);
-  return existingTab;
-};
-
-
-//===================================================================
-// get single tab
-//===================================================================
-
-// Note that this function can return null if it is the first tab of
-// a new window opened by the "move tab to new window" command.
-Tab.getActiveTab = windowId => {
-  return TabsStore.ensureLivingItem(TabsStore.activeTabInWindow.get(windowId));
-};
-
-Tab.getFirstTab = windowId => {
-  return TabsStore.query({
-    windowId,
-    tabs:    TabsStore.livingTabsInWindow.get(windowId),
-    living:  true,
-    ordered: true
-  });
-};
-
-Tab.getLastTab = windowId => {
-  return TabsStore.query({
-    windowId,
-    tabs:   TabsStore.livingTabsInWindow.get(windowId),
-    living: true,
-    last:   true
-  });
-};
-
-Tab.getFirstVisibleTab = windowId => { // visible, not-collapsed, not-hidden
-  return TabsStore.query({
-    windowId,
-    tabs:    TabsStore.visibleTabsInWindow.get(windowId),
-    visible: true,
-    ordered: true
-  });
-};
-
-Tab.getLastVisibleTab = windowId => { // visible, not-collapsed, not-hidden
-  return TabsStore.query({
-    windowId,
-    tabs:    TabsStore.visibleTabsInWindow.get(windowId),
-    visible: true,
-    last:    true,
-  });
-};
-
-Tab.getLastOpenedTab = windowId => {
-  const tabs = Tab.getTabs(windowId);
-  return tabs.length > 0 ?
-    tabs.sort((a, b) => b.id - a.id)[0] :
-    null ;
-};
-
-Tab.getLastPinnedTab = windowId => { // visible, pinned
-  return TabsStore.query({
-    windowId,
-    tabs:    TabsStore.pinnedTabsInWindow.get(windowId),
-    living:  true,
-    ordered: true,
-    last:    true
-  });
-};
-
-Tab.getFirstUnpinnedTab = windowId => { // not-pinned
-  return TabsStore.query({
-    windowId,
-    tabs:    TabsStore.unpinnedTabsInWindow.get(windowId),
-    ordered: true
-  });
-};
-
-Tab.getLastUnpinnedTab = windowId => { // not-pinned
-  return TabsStore.query({
-    windowId,
-    tabs:    TabsStore.unpinnedTabsInWindow.get(windowId),
-    ordered: true,
-    last:    true
-  });
-};
-
-Tab.getFirstNormalTab = windowId => { // visible, not-collapsed, not-pinned
-  return TabsStore.query({
-    windowId,
-    tabs:    TabsStore.unpinnedTabsInWindow.get(windowId),
-    normal:  true,
-    ordered: true
-  });
-};
-
-Tab.getGroupTabForOpener = opener => {
-  if (!opener)
-    return null;
-  TabsStore.assertValidTab(opener);
-  const groupTab = TabsStore.query({
-    windowId:   opener.windowId,
-    tabs:       TabsStore.groupTabsInWindow.get(opener.windowId),
-    living:     true,
-    attributes: [
-      Constants.kCURRENT_URI,
-      new RegExp(`openerTabId=${opener.$TST.uniqueId.id}($|[#&])`)
-    ]
-  });
-  if (!groupTab ||
-      groupTab == opener ||
-      groupTab.pinned == opener.pinned)
-    return null;
-  return groupTab;
-};
-
-Tab.getOpenerFromGroupTab = groupTab => {
-  if (!groupTab.$TST.isGroupTab)
-    return null;
-  TabsStore.assertValidTab(groupTab);
-  const openerTabId = (new URL(groupTab.url)).searchParams.get('openerTabId');
-  const openerTab = Tab.getByUniqueId(openerTabId);
-  if (!openerTab ||
-      openerTab == groupTab ||
-      openerTab.pinned == groupTab.pinned)
-    return null;
-  return openerTab;
-};
-
-Tab.getSubstanceFromAliasGroupTab = groupTab => {
-  if (!groupTab.$TST.isGroupTab)
-    return null;
-  TabsStore.assertValidTab(groupTab);
-  const aliasTabId = (new URL(groupTab.url)).searchParams.get('aliasTabId');
-  const aliasTab = Tab.getByUniqueId(aliasTabId);
-  if (!aliasTab ||
-      aliasTab == groupTab ||
-      aliasTab.pinned == groupTab.pinned)
-    return null;
-  return aliasTab;
-};
-
-
-//===================================================================
-// grap tabs
-//===================================================================
-
-Tab.getActiveTabs = () => {
-  return Array.from(TabsStore.activeTabInWindow.values(), TabsStore.ensureLivingItem);
-};
-
-Tab.getAllTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:     TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-    living:   true,
-    ordered:  true,
-    ...options
-  });
-};
-
-Tab.getTabAt = (windowId, index) => {
-  const tabs    = TabsStore.livingTabsInWindow.get(windowId);
-  const allTabs = TabsStore.windows.get(windowId).tabs;
-  return TabsStore.query({
-    windowId,
-    tabs,
-    living:       true,
-    fromIndex:    Math.max(0, index - (allTabs.size - tabs.size)),
-    logicalIndex: index,
-    first:        true
-  });
-};
-
-Tab.getTabs = (windowId = null, options = {}) => { // only visible, including collapsed and pinned
-  return TabsStore.queryAll({
-    windowId,
-    tabs:         TabsStore.getTabsMap(TabsStore.controllableTabsInWindow, windowId),
-    controllable: true,
-    ordered:      true,
-    ...options
-  });
-};
-
-Tab.getTabsBetween = (begin, end) => {
-  if (!begin || !TabsStore.ensureLivingItem(begin) ||
-      !end || !TabsStore.ensureLivingItem(end))
-    throw new Error('getTabsBetween requires valid two tabs');
-  if (begin.windowId != end.windowId)
-    throw new Error('getTabsBetween requires two tabs in same window');
-
-  if (begin == end)
-    return [];
-  if (begin.index > end.index)
-    [begin, end] = [end, begin];
-  return TabsStore.queryAll({
-    windowId: begin.windowId,
-    tabs:     TabsStore.getTabsMap(TabsStore.controllableTabsInWindow, begin.windowId),
-    id:       (id => id != begin.id && id != end.id),
-    fromId:   begin.id,
-    toId:     end.id
-  });
-};
-
-Tab.getNormalTabs = (windowId = null, options = {}) => { // only visible, including collapsed, not pinned
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.unpinnedTabsInWindow, windowId),
-    normal:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getVisibleTabs = (windowId = null, options = {}) => { // visible, not-collapsed, not-hidden
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.visibleTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getHiddenTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    hidden:  true,
-    ...options
-  });
-};
-
-Tab.getPinnedTabs = (windowId = null, options = {}) => { // visible, pinned
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.pinnedTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-
-Tab.getUnpinnedTabs = (windowId = null, options = {}) => { // visible, not pinned
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.unpinnedTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getRootTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:         TabsStore.getTabsMap(TabsStore.rootTabsInWindow, windowId),
-    controllable: true,
-    ordered:      true,
-    ...options
-  });
-};
-
-Tab.getLastRootTab = (windowId, options = {}) => {
-  const tabs = Tab.getRootTabs(windowId, options);
-  return tabs[tabs.length - 1];
-};
-
-Tab.collectRootTabs = tabs => {
-  const tabsSet = new Set(tabs);
-  return tabs.filter(tab => {
-    if (!TabsStore.ensureLivingItem(tab))
-      return false;
-    const parent = tab.$TST.parent;
-    return !parent || !tabsSet.has(parent);
-  });
-};
-
-Tab.getSubtreeCollapsedTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:     TabsStore.getTabsMap(TabsStore.subtreeCollapsableTabsInWindow, windowId),
-    living:   true,
-    hidden:   false,
-    ordered:  true,
-    ...options
-  });
-};
-
-Tab.getGroupTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.groupTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getLoadingTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.loadingTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getDraggingTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.draggingTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getRemovingTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.removingTabsInWindow, windowId),
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getDuplicatingTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.duplicatingTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getHighlightedTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.highlightedTabsInWindow, windowId),
-    living:  true,
-    ordered: true,
-    ...options
-  });
-};
-
-Tab.getSelectedTabs = (windowId = null, options = {}) => {
-  const tabs = TabsStore.getTabsMap(TabsStore.selectedTabsInWindow, windowId);
-  const selectedTabs = TabsStore.queryAll({
-    windowId,
-    tabs,
-    living:  true,
-    ordered: true,
-    ...options
-  });
-  const highlightedTabs = TabsStore.getTabsMap(TabsStore.highlightedTabsInWindow, windowId);
-  if (!highlightedTabs ||
-      highlightedTabs.size < 2)
-    return selectedTabs;
-
-  if (options.iterator)
-    return (function* () {
-      const alreadyReturnedTabs = new Set();
-      for (const tab of selectedTabs) {
-        yield tab;
-        alreadyReturnedTabs.add(tab);
-      }
-      for (const tab of highlightedTabs.values()) {
-        if (!alreadyReturnedTabs.has(tab))
-          yield tab;
-      }
-    })();
-  else
-    return TreeItem.sort(Array.from(new Set([...selectedTabs, ...Array.from(highlightedTabs.values())])));
-};
-
-Tab.getNeedToBeSynchronizedTabs = (windowId = null, options = {}) => {
-  return TabsStore.queryAll({
-    windowId,
-    tabs:    TabsStore.getTabsMap(TabsStore.unsynchronizedTabsInWindow, windowId),
-    visible: true,
-    ...options
-  });
-};
-
-Tab.hasNeedToBeSynchronizedTab = windowId => {
-  return !!TabsStore.query({
-    windowId,
-    tabs:     TabsStore.getTabsMap(TabsStore.unsynchronizedTabsInWindow, windowId),
-    visible:  true
-  });
-};
-
-Tab.hasLoadingTab = windowId => {
-  return !!TabsStore.query({
-    windowId,
-    tabs:     TabsStore.getTabsMap(TabsStore.loadingTabsInWindow, windowId),
-    visible:  true
-  });
-};
-
-Tab.hasDuplicatedTabs = (windowId, options = {}) => {
-  const tabs = TabsStore.queryAll({
-    windowId,
-    tabs:   TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-    living: true,
-    ...options,
-    iterator: true
-  });
-  const tabKeys = new Set();
-  for (const tab of tabs) {
-    const key = `${tab.cookieStoreId}\n${tab.url}`;
-    if (tabKeys.has(key))
-      return true;
-    tabKeys.add(key);
-  }
-  return false;
-};
-
-Tab.hasMultipleTabs = (windowId, options = {}) => {
-  const tabs = TabsStore.queryAll({
-    windowId,
-    tabs:   TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-    living: true,
-    ...options,
-    iterator: true
-  });
-  let count = 0;
-  // eslint-disable-next-line no-unused-vars
-  for (const tab of tabs) {
-    count++;
-    if (count > 1)
-      return true;
-  }
-  return false;
-};
-
-// "Recycled tab" is an existing but reused tab for session restoration.
-Tab.getRecycledTabs = (windowId = null, options = {}) => {
-  const userNewTabUrls = configs.guessNewOrphanTabAsOpenedByNewTabCommandUrl.split('|').map(part => sanitizeForRegExpSource(part.trim())).join('|');
-  return TabsStore.queryAll({
-    windowId,
-    tabs:       TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-    living:     true,
-    states:     [Constants.kTAB_STATE_RESTORED, false],
-    attributes: [Constants.kCURRENT_URI, new RegExp(`^(|${userNewTabUrls}|about:newtab|about:blank|about:privatebrowsing)$`)],
-    ...options
-  });
-};
-
-
-//===================================================================
-// general tab events
-//===================================================================
-
-Tab.onGroupTabDetected = new EventListenerManager();
-Tab.onLabelUpdated     = new EventListenerManager();
-Tab.onStateChanged     = new EventListenerManager();
-Tab.onPinned           = new EventListenerManager();
-Tab.onUnpinned         = new EventListenerManager();
-Tab.onHidden           = new EventListenerManager();
-Tab.onShown            = new EventListenerManager();
-Tab.onTabInternallyMoved     = new EventListenerManager();
-Tab.onCollapsedStateChanged  = new EventListenerManager();
-Tab.onMutedStateChanged      = new EventListenerManager();
-Tab.onAutoplayBlockedStateChanged = new EventListenerManager();
-Tab.onSharingStateChanged    = new EventListenerManager();
-
-Tab.onBeforeCreate     = new EventListenerManager();
-Tab.onCreating         = new EventListenerManager();
-Tab.onCreated          = new EventListenerManager();
-Tab.onRemoving         = new EventListenerManager();
-Tab.onRemoved          = new EventListenerManager();
-Tab.onMoving           = new EventListenerManager();
-Tab.onMoved            = new EventListenerManager();
-Tab.onActivating       = new EventListenerManager();
-Tab.onActivated        = new EventListenerManager();
-Tab.onUpdated          = new EventListenerManager();
-Tab.onRestored         = new EventListenerManager();
-Tab.onWindowRestoring  = new EventListenerManager();
-Tab.onAttached         = new EventListenerManager();
-Tab.onDetached         = new EventListenerManager();
-
-Tab.onMultipleTabsRemoving = new EventListenerManager();
-Tab.onMultipleTabsRemoved  = new EventListenerManager();
-Tab.onChangeMultipleTabsRestorability = new EventListenerManager();
-
-
-//===================================================================
-// utilities
-//===================================================================
-
-Tab.bufferedTooltipTextChanges = new Map();
-Tab.broadcastTooltipText = tabs => {
-  if (!Constants.IS_BACKGROUND ||
-      !Tab.broadcastTooltipText.enabled)
-    return;
-
-  if (!Array.isArray(tabs))
-    tabs = [tabs];
-
-  if (tabs.length == 0)
-    return;
-
-  for (const tab of tabs) {
-    Tab.bufferedTooltipTextChanges.set(tab.id, {
-      windowId: tab.windowId,
-      tabId:    tab.id,
-      high:     tab.$TST.highPriorityTooltipText,
-      low:      tab.$TST.lowPriorityTooltipText,
-    });
-  }
-
-  const triedAt = `${Date.now()}-${parseInt(Math.random() * 65000)}`;
-  Tab.broadcastTooltipText.triedAt = triedAt;
-  (Constants.IS_BACKGROUND ?
-    setTimeout : // because window.requestAnimationFrame is decelerate for an invisible document.
-    window.requestAnimationFrame)(() => {
-    if (Tab.broadcastTooltipText.triedAt != triedAt)
-      return;
-
-    // Let's flush buffered changes!
-    const messageForWindows = new Map();
-    for (const change of Tab.bufferedTooltipTextChanges.values()) {
-      const message = messageForWindows.get(change.windowId) || {
-        type:     Constants.kCOMMAND_BROADCAST_TAB_TOOLTIP_TEXT,
-        windowId: change.windowId,
-        tabIds:   [],
-        changes:  [],
-      };
-      message.tabIds.push(change.tabId);
-      message.changes.push(change);
-    }
-    for (const message of messageForWindows) {
-      SidebarConnection.sendMessage(message);
-    }
-    Tab.bufferedTooltipTextChanges.clear();
-  }, 0);
-};
 Tab.broadcastTooltipText.enabled = false;
-
-Tab.bufferedStatesChanges = new Map();
-Tab.broadcastState = (tabs, { add, remove } = {}) => {
-  if (!Constants.IS_BACKGROUND ||
-      !Tab.broadcastState.enabled)
-    return;
-
-  if (!Array.isArray(tabs))
-    tabs = [tabs];
-
-  if (tabs.length == 0)
-    return;
-
-  for (const tab of tabs) {
-    const message = Tab.bufferedStatesChanges.get(tab.id) || {
-      windowId: tab.windowId,
-      tabId:    tab.id,
-      add:      new Set(),
-      remove:   new Set(),
-    };
-    if (add)
-      for (const state of add) {
-        message.add.add(state);
-        message.remove.delete(state);
-      }
-    if (remove)
-      for (const state of remove) {
-        message.add.delete(state);
-        message.remove.add(state);
-      }
-
-    Tab.bufferedStatesChanges.set(tab.id, message);
-  }
-
-  const triedAt = `${Date.now()}-${parseInt(Math.random() * 65000)}`;
-  Tab.broadcastState.triedAt = triedAt;
-  (Constants.IS_BACKGROUND ?
-    setTimeout : // because window.requestAnimationFrame is decelerate for an invisible document.
-    window.requestAnimationFrame)(() => {
-    if (Tab.broadcastState.triedAt != triedAt)
-      return;
-
-    // Let's flush buffered changes!
-
-    // Unify buffered changes only if same type changes are consecutive.
-    // Otherwise the order of changes would be mixed and things may become broken.
-    const unifiedMessages = [];
-    let lastKey;
-    let unifiedMessage = null;
-    for (const message of Tab.bufferedStatesChanges.values()) {
-      const key = `${message.windowId}/add:${[...message.add]}/remove:${[...message.remove]}`;
-      if (key != lastKey) {
-        if (unifiedMessage)
-          unifiedMessages.push(unifiedMessage);
-        unifiedMessage = null;
-      }
-      lastKey = key;
-      unifiedMessage = unifiedMessage || {
-        type:     Constants.kCOMMAND_BROADCAST_TAB_STATE,
-        windowId: message.windowId,
-        tabIds:   new Set(),
-        add:      message.add,
-        remove:   message.remove,
-      };
-      unifiedMessage.tabIds.add(message.tabId);
-    }
-    if (unifiedMessage)
-      unifiedMessages.push(unifiedMessage);
-    Tab.bufferedStatesChanges.clear();
-
-    // SidebarConnection.sendMessage() has its own bulk-send mechanism,
-    // so we don't need to bundle them like an array.
-    for (const message of unifiedMessages) {
-      SidebarConnection.sendMessage({
-        type:     Constants.kCOMMAND_BROADCAST_TAB_STATE,
-        windowId: message.windowId,
-        tabIds:   [...message.tabIds],
-        add:      [...message.add],
-        remove:   [...message.remove],
-      });
-    }
-  }, 0);
-};
 Tab.broadcastState.enabled = false;
 
-Tab.getOtherTabs = (windowId, ignoreTabs, options = {}) => {
-  const query = {
-    windowId: windowId,
-    tabs:     TabsStore.livingTabsInWindow.get(windowId),
-    ordered:  true
-  };
-  if (Array.isArray(ignoreTabs) &&
-      ignoreTabs.length > 0)
-    query['!id'] = ignoreTabs.map(tab => tab.id);
-  return TabsStore.queryAll({ ...query, ...options });
-};
-
-function getTabIndex(tab, { ignoreTabs } = {}) {
-  if (!TabsStore.ensureLivingItem(tab))
-    return -1;
-  TabsStore.assertValidTab(tab);
-  return Tab.getOtherTabs(tab.windowId, ignoreTabs).indexOf(tab);
-}
-
-Tab.calculateNewTabIndex = ({ insertAfter, insertBefore, ignoreTabs } = {}) => {
-  // We need to calculate new index based on "insertAfter" at first, to avoid
-  // placing of the new tab after hidden tabs (too far from the location it
-  // should be.)
-  if (insertAfter)
-    return getTabIndex(insertAfter, { ignoreTabs }) + 1;
-  if (insertBefore)
-    return getTabIndex(insertBefore, { ignoreTabs });
-  return -1;
-};
-
-Tab.doAndGetNewTabs = async (asyncTask, windowId) => {
-  const tabsQueryOptions = {
-    windowType: 'normal'
-  };
-  if (windowId) {
-    tabsQueryOptions.windowId = windowId;
-  }
-  const beforeTabs = await browser.tabs.query(tabsQueryOptions).catch(ApiTabs.createErrorHandler());
-  const beforeIds  = mapAndFilterUniq(beforeTabs, tab => tab.id, { set: true });
-  await asyncTask();
-  const afterTabs = await browser.tabs.query(tabsQueryOptions).catch(ApiTabs.createErrorHandler());
-  const addedTabs = mapAndFilter(afterTabs,
-                                 tab => !beforeIds.has(tab.id) && Tab.get(tab.id) || undefined);
-  return addedTabs;
-};
-
-Tab.dumpAll = windowId => {
-  if (!configs.debug)
-    return;
-  let output = 'dumpAllTabs';
-  for (const tab of Tab.getAllTabs(windowId, {iterator: true })) {
-    output += '\n' + toLines([...tab.$TST.ancestors.reverse(), tab],
-                             tab => `${tab.id}${tab.pinned ? ' [pinned]' : ''}`,
-                             ' => ');
-  }
-  log(output);
-};
-
 // utility
-TreeItem.TYPE_TAB   = 'tab';
-TreeItem.TYPE_GROUP = 'group';
 TreeItem.get = item => {
   if (!item) {
     return null;
