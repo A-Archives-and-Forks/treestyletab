@@ -207,10 +207,7 @@ Sidebar.onReady.addListener(() => {
   mTabPreviewPanel.windowId = windowId;
 });
 
-document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
-  const timestamp = Date.now();
-  log('mouse is left from the tab bar ', timestamp);
-
+function hideOnUserAction(timestamp) {
   hoveringTabIds.clear();
 
   mController.hideInSidebar({ timestamp });
@@ -219,4 +216,16 @@ document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
   if (activeTab) {
     mController.hide({ timestamp });
   }
+}
+
+document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
+  const timestamp = Date.now();
+  log('mouse is left from the tab bar ', timestamp);
+  hideOnUserAction(timestamp);
+});
+
+document.querySelector('#tabbar').addEventListener('dragover', async () => {
+  const timestamp = Date.now();
+  log('mouse is dragover on the tab bar ', timestamp);
+  hideOnUserAction(timestamp);
 });
