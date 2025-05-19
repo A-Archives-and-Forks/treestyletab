@@ -315,6 +315,21 @@ tab-item[type="group"] .background {
   border: 1px solid var(--tab-border);
 }
 
+tab-item[data-drop-position="self"][data-inline-drop-position="head"][data-next-group-color] {
+  .background {
+    --tab-surface: var(--next-group-color-pale) !important;
+    --tab-border: var(--next-group-color) !important;
+    border: 1px solid var(--tab-border);
+
+    @media (prefers-color-scheme: dark) {
+      & {
+        --tab-surface: var(--next-group-color) !important;
+        --tab-border: var(--next-group-color-invert) !important;
+      }
+    }
+  }
+}
+
 #subpanel-selector-anchor:hover::before {
   bottom: 0;
   inset-inline-start: 0;

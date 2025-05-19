@@ -14,10 +14,60 @@ tab-item.dragging {
   opacity: 0.5 !important;
 }
 
-tab-item[data-drop-position="self"] tab-item-substance {
-  outline: var(--tab-dropmarker-size) solid var(--tab-dropmarker) !important;
-  outline-offset: calc(0px - var(--tab-dropmarker-size));
-  -moz-outline-radius: calc(var(--tab-dropmarker-size) * 2);
+tab-item[data-drop-position="self"] {
+  tab-item-substance {
+    outline: var(--tab-dropmarker-size) solid var(--tab-dropmarker) !important;
+    outline-offset: calc(0px - var(--tab-dropmarker-size));
+    -moz-outline-radius: calc(var(--tab-dropmarker-size) * 2);
+  }
+
+  &[data-inline-drop-position="head"] {
+    &[data-next-group-color="blue"] {
+      --next-group-color: var(--tab-group-color-blue);
+      --next-group-color-invert: var(--tab-group-color-blue-invert);
+      --next-group-color-pale: var(--tab-group-color-blue-pale);
+    }
+    &[data-next-group-color="purple"] {
+      --next-group-color: var(--tab-group-color-purple);
+      --next-group-color-invert: var(--tab-group-color-purple-invert);
+      --next-group-color-pale: var(--tab-group-color-purple-pale);
+    }
+    &[data-next-group-color="cyan"] {
+      --next-group-color: var(--tab-group-color-cyan);
+      --next-group-color-invert: var(--tab-group-color-cyan-invert);
+      --next-group-color-pale: var(--tab-group-color-cyan-pale);
+    }
+    &[data-next-group-color="orange"] {
+      --next-group-color: var(--tab-group-color-orange);
+      --next-group-color-invert: var(--tab-group-color-orange-invert);
+      --next-group-color-pale: var(--tab-group-color-orange-pale);
+    }
+    &[data-next-group-color="yellow"] {
+      --next-group-color: var(--tab-group-color-yellow);
+      --next-group-color-invert: var(--tab-group-color-yellow-invert);
+      --next-group-color-pale: var(--tab-group-color-yellow-pale);
+    }
+    &[data-next-group-color="pink"] {
+      --next-group-color: var(--tab-group-color-pink);
+      --next-group-color-invert: var(--tab-group-color-pink-invert);
+      --next-group-color-pale: var(--tab-group-color-pink-pale);
+    }
+    &[data-next-group-color="green"] {
+      --next-group-color: var(--tab-group-color-green);
+      --next-group-color-invert: var(--tab-group-color-green-invert);
+      --next-group-color-pale: var(--tab-group-color-green-pale);
+    }
+    &[data-next-group-color="gray"] {
+      --next-group-color: var(--tab-group-color-gray);
+      --next-group-color-invert: var(--tab-group-color-gray-invert);
+      --next-group-color-pale: var(--tab-group-color-gray-pale);
+    }
+    &[data-next-group-color="red"] {
+      --next-group-color: var(--tab-group-color-red);
+      --next-group-color-invert: var(--tab-group-color-red-invert);
+      --next-group-color-pale: var(--tab-group-color-red-pale);
+    }
+  }
 }
 
 tab-item[data-drop-position]:not([data-drop-position="self"]) tab-item-substance::before {

@@ -526,11 +526,19 @@ async function performTabsDragDrop(tabs, params) {
     attachTo:            dumpTab(params.attachTo),
     insertBefore:        dumpTab(params.insertBefore),
     insertAfter:         dumpTab(params.insertAfter),
+    nextGroupColor:      params.nextGroupColor,
+    canCreateGroup:      params.canCreateGroup,
     windowId:            params.windowId,
     destinationWindowId: params.destinationWindowId,
     action:              params.action,
     allowedActions:      params.allowedActions
   }));
+
+  const createGroup = (
+    params.canCreateGroup &&
+    params.nextGroupColor &&
+    [params.droppedOn, ...tabs].every(tab => tab.groupId == -1)
+  );
 
   if (!(params.allowedActions & Constants.kDRAG_BEHAVIOR_MOVE) &&
       !params.duplicate) {
@@ -551,7 +559,7 @@ async function performTabsDragDrop(tabs, params) {
     tabs[0]?.$TST?.nativeTabGroup?.$TST?.createParams :
     null;
 
-  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, ', nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupIdFromPositionDeterminedByBrowser, ', draggedGroupParams = ', draggedGroupParams);
+  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, ', nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupIdFromPositionDeterminedByBrowser, ', draggedGroupParams = ', draggedGroupParams, ', createGroup = ', createGroup);
 
   let blocking = false;
   if ((params.groupId &&
@@ -579,6 +587,7 @@ async function performTabsDragDrop(tabs, params) {
 
   const movedTabs = await moveTabsWithStructure(tabs, {
     ...params,
+    ...(createGroup ? { attachTo: null } : {}),
     windowId,
     destinationWindowId,
     // TST automatically optimize rearrangement of tabs, but we need to disable it here to avoid unexpected group modifications by moved other tabs.
@@ -593,9 +602,19 @@ async function performTabsDragDrop(tabs, params) {
     await NativeTabGroups.matchTabsGrouped(tabs, draggedGroupParams || nativeTabGroupId);
   }
 
-  if (nativeTabGroupId != -1 &&
-      !isAcrossWindows) {
-    await NativeTabGroups.rejectGroupFromTree({ windowId, groupId: nativeTabGroupId })
+  if (createGroup) {
+    const { groupId } = await NativeTabGroups.addTabsToGroup([params.droppedOn, ...tabs], {
+      title:    '',
+      color:    params.nextGroupColor,
+      windowId: params.destinationWindowId,
+    });
+    if (groupId) {
+      await NativeTabGroups.rejectGroupFromTree(TabGroup.get(groupId));
+    }
+  }
+  else if (nativeTabGroupId != -1 &&
+           !isAcrossWindows) {
+    await NativeTabGroups.rejectGroupFromTree(TabGroup.get(nativeTabGroupId))
   }
 
   if (nativeTabGroupId != nativeTabGroupIdFromPositionDeterminedByBrowser) {

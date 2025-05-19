@@ -882,6 +882,35 @@ export class TabGroup extends TreeItem {
       last: true,
     });
   }
+
+  // https://searchfox.org/mozilla-central/rev/578d9c83f046d8c361ac6b98b297c27990d468fd/browser/components/tabbrowser/content/tabgroup-menu.js#25
+  static COLORS = [
+    'blue',
+    'purple',
+    'cyan',
+    'orange',
+    'yellow',
+    'pink',
+    'green',
+    'gray',
+    'red',
+  ];
+
+  static getUextUnusedColor(windowId = null) {
+    if (!windowId) {
+      windowId = TabsStore.getCurrentWindowId();
+    }
+    const unusedColors = new Set(TabGroup.COLORS);
+    for (const group of TabsStore.windows.get(windowId).tabGroups.values()) {
+      unusedColors.delete(group.color);
+    }
+    if (unusedColors.size > 0) {
+      return [...unusedColors][0];
+    }
+    // all colors are used
+    const index = Math.floor(Math.random() * TabGroup.COLORS.length);
+    return TabGroup.COLORS[index];
+  }
 }
 
 

@@ -66,9 +66,13 @@ const kTYPE_ADDON_DRAG_DATA = `application/x-treestyletab-drag-data;provider=${b
 const kDROP_BEFORE  = 'before';
 const kDROP_ON_SELF = 'self';
 const kDROP_AFTER   = 'after';
+const kDROP_HEAD    = 'head';
+const kDROP_TAIL    = 'tail';
 const kDROP_IMPOSSIBLE = 'impossible';
 
 const kDROP_POSITION = 'data-drop-position';
+const kINLINE_DROP_POSITION = 'data-inline-drop-position';
+const kNEXT_GROUP_COLOR = 'data-next-group-color';
 
 let mLongHoverExpandedTabs = [];
 let mLongHoverTimer;
@@ -81,6 +85,7 @@ let mCapturingForDragging = false;
 let mReadyToCaptureMouseEvents = false;
 let mLastDragEnteredTarget = null;
 let mLastDropPosition      = null;
+let mLastInlineDropPosition = null;
 let mLastDragEventCoordinates = null;
 let mDragTargetIsClosebox  = false;
 let mCurrentDragData       = null;
@@ -151,10 +156,11 @@ function getDragDataFromOneItem(item, options = {}) {
       tabs:     [],
       item:     null,
       items:    [],
-      windowId: null,
-      instanceId: mInstanceId,
+      structure:      [],
+      nextGroupColor: TabGroup.getUextUnusedColor(),
+      windowId:       null,
+      instanceId:     mInstanceId,
       sessionId,
-      structure:  []
     };
   const items = getDraggedItemsFromOneItem(item, options);
   const tab  = item.$TST.tab;
@@ -164,9 +170,10 @@ function getDragDataFromOneItem(item, options = {}) {
     items,
     tab,
     tabs,
-    structure:  TreeBehavior.getTreeStructureFromTabs(tabs),
-    windowId:   item.windowId,
-    instanceId: mInstanceId,
+    structure:      TreeBehavior.getTreeStructureFromTabs(tabs),
+    nextGroupColor: TabGroup.getUextUnusedColor(),
+    windowId:       item.windowId,
+    instanceId:     mInstanceId,
     sessionId,
   };
 }
@@ -191,11 +198,12 @@ function sanitizeDragData(dragData) {
     tab:        dragData.tab?.$TST.sanitized,
     tabs:       dragData.tabs.map(tab => tab?.$TST.sanitized),
     structure:  dragData.structure,
+    nextGroupColor: dragData.nextGroupColor,
     windowId:   dragData.windowId,
     instanceId: dragData.instanceId,
     sessionId:  dragData.sessionId,
     behavior:   dragData.behavior,
-    individualOnOutside: dragData.individualOnOutside
+    individualOnOutside: dragData.individualOnOutside,
   };
 }
 
@@ -207,6 +215,7 @@ function getDropAction(event) {
     targetItem,
     substanceTargetItem: targetItem?.pinned && targetItem.$TST.bundledTab,
     dropPosition:  null,
+    inlineDropPosition: '',
     action:        null,
     parent:        null,
     insertBefore:  null,
@@ -370,6 +379,12 @@ function getDropAction(event) {
 
     return true;
   });
+  info.defineGetter('canCreateGroup', () => {
+    if ([targetItem, ...info.draggedItems].some(item => item?.pinned)) {
+      return false;
+    }
+    return mLastDropPosition?.split(':')[1] == kDROP_ON_SELF && mLastInlineDropPosition?.split(':')[1] == kDROP_HEAD;
+  });
   info.defineGetter('EventUtils.isCopyAction', () => EventUtils.isCopyAction(event));
   info.defineGetter('dropEffect', () => getDropEffectFromDropAction(info));
 
@@ -475,6 +490,15 @@ function getDropAction(event) {
           info.draggedItem.$TST.unsafeNextTab :
           (info.draggedItem.$TST.nextSiblingTab ||
            info.draggedItem.$TST.unsafeNearestFollowingForeignerTab);
+      const isRightside = document.documentElement.classList.contains('right');
+      if (isRTL() == isRightside) {
+        const neck = targetItem.$TST.element.offsetLeft + (targetItem.$TST.element.offsetWidth / 3);
+        info.inlineDropPosition = event.clientX < neck ? kDROP_HEAD : kDROP_TAIL;
+      }
+      else {
+        const neck = targetItem.$TST.element.offsetLeft + (targetItem.$TST.element.offsetWidth / 3 * 2);
+        info.inlineDropPosition = event.clientX > neck ? kDROP_HEAD : kDROP_TAIL;
+      }
       if (configs.debug)
         log(' calculated info: ', info);
     }; break;
@@ -577,7 +601,9 @@ const mDropPositionHolderItems = new Set();
 
 export function clearDropPosition() {
   for (const tab of mDropPositionHolderItems) {
-    tab.$TST.removeAttribute(kDROP_POSITION)
+    tab.$TST.removeAttribute(kDROP_POSITION);
+    tab.$TST.removeAttribute(kINLINE_DROP_POSITION);
+    tab.$TST.removeAttribute(kNEXT_GROUP_COLOR);
   }
   mDropPositionHolderItems.clear();
   configs.lastDragOverSidebarOwnerWindowId = null;
@@ -856,7 +882,7 @@ function onDragStart(event, options = {}) {
 
   mDraggingOnSelfWindow = true;
   mDraggingOnDraggedItems = true;
-  mLastDropPosition = null;
+  mLastDropPosition = mLastInlineDropPosition = null;
 
   const dt = event.dataTransfer;
   dt.effectAllowed = 'copyMove';
@@ -1088,7 +1114,7 @@ function onDragOver(event) {
     dt.dropEffect = 'none';
     if (mLastDropPosition)
       clearDropPosition();
-    mLastDropPosition = null;
+    mLastDropPosition = mLastInlineDropPosition = null;
     return;
   }
 
@@ -1097,7 +1123,7 @@ function onDragOver(event) {
     dt.dropEffect = 'move';
     if (mLastDropPosition)
       clearDropPosition();
-    mLastDropPosition = null;
+    mLastDropPosition = mLastInlineDropPosition = null;
     return;
   }
 
@@ -1107,30 +1133,37 @@ function onDragOver(event) {
   if (!dropPositionTargetItem) {
     log(`onDragOver: no drop target item sessionId=${sessionId}`);
     dt.dropEffect = 'none';
-    mLastDropPosition = null;
+    mLastDropPosition = mLastInlineDropPosition = null;
     return;
   }
 
+  const dropPosition = `${dropPositionTargetItem.id}:${info.dropPosition}`;
+  const inlineDropPosition = `${dropPositionTargetItem.id}:${info.inlineDropPosition}`;
   if (!info.draggedItem ||
-      dropPositionTargetItem.id != info.draggedItem.id) {
-    const dropPosition = `${dropPositionTargetItem.id}:${info.dropPosition}`;
-    if (dropPosition == mLastDropPosition) {
-      log(`onDragOver: no move sessionId=${sessionId}`);
+      dropPositionTargetItem.id != info.draggedItem.id ||
+      dropPosition != mLastDropPosition ||
+      inlineDropPosition != mLastInlineDropPosition) {
+    if (dropPosition == mLastDropPosition &&
+        inlineDropPosition == mLastInlineDropPosition) {
+      log(`onDragOver: no move, sessionId=${sessionId}`);
       return;
     }
     clearDropPosition();
     dropPositionTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
+    dropPositionTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
     mDropPositionHolderItems.add(dropPositionTargetItem);
     if (info.substanceTargetItem &&
         info.dropPosition == kDROP_ON_SELF) {
       info.substanceTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
+      info.substanceTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
       mDropPositionHolderItems.add(info.substanceTargetItem);
     }
     mLastDropPosition = dropPosition;
+    mLastInlineDropPosition = inlineDropPosition;
     log(`onDragOver: set drop position to ${dropPosition}, sessionId=${sessionId}`);
   }
   else {
-    mLastDropPosition = null;
+    mLastDropPosition = mLastInlineDropPosition = null;
   }
 }
 onDragOver = EventUtils.wrapWithErrorHandler(onDragOver);
@@ -1172,8 +1205,7 @@ function onDragEnter(event) {
 
   updateLastDragEventCoordinates(event);
 
-  if (!configs.autoExpandOnLongHover ||
-      !info.canDrop ||
+  if (!info.canDrop ||
       !info.dragOverItem)
     return;
 
@@ -1186,12 +1218,13 @@ function onDragEnter(event) {
   reserveToProcessLongHover({
     dragOverItemId: info.targetItem?.id,
     draggedItemId:  info.draggedItem?.id,
-    dropEffect:    info.dropEffect
+    dropEffect:     info.dropEffect,
+    nextGroupColor: info.dragData?.nextGroupColor,
   });
 }
 onDragEnter = EventUtils.wrapWithErrorHandler(onDragEnter);
 
-function reserveToProcessLongHover(params = {}) {
+function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect, nextGroupColor }) {
   mLongHoverTimerNext = setTimeout(() => {
     if (!mLongHoverTimerNext)
       return; // already canceled
@@ -1201,16 +1234,16 @@ function reserveToProcessLongHover(params = {}) {
         return; // already canceled
 
       mLongHoverTimer = null;
-      log('reservedProcessLongHover: ', params);
+      log('reservedProcessLongHover: ', { dragOverItemId, draggedItemId, dropEffect, nextGroupColor });
 
-      const dragOverItem = Tab.get(params.dragOverItemId);
+      const dragOverItem = Tab.get(dragOverItemId);
       if (!dragOverItem ||
           dragOverItem.$TST.getAttribute(kDROP_POSITION) != 'self')
         return;
 
       // auto-switch for staying on tabs
       if (!dragOverItem.active &&
-          params.dropEffect == 'link') {
+          dropEffect == 'link') {
         BackgroundConnection.sendMessage({
           type:  Constants.kCOMMAND_ACTIVATE_TAB,
           tabId: dragOverItem.id,
@@ -1218,7 +1251,14 @@ function reserveToProcessLongHover(params = {}) {
         });
       }
 
-      if (!dragOverItem ||
+      if (dragOverItem.type == TreeItem.TYPE_TAB &&
+          dragOverItem.groupId == -1 &&
+          Tab.get(draggedItemId)?.groupId == -1) {
+        dragOverItem.$TST.setAttribute(kNEXT_GROUP_COLOR, nextGroupColor);
+      }
+
+      if (!configs.autoExpandOnLongHover ||
+          !dragOverItem ||
           !dragOverItem.$TST.isAutoExpandable)
         return;
 
@@ -1230,8 +1270,8 @@ function reserveToProcessLongHover(params = {}) {
         });
       }
       else {
-        if (!mLongHoverExpandedTabs.includes(params.dragOverItemId))
-          mLongHoverExpandedTabs.push(params.dragOverItemId);
+        if (!mLongHoverExpandedTabs.includes(dragOverItemId))
+          mLongHoverExpandedTabs.push(dragOverItemId);
         BackgroundConnection.sendMessage({
           type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
           tabId:     dragOverItem.id,
@@ -1293,6 +1333,7 @@ function onDragLeave(event) {
       clearDropPosition();
       clearDraggingState();
       mLastDropPosition = null;
+      mLastInlineDropPosition = null;
       reserveToProcessLongHover.cancel();
     }, 10);
   }
@@ -1372,6 +1413,8 @@ function onDrop(event) {
       insertAfter:         insertAfter?.$TST?.sanitized || insertAfter,
       destinationWindowId: TabsStore.getCurrentWindowId(),
       duplicate:           !fromOtherProfile && dt.dropEffect == 'copy',
+      nextGroupColor:      dropActionInfo.targetItem?.$TST?.element?.getAttribute(kNEXT_GROUP_COLOR),
+      canCreateGroup:      dropActionInfo.canCreateGroup,
       import:              fromOtherProfile
     });
     return;
@@ -1435,6 +1478,8 @@ function onDrop(event) {
         insertAfter:         insertAfter?.$TST?.sanitized || insertAfter,
         destinationWindowId: TabsStore.getCurrentWindowId(),
         duplicate:           dt.dropEffect == 'copy',
+        nextGroupColor:      dropActionInfo.targetItem?.$TST?.element?.getAttribute(kNEXT_GROUP_COLOR),
+        canCreateGroup:      dropActionInfo.canCreateGroup,
         import:              false
       });
     });
@@ -1665,6 +1710,7 @@ function onFinishDrag() {
   clearDraggingItemsState();
   clearDropPosition();
   mLastDropPosition = null;
+  mLastInlineDropPosition = null;
   updateLastDragEventCoordinates();
   mLastDragOverTimestamp = null;
   clearDraggingState();
