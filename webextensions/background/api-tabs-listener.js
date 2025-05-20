@@ -1369,13 +1369,18 @@ async function onGroupRemoved(group) {
   log('onGroupRemoved ', group);
 
   const trackedGroup = TabGroup.get(group.id);
-  const sanitized    = trackedGroup.$TST.sanitized;
-  trackedGroup.$TST.destroy();
+  if (trackedGroup.windowId == group.windowId) {
+    const sanitized = trackedGroup.$TST.sanitized;
+    trackedGroup.$TST.destroy();
+  }
+  else {
+    log('onGroupRemoved: => moved to another window, no need to destroy');
+  }
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
-    windowId: sanitized.windowId,
-    group:    sanitized,
+    windowId: group.windowId,
+    group,
   });
 }
 

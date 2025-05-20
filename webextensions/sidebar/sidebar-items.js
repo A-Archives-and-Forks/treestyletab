@@ -1374,10 +1374,9 @@ BackgroundConnection.onMessage.addListener(async message => {
       onNormalTabsChanged.dispatch();
       break;
 
-    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED: {
-      const win = TabsStore.windows.get(message.windowId);
-      win.tabGroups.set(message.group.id, TabGroup.init(message.group));
-    }; break;
+    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED:
+      TabGroup.init(message.group)
+      break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED: {
       const group = TabGroup.get(message.group.id);
@@ -1388,14 +1387,8 @@ BackgroundConnection.onMessage.addListener(async message => {
       reserveToRefreshNativeTabGroup(message.group.id);
     }; break;
 
-    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED: {
-      const group = TabGroup.get(message.group.id);
-      if (!group) {
-        return;
-      }
-      group.$TST.destroy();
-      const win = TabsStore.windows.get(message.windowId);
-      win.tabGroups.delete(message.group.id);
-    }; break;
+    case Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED:
+      TabGroup.get(message.group.id)?.$TST.destroy();
+      break;
   }
 });
