@@ -1370,7 +1370,6 @@ async function onGroupRemoved(group) {
 
   const trackedGroup = TabGroup.get(group.id);
   if (trackedGroup.windowId == group.windowId) {
-    const sanitized = trackedGroup.$TST.sanitized;
     trackedGroup.$TST.destroy();
   }
   else {
