@@ -11,6 +11,7 @@ import {
   configs,
   shouldApplyAnimation,
 } from '/common/common.js';
+import * as ApiTabs from '/common/api-tabs.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 
@@ -38,6 +39,16 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
   }
 
   log('addTabsToGroupInternal ', tabsToGrouped, groupId, groupIdOrProperties);
+
+  const pinnedTabs = tabsToGrouped.filter(tab => tab.pinned);
+  if (pinnedTabs.length > 0) {
+    await Promise.all(
+      pinnedTabs.map(
+        tab => browser.tabs.update(tab.id, { pinned: false })
+                 .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError))
+      )
+    );
+  }
 
   const windowId = tabsToGrouped[0].windowId;
   const structure = TreeBehavior.getTreeStructureFromTabs(tabsToGrouped);
