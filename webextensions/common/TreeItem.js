@@ -766,6 +766,11 @@ export class TabGroup extends TreeItem {
   }
 
   destroy() {
+    const win = TabsStore.windows.get(this.raw.windowId);
+    if (win) {
+      win.tabGroups.delete(this.id);
+    }
+
     TabsStore.tabGroups.delete(this.id);
 
     super.destroy();

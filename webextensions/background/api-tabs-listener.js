@@ -1370,7 +1370,7 @@ async function onGroupRemoved(group) {
 
   const trackedGroup = TabGroup.get(group.id);
   const sanitized    = trackedGroup.$TST.sanitized;
-  trackedGroup.destroy();
+  trackedGroup.$TST.destroy();
 
   SidebarConnection.sendMessage({
     type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
