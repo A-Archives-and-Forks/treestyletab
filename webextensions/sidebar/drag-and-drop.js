@@ -1513,7 +1513,7 @@ function sanitizeDraggedItems({ draggedItems, structure, insertBefore, insertAft
 async function onDragEnd(event) {
   log('onDragEnd, ', { event, mDraggingOnSelfWindow, mDraggingOnDraggedItems, dropEffect: event.dataTransfer?.dropEffect });
   if (!mLastDragEventCoordinates) {
-    console.error(new Error('dragend is handled after finishDrag'));
+    log('dragend is handled after finishDrag - already handled by ondrop handler.');
     return;
   }
   const lastDragEventCoordinatesX = mLastDragEventCoordinates.x;
