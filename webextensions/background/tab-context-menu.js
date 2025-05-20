@@ -900,7 +900,7 @@ async function onShown(info, contextTab) {
       hasUnmutedDescendant,
     }) && modifiedItemsCount++;
     updateItem('context_pinTab', {
-      visible: emulate && !!contextTab?.pinned,
+      visible: emulate && !!contextTab && !contextTab.pinned,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_unpinTab', {
