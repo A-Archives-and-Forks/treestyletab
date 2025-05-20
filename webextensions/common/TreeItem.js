@@ -764,6 +764,11 @@ export class TabGroup extends TreeItem {
 
     TabsStore.tabGroups.set(raw.id, raw);
     TabsStore.windows.get(raw.windowId)?.tabGroups.set(raw.id, raw);
+
+    const firstMember = TabGroup.getFirstMember(raw.id);
+    if (firstMember) {
+      raw.index = firstMember.index;
+    }
   }
 
   destroy() {
@@ -2579,7 +2584,7 @@ export class Tab extends TreeItem {
   }
 
 
-  onNativeGroupModified() {
+  onNativeGroupModified(oldGroupId) {
     if (this.raw.groupId == -1) {
       TabsStore.removeNativelyGroupedTab(this.raw);
     }
@@ -2592,6 +2597,15 @@ export class Tab extends TreeItem {
     const group = this.nativeTabGroup;
     if (group) {
       group.incognito = this.tab.incognito;
+      group.index = (group.$TST.firstMember || this.raw).index;
+    }
+
+    if (oldGroupId && oldGroupId != -1) {
+      const oldGroup = TabGroup.get(oldGroupId);
+      const firstMember = oldGroup?.$TST.firstMember;
+      if (firstMember) {
+        oldGroup.index = firstMember.index;
+      }
     }
 
     Tab.onNativeGroupModified.dispatch(this.raw);

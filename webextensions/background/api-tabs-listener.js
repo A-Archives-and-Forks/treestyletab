@@ -288,7 +288,7 @@ async function onUpdated(tabId, changeInfo, tab) {
     for (const key of Object.keys(changeInfo)) {
       if (key == 'index')
         continue;
-      if ('key' in updatedTab)
+      if (key in updatedTab)
         oldState[key] = updatedTab[key];
       if (key == 'openerTabId') {
         if (changeInfo.openerTabId == updatedTab.openerTabId) // already processed
