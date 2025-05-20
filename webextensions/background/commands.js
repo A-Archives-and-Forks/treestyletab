@@ -599,14 +599,11 @@ async function performTabsDragDrop(tabs, params) {
   }
 
   if (createGroup) {
-    const { groupId } = await NativeTabGroups.addTabsToGroup([params.droppedOn, ...tabs], {
+    await NativeTabGroups.addTabsToGroup([params.droppedOn, ...tabs], {
       title:    '',
       color:    params.nextGroupColor,
       windowId: params.destinationWindowId,
     });
-    if (groupId) {
-      await NativeTabGroups.rejectGroupFromTree(TabGroup.get(groupId));
-    }
   }
   else if (nativeTabGroupId != -1 &&
            !isAcrossWindows) {

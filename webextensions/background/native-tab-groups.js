@@ -37,6 +37,8 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
     return groupId;
   }
 
+  log('addTabsToGroupInternal ', tabsToGrouped, groupId, groupIdOrProperties);
+
   const windowId = tabsToGrouped[0].windowId;
   const structure = TreeBehavior.getTreeStructureFromTabs(tabsToGrouped);
 
@@ -49,6 +51,7 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
     groupId,
     windowId,
   });
+  log('addTabsToGroupInternal: group tabs!');
   await browser.tabs.group({
     groupId,
     tabIds: tabsToGrouped.map(tab => tab.id),
@@ -60,6 +63,7 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
   });
   const group = await promisedGrouped;
   groupId = group.id;
+  log('addTabsToGroupInternal: => ', group);
 
   for (const tab of tabsToGrouped) {
     TabsStore.addNativelyGroupedTab(tab, group.windowId);
@@ -67,6 +71,7 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
 
   if (groupIdOrProperties &&
       typeof groupIdOrProperties == 'object') {
+    log('addTabsToGroupInternal: applying group properties');
     const updateProperties = {};
     if ('title' in groupIdOrProperties) {
       updateProperties.title = groupIdOrProperties.title;
@@ -84,6 +89,7 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
 
   await rejectGroupFromTree(group);
 
+  log('addTabsToGroupInternal: applying tree structure');
   await Tree.applyTreeStructureToTabs(tabsToGrouped, structure, {
     broadcast: true
   });
@@ -110,8 +116,8 @@ export async function rejectGroupFromTree(group) {
       !nextTab ||
       prevTab.groupId != nextTab.groupId ||
       prevTab.groupId != -1 ||
-      !prevTab.$TST.parent ||
       rootTab != nextTab.$TST.rootTab) {
+    log('rejectGroupFromTree: no need to reject from tree');
     return;
   }
 
