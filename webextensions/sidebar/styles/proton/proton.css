@@ -317,10 +317,11 @@ tab-item[type="group"] .background {
 
 tab-item[data-next-group-color] {
   .background,
-  &:hover .background {
+  tab-item-substance:hover .background {
     --tab-surface: var(--next-group-color-pale) !important;
     --tab-border: var(--next-group-color) !important;
     border: 1px solid var(--tab-border);
+    opacity: 1 !important;
 
     @media (prefers-color-scheme: dark) {
       & {
