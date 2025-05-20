@@ -61,6 +61,10 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
   const group = await promisedGrouped;
   groupId = group.id;
 
+  for (const tab of tabsToGrouped) {
+    TabsStore.addNativelyGroupedTab(tab, group.windowId);
+  }
+
   if (groupIdOrProperties &&
       typeof groupIdOrProperties == 'object') {
     const updateProperties = {};
@@ -216,6 +220,7 @@ export async function removeTabsFromGroup(tabs) {
   });
   for (const tab of tabsToBeUngrouped) {
     win.internalMovingTabs.delete(tab.id);
+    TabsStore.removeNativelyGroupedTab(tab, win.id);
   }
   browser.tabs.onUpdated.removeListener(onUpdated);
 }
