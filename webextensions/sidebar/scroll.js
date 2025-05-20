@@ -244,11 +244,7 @@ export function getRenderableTreeItems(windowId = null) {
     ...mapAndFilter(
       [...TabsStore.windows.get(windowId).tabGroups.values()],
       group => {
-        const firstMember = TabGroup.getFirstMember(group.id);
-        if (!firstMember) {
-          return undefined;
-        }
-        group.index = firstMember.index;
+        group.$TST.reindex();
         return group;
       }
     )

@@ -104,6 +104,7 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
       the operation is asynchronous. To help synchronous operations
       following to this operation, we need to move tabs immediately.
     */
+    const tabGroups = new Set();
     for (const tab of tabs) {
       const oldPreviousTab = tab.$TST.unsafePreviousTab;
       const oldNextTab     = tab.$TST.unsafeNextTab;
@@ -114,6 +115,7 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
         tab.index = referenceTab.index - 1;
       else
         tab.index = referenceTab.index;
+      tabGroups.add(tab.$TST.nativeTabGroup);
       if (SidebarConnection.isInitialized()) { // only on the background page
         win.internalMovingTabs.set(tab.id, tab.index);
         win.alreadyMovedTabs.set(tab.id, tab.index);
@@ -143,6 +145,9 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
         win.internalMovingTabs.delete(tab.id);
         win.alreadyMovedTabs.delete(tab.id);
       }
+    }
+    for (const group of tabGroups) {
+      group?.$TST.reindex();
     }
     if (movedTabs.length == 0) {
       log(' => actually nothing moved');
@@ -235,6 +240,7 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
     while (nextTab && tabs.find(tab => tab.id == nextTab.id)) {
       nextTab = nextTab.$TST.unsafeNextTab;
     }
+    const tabGroups = new Set();
     for (const tab of tabs) {
       const oldPreviousTab = tab.$TST.unsafePreviousTab;
       const oldNextTab     = tab.$TST.unsafeNextTab;
@@ -251,6 +257,7 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
       else {
         tab.index = win.tabs.size - 1
       }
+      tabGroups.add(tab.$TST.nativeTabGroup);
       if (SidebarConnection.isInitialized()) { // only on the background page
         win.internalMovingTabs.set(tab.id, tab.index);
         win.alreadyMovedTabs.set(tab.id, tab.index);
@@ -280,6 +287,9 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
         win.internalMovingTabs.delete(tab.id);
         win.alreadyMovedTabs.delete(tab.id);
       }
+    }
+    for (const group of tabGroups) {
+      group?.$TST.reindex();
     }
     if (movedTabs.length == 0) {
       log(' => actually nothing moved');

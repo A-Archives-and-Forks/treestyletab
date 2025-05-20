@@ -219,10 +219,13 @@ Tab.onMoved.addListener((tab, moveInfo = {}) => {
       !moveInfo.movedInBulk ||
       tab.$TST.duplicating) {
     log('internal move');
+    tab.$TST.nativeTabGroup?.$TST.reindex();
   }
   else {
     log('process moved tab');
-    tryFixupTreeForInsertedTab(tab, moveInfo);
+    tryFixupTreeForInsertedTab(tab, moveInfo).then(() => {
+      tab.$TST.nativeTabGroup?.$TST.reindex();
+    });
   }
   reserveToEnsureRootTabVisible(tab);
 });
