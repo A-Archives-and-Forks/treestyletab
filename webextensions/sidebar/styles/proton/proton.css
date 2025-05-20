@@ -315,7 +315,7 @@ tab-item[type="group"] .background {
   border: 1px solid var(--tab-border);
 }
 
-tab-item[data-drop-position="self"][data-inline-drop-position="head"][data-next-group-color] {
+tab-item[data-next-group-color] {
   .background {
     --tab-surface: var(--next-group-color-pale) !important;
     --tab-border: var(--next-group-color) !important;

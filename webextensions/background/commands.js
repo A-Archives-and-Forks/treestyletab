@@ -534,11 +534,7 @@ async function performTabsDragDrop(tabs, params) {
     allowedActions:      params.allowedActions
   }));
 
-  const createGroup = (
-    params.canCreateGroup &&
-    params.nextGroupColor &&
-    [params.droppedOn, ...tabs].every(tab => tab.groupId == -1)
-  );
+  const createGroup = params.canCreateGroup && params.nextGroupColor;
 
   if (!(params.allowedActions & Constants.kDRAG_BEHAVIOR_MOVE) &&
       !params.duplicate) {

@@ -380,10 +380,11 @@ function getDropAction(event) {
     return true;
   });
   info.defineGetter('canCreateGroup', () => {
-    if ([targetItem, ...info.draggedItems].some(item => item?.pinned)) {
+    if (targetItem.groupId != -1 ||
+        [targetItem, ...info.draggedItems].some(item => item?.type != TreeItem.TYPE_TAB || item?.pinned || item.groupId != -1)) {
       return false;
     }
-    return mLastDropPosition?.split(':')[1] == kDROP_ON_SELF && mLastInlineDropPosition?.split(':')[1] == kDROP_HEAD;
+    return info.dropPosition == kDROP_ON_SELF && info.inlineDropPosition == kDROP_HEAD;
   });
   info.defineGetter('EventUtils.isCopyAction', () => EventUtils.isCopyAction(event));
   info.defineGetter('dropEffect', () => getDropEffectFromDropAction(info));
@@ -1153,11 +1154,15 @@ function onDragOver(event) {
     dropPositionTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
     dropPositionTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
     mDropPositionHolderItems.add(dropPositionTargetItem);
-    if (info.substanceTargetItem &&
+    if (info.canCreateGroup) {
+      dropPositionTargetItem.$TST.setAttribute(kNEXT_GROUP_COLOR, dragData.nextGroupColor);
+    }
+    const substanceTargetItem = info.substanceTargetItem;
+    if (substanceTargetItem &&
         info.dropPosition == kDROP_ON_SELF) {
-      info.substanceTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
-      info.substanceTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
-      mDropPositionHolderItems.add(info.substanceTargetItem);
+      substanceTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
+      substanceTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
+      mDropPositionHolderItems.add(substanceTargetItem);
     }
     mLastDropPosition = dropPosition;
     mLastInlineDropPosition = inlineDropPosition;
@@ -1220,12 +1225,11 @@ function onDragEnter(event) {
     dragOverItemId: info.targetItem?.id,
     draggedItemId:  info.draggedItem?.id,
     dropEffect:     info.dropEffect,
-    nextGroupColor: info.dragData?.nextGroupColor,
   });
 }
 onDragEnter = EventUtils.wrapWithErrorHandler(onDragEnter);
 
-function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect, nextGroupColor }) {
+function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }) {
   mLongHoverTimerNext = setTimeout(() => {
     if (!mLongHoverTimerNext)
       return; // already canceled
@@ -1235,7 +1239,7 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect, 
         return; // already canceled
 
       mLongHoverTimer = null;
-      log('reservedProcessLongHover: ', { dragOverItemId, draggedItemId, dropEffect, nextGroupColor });
+      log('reservedProcessLongHover: ', { dragOverItemId, draggedItemId, dropEffect });
 
       const dragOverItem = Tab.get(dragOverItemId);
       if (!dragOverItem ||
@@ -1250,12 +1254,6 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect, 
           tabId: dragOverItem.id,
           byMouseOperation: true
         });
-      }
-
-      if (dragOverItem.type == TreeItem.TYPE_TAB &&
-          dragOverItem.groupId == -1 &&
-          Tab.get(draggedItemId)?.groupId == -1) {
-        dragOverItem.$TST.setAttribute(kNEXT_GROUP_COLOR, nextGroupColor);
       }
 
       if (!configs.autoExpandOnLongHover ||
@@ -1414,7 +1412,7 @@ function onDrop(event) {
       insertAfter:         insertAfter?.$TST?.sanitized || insertAfter,
       destinationWindowId: TabsStore.getCurrentWindowId(),
       duplicate:           !fromOtherProfile && dt.dropEffect == 'copy',
-      nextGroupColor:      dropActionInfo.targetItem?.$TST?.element?.getAttribute(kNEXT_GROUP_COLOR),
+      nextGroupColor:      dropActionInfo.dragData.nextGroupColor,
       canCreateGroup:      dropActionInfo.canCreateGroup,
       import:              fromOtherProfile
     });
@@ -1479,7 +1477,7 @@ function onDrop(event) {
         insertAfter:         insertAfter?.$TST?.sanitized || insertAfter,
         destinationWindowId: TabsStore.getCurrentWindowId(),
         duplicate:           dt.dropEffect == 'copy',
-        nextGroupColor:      dropActionInfo.targetItem?.$TST?.element?.getAttribute(kNEXT_GROUP_COLOR),
+        nextGroupColor:      dropActionInfo.dragData.nextGroupColor,
         canCreateGroup:      dropActionInfo.canCreateGroup,
         import:              false
       });
