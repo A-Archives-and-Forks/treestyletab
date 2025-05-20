@@ -186,7 +186,8 @@ tab-item[data-next-group-color] {
     --tab-surface: var(--next-group-color-pale) !important;
     --tab-border: var(--next-group-color) !important;
     background: var(--tab-surface);
-    border: 1px solid var(--tab-border);
+    border: 2px solid var(--tab-border);
+    border-radius: 0.3em;
 
     @media (prefers-color-scheme: dark) {
       & {
@@ -287,7 +288,7 @@ tab-item.active .counter {
 /* Drag'n'drop styling */
 
 /* Round blue rectangle around tabs that are dropping targets. */
-tab-item[data-drop-position="self"] tab-item-substance {
+tab-item[data-drop-position="self"]:not([data-next-group-color]) tab-item-substance {
   background: var(--dropmarker-bg-color);
   border: 2px solid var(--dropmarker-border-color); /* not OSX's colour but Firefox's */
   border-radius: 0.3em;

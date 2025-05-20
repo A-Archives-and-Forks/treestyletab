@@ -15,7 +15,7 @@ tab-item.dragging {
 }
 
 tab-item[data-drop-position="self"] {
-  tab-item-substance {
+  &:not([data-next-group-color]) tab-item-substance {
     outline: var(--tab-dropmarker-size) solid var(--tab-dropmarker) !important;
     outline-offset: calc(0px - var(--tab-dropmarker-size));
     -moz-outline-radius: calc(var(--tab-dropmarker-size) * 2);
