@@ -763,6 +763,7 @@ export class TabGroup extends TreeItem {
     super(raw);
 
     TabsStore.tabGroups.set(raw.id, raw);
+    TabsStore.windows.get(raw.windowId)?.tabGroups.set(raw.id, raw);
   }
 
   destroy() {
