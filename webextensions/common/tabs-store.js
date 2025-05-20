@@ -133,13 +133,14 @@ function sourceTabsForQuery(query, win) {
   return [win.getOrderedTabs(fromId, toId, query.tabs), offset];
 }
 
-function extractMatchedTabs(tabs, query, offset) {
+function extractMatchedTabs(tabsInStore, query, offset) {
   const matchedTabs = [];
   let firstTime     = true;
   let logicalIndex  = offset || 0;
-  for (const tab of tabs) {
-    if (!query.skipMatching &&
-        !matchedWithQuery(tab, query))
+  for (const tab of tabsInStore) {
+    if (!tabs.has(tab.id) ||
+        (!query.skipMatching &&
+         !matchedWithQuery(tab, query)))
       continue;
 
     if (!firstTime)
@@ -156,12 +157,13 @@ function extractMatchedTabs(tabs, query, offset) {
   return matchedTabs;
 }
 
-function* getMatchedTabsIterator(tabs, query, offset) {
+function* getMatchedTabsIterator(tabsInStore, query, offset) {
   let firstTime     = true;
   let logicalIndex  = offset || 0;
-  for (const tab of tabs) {
-    if (!query.skipMatching &&
-        !matchedWithQuery(tab, query))
+  for (const tab of tabsInStore) {
+    if (!tabs.has(tab.id) ||
+        (!query.skipMatching &&
+         !matchedWithQuery(tab, query)))
       continue;
 
     if (!firstTime)

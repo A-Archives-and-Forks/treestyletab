@@ -3714,5 +3714,5 @@ TreeItem.get = item => {
   if (item?.type == TreeItem.TYPE_GROUP) {
     return TabGroup.get(item.id);
   }
-  return Tab.get(item);
+  return TabGroup.get(item) || Tab.get(item);
 };
