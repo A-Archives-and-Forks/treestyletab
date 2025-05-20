@@ -57,9 +57,6 @@ const mController = new InContentPanelController({
       hoveringTabIds.has(message.targetId)
     );
   },
-  fixedOffsetTop() {
-    return configs.tabPreviewTooltipOffsetTop;
-  },
   UIClass: TabPreviewPanel,
   inSidebarUI: mTabPreviewPanel,
   initializerCode: `

@@ -200,14 +200,15 @@ export const configs = new Configs({
   showNewTabActionSelector: true,
   longPressOnNewTabButton: Constants.kCONTEXTUAL_IDENTITY_SELECTOR,
   zoomable: false,
+
+  inContentUIOffsetTop: 0, // See also https://github.com/piroor/treestyletab/issues/3698
   tabPreviewTooltip: false,
   tabPreviewTooltipRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
   tabPreviewTooltipInSidebar: null, // migrated to tabPreviewTooltipMode
   tabPreviewTooltipDelayMsec: 500, // same as "ui.tooltip.delay_ms"
-  tabPreviewTooltipOffsetTop: 0, // See also https://github.com/piroor/treestyletab/issues/3698
+  tabPreviewTooltipOffsetTop: null, // migrated to inContentUIOffsetTop
   showOverflowTitleByTooltip: true,
   showCollapsedDescendantsByTooltip: true,
-
   tabGroupMenuPanelRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
 
   showDialogInSidebar: false,

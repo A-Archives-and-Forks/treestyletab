@@ -51,6 +51,7 @@
 // H.3. The IMPL hides the panel.
 
 import {
+  configs,
   shouldApplyAnimation,
   isRTL,
 } from '/common/common.js';
@@ -76,7 +77,6 @@ export default class InContentPanelController {
     logger,
     shouldLog,
     canSendPossibleExpiredMessage,
-    fixedOffsetTop,
   }) {
     this.type            = type;
     this.log             = logger || ((...messages) => console.log(...messages));
@@ -84,7 +84,6 @@ export default class InContentPanelController {
     this.canRenderInSidebar      = canRenderInSidebar;
     this.canRenderInContent      = canRenderInContent;
     this.shouldFallbackToSidebar = shouldFallbackToSidebar;
-    this.fixedOffsetTop          = fixedOffsetTop;
     this.canSendPossibleExpiredMessage = canSendPossibleExpiredMessage || (message => message.type != `treestyletab:${this.type}:show`);
     this.UIClass         = UIClass;
     this.inSidebarUI     = inSidebarUI;
@@ -375,7 +374,7 @@ export default class InContentPanelController {
         ...message,
         ...this.inSidebarUI.getColors(),
         widthInOuterWorld: rawTab.width,
-        fixedOffsetTop: this.value(this.fixedOffsetTop) || 0,
+        fixedOffsetTop: configs.inContentUIOffsetTop,
         animation: shouldApplyAnimation(),
         logging: this.value(this.shouldLog),
       });
@@ -393,7 +392,7 @@ export default class InContentPanelController {
             ...(resolvedMessage || {}),
             ...this.inSidebarUI.getColors(),
             widthInOuterWorld: rawTab.width,
-            fixedOffsetTop: this.value(this.fixedOffsetTop) || 0,
+            fixedOffsetTop: configs.inContentUIOffsetTop,
             animation: shouldApplyAnimation(),
             logging: this.value(this.shouldLog),
           });

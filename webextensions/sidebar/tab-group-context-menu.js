@@ -72,9 +72,6 @@ const mController = new InContentPanelController({
   shouldFallbackToSidebar() {
     return !!(configs.tabGroupMenuPanelRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
   },
-  fixedOffsetTop() {
-    return configs.tabGroupMenuPanelOffsetTop;
-  },
   UIClass: TabGroupMenuPanel,
   inSidebarUI: mTabGroupMenuPanel,
   initializerCode: `
