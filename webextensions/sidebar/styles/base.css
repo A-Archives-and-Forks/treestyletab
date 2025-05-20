@@ -1143,7 +1143,9 @@ tab-item[type="group"] {
   }
 
   &,
-  &:hover {
+  &:hover,
+  tab-item-substance,
+  tab-item-substance:hover {
     --tab-surface: var(--tab-group-color) !important;
     --tab-border: var(--tab-group-color) !important;
     --tab-text: var(--tab-group-color-pale) !important;
@@ -1151,7 +1153,9 @@ tab-item[type="group"] {
 
   &.subtree-collapsed {
     &,
-    &:hover {
+    &:hover,
+    tab-item-substance,
+    tab-item-substance:hover {
       --tab-surface: var(--tab-group-color-pale) !important;
       --tab-text: var(--tab-group-color) !important;
     }

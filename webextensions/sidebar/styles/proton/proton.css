@@ -316,7 +316,8 @@ tab-item[type="group"] .background {
 }
 
 tab-item[data-next-group-color] {
-  .background {
+  .background,
+  &:hover .background {
     --tab-surface: var(--next-group-color-pale) !important;
     --tab-border: var(--next-group-color) !important;
     border: 1px solid var(--tab-border);

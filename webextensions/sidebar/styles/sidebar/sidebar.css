@@ -181,6 +181,22 @@ tab-item[type="group"] .background {
   border-radius: 0.35em;
 }
 
+tab-item[data-next-group-color] {
+  .background {
+    --tab-surface: var(--next-group-color-pale) !important;
+    --tab-border: var(--next-group-color) !important;
+    background: var(--tab-surface);
+    border: 1px solid var(--tab-border);
+
+    @media (prefers-color-scheme: dark) {
+      & {
+        --tab-surface: var(--next-group-color) !important;
+        --tab-border: var(--next-group-color-invert) !important;
+      }
+    }
+  }
+}
+
 
 /* Keep the close button at a safe distance from the tab label. */
 tab-closebox::after {

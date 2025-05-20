@@ -28,6 +28,21 @@ tab-item[type="group"] tab-item-substance {
                   0.35em + 0.25em /* padding-inline */);
 }
 
+tab-item[data-next-group-color] {
+  tab-item-substance {
+    --tab-surface: var(--next-group-color-pale) !important;
+    --tab-border: var(--next-group-color) !important;
+    border: 1px solid var(--tab-border);
+
+    @media (prefers-color-scheme: dark) {
+      & {
+        --tab-surface: var(--next-group-color) !important;
+        --tab-border: var(--next-group-color-invert) !important;
+      }
+    }
+  }
+}
+
 tab-item.pinned tab-item-substance {
   border-block-width: 0 1px;
   border-inline-width: 0 1px;
