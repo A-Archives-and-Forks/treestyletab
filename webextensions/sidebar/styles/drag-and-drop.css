@@ -57,9 +57,9 @@ tab-item[data-drop-position="self"] {
     --next-group-color-pale: var(--tab-group-color-green-pale);
   }
   &[data-next-group-color="gray"] {
-    --next-group-color: var(--tab-group-color-gray);
-    --next-group-color-invert: var(--tab-group-color-gray-invert);
-    --next-group-color-pale: var(--tab-group-color-gray-pale);
+    --next-group-color: var(--tab-group-color-grey);
+    --next-group-color-invert: var(--tab-group-color-grey-invert);
+    --next-group-color-pale: var(--tab-group-color-grey-pale);
   }
   &[data-next-group-color="red"] {
     --next-group-color: var(--tab-group-color-red);
