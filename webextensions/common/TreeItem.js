@@ -851,7 +851,7 @@ export class TabGroup extends TreeItem {
   }
 
   static getMembers(groupId, options = {}) {
-    const windowId = TabGroup.get(groupId).windowId;
+    const windowId = TabGroup.get(groupId)?.windowId || TabsStore.getCurrentWindowId();
     return TabsStore.queryAll({
       windowId,
       tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
@@ -863,7 +863,7 @@ export class TabGroup extends TreeItem {
   }
 
   static getFirstMember(groupId, options = {}) {
-    const windowId = TabGroup.get(groupId).windowId;
+    const windowId = TabGroup.get(groupId)?.windowId || TabsStore.getCurrentWindowId();
     return TabsStore.query({
       windowId,
       tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
@@ -876,7 +876,7 @@ export class TabGroup extends TreeItem {
   }
 
   static getLastMember(groupId, options = {}) {
-    const windowId = TabGroup.get(groupId).windowId;
+    const windowId = TabGroup.get(groupId)?.windowId || TabsStore.getCurrentWindowId();
     return TabsStore.query({
       windowId,
       tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),

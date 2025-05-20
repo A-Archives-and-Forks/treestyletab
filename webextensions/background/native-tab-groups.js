@@ -109,8 +109,8 @@ export async function rejectGroupFromTree(group) {
 
   const firstMember = group.$TST.firstMember;
   const lastMember  = group.$TST.lastMember;
-  const prevTab = firstMember.$TST.previousTab;
-  const nextTab = lastMember.$TST.nextTab;
+  const prevTab = firstMember?.$TST.previousTab;
+  const nextTab = lastMember?.$TST.nextTab;
   const rootTab = prevTab?.$TST.rootTab;
   if (!prevTab ||
       !nextTab ||
