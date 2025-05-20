@@ -53,7 +53,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as Notifications from './notifications.js';
-//import * as Size from './size.js';
+import * as Size from './size.js';
 
 function log(...args) {
   internalLogger('sidebar/drag-and-drop', ...args);
@@ -491,12 +491,13 @@ function getDropAction(event) {
           (info.draggedItem.$TST.nextSiblingTab ||
            info.draggedItem.$TST.unsafeNearestFollowingForeignerTab);
       const isRightside = document.documentElement.classList.contains('right');
+      const substanceElement = targetItem?.$TST?.element?.substanceElement;
       if (isRTL() == isRightside) {
-        const neck = targetItem.$TST.element.offsetLeft + (targetItem.$TST.element.offsetWidth / 3);
+        const neck = substanceElement.offsetLeft + Size.getFavIconSize();
         info.inlineDropPosition = event.clientX < neck ? kDROP_HEAD : kDROP_TAIL;
       }
       else {
-        const neck = targetItem.$TST.element.offsetLeft + (targetItem.$TST.element.offsetWidth / 3 * 2);
+        const neck = substanceElement.offsetLeft + substanceElement.offsetWidth - Size.getFavIconSize();
         info.inlineDropPosition = event.clientX > neck ? kDROP_HEAD : kDROP_TAIL;
       }
       if (configs.debug)
