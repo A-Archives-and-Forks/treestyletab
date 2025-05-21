@@ -363,6 +363,7 @@
 
   "tabContextMenu_pin_label":         { "message": "Закріпити вкладку" },
   "tabContextMenu_unpin_label":       { "message": "Відкріпити вкладку" },
+  "tabContextMenu_unload_label":      { "message": "&Вивантажити вкладку" },
   "tabContextMenu_duplicate_label":   { "message": "Дублювати вкладку" },
   "tabContextMenu_tearOff_label":     { "message": "Перенести у нове вікно" },
 
@@ -371,5 +372,7 @@
   "tabContextMenu_closeOther_label":  { "message": "Закрити інші вкладки" },
 
   "tabContextMenu_undoClose_label":   { "message": "Відновити закриту вкладку" },
-  "tabContextMenu_close_label":       { "message": "Закрити вкладку" }
+  "tabContextMenu_close_label":       { "message": "Закрити вкладку" },
+
+  "tabContextMenu_unload_label_multiselected":      { "message": "&Вивантажити %S вкладок" }
 }
