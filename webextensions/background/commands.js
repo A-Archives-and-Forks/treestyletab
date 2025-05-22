@@ -858,7 +858,9 @@ export async function unloadTabs(tabs) {
   if (tabs.length == 0) {
     return;
   }
-  await TabsInternalOperation.blurTab(tabs, { keepDiscarded: true });
+  if (tabs.some(tab => tab.active)) {
+    await TabsInternalOperation.blurTab(tabs, { keepDiscarded: true });
+  }
   return browser.tabs.discard(tabs.map(tab => tab.id));
 }
 
