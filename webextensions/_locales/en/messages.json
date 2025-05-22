@@ -415,6 +415,8 @@
   "config_maxFaviconizedPinnedTabsInOneRow_label_after": { "message": " or less tabs for each row (*0 or less means auto-calculation)" },
   "config_maxPinnedTabsRowsAreaPercentage_label_before": { "message": "Maximum height of the area for pinned tabs:" },
   "config_maxPinnedTabsRowsAreaPercentage_label_after":  { "message": "% of the sidebar" },
+  "config_fadeOutPendingTabs_label": { "message": "Show icon in gray for tabs pended to load (*simulation of the browser's built-in behavior for \"browser.tabs.fadeOutUnloadedTabs\"=\"true\")" },
+  "config_fadeOutDiscardedTabs_label": { "message": "Show icon in gray for tabs intentionally unloaded (*simulation of the browser's built-in behavior for \"browser.tabs.fadeOutExplicitlyUnloadedTabs\"=\"true\")" },
   "config_animation_label": { "message": "Enable animation effects" },
   "config_animationForce_label": { "message": "Enable animations regardless \"reduce animations\" platform settings" },
   "config_tabPreviewTooltip_label": { "message": "Show tab preview image on tab hover, instead of legacy tooltip (*You need to allow executing scripts on webpages)" },
