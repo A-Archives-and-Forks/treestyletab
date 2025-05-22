@@ -45,7 +45,7 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
     await Promise.all(
       pinnedTabs.map(
         tab => browser.tabs.update(tab.id, { pinned: false })
-                 .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError))
+          .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError))
       )
     );
   }
