@@ -168,11 +168,11 @@ async function onTabSubstanceEnter(event) {
     }),
     canRenderInSidebar() {
       return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR) &&
-        !hasCustomTooltip;
+        !(hasCustomTooltip && configs.showCollapsedDescendantsByLegacyTooltipOnSidebar);
     },
     shouldFallbackToSidebar() {
       return !!(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR) &&
-        !hasCustomTooltip;
+        !(hasCustomTooltip && configs.showCollapsedDescendantsByLegacyTooltipOnSidebar);
     },
   });
 

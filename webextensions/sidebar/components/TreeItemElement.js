@@ -429,7 +429,7 @@ index = ${raw.index}
       debugTooltip :
       (this.useTabPreviewTooltip &&
        (canInjectScriptToTab ||
-        !this.hasCustomTooltip)) ?
+        !(this.hasCustomTooltip && configs.showCollapsedDescendantsByLegacyTooltipOnSidebar))) ?
         null :
         appliedTooltipText;
     if (typeof tooltipText == 'string')
