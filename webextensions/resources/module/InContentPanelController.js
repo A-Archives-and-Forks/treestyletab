@@ -516,6 +516,16 @@ export default class InContentPanelController {
       top:    anchorTabRawRect?.top || 0,
       width:  anchorTabRawRect?.width || 0,
     };
+    const prevItem = anchorItem?.$TST.unsafePreviousTab;
+    if (prevItem?.$TST.states.has(Constants.kTAB_STATE_REMOVING)) {
+      // When we close a tab by mouse operation and the next tab raises up under the cursor,
+      // in-content UI rendered in the sidebar positioned based on the anchorItem will cover
+      // the anchorItem itself because it is still shifted for removing tab under the cursor.
+      // Thus we calculate the safer anchor coordinates here.
+      const prevItemRect = prevItem.$TST.previousTab?.$TST.element?.getBoundingClientRect();
+      anchorTabRect.top = (prevItemRect?.bottom || 0) + 1;
+      anchorTabRect.bottom = anchorTabRect.top + anchorTabRect.height;
+    }
 
     // This calculation logic is buggy for a window in a screen placed at
     // left of the primary display and scaled. As the result, a sidebar
