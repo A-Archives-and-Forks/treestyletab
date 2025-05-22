@@ -207,6 +207,7 @@ export const configs = new Configs({
   tabPreviewTooltipOffsetTop: 0, // See also https://github.com/piroor/treestyletab/issues/3698
   showOverflowTitleByTooltip: true,
   showCollapsedDescendantsByTooltip: true,
+  showCollapsedDescendantsByLegacyTooltipOnSidebar: true,
 
   showDialogInSidebar: false,
 

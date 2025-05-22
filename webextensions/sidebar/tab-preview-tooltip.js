@@ -194,7 +194,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
   if (!tabId ||
       !(configs.tabPreviewTooltipRenderIn & Constants.kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT)) { // in-sidebar mode
     if (canRenderInSidebar &&
-        !message.hasCustomTooltip) {
+        !(message.hasCustomTooltip && configs.showCollapsedDescendantsByLegacyTooltipOnSidebar)) {
       log(`sendTabPreviewMessage(${message.type}): no tab specified or sidebar only mode, fallback to in-sidebar preview`);
       return sendInSidebarTabPreviewMessage(message);
     }
@@ -210,7 +210,7 @@ async function sendTabPreviewMessage(tabId, message, deferredResultResolver) {
     return false;
 
   const promisedPreviewURL = typeof message.previewURL == 'function' && message.previewURL();
-  const shouldFallbackToSidebar = canRenderInSidebar && !message.hasCustomTooltip;
+  const shouldFallbackToSidebar = canRenderInSidebar && !(message.hasCustomTooltip && configs.showCollapsedDescendantsByLegacyTooltipOnSidebar);
 
   let ready;
   let rawTab;
