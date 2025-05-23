@@ -5,7 +5,10 @@
 */
 
 :root {
-  --tab-highlighter: var(--browser-tab-highlighter, Highlight);
+  --tab-highlighter: light-dark(
+    var(--browser-tab-highlighter, Highlight),
+    var(--browser-tab-highlighter, var(--dark-tab-line))
+  );
   --tab-highlighter-inactive: var(--grey-10-a20);
   --tab-highlighter-size: calc(var(--favicon-size) / 8);
   --tab-highlighter-animation: 0.25s cubic-bezier(0.07, 0.95, 0, 1);

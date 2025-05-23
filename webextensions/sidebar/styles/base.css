@@ -1146,9 +1146,9 @@ tab-item[type="group"] {
   &:hover,
   tab-item-substance,
   tab-item-substance:hover {
-    --tab-surface: var(--tab-group-color) !important;
-    --tab-border: var(--tab-group-color) !important;
-    --tab-text: var(--tab-group-color-pale) !important;
+    --tab-surface: light-dark(var(--tab-group-color), var(--tab-group-color-invert)) !important;
+    --tab-border: light-dark(var(--tab-group-color), var(--tab-group-color-invert)) !important;
+    --tab-text: light-dark(var(--tab-group-color-pale), var(--tab-group-label-text-dark)) !important;
   }
 
   &.subtree-collapsed {
@@ -1156,8 +1156,8 @@ tab-item[type="group"] {
     &:hover,
     tab-item-substance,
     tab-item-substance:hover {
-      --tab-surface: var(--tab-group-color-pale) !important;
-      --tab-text: var(--tab-group-color) !important;
+      --tab-surface: light-dark(var(--tab-group-color-pale), var(--tab-group-color)) !important;
+      --tab-text: light-dark(var(--tab-group-color), var(--tab-group-color-pale)) !important;
     }
   }
 }
@@ -1167,7 +1167,7 @@ tab-item[data-group-id]:not([data-group-id="-1"]) {
   --space-xxsmall: calc(0.5 * var(--space-xsmall)); /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#272 */
   --space-medium: calc(3 * var(--space-xsmall)); /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#275 */
   --tab-group-member-indent: var(--space-medium); /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/browser/themes/shared/tabbrowser/tabs.css#1016 */
-  --tab-group-line-color: var(--tab-group-color);
+  --tab-group-line-color: light-dark(var(--tab-group-color), var(--tab-group-color-invert));
 
   .native-tab-group-line {
     background: var(--tab-group-line-color);
@@ -1182,25 +1182,6 @@ tab-item[data-group-id]:not([data-group-id="-1"]) {
   &.animation-ready .native-tab-group-line {
     transition: var(--tab-indent-positioning-animation),
                 opacity var(--collapse-animation);
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  tab-item[type="group"] {
-    &,
-    &:hover {
-      --tab-surface: var(--tab-group-color-invert) !important;
-      --tab-border: var(--tab-group-color-invert) !important;
-      --tab-text: var(--tab-group-label-text-dark) !important;
-    }
-
-    &.subtree-collapsed {
-      &,
-      &:hover {
-        --tab-surface: var(--tab-group-label-text-dark) !important;
-        --tab-text: var(--tab-group-color-invert) !important;
-      }
-    }
   }
 }
 

@@ -21,7 +21,10 @@
   /* Coloring */
 
   --in-content-page-background: white;
-  --toolbar-non-lwt-bgcolor: var(--in-content-page-background);
+  --toolbar-non-lwt-bgcolor: light-dark(
+    var(--in-content-page-background),
+    rgb(66,65,77) /* https://searchfox.org/mozilla-central/rev/0c7c41109902cb8967ec3ef2c0ddb326701cfbee/toolkit/mozapps/extensions/default-theme/manifest.json#23 */
+  );
   --toolbar-non-lwt-textcolor: var(--in-content-page-color);
   /* linear-gradient is from https://searchfox.org/mozilla-central/rev/6338ce9f059dbcf98072ad29033f3a4327085ddb/browser/themes/shared/tabs.inc.css#599 */
   --toolbar-non-lwt-bgimage: linear-gradient(var(--browser-selected-tab-bg,
@@ -48,9 +51,15 @@
   --throbber-color: var(--browser-loading-indicator, var(--tab-text));
   --throbber-color-active: var(--browser-loading-indicator, var(--tab-text-active));
 
-  --tabbar-bg: -moz-dialog;
+  --tabbar-bg: light-dark(
+    -moz-dialog,
+    var(--browser-bg-darker, var(--dark-frame))
+  );
 
-  --tab-highlighted-glow: rgb(42, 195, 162); /* https://searchfox.org/mozilla-central/rev/74f3c420ee54001059e1850bef3be876749ff873/browser/themes/shared/tabs.inc.css#927 */
+  --tab-highlighted-glow: light-dark(
+    rgb(42, 195, 162), /* https://searchfox.org/mozilla-central/rev/74f3c420ee54001059e1850bef3be876749ff873/browser/themes/shared/tabs.inc.css#927 */
+    rgb(84, 255, 189) /* https://searchfox.org/mozilla-central/rev/74f3c420ee54001059e1850bef3be876749ff873/browser/themes/shared/tabs.inc.css#931 */
+  );
   --multiselected-color: var(--tab-surface-active);
 }
 :root[data-user-agent*="Mac"] {
@@ -58,38 +67,16 @@
 }
 
 :root[data-user-agent*="Win"] {
-  --toolbar-non-lwt-textcolor: rgb(21, 20, 26);
-  --tabbar-bg: rgb(240, 240, 244); /* Windows 11, Light, active */
+  --toolbar-non-lwt-textcolor: light-dark(rgb(21, 20, 26), rgb(251, 251, 254));
+  --tabbar-bg: light-dark(rgb(240, 240, 244), var(--browser-bg-darker, rgb(28, 27, 34)));
 }
 /* Firefox does not apply pale color to tabs in inactive windows when tabs are placed not in the titlebar, so we follow the decision. */
 /*
 :root[data-user-agent*="Win"]:-moz-window-inactive {
-  --toolbar-non-lwt-textcolor: rgb(31, 30, 37);
-  --tabbar-bg: rgb(235, 235, 239); /* Windows 11, Light, inactive * /
+  --toolbar-non-lwt-textcolor: light-dark(rgb(31, 30, 37), rgb(235, 235, 239));
+  --tabbar-bg: light-dark(rgb(235, 235, 239), var(--browser-bg-darker, rgb(31, 30, 37)));
 }
 */
-
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --tab-highlighter: var(--browser-tab-highlighter, var(--dark-tab-line));
-    --tabbar-bg: var(--browser-bg-darker, var(--dark-frame));
-    --tab-highlighted-glow: rgb(84, 255, 189); /* https://searchfox.org/mozilla-central/rev/74f3c420ee54001059e1850bef3be876749ff873/browser/themes/shared/tabs.inc.css#931 */
-    --toolbar-non-lwt-bgcolor: rgb(66,65,77) /* https://searchfox.org/mozilla-central/rev/0c7c41109902cb8967ec3ef2c0ddb326701cfbee/toolkit/mozapps/extensions/default-theme/manifest.json#23 */;
-  }
-
-  :root[data-user-agent*="Win"] {
-    --toolbar-non-lwt-textcolor: rgb(251, 251, 254);
-    --tabbar-bg: var(--browser-bg-darker, rgb(28, 27, 34)); /* Windows 11, Dark, active */
-  }
-  /* Firefox does not apply pale color to tabs in inactive windows when tabs are placed not in the titlebar, so we follow the decision. */
-  /*
-  :root[data-user-agent*="Win"]:-moz-window-inactive {
-    --toolbar-non-lwt-textcolor: rgb(235, 235, 239);
-    --tabbar-bg: var(--browser-bg-darker, rgb(31, 30, 37)); /* Windows 11, Dark, inactive * /
-  }
-  */
-}
 
 :root[color-scheme="system-color"][data-user-agent*="Linux"] {
   --toolbar-non-lwt-textcolor: -moz-dialogtext;
@@ -318,17 +305,10 @@ tab-item[type="group"] .background {
 tab-item[data-next-group-color] {
   .background,
   tab-item-substance:hover .background {
-    --tab-surface: var(--next-group-color-pale) !important;
-    --tab-border: var(--next-group-color) !important;
+    --tab-surface: light-dark(var(--next-group-color-pale), var(--next-group-color)) !important;
+    --tab-border: light-dark(var(--next-group-color), var(--next-group-color-invert)) !important;
     border: 1px solid var(--tab-border);
     opacity: 1 !important;
-
-    @media (prefers-color-scheme: dark) {
-      & {
-        --tab-surface: var(--next-group-color) !important;
-        --tab-border: var(--next-group-color-invert) !important;
-      }
-    }
   }
 }
 

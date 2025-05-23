@@ -256,19 +256,10 @@ table {
 }
 th + *,
 td + * {
-  border-inline-start: 1px solid rgba(0, 0, 0, 0.1);
+  border-inline-start: 1px solid light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.1));
 }
 tbody tr {
-  border-block-start: 1px solid rgba(0, 0, 0, 0.2);
-}
-@media (prefers-color-scheme: dark) {
-  th + *,
-  td + * {
-    border-inline-start-color: rgba(255, 255, 255, 0.1);
-  }
-  tbody tr {
-    border-block-start-color: rgba(255, 255, 255, 0.2);
-  }
+  border-block-start: 1px solid light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.2));
 }
 
 

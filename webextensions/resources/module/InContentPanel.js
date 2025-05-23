@@ -49,7 +49,7 @@ export default class InContentPanel {
         z-index: var(--max-32bit-integer);
 
         .in-content-panel {
-          /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/toolkit/  themes/shared/popup.css#11-63 */
+          /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/toolkit/themes/shared/popup.css#11-63 */
           color-scheme: light dark;
 
           --panel-background: Menu;
@@ -98,23 +98,23 @@ export default class InContentPanel {
             appearance: auto;
             -moz-default-appearance: menupopup;
             background-color: Menu;
-            --panel-background: white /* https://searchfox.org/mozilla-central/rev/  86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://  searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared  /global-shared.css#128 */;
+            --panel-background: white /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */;
             --panel-border-color: transparent;
             --panel-border-radius: calc(6px / var(--in-content-panel-scale));
           ${this.isMac ? '' : '*/'}
           /*}*/
 
-          /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/  themes/shared/tabbrowser/tab-hover-preview.css#5 */
+          /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5 */
           --panel-width: min(100%, calc(${this.BASE_PANEL_WIDTH}px / var(--in-content-panel-scale)));
           --panel-padding: 0;
 
-          /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/toolkit/  themes/shared/global-shared.css#111 */
-          /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/browser/  themes/shared/browser-colors.css#90 */
+          /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/toolkit/themes/shared/global-shared.css#111 */
+          /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/browser/themes/shared/browser-colors.css#90 */
           --panel-border-color: light-dark(rgb(240, 240, 244), rgb(82, 82, 94));
 
 
           @media (prefers-color-scheme: dark) {
-            --panel-background: ${this.isMac ? 'rgb(66, 65, 77)' /* https://searchfox.org/mozilla-central/  rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https:/  /searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/  shared/global-shared.css#128 */ : 'var(--dark-popup)'};
+            --panel-background: ${this.isMac ? 'rgb(66, 65, 77)' /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */ : 'var(--dark-popup)'};
             --panel-color: var(--dark-popup-text);
             --panel-border-color: var(--dark-popup-border);
           }

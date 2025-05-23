@@ -183,18 +183,11 @@ tab-item[type="group"] .background {
 
 tab-item[data-next-group-color] {
   .background {
-    --tab-surface: var(--next-group-color-pale) !important;
-    --tab-border: var(--next-group-color) !important;
+    --tab-surface: light-dark(var(--next-group-color-pale), var(--next-group-color)) !important;
+    --tab-border: light-dark(var(--next-group-color), var(--next-group-color-invert)) !important;
     background: var(--tab-surface);
     border: 2px solid var(--tab-border);
     border-radius: 0.3em;
-
-    @media (prefers-color-scheme: dark) {
-      & {
-        --tab-surface: var(--next-group-color) !important;
-        --tab-border: var(--next-group-color-invert) !important;
-      }
-    }
   }
 }
 

@@ -30,16 +30,9 @@ tab-item[type="group"] tab-item-substance {
 
 tab-item[data-next-group-color] {
   tab-item-substance {
-    --tab-surface: var(--next-group-color-pale) !important;
-    --tab-border: var(--next-group-color) !important;
+    --tab-surface: light-dark(var(--next-group-color-pale), var(--next-group-color)) !important;
+    --tab-border: light-dark(var(--next-group-color), var(--next-group-color-invert)) !important;
     border: 1px solid var(--tab-border);
-
-    @media (prefers-color-scheme: dark) {
-      & {
-        --tab-surface: var(--next-group-color) !important;
-        --tab-border: var(--next-group-color-invert) !important;
-      }
-    }
   }
 }
 
