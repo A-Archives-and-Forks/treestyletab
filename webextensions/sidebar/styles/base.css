@@ -1142,6 +1142,10 @@ tab-item[type="group"] {
                     0.25em /* margin-inline of tab-label */);
   }
 
+  tab-label {
+    font-weight: bold;
+  }
+
   &,
   &:hover,
   tab-item-substance,
