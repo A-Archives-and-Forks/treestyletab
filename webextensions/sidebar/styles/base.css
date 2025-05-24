@@ -23,6 +23,7 @@
   --tabbar-bottom-area-size: 0px;
   --after-tabs-area-size: 0px;
   --pinned-tabs-area-size: 0px;
+  --pinned-tabs-container-resizer-size: 2px;
   --subpanel-area-size: 0px;
   --subpanel-content-size: auto;
 
@@ -763,11 +764,10 @@ tab-item .extra-items-container.behind {
 }
 
 #pinned-tabs-container-resizer {
-  --pinned-tabs-container-resizer-size: 2px;
   background-color: transparent;
   cursor: ns-resize;
   height: var(--pinned-tabs-container-resizer-size);
-  top: calc(var(--tabbar-top-area-size) + var(--visual-gap-offset) + var(--pinned-tabs-area-size));
+  top: calc(var(--tabbar-top-area-size) + var(--visual-gap-offset) + var(--pinned-tabs-area-size) - var(--pinned-tabs-container-resizer-size));
   transition: background-color var(--color-animation);
   z-index: var(--over-tabs-z-index);
 
