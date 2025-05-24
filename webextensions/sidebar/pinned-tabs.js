@@ -62,7 +62,11 @@ const mContainerResizer = document.querySelector('#pinned-tabs-container-resizer
 export async function init() {
   mTargetWindow = TabsStore.getCurrentWindowId();
   browser.runtime.onMessage.addListener(onMessage);
-  mFixedContainerHeight = await browser.sessions.getWindowValue(mTargetWindow, 'pinned-container-fixed-height');
+  const restoredFixedHeight = await browser.sessions.getWindowValue(mTargetWindow, 'pinned-container-fixed-height');
+  if (typeof restoredFixedHeight == 'number') {
+    const allTabsAreaHeight   = Size.getAllTabsAreaSize() + GapCanceller.getOffset();
+    mFixedContainerHeight = Math.min(restoredFixedHeight, allTabsAreaHeight * 0.9);
+  }
 }
 
 function getTabHeight() {
@@ -100,10 +104,15 @@ export function reposition(options = {}) {
   const allTabsAreaHeight   = Size.getAllTabsAreaSize() + GapCanceller.getOffset();
   mMaxVisibleRows = Math.max(1, Math.floor((allTabsAreaHeight * pinnedTabsAreaRatio) / height));
   const contentsHeight = height * maxRow + yOffset;
-  mAreaHeight = mFixedContainerHeight < 0 ? Math.min(
-    contentsHeight,
-    mMaxVisibleRows * height
-  ) : mFixedContainerHeight;
+  mAreaHeight = mFixedContainerHeight < 0 ?
+    Math.min(
+      contentsHeight,
+      mMaxVisibleRows * height
+    ) :
+    Math.min(
+      mFixedContainerHeight,
+      allTabsAreaHeight * 0.9
+    );
   document.documentElement.style.setProperty('--pinned-tab-width', `${width}px`);
   document.documentElement.style.setProperty('--pinned-tabs-area-size', `${mAreaHeight}px`);
   if (configs.faviconizePinnedTabs && configs.maxFaviconizedPinnedTabsInOneRow > 0)
