@@ -3,6 +3,12 @@
  - master/HEAD
    * Drop support of Firefox older than 139.
    * Add support of native tab groups feature of Firefox itself.
+ - 4.1.8 (2025.5.24)
+   * Update localized labels of the context menu command "Unload Tab".
+   * Fix misfocusing after "Unload Tab" is invoked.
+   * Revert "show closebox in tabs only for active or hover" behavior for inverted appearance mode for non-default sidebar position, to reduce stressfull jumping of tab icons and labels.
+   * Add a new expert option to control fallback behavior of collapsed descendants tooltip. (You can enfoce to show collapsed descendants with in-sidebar tab preview panel.)
+   * Add expert option UIs for `fadeOutPendingTabs` and `fadeOutDiscardedTabs` previously implemented.
  - 4.1.7 (2025.5.16)
    * Show closebox in tabs only when it is active or hover, like Firefox's native vertical tabs.
    * Suppress tab preview panels while dragging.
