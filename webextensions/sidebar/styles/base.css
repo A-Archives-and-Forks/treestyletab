@@ -975,8 +975,12 @@ tab-item:not(.collapsed) tab-closebox:active {
   opacity: var(--button-active-opacity);
 }
 
-/* hide closebox on non-active and non-hover tabs, like vertical tabs of Firefox itself */
-tab-item:not(.active):not(#dummy-tab) tab-item-substance:not(:hover) tab-closebox {
+/* Hide closebox on non-active and non-hover tabs, like vertical tabs of Firefox itself.
+   but only on regular mode. On the inverted mode, auto-hiding closeboxes produces jumping
+   of favicons and labels - it is too painful.
+   See also: https://github.com/piroor/treestyletab/issues/3736 */
+:root.left:not(.rtl) tab-item:not(.active):not(#dummy-tab) tab-item-substance:not(:hover) tab-closebox,
+:root.right.rtl tab-item:not(.active):not(#dummy-tab) tab-item-substance:not(:hover) tab-closebox {
   display: none;
 }
 
