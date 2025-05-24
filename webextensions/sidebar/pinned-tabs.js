@@ -53,10 +53,16 @@ let mMaxCol         = 0;
 let mMaxColLastRow  = 0;
 let mMaxRow         = 0;
 const mTabsMatrix = new Map();
+let mDragStartY = 0;
+let mDragStartHeight = 0;
+let mFixedContainerHeight = -1;
 
-export function init() {
+const mContainerResizer = document.querySelector('#pinned-tabs-container-resizer');
+
+export async function init() {
   mTargetWindow = TabsStore.getCurrentWindowId();
   browser.runtime.onMessage.addListener(onMessage);
+  mFixedContainerHeight = await browser.sessions.getWindowValue(mTargetWindow, 'pinned-container-fixed-height');
 }
 
 function getTabHeight() {
@@ -94,10 +100,10 @@ export function reposition(options = {}) {
   const allTabsAreaHeight   = Size.getAllTabsAreaSize() + GapCanceller.getOffset();
   mMaxVisibleRows = Math.max(1, Math.floor((allTabsAreaHeight * pinnedTabsAreaRatio) / height));
   const contentsHeight = height * maxRow + yOffset;
-  mAreaHeight = Math.min(
+  mAreaHeight = mFixedContainerHeight < 0 ? Math.min(
     contentsHeight,
     mMaxVisibleRows * height
-  );
+  ) : mFixedContainerHeight;
   document.documentElement.style.setProperty('--pinned-tab-width', `${width}px`);
   document.documentElement.style.setProperty('--pinned-tabs-area-size', `${mAreaHeight}px`);
   if (configs.faviconizePinnedTabs && configs.maxFaviconizedPinnedTabsInOneRow > 0)
@@ -322,4 +328,42 @@ BackgroundConnection.onMessage.addListener(async message => {
       reserveToReposition();
     }; break;
   }
+});
+
+mContainerResizer.addEventListener('mousedown', event => {
+  event.stopPropagation();
+  event.preventDefault();
+  mContainerResizer.setCapture(true);
+  mDragStartY = event.clientY;
+  mDragStartHeight = mAreaHeight;
+  mContainerResizer.addEventListener('mousemove', onMouseMove);
+});
+
+mContainerResizer.addEventListener('mouseup', event => {
+  mContainerResizer.removeEventListener('mousemove', onMouseMove);
+  event.stopPropagation();
+  event.preventDefault();
+  document.releaseCapture();
+  mFixedContainerHeight = Math.max(0, mDragStartHeight + (event.clientY - mDragStartY));
+  reposition();
+  saveLastHeight();
+});
+
+function onMouseMove(event) {
+  event.stopPropagation();
+  event.preventDefault();
+  mFixedContainerHeight = Math.max(0, mDragStartHeight + (event.clientY - mDragStartY));
+  reposition();
+}
+
+function saveLastHeight() {
+  browser.sessions.setWindowValue(mTargetWindow, 'pinned-container-fixed-height', mFixedContainerHeight);
+}
+
+mContainerResizer.addEventListener('dblclick', async event => {
+  event.stopPropagation();
+  event.preventDefault();
+  mFixedContainerHeight = -1;
+  reposition();
+  saveLastHeight();
 });
