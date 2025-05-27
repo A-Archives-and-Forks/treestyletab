@@ -1,6 +1,8 @@
 # History
 
  - master/HEAD
+ - 4.1.10 (2025.5.27)
+   * Invoke commands in the fake context menu (shown by Multiple Tab Handler addon and so on) correctly. It was regressed for a long time.
  - 4.1.9 (2025.5.25)
    * The height of pinned tabs container is now resizable by dragging. Double-click on the resizer restores the auto calculated height.
  - 4.1.8 (2025.5.24)
