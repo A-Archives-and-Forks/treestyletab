@@ -372,7 +372,7 @@ async function onCommand(item, event) {
       srcUrl:           null,
       wasChecked
     },
-    tab: contextTab,
+    tab: contextTab.$TST.sanitized,
   };
   if (owner == browser.runtime.id) {
     await browser.runtime.sendMessage(message).catch(ApiTabs.createErrorSuppressor());
