@@ -65,7 +65,7 @@ export async function init() {
   const restoredFixedHeight = await browser.sessions.getWindowValue(mTargetWindow, 'pinned-container-fixed-height');
   if (typeof restoredFixedHeight == 'number') {
     const allTabsAreaHeight   = Size.getAllTabsAreaSize() + GapCanceller.getOffset();
-    mFixedContainerHeight = Math.min(restoredFixedHeight, allTabsAreaHeight * 0.9);
+    mFixedContainerHeight = Math.min(restoredFixedHeight, (allTabsAreaHeight || window.innerHeight) * 0.9);
   }
 }
 
