@@ -1,6 +1,8 @@
 # History
 
  - master/HEAD
+   * Keep the height of the pinned tabs area resizeable even if it was shrunken to zero.
+   * Don't shrink the height of the pinned tabs area to zero at the startup after it was manually resized.
  - 4.1.10 (2025.5.27)
    * Invoke commands in the fake context menu (shown by Multiple Tab Handler addon and so on) correctly. It was regressed for a long time.
  - 4.1.9 (2025.5.25)
