@@ -767,7 +767,7 @@ tab-item .extra-items-container.behind {
   background-color: transparent;
   cursor: ns-resize;
   height: var(--pinned-tabs-container-resizer-size);
-  top: calc(var(--tabbar-top-area-size) + var(--visual-gap-offset) + var(--pinned-tabs-area-size) - var(--pinned-tabs-container-resizer-size));
+  top: calc(var(--tabbar-top-area-size) + var(--visual-gap-offset) + max(0px, var(--pinned-tabs-area-size) - var(--pinned-tabs-container-resizer-size)));
   transition: background-color var(--color-animation);
   z-index: var(--over-tabs-z-index);
 
