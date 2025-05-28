@@ -60,7 +60,6 @@ import {
 } from './components/TreeItemElement.js';
 import { TabFaviconElement } from './components/TabFaviconElement.js';
 import { TreeItemLabelElement } from './components/TreeItemLabelElement.js';
-import { TabSharingStateElement } from './components/TabSharingStateElement.js';
 import { TabSoundButtonElement } from './components/TabSoundButtonElement.js';
 import { TabTwistyElement } from './components/TabTwistyElement.js';
 
@@ -140,7 +139,6 @@ export async function init() {
   TabFaviconElement.define();
   TreeItemLabelElement.define();
   TabCounterElement.define();
-  TabSharingStateElement.define();
   TabSoundButtonElement.define();
   TreeItemElement.define();
 

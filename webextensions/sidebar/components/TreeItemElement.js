@@ -20,7 +20,6 @@ import { kTAB_FAVICON_ELEMENT_NAME } from './TabFaviconElement.js';
 import { kTREE_ITEM_LABEL_ELEMENT_NAME } from './TreeItemLabelElement.js';
 import { kTAB_COUNTER_ELEMENT_NAME } from './TabCounterElement.js';
 import { kTAB_SOUND_BUTTON_ELEMENT_NAME } from './TabSoundButtonElement.js';
-import { kTAB_SHARING_STATE_ELEMENT_NAME } from './TabSharingStateElement.js';
 import { kTAB_CLOSE_BOX_ELEMENT_NAME } from './TabCloseBoxElement.js';
 
 export const kTREE_ITEM_ELEMENT_NAME = 'tab-item';
@@ -34,9 +33,8 @@ export const TabInvalidationTarget = Object.freeze({
   SoundButton: 1 << 1,
   CloseBox:    1 << 2,
   Tooltip:     1 << 3,
-  SharingState: 1 << 4,
-  Overflow:    1 << 5,
-  All:         1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5,
+  Overflow:    1 << 4,
+  All:         1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4,
 });
 
 export const TabUpdateTarget = Object.freeze({
@@ -130,7 +128,6 @@ export class TreeItemElement extends HTMLElement {
           <span class="${Constants.kEXTRA_ITEMS_CONTAINER} above"></span>
           <span class="caption">
             <${kTAB_FAVICON_ELEMENT_NAME}></${kTAB_FAVICON_ELEMENT_NAME}>
-            <${kTAB_SHARING_STATE_ELEMENT_NAME}></${kTAB_SHARING_STATE_ELEMENT_NAME}>
             <${kTAB_SOUND_BUTTON_ELEMENT_NAME}></${kTAB_SOUND_BUTTON_ELEMENT_NAME}>
             <${kTREE_ITEM_LABEL_ELEMENT_NAME}></${kTREE_ITEM_LABEL_ELEMENT_NAME}>
             <${kTAB_COUNTER_ELEMENT_NAME}></${kTAB_COUNTER_ELEMENT_NAME}>
@@ -190,8 +187,6 @@ export class TreeItemElement extends HTMLElement {
     }
     if (this._counterElement)
       this._counterElement.owner = this;
-    if (this._sharingStateElement)
-      this._sharingStateElement.owner = this;
     if (this._soundButtonElement) {
       this._soundButtonElement.owner = this;
       this._soundButtonElement.makeAccessible();
@@ -246,10 +241,6 @@ export class TreeItemElement extends HTMLElement {
     return this.querySelector(kTREE_ITEM_LABEL_ELEMENT_NAME);
   }
 
-  get _sharingStateElement() {
-    return this.querySelector(kTAB_SHARING_STATE_ELEMENT_NAME);
-  }
-
   get _soundButtonElement() {
     return this.querySelector(kTAB_SOUND_BUTTON_ELEMENT_NAME);
   }
@@ -288,9 +279,6 @@ export class TreeItemElement extends HTMLElement {
 
     if (targets & TabInvalidationTarget.Twisty)
       this.twisty?.invalidate();
-
-    if (targets & TabInvalidationTarget.SharingState)
-      this._sharingStateElement?.invalidate();
 
     if (targets & TabInvalidationTarget.SoundButton)
       this._soundButtonElement?.invalidate();

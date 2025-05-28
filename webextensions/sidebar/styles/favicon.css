@@ -252,66 +252,6 @@ tab-item.loading .favicon-builtin::before {
 }
 
 
-/* Sharing status for faviconized tabs.
-   Styles for regular tabs are degined in sharing-state.css. */
-
-tab-item:not(.faviconized),
-tab-item.active,
-tab-item.loading,
-tab-item.faviconized:not(.sharing-camera):not(.sharing-microphone):not(.sharing-screen) {
-  .favicon-sharing-state {
-    display: none;
-  }
-}
-
-tab-item:not(.active):not(.loading).sharing-camera,
-tab-item:not(.active):not(.loading).sharing-microphone,
-tab-item:not(.active):not(.loading).sharing-screen {
-  .favicon-image,
-  .favicon-builtin::before {
-    animation: var(--tab-sharing-icon-animation-inverted);
-  }
-}
-
-.favicon-sharing-state {
-  bottom: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-  inset-inline-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-  inset-inline-end: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-  position: absolute;
-  top: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-}
-
-tab-item.faviconized.sharing-camera .favicon-sharing-state::before {
-  background-image: url("./icons/camera.svg")
-}
-:root.simulate-svg-context-fill tab-item.faviconized.sharing-camera .favicon-sharing-state::before {
-  mask-image: url("./icons/camera.svg");
-}
-
-tab-item.faviconized.sharing-microphone .favicon-sharing-state::before {
-  background-image: url("./icons/microphone.svg")
-}
-:root.simulate-svg-context-fill tab-item.faviconized.sharing-microphone .favicon-sharing-state::before {
-  mask-image: url("./icons/microphone.svg");
-}
-
-tab-item.faviconized.sharing-screen .favicon-sharing-state::before {
-  background-image: url("./icons/screen.svg")
-}
-:root.simulate-svg-context-fill tab-item.faviconized.sharing-screen .favicon-sharing-state::before {
-  mask-image: url("./icons/screen.svg");
-}
-
-.favicon-sharing-state::before {
-  fill: var(--sharing-state-color);
-  animation: var(--tab-sharing-icon-animation);
-}
-:root.simulate-svg-context-fill tab-item .favicon-sharing-state::before {
-  /* put this here to override background-image specivied rules above! */
-  background: var(--sharing-state-color);
-}
-
-
 /* Sticky status */
 
 .favicon-sticky-state {

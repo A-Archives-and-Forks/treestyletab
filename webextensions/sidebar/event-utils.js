@@ -18,9 +18,10 @@ import * as Size from './size.js';
 import { TreeItem } from '/common/TreeItem.js';
 
 import { kTAB_CLOSE_BOX_ELEMENT_NAME } from './components/TabCloseBoxElement.js';
-import { kTAB_SHARING_STATE_ELEMENT_NAME } from './components/TabSharingStateElement.js';
+import { kTAB_FAVICON_ELEMENT_NAME } from './components/TabFaviconElement.js';
 import { kTAB_SOUND_BUTTON_ELEMENT_NAME } from './components/TabSoundButtonElement.js';
 import { kTAB_TWISTY_ELEMENT_NAME } from './components/TabTwistyElement.js';
+import { kTREE_ITEM_ELEMENT_NAME } from './components/TreeItemElement.js';
 
 // eslint-disable-next-line no-unused-vars
 function log(...args) {
@@ -93,7 +94,12 @@ export function isEventFiredOnTwisty(event) {
 
 export function isEventFiredOnSharingState(event) {
   const target = getElementTarget(event);
-  return target?.closest && !!target.closest(kTAB_SHARING_STATE_ELEMENT_NAME);
+  if (!target?.closest(kTAB_FAVICON_ELEMENT_NAME)) {
+    return false;
+  }
+  const tab = target.closest(kTREE_ITEM_ELEMENT_NAME);
+  const sharingState = tab?.raw?.sharingState;
+  return !!(sharingState?.microphone || sharingState?.camera || sharingState?.screen);
 }
 
 export function isEventFiredOnSoundButton(event) {

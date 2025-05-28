@@ -33,93 +33,62 @@
   }
 }
 
-/* Show sharing status of regular tabs as a separate icon, for more notability.
-   Sharing status of faviconized tabs are shown in the favicon area, and styles are defined in favicon.css */
+/* Show sharing status on favicons.
+   See also favicon.css */
 
-tab-sharing-state {
-  background: none transparent;
-  border: none 0 transparent;
-  display: none;
-  height: var(--sharing-state-size);
-  margin-block: 0;
-  margin-inline: 0;
-  min-height: var(--sharing-state-size);
-  min-width: var(--sharing-state-size); /* this is required to prevent shrinking of the box which has no position:static content */
-  opacity: 1;
-  padding-block: 0;
-  padding-inline: 0;
-  position: relative;
-  width: var(--sharing-state-size);
-  z-index: var(--tab-ui-z-index);
+.favicon-sharing-state {
+  bottom: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
+  inset-inline-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
+  inset-inline-end: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
+  position: absolute;
+  top: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
 
-  &::after {
-    -moz-context-properties: fill;
-    background: none no-repeat center / 100%;
-    content: "";
-    display: inline-block;
+  tab-item.active &,
+  tab-item.loading &,
+  tab-item:not(.sharing-camera):not(.sharing-microphone):not(.sharing-screen) & {
+    display: none;
+  }
+
+  /* The priority is: screen > camera > microphone
+     See also https://searchfox.org/mozilla-central/rev/85d6bf1b521040c79ed72f3966274a25a2f987c7/browser/modules/webrtcUI.sys.mjs#316-331 */
+  tab-item.sharing-microphone &::before {
+    background-image: url("./icons/microphone.svg")
+  }
+  :root.simulate-svg-context-fill tab-item.sharing-microphone &::before {
+    mask-image: url("./icons/microphone.svg");
+  }
+
+  tab-item.sharing-camera &::before {
+    background-image: url("./icons/camera.svg")
+  }
+  :root.simulate-svg-context-fill tab-item.sharing-camera &::before {
+    mask-image: url("./icons/camera.svg");
+  }
+
+  tab-item.sharing-screen &::before {
+    background-image: url("./icons/screen.svg")
+  }
+  :root.simulate-svg-context-fill tab-item.sharing-screen &::before {
+    mask-image: url("./icons/screen.svg");
+  }
+
+  &::before {
     fill: var(--sharing-state-color);
-    height: var(--sharing-state-size);
-    inset-inline-end: 0;
-    position: absolute;
-    top: 0;
-    width: var(--sharing-state-size);
+    animation: var(--tab-sharing-icon-animation);
   }
-  :root.simulate-svg-context-fill &::after {
+  :root.simulate-svg-context-fill tab-item &::before {
+    /* put this here to override background-image specivied rules above! */
     background: var(--sharing-state-color);
-    mask-position: center;
-    mask-repeat: no-repeat;
-    mask-size: 100%;
-  }
-
-  tab-item:not(.faviconized) & {
-    margin-inline-start: calc(0px - var(--sharing-state-size));
   }
 }
 
-tab-item:not(.collapsed):not(.faviconized) {
-  &:not(.active).sharing-camera tab-sharing-state,
-  &:not(.active).sharing-microphone tab-sharing-state,
-  &:not(.active).sharing-screen tab-sharing-state,
-  &:not(.sharing-camera).has-sharing-camera-member.subtree-collapsed[data-child-ids] tab-sharing-state,
-  &:not(.sharing-microphone).has-sharing-microphone-member.subtree-collapsed[data-child-ids] tab-sharing-state,
-  &:not(.sharing-screen).has-sharing-screen-member.subtree-collapsed[data-child-ids] tab-sharing-state {
-    animation: var(--tab-sharing-icon-animation);
-    display: inline-block;
-  }
-
-  &.sharing-camera tab-sharing-state::after,
-  &.has-sharing-camera-member tab-sharing-state::after {
-    background-image: url("./icons/camera.svg");
-  }
-  :root.simulate-svg-context-fill & {
-    &.sharing-camera tab-sharing-state::after,
-    &.has-sharing-camera-member tab-sharing-state::after {
-      background-image: none;
-      mask-image: url("./icons/camera.svg");
-    }
-  }
-
-  &.sharing-microphone tab-sharing-state::after,
-  &.has-sharing-camera-microphone tab-sharing-state::after {
-    background-image: url("./icons/microphone.svg");
-  }
-  :root.simulate-svg-context-fill & {
-    &.sharing-microphone tab-sharing-state::after,
-    &.has-sharing-microphone-member tab-sharing-state::after {
-      background-image: none;
-      mask-image: url("./icons/microphone.svg");
-    }
-  }
-
-  &.sharing-screen tab-sharing-state::after,
-  &.has-sharing-camera-screen tab-sharing-state::after {
-    background-image: url("./icons/screen.svg");
-  }
-  :root.simulate-svg-context-fill & {
-    &.sharing-screen tab-sharing-state::after,
-    &.has-sharing-screen-member tab-sharing-state::after {
-      background-image: none;
-      mask-image: url("./icons/screen.svg");
+tab-item:not(.active):not(.loading) {
+  &.sharing-camera,
+  &.sharing-microphone,
+  &.sharing-screen {
+    .favicon-image,
+    .favicon-builtin::before {
+      animation: var(--tab-sharing-icon-animation-inverted);
     }
   }
 }
