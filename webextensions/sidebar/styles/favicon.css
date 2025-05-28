@@ -264,9 +264,9 @@ tab-item.faviconized:not(.sharing-camera):not(.sharing-microphone):not(.sharing-
   }
 }
 
-tab-item.faviconized:not(.active):not(.loading).sharing-camera,
-tab-item.faviconized:not(.active):not(.loading).sharing-microphone,
-tab-item.faviconized:not(.active):not(.loading).sharing-screen {
+tab-item:not(.active):not(.loading).sharing-camera,
+tab-item:not(.active):not(.loading).sharing-microphone,
+tab-item:not(.active):not(.loading).sharing-screen {
   .favicon-image,
   .favicon-builtin::before {
     animation: var(--tab-sharing-icon-animation-inverted);

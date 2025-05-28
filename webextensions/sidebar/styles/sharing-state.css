@@ -70,6 +70,10 @@ tab-sharing-state {
     mask-repeat: no-repeat;
     mask-size: 100%;
   }
+
+  tab-item:not(.faviconized) & {
+    margin-inline-start: calc(0px - var(--sharing-state-size));
+  }
 }
 
 tab-item:not(.collapsed):not(.faviconized) {
