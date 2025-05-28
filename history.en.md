@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+ - 4.1.11 (2025.5.29)
    * Keep the height of the pinned tabs area resizeable even if it was shrunken to zero.
    * Don't shrink the height of the pinned tabs area to zero at the startup after it was manually resized.
  - 4.1.10 (2025.5.27)
