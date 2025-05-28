@@ -130,10 +130,10 @@ export class TreeItemElement extends HTMLElement {
           <span class="${Constants.kEXTRA_ITEMS_CONTAINER} above"></span>
           <span class="caption">
             <${kTAB_FAVICON_ELEMENT_NAME}></${kTAB_FAVICON_ELEMENT_NAME}>
-            <${kTREE_ITEM_LABEL_ELEMENT_NAME}></${kTREE_ITEM_LABEL_ELEMENT_NAME}>
-            <${kTAB_COUNTER_ELEMENT_NAME}></${kTAB_COUNTER_ELEMENT_NAME}>
             <${kTAB_SHARING_STATE_ELEMENT_NAME}></${kTAB_SHARING_STATE_ELEMENT_NAME}>
             <${kTAB_SOUND_BUTTON_ELEMENT_NAME}></${kTAB_SOUND_BUTTON_ELEMENT_NAME}>
+            <${kTREE_ITEM_LABEL_ELEMENT_NAME}></${kTREE_ITEM_LABEL_ELEMENT_NAME}>
+            <${kTAB_COUNTER_ELEMENT_NAME}></${kTAB_COUNTER_ELEMENT_NAME}>
             <${kTAB_CLOSE_BOX_ELEMENT_NAME}></${kTAB_CLOSE_BOX_ELEMENT_NAME}>
           </span>
           <span class="${Constants.kEXTRA_ITEMS_CONTAINER} below"></span>

@@ -13,8 +13,8 @@
   --tab-dropshadow-blur: 0.4em;
   --tab-dropshadow-padding: 0.2em;
   --tab-dropshadow-size: var(--tab-dropshadow-padding); /* for backward compatibility */
-  --tab-closebox-offset: calc(((var(--tab-caption-size) - 1em) / 2) + var(--tab-dropshadow-padding));
-  --tab-closebox-negative-offset: calc(((1em - var(--tab-caption-size)) / 2) - var(--tab-dropshadow-padding));
+  --in-tab-button-offset: calc(((var(--tab-caption-size) - 1em) / 2) + var(--tab-dropshadow-padding));
+  --in-tab-button-negative-offset: calc(((1em - var(--tab-caption-size)) / 2) - var(--tab-dropshadow-padding));
   --tab-twisty-offset: calc(((var(--tab-ui-size) - var(--favicon-size)) / 2) + var(--tab-dropshadow-padding));
   --tab-twisty-negative-offset: calc(((var(--favicon-size) - var(--tab-ui-size)) / 2) - var(--tab-dropshadow-padding));
 
@@ -385,13 +385,14 @@ tab-item {
     margin-block: 0.25em;
   }
 
-  /* expand closebox to fill full height of tab */
-  tab-closebox {
+  /* expand buttons to fill full height of tab */
+  tab-closebox,
+  &:not(.faviconized) tab-sound-button {
     background: none transparent;
     border: none 0 transparent;
-    margin-block: var(--tab-closebox-negative-offset);
+    margin-block: var(--in-tab-button-negative-offset);
     margin-inline: 0;
-    padding-block: var(--tab-closebox-offset);
+    padding-block: var(--in-tab-button-offset);
     padding-inline: 0.25em;
 
     &::before {

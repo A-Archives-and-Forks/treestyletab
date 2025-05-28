@@ -774,6 +774,10 @@ tab-item .native-tab-group-line {
     pointer-events: auto;
     z-index: var(--tab-extra-contents-front-z-index);
   }
+  tab-item:not(.faviconized).sound-playing &.front,
+  tab-item:not(.faviconized).muted &.front {
+    inset-inline-start: calc(var(--tab-label-start-offset) + var(--svg-small-icon-size));
+  }
   tab-item.faviconized &.front {
     inset-inline-start: var(--faviconized-tab-padding);
     inset-inline-end: var(--faviconized-tab-padding);
