@@ -889,23 +889,6 @@ tab-item.attention tab-favicon::before {
   }
 }
 
-#pinned-tabs-container-resizer {
-  background-color: transparent;
-  cursor: ns-resize;
-  height: var(--pinned-tabs-container-resizer-size);
-  top: calc(var(--tabbar-top-area-size) + var(--visual-gap-offset) + max(0px, var(--pinned-tabs-area-size) - var(--pinned-tabs-container-resizer-size)));
-  transition: background-color var(--color-animation);
-  z-index: var(--over-tabs-z-index);
-
-  &:hover {
-    background-color: Highlight;
-  }
-
-  :root:not(.have-pinned-tabs) & {
-    display: none;
-  }
-}
-
 .tabs.pinned {
   align-items: stretch;
   display: flex;
