@@ -200,14 +200,17 @@ export const configs = new Configs({
   showNewTabActionSelector: true,
   longPressOnNewTabButton: Constants.kCONTEXTUAL_IDENTITY_SELECTOR,
   zoomable: false,
+
+  inContentUIOffsetTop: 0, // See also https://github.com/piroor/treestyletab/issues/3698
   tabPreviewTooltip: false,
-  tabPreviewTooltipRenderIn: Constants.kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE,
+  tabPreviewTooltipRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
   tabPreviewTooltipInSidebar: null, // migrated to tabPreviewTooltipMode
   tabPreviewTooltipDelayMsec: 500, // same as "ui.tooltip.delay_ms"
-  tabPreviewTooltipOffsetTop: 0, // See also https://github.com/piroor/treestyletab/issues/3698
+  tabPreviewTooltipOffsetTop: null, // migrated to inContentUIOffsetTop
   showOverflowTitleByTooltip: true,
   showCollapsedDescendantsByTooltip: true,
   showCollapsedDescendantsByLegacyTooltipOnSidebar: true,
+  tabGroupMenuPanelRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
 
   showDialogInSidebar: false,
 
@@ -442,7 +445,7 @@ export const configs = new Configs({
   enableWorkaroundForBug1767165_fixDragEndCoordinates: null, // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1767165
   enableWorkaroundForBug1763420_reloadMaskImage: true, // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1763420
   maximumDelayForBug1561879: 500,
-  workaroundForBug1548949DroppedTabs: null,
+  workaroundForBug1548949DroppedItems: null,
   heartbeatInterval: 5000,
   connectionTimeoutDelay: 500,
   maximumAcceptableDelayForTabDuplication: 10 * 1000,
@@ -463,7 +466,8 @@ export const configs = new Configs({
   avoidDiscardedTabToBeActivatedIfPossible: false,
   provressiveHighlightingStep: Number.MAX_SAFE_INTEGER,
   progressievHighlightingInterval: 100,
-  generatedTabElementsPoolLifetimeMsec: 5 * 1000,
+  generatedTreeItemElementsPoolLifetimeMsec: 5 * 1000,
+  nativeTabGroupModificationDetectionTimeoutAfterTabMove: 500,
   undoMultipleTabsClose: true,
   allowDragNewTabButton: true,
   newTabButtonDragGestureModifiers: 'shift',
@@ -581,6 +585,7 @@ export const configs = new Configs({
     'background/handle-tab-multiselect': false,
     'background/handle-tree-changes': false,
     'background/migration': false,
+    'background/native-tab-groups': false,
     'background/successor-tab': false,
     'background/tab-context-menu': false,
     'background/tabs-group': false,
@@ -588,7 +593,7 @@ export const configs = new Configs({
     'background/tabs-open': false,
     'background/tree': false,
     'background/tree-structure': false,
-    'common/Tab': false,
+    'common/TreeItem': false,
     'common/Window': false,
     'common/api-tabs': false,
     'common/bookmark': false,
@@ -613,11 +618,12 @@ export const configs = new Configs({
     'sidebar/mouse-event-listener': false,
     'sidebar/pinned-tabs': false,
     'sidebar/scroll': false,
-    'sidebar/sidebar-tabs': false,
+    'sidebar/sidebar-items': false,
     'sidebar/sidebar': false,
     'sidebar/size': false,
     'sidebar/subpanel': false,
     'sidebar/tab-context-menu': false,
+    'sidebar/tab-group-context-menu': false,
     'sidebar/tab-preview-tooltip': false,
     'sidebar/tst-api-frontend': false,
   },
@@ -751,7 +757,7 @@ export function log(module, ...args)
 {
   const isModuleLog = module in configs.$default.logFor;
   const message    = isModuleLog ? args.shift() : module ;
-  const useConsole = configs && configs.debug && (!isModuleLog || configs.logFor[module]);
+  const useConsole = configs?.debug && (!isModuleLog || configs.logFor[module]);
   const logging    = useConsole || log.forceStore;
   if (!logging)
     return;

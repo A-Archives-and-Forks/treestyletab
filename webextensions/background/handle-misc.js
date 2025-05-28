@@ -26,7 +26,7 @@ import * as TabsUpdate from '/common/tabs-update.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as Background from './background.js';
 import * as Commands from './commands.js';
@@ -285,7 +285,7 @@ async function onShortcutCommand(command) {
           });
           log(`simulateUpOnTree: nextActiveId = ${nextActiveId}`);
           const nextActive = (
-            nextActiveId && Tab.get(nextActiveId) ||
+            Tab.get(nextActiveId) ||
             Tab.getLastVisibleTab(activeTab.windowId)
           );
           TabsInternalOperation.activateTab(nextActive, {
@@ -311,7 +311,7 @@ async function onShortcutCommand(command) {
           });
           log(`simulateDownOnTree: nextActiveId = ${nextActiveId}`);
           const nextActive = (
-            nextActiveId && Tab.get(nextActiveId) ||
+            Tab.get(nextActiveId) ||
             Tab.getFirstNormalTab(activeTab.windowId)
           );
           TabsInternalOperation.activateTab(nextActive, {
@@ -565,14 +565,17 @@ function onMessage(message, sender) {
       return Promise.resolve(loadUserStyleRules());
 
     case Constants.kCOMMAND_PING_TO_BACKGROUND: // return tabs as the pong, to optimizie further initialization tasks in the sidebar
+      TabsUpdate.completeLoadingTabs(message.windowId); // don't wait here for better perfomance
+      return Promise.resolve(TabsStore.windows.get(message.windowId).export(true));
+
     case Constants.kCOMMAND_PULL_TABS:
       if (message.windowId) {
         TabsUpdate.completeLoadingTabs(message.windowId); // don't wait here for better perfomance
-        return Promise.resolve(TabsStore.windows.get(message.windowId).export(true));
+        return Promise.resolve(TabsStore.windows.get(message.windowId).export(true).tabs);
       }
       return Promise.resolve(message.tabIds.map(id => {
         const tab = Tab.get(id);
-        return tab && tab.$TST.export(true);
+        return tab?.$TST.export(true);
       }));
 
     case Constants.kCOMMAND_PULL_TABS_ORDER:
@@ -1094,8 +1097,8 @@ function onMessageExternal(message, sender) {
       return (async () => {
         const tabs = await TSTAPI.getTargetTabs(message, sender);
         configs.grantedRemovingTabIds = mapAndFilterUniq(configs.grantedRemovingTabIds.concat(tabs), tab => {
-          tab = TabsStore.ensureLivingTab(tab);
-          return tab && tab.id || undefined;
+          tab = TabsStore.ensureLivingItem(tab);
+          return tab?.id || undefined;
         });
         return true;
       })();
@@ -1134,11 +1137,11 @@ function onMessageExternal(message, sender) {
       })();
 
     case TSTAPI.kREGISTER_AUTO_STICKY_STATES:
-      Tab.registerAutoStickyState(sender.id, message.state || message.states);
+      TreeItem.registerAutoStickyState(sender.id, message.state || message.states);
       break;
 
     case TSTAPI.kUNREGISTER_AUTO_STICKY_STATES:
-      Tab.unregisterAutoStickyState(sender.id, message.state || message.states);
+      TreeItem.unregisterAutoStickyState(sender.id, message.state || message.states);
       break;
   }
 }

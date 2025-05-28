@@ -20,7 +20,7 @@ function log(...args) {
 }
 
 export default class Window {
-  constructor(windowId) {
+  constructor(windowId, tabGroups) {
     const alreadyTracked = TabsStore.windows.get(windowId);
     if (alreadyTracked)
       return alreadyTracked;
@@ -29,6 +29,10 @@ export default class Window {
 
     this.id    = windowId;
     this.tabs  = new Map();
+    this.tabGroups = new Map();
+    if (tabGroups) {
+      this.initTabGroups(tabGroups);
+    }
     this.order = [];
 
     this.containerElement = null;
@@ -41,6 +45,7 @@ export default class Window {
     this.keepDescendantsTabs = new Set();
     this.highlightingTabs    = new Set();
     this.tabsToBeHighlightedAlone = new Set();
+    this.internallyMovingTabsForUpdatedNativeTabGroups = new Set();
 
     this.subTreeMovingCount =
       this.subTreeChildrenMovingCount =
@@ -75,6 +80,10 @@ export default class Window {
     // We should initialize private properties with blank value for better performance with a fixed shape.
     this.delayedDestroy = null;
   }
+  initTabGroups(tabGroups) {
+    log(`initializing tabGroups of window ${this.id}: `, tabGroups);
+    this.tabGroups = new Map((tabGroups || []).map(group => [group.id, group]));
+  }
 
   destroy() {
     for (const tab of this.tabs.values()) {
@@ -82,6 +91,7 @@ export default class Window {
         tab.$TST.destroy();
     }
     this.tabs.clear();
+    this.tabGroups.clear();
     TabsStore.windows.delete(this.id);
     TabsStore.unprepareIndexesForWindow(this.id);
 
@@ -98,6 +108,7 @@ export default class Window {
     this.unbindElements();
 
     this.tabs = null;
+    this.tabGroups = null;
     this.order = null;
     this.id = null;
   }
@@ -273,14 +284,20 @@ export default class Window {
     for (const tab of this.getOrderedTabs()) {
       tabs.push(tab.$TST.export(full));
     }
-    return tabs;
+    return {
+      tabs,
+      tabGroups: [...this.tabGroups.values()].map(group => group.$TST.sanitized),
+    };
   }
 }
 
 Window.onInitialized = new EventListenerManager();
 
-Window.init = windowId => {
-  const win = TabsStore.windows.get(windowId) || new Window(windowId);
+Window.init = (windowId, tabGroups) => {
+  const win = TabsStore.windows.get(windowId) || new Window(windowId, tabGroups);
+  if (tabGroups && tabGroups.size != win.tabGroups.size) {
+    win.initTabGroups(tabGroups);
+  }
   Window.onInitialized.dispatch(win);
   return win;
 }

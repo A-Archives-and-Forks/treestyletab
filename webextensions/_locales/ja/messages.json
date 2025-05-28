@@ -275,7 +275,7 @@
   "message_startup_requestPermissions_allUrls":   { "message": "コンテンツ領域内のWebページ上でのスクリプトの実行" },
   "message_startup_requestPermissions_allUrls_tabPreviewPanel":   { "message": "ツールチップの代わりにタブのプレビュー画像を表示する" },
   "message_startup_requestPermissions_allUrls_skipCollapsedTabsWithCtrlTab":   { "message": "キーボードショートカットでのタブ切り替え中、折りたたまれた子孫タブにはフォーカスせず、折りたたまれたツリーも展開しない" },
-  "message_startup_requestPermissions_allUrls_preventBlankDialogRestoration":   { "message": "タブを開き直す操作でダイアログ用の空のウィンドウが復元されないようにする" },
+  "message_startup_requestPermissions_allUrls_preventBlankDialogRestoration":   { "message": "タブを開きなおす操作でダイアログ用の空のウィンドウが復元されないようにする" },
   "message_startup_requestPermissions_clipboardRead": { "message": "クリップボードの読み取り" },
   "message_startup_requestPermissions_clipboardRead_newTabButtonMiddleClick": { "message": "「新しいタブ」ボタンの中ボタンクリックでクリップボード内のURLを開く（※\"dom.events.asyncClipboard.clipboardItem\"の有効化が必要）" },
 
@@ -421,8 +421,8 @@
   "config_tabPreviewTooltipRenderIn_sidebar": { "message": "常にサイドバー内" },
   "config_tabPreviewTooltipRenderIn_anywhere": { "message": "可能な場合はコンテンツ領域内、それ以外の場合はサイドバー内" },
   "config_tabPreviewTooltipRenderIn_label_after": { "message": "\u200b" },
-  "config_tabPreviewTooltipOffsetTop_label_before": { "message": "プライバシー優先時（\"privacy.resistFingerprinting\"=\"true\"に設定している場合など）でサイドバーのヘッダーの高さを検出できない場合に、プレビューの表示位置を縦方向に" },
-  "config_tabPreviewTooltipOffsetTop_label_after": { "message": "ピクセルずらす" },
+  "config_inContentUIOffsetTop_label_before": { "message": "プライバシー優先時（\"privacy.resistFingerprinting\"=\"true\"に設定している場合など）でサイドバーのヘッダーの高さを検出できない場合に、プレビューの表示位置を縦方向に" },
+  "config_inContentUIOffsetTop_label_after": { "message": "ピクセルずらす" },
   "config_showCollapsedDescendantsByTooltip_label": { "message": "親タブ上のツールチップで、折りたたまれた子孫タブの一覧を表示する" },
   "config_showCollapsedDescendantsByLegacyTooltipOnSidebar_label": { "message": "その際は必要に応じてネイティブのツールチップ（サイドバーの幅より広く表示できる）を使用する" },
   "config_shiftTabsForScrollbarDistance_label_before": { "message": "自動的に表示されるスクロールバーに覆われてタブ内のボタンに触れなくならないよう、" },
@@ -607,7 +607,7 @@
   "config_inheritContextualIdentityToTabsFromAnyOtherTriggerMode_parent": { "message": "ツリー上での親から継承" },
   "config_inheritContextualIdentityToTabsFromAnyOtherTriggerMode_lastActive": { "message": "現在のタブから継承" },
 
-  "config_inheritContextualIdentityToUnopenableURLTabs_label": { "message": "拡張機能の権限で開けないURLのタブを、コンテナーを継承するために安全なURLで強制的に開き直す" },
+  "config_inheritContextualIdentityToUnopenableURLTabs_label": { "message": "拡張機能の権限で開けないURLのタブを、コンテナーを継承するために安全なURLで強制的に開きなおす" },
 
   "config_groupTab_caption": { "message": "タブを自動的にグループ化する" },
 
@@ -891,6 +891,15 @@
 
 
   "tabContextMenu_newTab_label":      { "message": "新しいタブ(&W)" },
+  "tabContextMenu_newTabNext_label":  { "message": "新しいタブを下隣に開く(&W)" },
+  "tabContextMenu_newGroup_label":               { "message": "このタブを新しいグループに追加(&G)" },
+  "tabContextMenu_newGroup_label_multiselected": { "message": "選択したタブを新しいグループに追加(&G)" },
+  "tabContextMenu_addToGroup_label":               { "message": "このタブをグループに追加(&G)" },
+  "tabContextMenu_addToGroup_label_multiselected": { "message": "選択したタブをグループに追加(&G)" },
+  "tabContextMenu_addToGroup_newGroup_label":      { "message": "新しいグループ(&G)" },
+  "tabContextMenu_addToGroup_unnamed_label":       { "message": "無名のグループ" },
+  "tabContextMenu_removeFromGroup_label":               { "message": "このタブをグループから除外(&R)" },
+  "tabContextMenu_removeFromGroup_label_multiselected": { "message": "選択したタブを各グループから除外(&R)" },
 
   "tabContextMenu_reload_label":      { "message": "タブを再読み込み(&R)" },
   "tabContextMenu_unblockAutoplay_label": { "message": "タブのメディアを再生(&L)" },
@@ -921,8 +930,8 @@
   "tabContextMenu_closeTabsToBottom_label":  { "message": "下のタブをすべて閉じる(&B)" },
   "tabContextMenu_closeOther_label":  { "message": "他のタブをすべて閉じる(&O)" },
 
-  "tabContextMenu_undoClose_label":   { "message": "閉じたタブを開き直す(&U)" },
-  "tabContextMenu_undoClose_label_multiple":  { "message": "閉じたタブを開き直す(&U)" },
+  "tabContextMenu_undoClose_label":   { "message": "閉じたタブを開きなおす(&U)" },
+  "tabContextMenu_undoClose_label_multiple":  { "message": "閉じたタブを開きなおす(&U)" },
   "tabContextMenu_close_label":       { "message": "タブを閉じる(&C)" },
 
   "tabContextMenu_reload_label_multiselected":      { "message": "タブを再読み込み(&R)" },
@@ -947,5 +956,38 @@
   "tabContextMenu_bookmarkSelected_label":       { "message": "選択したタブをブックマーク...(&T)" },
   "tabContextMenu_bookmarkSelected_label_multiselected": { "message": "選択したタブをブックマーク...(&T)" },
 
-  "tabContextMenu_close_label_multiselected":       { "message": "選択したタブを閉じる(&S)" }
+  "tabContextMenu_close_label_multiselected":       { "message": "選択したタブを閉じる(&S)" },
+
+  "tabGroupMenu_tab-group-editor-title-create":                 { "message": "タブグループを作成" },
+  "tabGroupMenu_tab-group-editor-title-edit":                   { "message": "タブグループの管理" },
+  "tabGroupMenu_tab-group-editor-name-label":                   { "message": "グループ名" },
+  "tabGroupMenu_tab-group-editor-name-field_placeholder":       { "message": "例: ショッピング" },
+  "tabGroupMenu_tab-group-editor-cancel_label":                 { "message": "キャンセル" },
+  "tabGroupMenu_tab-group-editor-cancel_accesskey":             { "message": "C" },
+  "tabGroupMenu_tab-group-editor-color-selector_aria-label":    { "message": "タブグループの色" },
+  "tabGroupMenu_tab-group-editor-color-selector2-blue":         { "message": "青" },
+  "tabGroupMenu_tab-group-editor-color-selector2-blue_title":   { "message": "青" },
+  "tabGroupMenu_tab-group-editor-color-selector2-purple":       { "message": "紫" },
+  "tabGroupMenu_tab-group-editor-color-selector2-purple_title": { "message": "紫" },
+  "tabGroupMenu_tab-group-editor-color-selector2-cyan":         { "message": "シアン" },
+  "tabGroupMenu_tab-group-editor-color-selector2-cyan_title":   { "message": "シアン" },
+  "tabGroupMenu_tab-group-editor-color-selector2-orange":       { "message": "オレンジ" },
+  "tabGroupMenu_tab-group-editor-color-selector2-orange_title": { "message": "オレンジ" },
+  "tabGroupMenu_tab-group-editor-color-selector2-yellow":       { "message": "黄" },
+  "tabGroupMenu_tab-group-editor-color-selector2-yellow_title": { "message": "黄" },
+  "tabGroupMenu_tab-group-editor-color-selector2-pink":         { "message": "ピンク" },
+  "tabGroupMenu_tab-group-editor-color-selector2-pink_title":   { "message": "ピンク" },
+  "tabGroupMenu_tab-group-editor-color-selector2-green":        { "message": "緑" },
+  "tabGroupMenu_tab-group-editor-color-selector2-green_title":  { "message": "緑" },
+  "tabGroupMenu_tab-group-editor-color-selector2-gray":         { "message": "グレー" },
+  "tabGroupMenu_tab-group-editor-color-selector2-gray_title":   { "message": "グレー" },
+  "tabGroupMenu_tab-group-editor-color-selector2-red":          { "message": "赤" },
+  "tabGroupMenu_tab-group-editor-color-selector2-red_title":    { "message": "赤" },
+  "tabGroupMenu_tab-group-editor-action-new-tab_label":         { "message": "グルーブ内に新しいタブを開く" },
+  "tabGroupMenu_tab-group-editor-action-new-window_label":      { "message": "グループを新しいウィンドウへ移動" },
+  "tabGroupMenu_tab-group-editor-action-save_label":            { "message": "グループを保存して閉じる" },
+  "tabGroupMenu_tab-group-editor-action-ungroup_label":         { "message": "グループを解放" },
+  "tabGroupMenu_tab-group-editor-action-delete_label":          { "message": "グループを削除" },
+  "tabGroupMenu_tab-group-editor-done_label":                   { "message": "完了" },
+  "tabGroupMenu_tab-group-editor-done_accesskey":               { "message": "D" }
 }

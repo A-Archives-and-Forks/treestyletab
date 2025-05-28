@@ -15,7 +15,7 @@ import * as ContextualIdentities from '/common/contextual-identities.js';
 import * as Sync from '/common/sync.js';
 import * as TabsStore from '/common/tabs-store.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as Tree from './tree.js';
 

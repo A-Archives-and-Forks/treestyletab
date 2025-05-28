@@ -22,7 +22,7 @@ function log(...args) {
   internalLogger('background/migration', ...args);
 }
 
-const kCONFIGS_VERSION = 32;
+const kCONFIGS_VERSION = 33;
 const kFEATURES_VERSION = 9;
 
 export function migrateConfigs() {
@@ -317,8 +317,12 @@ export function migrateConfigs() {
     case 31:
       if (configs.tabPreviewTooltipInSidebar !== null)
         configs.tabPreviewTooltipRenderIn = configs.tabPreviewTooltipInSidebar ?
-          Constants.kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE :
-          Constants.kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT;
+          Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE :
+          Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT;
+
+    case 32:
+      if (configs.tabPreviewTooltipOffsetTop !== null)
+        configs.inContentUIOffsetTop = configs.tabPreviewTooltipOffsetTop;
   }
   configs.configsVersion = kCONFIGS_VERSION;
 }

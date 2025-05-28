@@ -88,7 +88,7 @@ function split(input, { splitter, splitters, appendSplitter }) {
         continue;
       }
     }
-    else if (splittersSet && splittersSet.has(char)) {
+    else if (splittersSet?.has(char)) {
       if (!parens &&
           !angulars &&
           !singleQuoted &&

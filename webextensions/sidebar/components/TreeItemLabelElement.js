@@ -9,7 +9,7 @@ import {
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
 
-export const kTAB_LABEL_ELEMENT_NAME = 'tab-label';
+export const kTREE_ITEM_LABEL_ELEMENT_NAME = 'tab-label';
 
 const KLABEL_CLASS_NAME   = 'label';
 const kCONTENT_CLASS_NAME = `${KLABEL_CLASS_NAME}-content`;
@@ -43,9 +43,9 @@ function isRTL(text) {
 };
 //****************************************************************************
 
-export class TabLabelElement extends HTMLElement {
+export class TreeItemLabelElement extends HTMLElement {
   static define() {
-    window.customElements.define(kTAB_LABEL_ELEMENT_NAME, TabLabelElement);
+    window.customElements.define(kTREE_ITEM_LABEL_ELEMENT_NAME, TreeItemLabelElement);
   }
 
   static get observedAttributes() {
@@ -134,6 +134,8 @@ export class TabLabelElement extends HTMLElement {
     content.textContent = this.getAttribute(kATTR_NAME_VALUE) || '';
     this.classList.toggle('rtl', isRTL(content.textContent));
     this.invalidateOverflow();
+    // Don't touch to offsetWidth if not needed - touching it will triggers indent animation unexpectedly
+    this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
   }
 
   updateOverflow() {
@@ -150,6 +152,8 @@ export class TabLabelElement extends HTMLElement {
       const tab = this.owner;
       const overflow = tab && !tab.pinned && this._content.offsetWidth > this.offsetWidth;
       this.classList.toggle('overflow', overflow);
+      // Don't touch to offsetWidth if not needed - touching it will triggers indent animation unexpectedly
+      this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${this._content.offsetWidth}px`);
     });
   }
 

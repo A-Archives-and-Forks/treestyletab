@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -38,7 +38,7 @@ import { SequenceMatcher } from '/extlib/diff.js';
 import * as SidebarConnection from '/common/sidebar-connection.js';
 import * as TabsStore from '/common/tabs-store.js';
 
-import Tab from '/common/Tab.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('background/tabs-move', ...args);
@@ -54,7 +54,7 @@ function logApiTabs(...args) {
 export async function moveTabsBefore(tabs, referenceTab, options = {}) {
   log('moveTabsBefore: ', tabs, referenceTab, options);
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   if (referenceTab.$TST.isAllPlacedBeforeSelf(tabs)) {
@@ -69,12 +69,20 @@ export async function moveTabBefore(tab, referenceTab, options = {}) {
 
 async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   const win = TabsStore.windows.get(tabs[0].windowId);
 
-  log('moveTabsInternallyBefore: ', tabs, referenceTab, options);
+  log('moveTabsInternallyBefore: ', tabs, `${referenceTab.id}(index=${referenceTab.index})`, options);
+  if (referenceTab.type == TreeItem.TYPE_GROUP) {
+    referenceTab = referenceTab.$TST?.firstMember;
+    if (!TabsStore.ensureLivingItem(referenceTab)) {
+      log('missing reference tab');
+      return [];
+    }
+    log(`  => reference tab: ${referenceTab.id}(index=${referenceTab.index})`);
+  }
 
   const precedingReferenceTab = referenceTab.$TST.previousTab;
   if (referenceTab.pinned) {
@@ -96,16 +104,18 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
       the operation is asynchronous. To help synchronous operations
       following to this operation, we need to move tabs immediately.
     */
+    const tabGroups = new Set();
     for (const tab of tabs) {
       const oldPreviousTab = tab.$TST.unsafePreviousTab;
       const oldNextTab     = tab.$TST.unsafeNextTab;
-      if (oldNextTab && oldNextTab.id == referenceTab.id) // no move case
+      if (oldNextTab?.id == referenceTab.id) // no move case
         continue;
       const fromIndex = tab.index;
       if (referenceTab.index > tab.index)
         tab.index = referenceTab.index - 1;
       else
         tab.index = referenceTab.index;
+      tabGroups.add(tab.$TST.nativeTabGroup);
       if (SidebarConnection.isInitialized()) { // only on the background page
         win.internalMovingTabs.set(tab.id, tab.index);
         win.alreadyMovedTabs.set(tab.id, tab.index);
@@ -125,9 +135,19 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
         tabId:       tab.id,
         fromIndex,
         toIndex:     tab.index,
-        nextTabId:   referenceTab && referenceTab.id,
+        nextTabId:   referenceTab?.id,
         broadcasted: !!options.broadcasted
       });
+      if (options.doNotOptimize) {
+        win.internalMovingTabs.set(tab.id, tab.index);
+        win.alreadyMovedTabs.set(tab.id, tab.index);
+        await browser.tabs.move(tab.id, { index: tab.index });
+        win.internalMovingTabs.delete(tab.id);
+        win.alreadyMovedTabs.delete(tab.id);
+      }
+    }
+    for (const group of tabGroups) {
+      group?.$TST.reindex();
     }
     if (movedTabs.length == 0) {
       log(' => actually nothing moved');
@@ -141,9 +161,12 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
       );
     }
     if (SidebarConnection.isInitialized()) { // only on the background page
-      if (options.delayedMove) // Wait until opening animation is finished.
+      if (options.delayedMove) { // Wait until opening animation is finished.
         await wait(configs.newTabAnimationDuration);
-      syncToNativeTabs(tabs);
+      }
+      if (!options.doNotOptimize) {
+        syncToNativeTabs(tabs);
+      }
     }
   }
   catch(e) {
@@ -159,7 +182,7 @@ export async function moveTabInternallyBefore(tab, referenceTab, options = {}) {
 export async function moveTabsAfter(tabs, referenceTab, options = {}) {
   log('moveTabsAfter: ', tabs, referenceTab, options);
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   if (referenceTab.$TST.isAllPlacedAfterSelf(tabs)) {
@@ -174,12 +197,24 @@ export async function moveTabAfter(tab, referenceTab, options = {}) {
 
 async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
   if (!tabs.length ||
-      !TabsStore.ensureLivingTab(referenceTab))
+      !TabsStore.ensureLivingItem(referenceTab))
     return [];
 
   const win = TabsStore.windows.get(tabs[0].windowId);
 
-  log('moveTabsInternallyAfter: ', tabs, `${referenceTab.id}(index=${referenceTab.index}`, options);
+  log('moveTabsInternallyAfter: ', tabs, `${referenceTab.id}(index=${referenceTab.index})`, options);
+  if (referenceTab.type == TreeItem.TYPE_GROUP) {
+    if (!referenceTab.collapsed) {
+      log('  => move before the first member tab of the reference group');
+      return moveTabsInternallyBefore(tabs, referenceTab.$TST?.firstMember, options = {});
+    }
+    referenceTab = referenceTab.$TST?.lastMember;
+    if (!TabsStore.ensureLivingItem(referenceTab)) {
+      log('missing reference tab');
+      return [];
+    }
+    log(`  => reference tab: ${referenceTab.id}(index=${referenceTab.index})`);
+  }
 
   const followingReferenceTab = referenceTab.$TST.nextTab;
   if (followingReferenceTab &&
@@ -205,6 +240,7 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
     while (nextTab && tabs.find(tab => tab.id == nextTab.id)) {
       nextTab = nextTab.$TST.unsafeNextTab;
     }
+    const tabGroups = new Set();
     for (const tab of tabs) {
       const oldPreviousTab = tab.$TST.unsafePreviousTab;
       const oldNextTab     = tab.$TST.unsafeNextTab;
@@ -221,6 +257,7 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
       else {
         tab.index = win.tabs.size - 1
       }
+      tabGroups.add(tab.$TST.nativeTabGroup);
       if (SidebarConnection.isInitialized()) { // only on the background page
         win.internalMovingTabs.set(tab.id, tab.index);
         win.alreadyMovedTabs.set(tab.id, tab.index);
@@ -240,9 +277,19 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
         tabId:       tab.id,
         fromIndex,
         toIndex:     tab.index,
-        nextTabId:   nextTab && nextTab.id,
+        nextTabId:   nextTab?.id,
         broadcasted: !!options.broadcasted
       });
+      if (options.doNotOptimize) {
+        win.internalMovingTabs.set(tab.id, tab.index);
+        win.alreadyMovedTabs.set(tab.id, tab.index);
+        await browser.tabs.move(tab.id, { index: tab.index });
+        win.internalMovingTabs.delete(tab.id);
+        win.alreadyMovedTabs.delete(tab.id);
+      }
+    }
+    for (const group of tabGroups) {
+      group?.$TST.reindex();
     }
     if (movedTabs.length == 0) {
       log(' => actually nothing moved');
@@ -256,9 +303,12 @@ async function moveTabsInternallyAfter(tabs, referenceTab, options = {}) {
       );
     }
     if (SidebarConnection.isInitialized()) { // only on the background page
-      if (options.delayedMove) // Wait until opening animation is finished.
+      if (options.delayedMove) { // Wait until opening animation is finished.
         await wait(configs.newTabAnimationDuration);
-      syncToNativeTabs(tabs);
+      }
+      if (!options.doNotOptimize) {
+        syncToNativeTabs(tabs);
+      }
     }
   }
   catch(e) {

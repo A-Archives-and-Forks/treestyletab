@@ -10,7 +10,7 @@ import {
   configs
 } from '/common/common.js';
 import { is, isNot /*, ok, ng*/ } from '/tests/assert.js';
-//import Tab from '/common/Tab.js';
+//import { Tab } from '/common/TreeItem.js';
 
 import * as Constants from '/common/constants.js';
 import * as Utils from './utils.js';

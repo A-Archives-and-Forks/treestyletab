@@ -23,7 +23,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
 import * as TabsMove from './tabs-move.js';
@@ -92,7 +92,7 @@ export async function loadTreeStructure(windows, restoredFromCacheResults) {
     let windowStateCompletelyApplied = false;
     try {
       const structure = await browser.sessions.getWindowValue(win.id, Constants.kWINDOW_STATE_TREE_STRUCTURE).catch(ApiTabs.createErrorHandler());
-      let uniqueIds = tabs.map(tab => tab.$TST.uniqueId && tab.$TST.uniqueId || '?');
+      let uniqueIds = tabs.map(tab => tab.$TST.uniqueId || '?');
       MetricsData.add('loadTreeStructure: read stored data');
       if (structure &&
           structure.length > 0 &&
@@ -265,9 +265,9 @@ async function attachTabFromRestoredInfo(tab, options = {}) {
 
   // clear wrong positioning information
   if (tab.pinned ||
-      (insertBefore && insertBefore.pinned))
+      insertBefore?.pinned)
     insertBefore = null;
-  const nextOfInsertAfter = insertAfter && insertAfter.$TST.nextTab;
+  const nextOfInsertAfter = insertAfter?.$TST.nextTab;
   if (nextOfInsertAfter &&
       nextOfInsertAfter.pinned)
     insertAfter = null;
@@ -419,7 +419,7 @@ Tab.onRestored.addListener(tab => {
           activeTab.$TST.promisedUniqueId,
           browser.sessions.getTabValue(activeTab.id, Constants.kPERSISTENT_ID).catch(ApiTabs.createErrorHandler())
         ]);
-        if (restoredUniqueId && restoredUniqueId.id != uniqueId.id) {
+        if (restoredUniqueId?.id != uniqueId.id) {
           activeTab.$TST.updateUniqueId({ id: restoredUniqueId.id });
           reserveToAttachTabFromRestoredInfo(activeTab, {
             children: true
@@ -664,7 +664,7 @@ async function tryRestoreClosedSetFor(tab, countToBeRestored) {
   const rootTabs = restoredTabs.filter((tab, index) => lastRecentlyClosedTabsTreeStructure[index].parent == TreeBehavior.STRUCTURE_KEEP_PARENT || lastRecentlyClosedTabsTreeStructure[index].parent == TreeBehavior.STRUCTURE_NO_PARENT);
   log(`tryRestoreClosedSetFor: rootTabs, restoredTabs = `, rootTabs, restoredTabs);
   for (const rootTab of rootTabs) {
-    const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(rootTab, {
+    const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(rootTab, {
       context:      Constants.kINSERTION_CONTEXT_MOVED,
       insertAfter:  rootTab.$TST.previousTab,
       insertBefore: restoredTabs[restoredTabs.length - 1].$TST.nextTab

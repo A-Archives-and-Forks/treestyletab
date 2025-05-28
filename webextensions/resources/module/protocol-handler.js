@@ -8,7 +8,7 @@
 import * as Constants from '/common/constants.js';
 
 const uri = decodeURIComponent(location.search.replace(/^\?/, ''));
-const matched = uri && uri.match(Constants.kSHORTHAND_CUSTOM_URI);
+const matched = uri?.match(Constants.kSHORTHAND_CUSTOM_URI);
 if (matched) {
   const name = matched[1];
   const params = new URLSearchParams(matched[2] || '');

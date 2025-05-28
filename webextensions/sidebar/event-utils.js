@@ -12,13 +12,16 @@ import {
   isMacOS,
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
+import { TreeItem } from '/common/TreeItem.js';
+
 import { kTAB_CLOSE_BOX_ELEMENT_NAME } from './components/TabCloseBoxElement.js';
-import { kTAB_SHARING_STATE_ELEMENT_NAME } from './components/TabSharingStateElement.js';
+import { kTAB_FAVICON_ELEMENT_NAME } from './components/TabFaviconElement.js';
 import { kTAB_SOUND_BUTTON_ELEMENT_NAME } from './components/TabSoundButtonElement.js';
 import { kTAB_TWISTY_ELEMENT_NAME } from './components/TabTwistyElement.js';
+import { kTREE_ITEM_ELEMENT_NAME } from './components/TreeItemElement.js';
 
 // eslint-disable-next-line no-unused-vars
 function log(...args) {
@@ -48,7 +51,7 @@ export function isAccelKeyPressed(event) {
 
 export function isCopyAction(event) {
   return isAccelKeyPressed(event) ||
-           (event.dataTransfer && event.dataTransfer.dropEffect == 'copy');
+           (event.dataTransfer?.dropEffect == 'copy');
 }
 
 export function getElementTarget(eventOrTarget) {
@@ -81,62 +84,67 @@ export function getElementOriginalTarget(eventOrTarget) {
 }
 
 export function isEventFiredOnTwisty(event) {
-  const tab = getTabFromEvent(event);
+  const tab = getTreeItemFromEvent(event);
   if (!tab || !tab.$TST.hasChild)
     return false;
 
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_TWISTY_ELEMENT_NAME);
+  return target?.closest && !!target.closest(kTAB_TWISTY_ELEMENT_NAME);
 }
 
 export function isEventFiredOnSharingState(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_SHARING_STATE_ELEMENT_NAME);
+  if (!target?.closest(kTAB_FAVICON_ELEMENT_NAME)) {
+    return false;
+  }
+  const tab = target.closest(kTREE_ITEM_ELEMENT_NAME);
+  const sharingState = tab?.raw?.sharingState;
+  return !!(sharingState?.microphone || sharingState?.camera || sharingState?.screen);
 }
 
 export function isEventFiredOnSoundButton(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_SOUND_BUTTON_ELEMENT_NAME);
+  return target?.closest && !!target.closest(kTAB_SOUND_BUTTON_ELEMENT_NAME);
 }
 
 export function isEventFiredOnClosebox(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(kTAB_CLOSE_BOX_ELEMENT_NAME);
+  return target?.closest && !!target.closest(kTAB_CLOSE_BOX_ELEMENT_NAME);
 }
 
 export function isEventFiredOnNewTabButton(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(`.${Constants.kNEWTAB_BUTTON}`);
+  return target?.closest && !!target.closest(`.${Constants.kNEWTAB_BUTTON}`);
 }
 
 export function isEventFiredOnMenuOrPanel(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest('ul.menu, ul.panel');
+  return target?.closest && !!target.closest('ul.menu, ul.panel');
 }
 
 export function isEventFiredOnAnchor(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(`[data-menu-ui]`);
+  return target?.closest && !!target.closest(`[data-menu-ui]`);
 }
 
 export function isEventFiredOnClickable(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest(`button, scrollbar, select`);
+  return target?.closest && !!target.closest(`button, scrollbar, select`);
 }
 
 export function isEventFiredOnTabbarTop(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest('#tabbar-top');
+  return target?.closest && !!target.closest('#tabbar-top');
 }
 
 export function isEventFiredOnTabbarBottom(event) {
   const target = getElementTarget(event);
-  return target && target.closest && !!target.closest('#tabbar-bottom');
+  return target?.closest && !!target.closest('#tabbar-bottom');
 }
 
 
-export function getTabFromEvent(event, options = {}) {
-  return SidebarTabs.getTabFromDOMNode(event.target, options);
+export function getTreeItemFromEvent(event, options = {}) {
+  return SidebarItems.getItemFromDOMNode(event.target, options);
 }
 
 function getTabbarFromEvent(event) {
@@ -145,27 +153,27 @@ function getTabbarFromEvent(event) {
     return null;
   if (!(node instanceof Element))
     node = node.parentNode;
-  return node && node.closest('.tabs');
+  return node?.closest('.tabs');
 }
 
-export function getTabFromTabbarEvent(event, options = {}) {
+export function getTreeItemFromTabbarEvent(event, options = {}) {
   if (!configs.shouldDetectClickOnIndentSpaces ||
       isEventFiredOnClickable(event))
     return null;
-  return getTabFromCoordinates(event, options);
+  return getTreeItemFromCoordinates(event, options);
 }
 
-function getTabFromCoordinates(event, options = {}) {
-  const tab = SidebarTabs.getTabFromDOMNode(document.elementFromPoint(event.clientX, event.clientY), options);
-  if (tab)
-    return tab;
+function getTreeItemFromCoordinates(event, options = {}) {
+  const item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(event.clientX, event.clientY), options);
+  if (item)
+    return item;
 
   const container = getTabbarFromEvent(event);
   if (!container ||
       container.classList.contains('pinned'))
     return null;
 
-  // because tab style can be modified, we try to find tab from
+  // because item style can be modified, we try to find item from
   // left, middle, and right.
   const containerRect = container.getBoundingClientRect();
   const trialPoints = [
@@ -174,25 +182,25 @@ function getTabFromCoordinates(event, options = {}) {
     containerRect.width - Size.getFavIconSize()
   ];
   for (const x of trialPoints) {
-    const tab = SidebarTabs.getTabFromDOMNode(document.elementFromPoint(x, event.clientY), options);
-    if (tab)
-      return tab;
+    const item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY), options);
+    if (item)
+      return item.type == TreeItem.TYPE_TAB && item; // we should find only tabs from their indent space
   }
 
   // document.elementFromPoint cannot find elements being in animation effect,
-  // so I try to find a tab from previous or next tab.
+  // so I try to find a item from previous or next item.
   const height = Size.getTabHeight();
   for (const x of trialPoints) {
-    let tab = SidebarTabs.getTabFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
-    tab = SidebarTabs.getTabFromDOMNode(tab && tab.$TST.element.nextSibling, options);
-    if (tab)
-      return tab;
+    let item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY - height), options);
+    item = SidebarItems.getItemFromDOMNode(item?.$TST.element.nextSibling, options);
+    if (item)
+      return item.type == TreeItem.TYPE_TAB && item; // we should find only tabs from their indent space
   }
   for (const x of trialPoints) {
-    let tab = SidebarTabs.getTabFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
-    tab = SidebarTabs.getTabFromDOMNode(tab && tab.$TST.element.previousSibling, options);
-    if (tab)
-      return tab;
+    let item = SidebarItems.getItemFromDOMNode(document.elementFromPoint(x, event.clientY + height), options);
+    item = SidebarItems.getItemFromDOMNode(item?.$TST.element.previousSibling, options);
+    if (item)
+      return item.type == TreeItem.TYPE_TAB && item; // we should find only tabs from their indent space
   }
 
   return null;
@@ -237,17 +245,18 @@ export function getEventDetail(event) {
   };
 }
 
-export function getTabEventDetail(event, tab) {
+export function getTreeItemEventDetail(event, tab) {
   return {
     ...getEventDetail(event),
-    tab:   tab && tab.id,
-    tabId: tab && tab.id,
+    tab:   tab?.id,
+    tabId: tab?.id,
+    tabType: tab?.$TST?.type || tab?.type,
   };
 }
 
 export function getMouseEventDetail(event, tab) {
   return {
-    ...getTabEventDetail(event, tab),
+    ...getTreeItemEventDetail(event, tab),
     twisty:        isEventFiredOnTwisty(event),
     sharingState:  isEventFiredOnSharingState(event),
     soundButton:   isEventFiredOnSoundButton(event),
@@ -267,7 +276,7 @@ export function getEventTargetType(event) {
       element.closest('.rich-confirm, #blocking-screen'))
     return 'outside';
 
-  if (getTabFromEvent(event))
+  if (getTreeItemFromEvent(event))
     return 'tab';
 
   if (isEventFiredOnNewTabButton(event))

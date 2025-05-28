@@ -10,7 +10,7 @@ import {
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 async function doTest() {
   const win = await browser.windows.getLastFocused({ populate: true });
@@ -25,7 +25,7 @@ async function doTest() {
       const tracked = Tab.get(duplicated.id);
       const uniqueId = await tracked.$TST.promisedUniqueId;
       duplicatedTabIds.push(duplicated.id);
-      return uniqueId && uniqueId.duplicated;
+      return uniqueId?.duplicated;
     }));
   }
   const successCount = (await Promise.all(promises)).filter(result => !!result).length;

@@ -24,9 +24,11 @@ import * as TabsInternalOperation from '/common/tabs-internal-operation.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
+import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
-import Tab from '/common/Tab.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabsGroup from './tabs-group.js';
 import * as TabsMove from './tabs-move.js';
 import * as TabsOpen from './tabs-open.js';
@@ -374,7 +376,7 @@ export async function openNewTabAs(options = {}) {
 
     case Constants.kNEWTAB_OPEN_AS_SIBLING:
       parent      = activeTab.$TST.parent;
-      insertAfter = parent && parent.$TST.lastDescendant;
+      insertAfter = parent?.$TST.lastDescendant;
       break;
 
     case Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING_WITH_INHERITED_CONTAINER:
@@ -469,57 +471,282 @@ export async function outdent(tab, options = {}) {
 }
 
 // drag and drop helper
-async function performTabsDragDrop(params = {}) {
+async function performTreeItemsDragDrop(params = {}) {
   const windowId = params.windowId || TabsStore.getCurrentWindowId();
   const destinationWindowId = params.destinationWindowId || windowId;
 
+  switch (params.items[0].type) {
+    case 'group':
+      return performNativeTabGroupItemDragDrop(params.items[0], {
+        windowId,
+        destinationWindowId,
+        ...params,
+      });
+
+    case 'tab':
+    default:
+      return performTabsDragDrop(params.items, {
+        windowId,
+        destinationWindowId,
+        ...params,
+      });
+  }
+}
+
+async function performTreeItemsDragDropWithMessage(message) {
+  const draggedTabIds = message.import ? [] : message.items.map(item => item.type == TreeItem.TYPE_TAB && item.id || null);
+  await Tab.waitUntilTracked(draggedTabIds.concat([
+    message.droppedOn?.type == TreeItem.TYPE_TAB && message.droppedOn.id,
+    message.droppedBefore?.type == TreeItem.TYPE_TAB && message.droppedBefore.id,
+    message.droppedAfter?.type == TreeItem.TYPE_TAB && message.droppedAfter.id,
+    message.attachToId,
+    message.insertBefore?.type == TreeItem.TYPE_TAB && message.insertBefore.id,
+    message.insertAfter?.type == TreeItem.TYPE_TAB && message.insertAfter.id,
+  ]));
+  log('perform tabs dragdrop requested: ', message);
+  return performTreeItemsDragDrop({
+    ...message,
+    items:         message.import ? message.items : message.items.map(TreeItem.get),
+    droppedOn:     TreeItem.get(message.droppedOn),
+    droppedBefore: TreeItem.get(message.droppedBefore),
+    droppedAfter:  TreeItem.get(message.droppedAfter),
+    attachTo:      Tab.get(message.attachToId),
+    insertBefore:  TreeItem.get(message.insertBefore),
+    insertAfter:   TreeItem.get(message.insertAfter),
+  });
+}
+
+async function performTabsDragDrop(tabs, params) {
   log('performTabsDragDrop ', () => ({
-    tabs:                params.tabs.map(dumpTab),
+    tabs:                tabs.map(tab => `${tab.groupId}/#${tab.id}`),
+    droppedOn:           dumpTab(params.droppedOn),
+    droppedBefore:       dumpTab(params.droppedBefore),
+    droppedAfter:        dumpTab(params.droppedAfter),
+    groupId:             params.groupId,
     attachTo:            dumpTab(params.attachTo),
     insertBefore:        dumpTab(params.insertBefore),
     insertAfter:         dumpTab(params.insertAfter),
+    nextGroupColor:      params.nextGroupColor,
+    canCreateGroup:      params.canCreateGroup,
     windowId:            params.windowId,
     destinationWindowId: params.destinationWindowId,
     action:              params.action,
     allowedActions:      params.allowedActions
   }));
 
+  const createGroup = params.canCreateGroup && params.nextGroupColor;
+
   if (!(params.allowedActions & Constants.kDRAG_BEHAVIOR_MOVE) &&
       !params.duplicate) {
-    log('not allowed action');
-    return;
+    log(' => not allowed action');
+    return tabs;
   }
 
-  const movedTabs = await moveTabsWithStructure(params.tabs, {
+  const nativeTabGroupIdFromPositionDeterminedByBrowser = (params.insertAfter && params.insertAfter.groupId != -1) ?
+    params.insertAfter.groupId :
+    params.insertBefore ?
+      params.insertBefore.groupId :
+      -1;
+  const nativeTabGroupId = params.groupId || (
+    params.attachTo ? params.attachTo.groupId :
+      nativeTabGroupIdFromPositionDeterminedByBrowser
+  );
+  const draggedGroupParams = nativeTabGroupId == tabs[0].groupId ?
+    tabs[0]?.$TST?.nativeTabGroup?.$TST?.createParams :
+    null;
+
+  log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, ', nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupIdFromPositionDeterminedByBrowser, ', draggedGroupParams = ', draggedGroupParams, ', createGroup = ', createGroup);
+
+  let blocking = false;
+  if ((params.groupId &&
+       tabs[0].groupId != params.groupId) ||
+      (tabs[0].groupId != (params.droppedOn || params.droppedBefore || params.droppedAfter)?.groupId)) {
+    UserOperationBlocker.blockIn(tabs[0].windowId, { throbber: true });
+    blocking = true;
+  }
+
+  if ((params.droppedOn?.type == TreeItem.TYPE_GROUP ||
+       params.droppedAfter?.type == TreeItem.TYPE_GROUP ||
+       params.droppedBefore?.type == TreeItem.TYPE_GROUP) &&
+      tabs.some(tab => tab.groupId != -1 && tab.groupId != nativeTabGroupId)) {
+    await NativeTabGroups.removeTabsFromGroup(tabs);
+  }
+
+  const { windowId, destinationWindowId } = params;
+  const isAcrossWindows = windowId != destinationWindowId;
+
+  if (!isAcrossWindows) {
+    // On in-window tab move, we need to apply final group at first.
+    // Otherwise tab move after group modifications may break groups.
+    await NativeTabGroups.matchTabsGrouped(tabs, nativeTabGroupId);
+  }
+
+  const movedTabs = await moveTabsWithStructure(tabs, {
     ...params,
-    windowId, destinationWindowId,
+    ...(createGroup ? { attachTo: null } : {}),
+    windowId,
+    destinationWindowId,
+    // TST automatically optimize rearrangement of tabs, but we need to disable it here to avoid unexpected group modifications by moved other tabs.
+    doNotOptimize: TabsStore.windows.get(destinationWindowId).tabGroups.size > 0 || nativeTabGroupId != -1,
     broadcast: true
   });
+  log('performTabsDragDrop: movedTabs = ', movedTabs, { isAcrossWindows });
+
+  if (isAcrossWindows) {
+    // On tab move across windows, we need to apply final group after
+    // tabs are moved to the destination window.
+    await NativeTabGroups.matchTabsGrouped(tabs, draggedGroupParams || nativeTabGroupId);
+  }
+
+  if (createGroup) {
+    await NativeTabGroups.addTabsToGroup([params.droppedOn, ...tabs], {
+      title:    '',
+      color:    params.nextGroupColor,
+      windowId: params.destinationWindowId,
+    });
+  }
+  else if (nativeTabGroupId != -1 &&
+           !isAcrossWindows) {
+    await NativeTabGroups.rejectGroupFromTree(TabGroup.get(nativeTabGroupId))
+  }
+
+  if (nativeTabGroupId != nativeTabGroupIdFromPositionDeterminedByBrowser) {
+    // Automatic tree maintenance done by Firefox based on tabs' destination position
+    // may change groups. We need to override the result with the given group id.
+    log('performTabsDragDrop: final group id = ', nativeTabGroupId);
+    let onGroupModified;
+    const toBeModifiedTabs = new Set(movedTabs.map(tab => tab.id));
+    const startAt = Date.now();
+    await Promise.race([
+      new Promise((resolve, _reject) => {
+        onGroupModified = (tabId, updateInfo, _tab) => {
+          if (updateInfo.groupId != nativeTabGroupId) {
+            log(`performTabsDragDrop: tab group modifications detected (${updateInfo.groupId}) with delay ${Date.now() - startAt} msec.`);
+            toBeModifiedTabs.delete(tabId);
+          }
+          if (toBeModifiedTabs.size == 0) {
+            log('performTabsDragDrop: all members have been updated');
+            resolve();
+          }
+        };
+        browser.tabs.onUpdated.addListener(onGroupModified, {
+          properties: ['groupId'],
+          windowId:   destinationWindowId,
+        });
+      }),
+      wait(configs.nativeTabGroupModificationDetectionTimeoutAfterTabMove).then(() => {
+        log('performTabsDragDrop: tab group modifications detection timeout');
+      }),
+    ]);
+    browser.tabs.onUpdated.removeListener(onGroupModified);
+    log('performTabsDragDrop: match group with ', draggedGroupParams || nativeTabGroupId);
+    await NativeTabGroups.matchTabsGrouped(movedTabs, draggedGroupParams || nativeTabGroupId);
+  }
+
+  if (blocking) {
+    UserOperationBlocker.unblockIn(tabs[0].windowId, { throbber: true });
+  }
+
   if (movedTabs.length == 0)
-    return;
+    return movedTabs;
+
   if (windowId != destinationWindowId) {
     // Firefox always focuses to the dropped (mvoed) tab if it is dragged from another window.
     // TST respects Firefox's the behavior.
-    browser.tabs.update(movedTabs[0].id, { active: true })
+    await browser.tabs.update(movedTabs[0].id, { active: true })
       .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
   }
+  return movedTabs;
 }
 
-async function performTabsDragDropWithMessage(message) {
-  const draggedTabIds = message.import ? [] : message.tabs.map(tab => tab.id);
-  await Tab.waitUntilTracked(draggedTabIds.concat([
-    message.attachToId,
-    message.insertBeforeId,
-    message.insertAfterId
-  ]));
-  log('perform tabs dragdrop requested: ', message);
-  return performTabsDragDrop({
-    ...message,
-    tabs:         message.import ? message.tabs : draggedTabIds.map(id => Tab.get(id)),
-    attachTo:     message.attachToId && Tab.get(message.attachToId),
-    insertBefore: message.insertBeforeId && Tab.get(message.insertBeforeId),
-    insertAfter:  message.insertAfterId && Tab.get(message.insertAfterId)
-  });
+async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefore, droppedAfter, groupId, attachTo, windowId, destinationWindowId }) {
+  log('performNativeTabGroupItemDragDrop ', () => ({ group, groupId, droppedOn, droppedBefore, droppedAfter, attachTo, windowId, destinationWindowId }));
+
+  if (droppedOn?.type == TreeItem.TYPE_GROUP) {
+    log('performNativeTabGroupItemDragDrop: dropping onto another group, merge to it: ', droppedOn);
+    const members = group.$TST.members;
+    const firstMember = droppedOn.$TST.firstMember;
+    if (group.$TST.firstMember.index < firstMember.index) {
+      await NativeTabGroups.moveGroupBefore(group, firstMember);
+    }
+    else{
+      await NativeTabGroups.moveGroupAfter(group, droppedOn.$TST.lastMember);
+    }
+    await NativeTabGroups.addTabsToGroup(members, droppedOn.id);
+    return;
+  }
+
+  let insertAfter  = droppedAfter;
+  let insertBefore = droppedBefore;
+  const firstMember = group.$TST.firstMember;
+
+  if (groupId) {
+    if (groupId != group.id) {
+      const dropTargetGroup = TabGroup.get(groupId);
+      const dropTargetFirstMember = dropTargetGroup.$TST.firstMember;
+      if (firstMember.index < dropTargetFirstMember.index) {
+        log('performNativeTabGroupItemDragDrop: dropping into another group, move to below the target group');
+        insertAfter = dropTargetGroup.$TST.lastMember;
+        if (insertAfter) {
+          insertBefore = null;
+        }
+      }
+      else {
+        log('performNativeTabGroupItemDragDrop: dropping into another group, move to above the target group');
+        insertBefore = dropTargetFirstMember;
+        if (insertBefore) {
+          insertAfter = null;
+        }
+      }
+    }
+    else if (droppedOn ||
+             droppedBefore?.$TST.parent ||
+             (droppedAfter?.$TST.parent &&
+              droppedAfter.$TST.rootTab == droppedAfter.$TST.unsafeNextTab?.$TST.rootTab)) {
+      const root = (droppedOn || droppedBefore || droppedAfter).$TST.rootTab;
+      if (root) {
+        if (firstMember.index < root.index) {
+          log('performNativeTabGroupItemDragDrop: dropping into ungrouped tree, move to below the target tree');
+          insertAfter = root.$TST.lastDescendant || root;
+          if (insertAfter) {
+            insertBefore = null;
+          }
+        }
+        else {
+          log('performNativeTabGroupItemDragDrop: dropping into ungrouped tree, move to above the target tree');
+          insertBefore = root;
+          if (insertBefore) {
+            insertAfter = null;
+          }
+        }
+      }
+    }
+  }
+
+  const { promisedMoved, finish } = NativeTabGroups.waitUntilMoved(group, destinationWindowId);
+
+  if (insertAfter) {
+    log('performNativeTabGroupItemDragDrop: move the group below the specified tab ', insertAfter.id);
+    await NativeTabGroups.moveGroupAfter(group, insertAfter);
+  }
+  else if (insertBefore) {
+    log('performNativeTabGroupItemDragDrop: move the group above the specified tab ', insertBefore.id);
+    await NativeTabGroups.moveGroupBefore(group, insertBefore);
+  }
+  else {
+    finish();
+    throw new Error('performNativeTabGroupItemDragDrop: no hint to move specified group');
+  }
+
+  await Promise.race([
+    promisedMoved,
+    wait(configs.nativeTabGroupModificationDetectionTimeoutAfterTabMove).then(() => {
+      if (finish.done) {
+        return;
+      }
+      log('performNativeTabGroupItemDragDrop: tab group modifications detection timeout');
+    }),
+  ]);
 }
 
 // useful utility for general purpose
@@ -607,13 +834,13 @@ export async function moveTabsWithStructure(tabs, params = {}) {
     }
   }
   else if (params.duplicate ||
-      windowId != destinationWindowId) {
+           windowId != destinationWindowId) {
     movedTabs = await Tree.moveTabs(movedTabs, {
       destinationWindowId,
       duplicate:    params.duplicate,
       insertBefore: params.insertBefore,
       insertAfter:  params.insertAfter,
-      broadcast:    params.broadcast
+      broadcast:    params.broadcast,
     });
     movedRoots = Tab.collectRootTabs(movedTabs);
   }
@@ -643,13 +870,19 @@ export async function moveTabsWithStructure(tabs, params = {}) {
     await TabsMove.moveTabsBefore(
       movedTabs,
       params.insertBefore,
-      { broadcast: params.broadcast }
+      {
+        doNotOptimize: !!params.doNotOptimize,
+        broadcast:     !!params.broadcast,
+      }
     );
   else if (params.insertAfter)
     await TabsMove.moveTabsAfter(
       movedTabs,
       params.insertAfter,
-      { broadcast: params.broadcast }
+      {
+        doNotOptimize: !!params.doNotOptimize,
+        broadcast:     !!params.broadcast,
+      }
     );
   else
     log('=> already placed at expected position');
@@ -667,7 +900,7 @@ export async function moveTabsWithStructure(tabs, params = {}) {
   }, windowId);
   log('=> opened group tabs: ', replacedGroupTabs);
   params.draggedTab.ownerDocument.defaultView.setTimeout(() => {
-    if (!TabsStore.ensureLivingTab(tab)) // it was removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) // it was removed while waiting
       return;
     log('closing needless group tabs');
     replacedGroupTabs.reverse().forEach(function(tab) {
@@ -738,7 +971,7 @@ async function attachTabsWithStructure(tabs, parent, options = {}) {
     else
       await Tree.detachTab(tab, memberOptions);
     // The tree can remain being collapsed by other addons like TST Lock Tree Collapsed.
-    const collapsed = parent && parent.$TST.subtreeCollapsed;
+    const collapsed = parent?.$TST.subtreeCollapsed;
     return Tree.collapseExpandTabAndSubtree(tab, {
       ...memberOptions,
       collapsed,
@@ -800,7 +1033,7 @@ export async function moveBefore(tab, options = {}) {
     );
   }
   else {
-    const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(tab, {
+    const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(tab, {
       context: Constants.kINSERTION_CONTEXT_MOVED,
       insertBefore
     });
@@ -834,7 +1067,7 @@ export async function moveAfter(tab, options = {}) {
     );
   }
   else {
-    const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(tab, {
+    const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(tab, {
       context: Constants.kINSERTION_CONTEXT_MOVED,
       insertAfter
     });
@@ -999,7 +1232,7 @@ export async function restoreTabs(count) {
       await TabsInternalOperation.setTabActive(activeTab);
   }
 
-  return Tab.sort(restoredTabs);
+  return TreeItem.sort(restoredTabs);
 }
 
 
@@ -1080,7 +1313,7 @@ SidebarConnection.onMessage.addListener(async (windowId, message) => {
     }; break;
 
     case Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP:
-      performTabsDragDropWithMessage(message);
+      performTreeItemsDragDropWithMessage(message);
       break;
 
     case Constants.kCOMMAND_TOGGLE_MUTED_FROM_SOUND_BUTTON: {
@@ -1140,14 +1373,74 @@ SidebarConnection.onMessage.addListener(async (windowId, message) => {
     case Constants.kCOMMAND_TOGGLE_STICKY:
       toggleSticky([Tab.get(message.tabId)]);
       return;
+
+    case Constants.kCOMMAND_NEW_WINDOW_FROM_NATIVE_TAB_GROUP:
+      NativeTabGroups.moveGroupToNewWindow(message);
+      return;
   }
 });
 
-// for automated tests
-browser.runtime.onMessage.addListener((message, _sender) => {
+browser.runtime.onMessage.addListener((message, sender) => {
   switch (message.type) {
+    // for automated tests
     case Constants.kCOMMAND_PERFORM_TABS_DRAG_DROP:
-      performTabsDragDropWithMessage(message);
+      performTreeItemsDragDropWithMessage(message);
+      break;
+
+    case Constants.kCOMMAND_UPDATE_NATIVE_TAB_GROUP: {
+      const updates = {};
+      if ('title' in message) {
+        updates.title = message.title;
+      }
+      if ('color' in message) {
+        updates.color = message.color;
+      }
+      browser.tabGroups.update(message.groupId, updates);
+    }; break;
+
+    case Constants.kCOMMAND_INVOKE_NATIVE_TAB_GROUP_MENU_PANEL_COMMAND:
+      switch (message.command) {
+        case 'addNewTabInGroup': (async () => {
+          const windowId = message.windowId || sender.tab?.windowId;
+          const lastMember = TabGroup.getLastMember(message.groupId);
+          const tab = await TabsOpen.openNewTab({
+            insertAfter:  lastMember.$TST?.lastDescendant || lastMember,
+            windowId,
+            inBackground: false,
+          });
+          NativeTabGroups.addTabsToGroup([tab], message.groupId);
+        })(); break;
+
+        case 'moveGroupToNewWindow':
+          NativeTabGroups.moveGroupToNewWindow({
+            windowId: message.windowId || sender.tab?.windowId,
+            groupId:  message.groupId,
+          });
+          break;
+
+        case 'saveAndCloseGroup':
+        case 'deleteGroup': (async () => {
+          const windowId = message.windowId || sender.tab?.windowId;
+          const members = TabGroup.getMembers(message.groupId);
+          const canceled = (await browser.runtime.sendMessage({
+            type: Constants.kCOMMAND_NOTIFY_TABS_CLOSING,
+            tabs: members.map(tab => tab.$TST.sanitized),
+            windowId,
+          }).catch(ApiTabs.createErrorHandler())) === false;
+          if (canceled)
+            return;
+          TabsInternalOperation.removeTabs(members);
+        })(); break;
+
+        case 'ungroupTabs':
+        case 'cancel': {
+          const members = TabGroup.getMembers(message.groupId);
+          NativeTabGroups.removeTabsFromGroup(members);
+        }; break;
+
+        case 'done':
+          break;
+      }
       break;
   }
 });
@@ -1221,7 +1514,7 @@ export async function openBookmarksWithStructure(items, { activeIndex = 0, disca
     await Tree.applyTreeStructureToTabs(tabs, structure);
 
   // tabs can be opened at middle of an existing tree due to browser.tabs.insertAfterCurrent=true
-  const referenceTabs = TreeBehavior.calculateReferenceTabsFromInsertionPosition(tabs, {
+  const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(tabs, {
     context:      Constants.kINSERTION_CONTEXT_CREATED,
     insertAfter:  tabs[0].$TST.previousTab,
     insertBefore: tabs[tabs.length - 1].$TST.nextTab

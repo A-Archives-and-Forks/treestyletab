@@ -28,7 +28,7 @@ import * as UniqueId from '/common/unique-id.js';
 import '/common/bookmark.js'; // we need to load this once in the background page to register the global listener
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as ApiTabsListener from './api-tabs-listener.js';
@@ -36,6 +36,7 @@ import * as BackgroundCache from './background-cache.js';
 import * as Commands from './commands.js';
 import * as ContextMenu from './context-menu.js';
 import * as Migration from './migration.js';
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabContextMenu from './tab-context-menu.js';
 import * as Tree from './tree.js';
 import * as TreeStructure from './tree-structure.js';
@@ -64,13 +65,29 @@ let mInitialized = false;
 const mPreloadedCaches = new Map();
 
 async function getAllWindows() {
-  return browser.windows.getAll({
-    populate:    true,
-    // We need to track all type windows because
-    // popup windows can be destination of tabs.move().
-    // See also: https://github.com/piroor/treestyletab/issues/3311
-    windowTypes: ['normal', 'panel', 'popup'],
-  }).catch(ApiTabs.createErrorHandler());
+  const [windows, tabGroups] = await Promise.all([
+    browser.windows.getAll({
+      populate:    true,
+      // We need to track all type windows because
+      // popup windows can be destination of tabs.move().
+      // See also: https://github.com/piroor/treestyletab/issues/3311
+      windowTypes: ['normal', 'panel', 'popup'],
+    }).catch(ApiTabs.createErrorHandler()),
+    browser.tabGroups.query({}),
+  ]);
+
+  const groupsByWindow = new Map();
+  for (const group of tabGroups) {
+    const groupsInWindow = groupsByWindow.get(group.windowId) || [];
+    groupsInWindow.push(group);
+    groupsByWindow.set(group.windowId, groupsInWindow)
+  }
+
+  for (const win of windows) {
+    win.tabGroups = groupsByWindow.get(win.id) || [];
+  }
+
+  return windows;
 }
 
 log('init: Start queuing of messages notified via WE APIs');
@@ -170,6 +187,8 @@ export async function init() {
 
   Sync.init();
 
+  await NativeTabGroups.startToMaintainTree();
+
   await MetricsData.addAsync('init: exporting tabs to sidebars', notifyReadyToSidebars());
 
   log(`Startup metrics for ${TabsStore.tabs.size} tabs: `, MetricsData.toString());
@@ -188,7 +207,7 @@ async function notifyReadyToSidebars() {
     promisedResults.push(browser.runtime.sendMessage({
       type:     Constants.kCOMMAND_NOTIFY_BACKGROUND_READY,
       windowId: win.id,
-      tabs:     win.export(true) // send tabs together to optimizie further initialization tasks in the sidebar
+      exported: win.export(true), // send tabs together to optimizie further initialization tasks in the sidebar
     }).catch(ApiTabs.createErrorSuppressor()));
   }
   return Promise.all(promisedResults);
@@ -232,7 +251,7 @@ async function waitUntilCompletelyRestored() {
         browser.sessions.getTabValue(tab.id, Constants.kWINDOW_STATE_CACHED_TABS)
           .catch(ApiTabs.createErrorSuppressor())
           .then(cache => mPreloadedCaches.set(`tab-${tab.id}`, cache));
-        //uniqueId = uniqueId && uniqueId.id || '?'; // not used
+        //uniqueId = uniqueId?.id || '?'; // not used
         timeout = setTimeout(resolver, 100);
       };
       browser.tabs.onCreated.addListener(onNewTabRestored);
@@ -284,7 +303,7 @@ async function rebuildAll(windows) {
     await MetricsData.addAsync(`rebuildAll: tabs in window ${win.id}`, async () => {
       let trackedWindow = TabsStore.windows.get(win.id);
       if (!trackedWindow)
-        trackedWindow = Window.init(win.id);
+        trackedWindow = Window.init(win.id, win.tabGroups.map(TabGroup.init));
 
       for (const tab of win.tabs) {
         Tab.track(tab);
@@ -310,7 +329,7 @@ async function rebuildAll(windows) {
       }
       try {
         log(`build tabs for ${win.id} from scratch`);
-        Window.init(win.id);
+        Window.init(win.id, win.tabGroups.map(TabGroup.init));
         const promises = [];
         for (let tab of win.tabs) {
           tab = Tab.get(tab.id);
@@ -365,7 +384,7 @@ export async function reload(options = {}) {
 }
 
 export async function tryStartHandleAccelKeyOnTab(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
   const granted = await Permissions.isGranted(Permissions.ALL_URLS);
   if (!granted ||
@@ -397,7 +416,7 @@ export async function tryStartHandleAccelKeyOnTab(tab) {
 export function reserveToUpdateInsertionPosition(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const reserved = reserveToUpdateInsertionPosition.reserved.get(tab.windowId) || {
       timer: null,
@@ -420,7 +439,7 @@ export function reserveToUpdateInsertionPosition(tabOrTabs) {
 reserveToUpdateInsertionPosition.reserved = new Map();
 
 async function updateInsertionPosition(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
 
   const prev = tab.hidden ? tab.$TST.unsafePreviousTab : tab.$TST.previousTab;
@@ -470,7 +489,7 @@ async function updateInsertionPosition(tab) {
 export function reserveToUpdateAncestors(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const reserved = reserveToUpdateAncestors.reserved.get(tab.windowId) || {
       timer: null,
@@ -493,7 +512,7 @@ export function reserveToUpdateAncestors(tabOrTabs) {
 reserveToUpdateAncestors.reserved = new Map();
 
 async function updateAncestors(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
 
   const ancestors = tab.$TST.ancestors.map(ancestor => ancestor.$TST.uniqueId.id);
@@ -510,7 +529,7 @@ async function updateAncestors(tab) {
 export function reserveToUpdateChildren(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const reserved = reserveToUpdateChildren.reserved.get(tab.windowId) || {
       timer: null,
@@ -533,7 +552,7 @@ export function reserveToUpdateChildren(tabOrTabs) {
 reserveToUpdateChildren.reserved = new Map();
 
 async function updateChildren(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
 
   const children = tab.$TST.children.map(child => child.$TST.uniqueId.id);
@@ -549,7 +568,7 @@ async function updateChildren(tab) {
 
 function reserveToUpdateSubtreeCollapsed(tab) {
   if (!mInitialized ||
-      !TabsStore.ensureLivingTab(tab))
+      !TabsStore.ensureLivingItem(tab))
     return;
   const reserved = reserveToUpdateSubtreeCollapsed.reserved.get(tab.windowId) || {
     timer: null,
@@ -571,7 +590,7 @@ function reserveToUpdateSubtreeCollapsed(tab) {
 reserveToUpdateSubtreeCollapsed.reserved = new Map();
 
 async function updateSubtreeCollapsed(tab) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
   tab.$TST.toggleState(Constants.kTAB_STATE_SUBTREE_COLLAPSED, tab.$TST.subtreeCollapsed, { permanently: true });
 }
@@ -583,7 +602,7 @@ export async function confirmToCloseTabs(tabs, { windowId, configKey, messageKey
   const grantedIds = new Set(configs.grantedRemovingTabIds);
   let count = 0;
   const tabIds = [];
-  tabs = tabs.map(tab => tab && Tab.get(tab.id)).filter(tab => {
+  tabs = tabs.map(tab => Tab.get(tab?.id)).filter(tab => {
     if (tab && !grantedIds.has(tab.id)) {
       count++;
       tabIds.push(tab.id);
@@ -682,7 +701,7 @@ Tab.onUpdated.addListener((tab, changeInfo) => {
 
   // Loading of "about:(unknown type)" won't report new URL via tabs.onUpdated,
   // so we need to see the complete tab object.
-  const status = changeInfo.status || tab && tab.status;
+  const status = changeInfo.status || tab?.status;
   const url = changeInfo.url ? changeInfo.url :
     status == 'complete' && tab ? tab.url : '';
   if (tab &&
@@ -801,7 +820,7 @@ Tab.onMoved.addListener((tab, moveInfo) => {
 Tree.onAttached.addListener(async (tab, attachInfo) => {
   await tab.$TST.opened;
 
-  if (!TabsStore.ensureLivingTab(tab) || // not removed while waiting
+  if (!TabsStore.ensureLivingItem(tab) || // not removed while waiting
       tab.$TST.parent != attachInfo.parent) // not detached while waiting
     return;
 

@@ -1,6 +1,9 @@
 # History
 
  - master/HEAD
+   * Drop support of Firefox older than 139.
+   * Add support of native tab groups feature of Firefox itself.
+   * Show muted state indicator and sharing state indicator (for microphone, camera and screen) at the position same to the one on Firefox's native tab.
  - 4.1.11 (2025.5.29)
    * Keep the height of the pinned tabs area resizeable even if it was shrunken to zero.
    * Don't shrink the height of the pinned tabs area to zero at the startup after it was manually resized.

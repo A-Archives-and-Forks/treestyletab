@@ -22,7 +22,7 @@ import * as SidebarConnection from './sidebar-connection.js';
 import * as TabsStore from './tabs-store.js';
 import * as TabsUpdate from './tabs-update.js';
 
-import Tab from '/common/Tab.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('common/tabs-internal-operation', ...args);
@@ -34,7 +34,7 @@ export async function activateTab(tab, { byMouseOperation, keepMultiselection, s
   if (!Constants.IS_BACKGROUND)
     throw new Error('Error: TabsInternalOperation.activateTab is available only on the background page, use a `kCOMMAND_ACTIVATE_TAB` message instead.');
 
-  tab = TabsStore.ensureLivingTab(tab);
+  tab = TabsStore.ensureLivingItem(tab);
   if (!tab)
     return;
   log('activateTab: ', dumpTab(tab));
@@ -82,10 +82,9 @@ export async function blurTab(bluredTabs, { windowId, silently, keepDiscarded } 
   // First, try to find successor based on successorTabId from left tabs.
   let successorTab = Tab.get(bluredTabs.find(tab => tab.active)?.successorTabId);
   const scannedTabIds = new Set();
-  while (successorTab &&
-         (bluredTabIds.has(successorTab.id) ||
-          (keepDiscarded &&
-           successorTab.discarded))) {
+  while (bluredTabIds.has(successorTab?.id) ||
+         (keepDiscarded &&
+          successorTab?.discarded)) {
     if (scannedTabIds.has(successorTab.id))
       break; // prevent infinite loop!
     scannedTabIds.add(successorTab.id);
@@ -150,7 +149,7 @@ export async function removeTabs(tabs, { keepDescendants, byMouseOperation, orig
   tabs = tabs.filter(tab => {
     if ((!win ||
          !win.internalClosingTabs.has(tab.id)) &&
-        TabsStore.ensureLivingTab(tab)) {
+        TabsStore.ensureLivingItem(tab)) {
       tabIds.push(tab.id);
       if (tab.active)
         willChangeFocus = true;
@@ -181,7 +180,7 @@ export async function removeTabs(tabs, { keepDescendants, byMouseOperation, orig
     }
   }
 
-  const sortedTabs = Tab.sort(Array.from(tabs));
+  const sortedTabs = TreeItem.sort(Array.from(tabs));
   Tab.onMultipleTabsRemoving.dispatch(sortedTabs, { triggerTab, originalStructure });
 
   const promisedRemoved = browser.tabs.remove(tabIds).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));

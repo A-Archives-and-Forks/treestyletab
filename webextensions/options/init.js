@@ -719,7 +719,7 @@ function initLinks() {
 }
 
 function initTheme() {
-  if (browser.theme && browser.theme.getCurrent) {
+  if (browser.theme?.getCurrent) {
     browser.theme.getCurrent().then(updateThemeInformation);
     browser.theme.onUpdated.addListener(updateInfo => updateThemeInformation(updateInfo.theme));
   }

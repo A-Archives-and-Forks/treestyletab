@@ -20,7 +20,7 @@ import * as Permissions from './permissions.js';
 import * as SidebarConnection from './sidebar-connection.js';
 import * as UserOperationBlocker from './user-operation-blocker.js';
 
-import Tab from './Tab.js';
+import { Tab } from './TreeItem.js';
 
 function log(...args) {
   internalLogger('common/dialog', ...args);

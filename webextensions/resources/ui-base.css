@@ -22,8 +22,9 @@ body {
   padding-block: 0;
   padding-inline: 0;
   -moz-user-select: none;
-}
-body * {
-  box-sizing: border-box;
-  text-align: start;
+
+  * {
+    box-sizing: border-box;
+    text-align: start;
+  }
 }

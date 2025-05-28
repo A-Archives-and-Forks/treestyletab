@@ -22,6 +22,8 @@
  * 
  * ***** END LICENSE BLOCK ***** */
 
+@import url("/resources/ui-color.css");
+
 :root {
   --bg-color: #d4dde5;
   --bg-color-inactive: #e8e8e8;
@@ -133,6 +135,13 @@ tab-item-substance {
   z-index: 0;
 }
 
+tab-item[type="group"] tab-item-substance {
+  max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
+                  2px + 3px /* padding-inline of tab-item-substance */ +
+                  0.25em /* margin-inline of tab-label */ +
+                  0.25em /* margin-inline of tab-label-content */);
+}
+
 tab-item.active {
   --tab-surface: var(--tab-surface-active-gradient);
 }
@@ -163,6 +172,28 @@ tab-item.bundled-active tab-item-substance {
 }
 :root:not(.active) .sticky-tabs-container tab-item:not(.active):not(.bundled-active) .background.base {
   background: var(--tabbar-bg, var(--bg-color-inactive, ButtonFace));
+}
+
+
+tab-item[type="group"] .background {
+  background: var(--tab-surface);
+  border: 1px solid var(--tab-border);
+  border-radius: 0.35em;
+}
+
+tab-item[data-next-group-color] {
+  .background {
+    --tab-surface: light-dark(var(--next-group-color-pale), var(--next-group-color)) !important;
+    --tab-border: light-dark(var(--next-group-color), var(--next-group-color-invert)) !important;
+    background: var(--tab-surface);
+    border: 2px solid var(--tab-border);
+    border-radius: 0.3em;
+  }
+}
+
+
+tab-item:not(.faviconized).active tab-sound-button::after {
+  --tab-text: white;
 }
 
 
@@ -255,7 +286,7 @@ tab-item.active .counter {
 /* Drag'n'drop styling */
 
 /* Round blue rectangle around tabs that are dropping targets. */
-tab-item[data-drop-position="self"] tab-item-substance {
+tab-item[data-drop-position="self"]:not([data-next-group-color]) tab-item-substance {
   background: var(--dropmarker-bg-color);
   border: 2px solid var(--dropmarker-border-color); /* not OSX's colour but Firefox's */
   border-radius: 0.3em;

@@ -34,6 +34,7 @@ export function getCurrentWindowId() {
 
 export const windows        = new Map();
 export const tabs           = new Map();
+export const tabGroups      = new Map();
 export const tabsByUniqueId = new Map();
 
 export function clear() {
@@ -71,7 +72,7 @@ export function queryAll(query) {
   if (configs.loggingQueries) {
     queryLogs.push(query);
     queryLogs.splice(0, Math.max(0, queryLogs.length - MAX_LOGS));
-    if (query.tabs && query.tabs.name)
+    if (query.tabs?.name)
       query.indexedTabs = query.tabs.name;
   }
   fixupQuery(query);
@@ -109,7 +110,7 @@ export function queryAll(query) {
 function sourceTabsForQuery(query, win) {
   let offset = 0;
   if (!query.ordered)
-    return [query.tabs && query.tabs.values() || win.tabs.values(), offset];
+    return [query.tabs?.values() || win.tabs.values(), offset];
   let fromId;
   let toId = query.toId;
   if (typeof query.index == 'number') {
@@ -132,13 +133,14 @@ function sourceTabsForQuery(query, win) {
   return [win.getOrderedTabs(fromId, toId, query.tabs), offset];
 }
 
-function extractMatchedTabs(tabs, query, offset) {
+function extractMatchedTabs(tabsInStore, query, offset) {
   const matchedTabs = [];
   let firstTime     = true;
   let logicalIndex  = offset || 0;
-  for (const tab of tabs) {
-    if (!query.skipMatching &&
-        !matchedWithQuery(tab, query))
+  for (const tab of tabsInStore) {
+    if (!tabs.has(tab.id) ||
+        (!query.skipMatching &&
+         !matchedWithQuery(tab, query)))
       continue;
 
     if (!firstTime)
@@ -155,12 +157,13 @@ function extractMatchedTabs(tabs, query, offset) {
   return matchedTabs;
 }
 
-function* getMatchedTabsIterator(tabs, query, offset) {
+function* getMatchedTabsIterator(tabsInStore, query, offset) {
   let firstTime     = true;
   let logicalIndex  = offset || 0;
-  for (const tab of tabs) {
-    if (!query.skipMatching &&
-        !matchedWithQuery(tab, query))
+  for (const tab of tabsInStore) {
+    if (!tabs.has(tab.id) ||
+        (!query.skipMatching &&
+         !matchedWithQuery(tab, query)))
       continue;
 
     if (!firstTime)
@@ -212,7 +215,7 @@ function matchedWithQuery(tab, query) {
   }
 
   if (query.living &&
-      !ensureLivingTab(tab))
+      !ensureLivingItem(tab))
     return false;
   if (query.normal &&
       (tab.hidden ||
@@ -249,6 +252,9 @@ function matchedWithQuery(tab, query) {
   if ('descendantOf' in query &&
       !tab.$TST.ancestorIds.includes(query.descendantOf))
     return false;
+  if (query.groupId &&
+      tab.groupId != query.groupId)
+    return false;
 
   return true;
 }
@@ -282,7 +288,7 @@ export function query(query) {
   if (configs.loggingQueries) {
     queryLogs.push(query);
     queryLogs.splice(0, Math.max(0, queryLogs.length - MAX_LOGS));
-    if (query.tabs && query.tabs.name)
+    if (query.tabs?.name)
       query.indexedTabs = query.tabs.name;
   }
   fixupQuery(query);
@@ -349,6 +355,7 @@ export const subtreeCollapsableTabsInWindow = new Map();
 export const draggingTabsInWindow    = new Map();
 export const duplicatingTabsInWindow = new Map();
 export const toBeGroupedTabsInWindow = new Map();
+export const nativelyGroupedTabsInWindow = new Map();
 export const loadingTabsInWindow     = new Map();
 export const unsynchronizedTabsInWindow = new Map();
 export const virtualScrollRenderableTabsInWindow  = new Map();
@@ -379,6 +386,7 @@ export function prepareIndexesForWindow(windowId) {
   draggingTabsInWindow.set(windowId, createMapWithName(`dragging tabs in window ${windowId}`));
   duplicatingTabsInWindow.set(windowId, createMapWithName(`duplicating tabs in window ${windowId}`));
   toBeGroupedTabsInWindow.set(windowId, createMapWithName(`to-be-grouped tabs in window ${windowId}`));
+  nativelyGroupedTabsInWindow.set(windowId, createMapWithName(`natively grouped tabs in window ${windowId}`));
   loadingTabsInWindow.set(windowId, createMapWithName(`loading tabs in window ${windowId}`));
   unsynchronizedTabsInWindow.set(windowId, createMapWithName(`unsynchronized tabs in window ${windowId}`));
   virtualScrollRenderableTabsInWindow.set(windowId, createMapWithName(`virtual scroll renderable tabs in window ${windowId}`));
@@ -403,6 +411,7 @@ export function unprepareIndexesForWindow(windowId) {
   toBeExpandedTabsInWindow.delete(windowId);
   subtreeCollapsableTabsInWindow.delete(windowId);
   toBeGroupedTabsInWindow.delete(windowId);
+  nativelyGroupedTabsInWindow.delete(windowId);
   loadingTabsInWindow.delete(windowId);
   unsynchronizedTabsInWindow.delete(windowId);
   virtualScrollRenderableTabsInWindow.delete(windowId);
@@ -489,6 +498,11 @@ export function updateIndexesForTab(tab) {
   else
     removeBundledActiveTab(tab);
 
+  if (tab.groupId && tab.groupId != -1)
+    addNativelyGroupedTab(tab);
+  else
+    removeNativelyGroupedTab(tab);
+
   updateVirtualScrollRenderabilityIndexForTab(tab);
 }
 
@@ -498,7 +512,8 @@ export function updateVirtualScrollRenderabilityIndexForTab(tab) {
        ((tab.url == 'about:firefoxview' &&
          tab.cookieStoreId == 'firefox-default') ||
         !configs.renderHiddenTabs)) ||
-      tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE))
+      tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) ||
+      tabGroups.get(tab.groupId)?.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE))
     removeVirtualScrollRenderableTab(tab);
   else
     addVirtualScrollRenderableTab(tab);
@@ -523,23 +538,24 @@ export function removeTabFromIndexes(tab) {
   removeDuplicatingTab(tab);
   removeDraggingTab(tab);
   removeToBeGroupedTab(tab);
+  removeNativelyGroupedTab(tab);
   removeLoadingTab(tab);
   removeUnsynchronizedTab(tab);
   //removeVirtualScrollRenderableTab(tab);
 }
 
-function addTabToIndex(tab, indexes) {
+function addTabToIndex(tab, indexes, windowId = null) {
   if (!tab)
     throw new Error(`TabsStore.addTabToIndex gets non-tab parameter!: ${JSON.stringify(tab)} : ${new Error().stack}`);
-  const tabs = indexes.get(tab.windowId);
+  const tabs = indexes.get(windowId || tab.windowId);
   if (tabs)
     tabs.set(tab.id, tab);
 }
 
-function removeTabFromIndex(tab, indexes) {
+function removeTabFromIndex(tab, indexes, windowId = null) {
   if (!tab)
     throw new Error(`TabsStore.removeTabFromIndex gets non-tab parameter!: ${JSON.stringify(tab)} : ${new Error().stack}`);
-  const tabs = indexes.get(tab.windowId);
+  const tabs = indexes.get(windowId || tab.windowId);
   if (tabs)
     tabs.delete(tab.id);
 }
@@ -668,6 +684,13 @@ export function removeToBeGroupedTab(tab) {
   removeTabFromIndex(tab, toBeGroupedTabsInWindow);
 }
 
+export function addNativelyGroupedTab(tab, windowId = null) {
+  addTabToIndex(tab, nativelyGroupedTabsInWindow, windowId);
+}
+export function removeNativelyGroupedTab(tab, windowId = null) {
+  removeTabFromIndex(tab, nativelyGroupedTabsInWindow, windowId);
+}
+
 export function addLoadingTab(tab) {
   addTabToIndex(tab, loadingTabsInWindow);
 }
@@ -703,20 +726,22 @@ export function removeVirtualScrollRenderableTab(tab) {
 //===================================================================
 
 export function assertValidTab(tab) {
-  if (tab && tab.$TST)
+  if (tab?.$TST)
     return;
   const error = new Error('FATAL ERROR: invalid tab is given');
   console.log(error.message, tab, error.stack);
   throw error;
 }
 
-export function ensureLivingTab(tab) {
+export function ensureLivingItem(tab) {
+  const isNativeTabGroup = tab?.type == 'group';
   if (!tab ||
       !tab.id ||
       !tab.$TST ||
-      !tabs.has(tab.id) ||
+      (!isNativeTabGroup && !tabs.has(tab.id)) ||
       tab.$TST.removing ||
-      !windows.get(tab.windowId))
+      !windows.get(tab.windowId) ||
+      (isNativeTabGroup && !windows.get(tab.windowId).tabGroups.has(tab.id)))
     return null;
   return tab;
 }

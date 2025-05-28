@@ -10,7 +10,7 @@ import {
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('background/handle-tab-multiselect', ...args);

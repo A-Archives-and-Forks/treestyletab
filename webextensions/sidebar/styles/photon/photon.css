@@ -28,7 +28,10 @@
   --throbber-color: var(--browser-loading-indicator, var(--tab-text));
   --throbber-color-active: var(--browser-loading-indicator, var(--tab-text-active));
 
-  --tabbar-bg: var(--browser-bg-darker, darkgray);
+  --tabbar-bg: light-dark(
+    var(--browser-bg-darker, darkgray),
+    var(--browser-bg-darker, var(--dark-frame))
+  );
 }
 
 :root,
@@ -82,13 +85,6 @@ body,
 #tabbar:not(.scrollbar-autohide) #normal-tabs-container {
   scrollbar-color: var(--browser-toolbar_text-darker, var(--theme-colors-toolbar_bottom_separator, var(--in-content-button-background-hover-mixed)))
                    var(--theme-colors-toolbar, var(--in-content-box-background));
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --tab-highlighter: var(--browser-tab-highlighter, var(--dark-tab-line));
-    --tabbar-bg: var(--browser-bg-darker, var(--dark-frame));
-  }
 }
 
 tab-item,

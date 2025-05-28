@@ -15,16 +15,16 @@ import * as Constants from '/common/constants.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
 import {
-  kTAB_ELEMENT_NAME,
-} from './components/TabElement.js';
+  kTREE_ITEM_ELEMENT_NAME,
+} from './components/TreeItemElement.js';
 
 function log(...args) {
   internalLogger('sidebar/tst-api-frontend', ...args);
@@ -44,7 +44,7 @@ Sidebar.onInit.addListener(() => {
   mTargetWindow = TabsStore.getCurrentWindowId();
 });
 
-SidebarTabs.onReuseTabElement.addListener(tabElement => {
+SidebarItems.onReuseTreeItemElement.addListener(tabElement => {
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-indent' });
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-front' });
   setExtraTabContentsToElement(tabElement, '*', { place: 'tab-behind' });
@@ -395,7 +395,7 @@ function setExtraContentsToContainer(container, id, params = {}) {
   let cacheHolder, cacheKey;
   const place = String(params.place).toLowerCase();
   if (AUTO_REINSERT_PLACES.has(place)) {
-    const cacheHolderElement = container?.host?.closest(kTAB_ELEMENT_NAME) || container;
+    const cacheHolderElement = container?.host?.closest(kTREE_ITEM_ELEMENT_NAME) || container;
     cacheHolder = cacheHolderElement.$TST || cacheHolderElement;
     cacheKey = `$$lastContentsSourceFor_${id}`;
     params = {
@@ -621,7 +621,7 @@ export function clearAllExtraTabContents(id) {
   if (!mAddonsWithExtraContents.has(id))
     return;
 
-  for (const tabElement of document.querySelectorAll(kTAB_ELEMENT_NAME)) {
+  for (const tabElement of document.querySelectorAll(kTREE_ITEM_ELEMENT_NAME)) {
     clearExtraTabContentsInElement(tabElement, id);
   }
   setExtraNewTabButtonContents(id);
@@ -826,9 +826,9 @@ async function notifyExtraContentsEvent(event, eventType, details = {}) {
     event.preventDefault();
   }
 
-  const livingTab = EventUtils.getTabFromEvent(event);
+  const livingTab = EventUtils.getTreeItemFromEvent(event);
   const eventInfo = {
-    ...EventUtils.getTabEventDetail(event, livingTab),
+    ...EventUtils.getTreeItemEventDetail(event, livingTab),
     ...extraContentsInfo.fieldValues,
     originalTarget:     extraContentsInfo.target,
     originalTargetPart: extraContentsInfo.targetPart,
@@ -912,7 +912,7 @@ async function onExtraContentsFocusEvent(event) {
 
   let relatedTarget = null;
   const relatedTargetNode    = event.relatedTarget && EventUtils.getElementTarget(event.relatedTarget);
-  const relatedExtraContents = relatedTargetNode && relatedTargetNode.closest(`.extra-item`)
+  const relatedExtraContents = relatedTargetNode?.closest(`.extra-item`)
   if (relatedExtraContents &&
       extraContents.dataset.owner == relatedExtraContents.dataset.owner)
     relatedTarget = relatedTargetNode.outerHTML;
@@ -944,7 +944,7 @@ function getFieldValues(event) {
 export function getOriginalExtraContentsTarget(event) {
   try {
     const target        = EventUtils.getElementOriginalTarget(event);
-    const extraContents = target && target.closest(`.extra-item`);
+    const extraContents = target?.closest(`.extra-item`);
     if (extraContents) {
       const targetPart = target.closest(`[part]`)
       return {
@@ -1012,7 +1012,7 @@ export async function tryMouseOperationAllowedWithExtraContents(eventType, rawEv
       $extraContentsInfo: null,
     };
     const options = {
-      except: extraContentsInfo && extraContentsInfo.owners,
+      except: extraContentsInfo?.owners,
     };
     if (mousedown.tab) {
       eventInfo.tab = mousedown.tab;

@@ -16,15 +16,17 @@ import {
 import * as ApiTabs from '/common/api-tabs.js';
 import * as Constants from '/common/constants.js';
 import * as ContextualIdentities from '/common/contextual-identities.js';
+import * as SidebarConnection from '/common/sidebar-connection.js';
 import * as Sync from '/common/sync.js';
 import * as TabsInternalOperation from '/common/tabs-internal-operation.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabsOpen from './tabs-open.js';
 
 function log(...args) {
@@ -53,7 +55,28 @@ const SAFE_MENU_PROPERTIES = [
 
 const mItemsById = {
   'context_newTab': {
-    title: browser.i18n.getMessage('tabContextMenu_newTab_label'),
+    title:    browser.i18n.getMessage('tabContextMenu_newTab_label'),
+    titleTab: browser.i18n.getMessage('tabContextMenu_newTabNext_label'),
+  },
+  'context_newGroup': {
+    title:              browser.i18n.getMessage('tabContextMenu_newGroup_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_newGroup_label_multiselected')
+  },
+  'context_addToGroup': {
+    title:              browser.i18n.getMessage('tabContextMenu_addToGroup_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_addToGroup_label_multiselected')
+  },
+  'context_addToGroup_newGroup': {
+    parentId: 'context_addToGroup',
+    title:    browser.i18n.getMessage('tabContextMenu_addToGroup_newGroup_label'),
+  },
+  'context_addToGroup_separator:afterNewGroup': {
+    parentId: 'context_addToGroup',
+    type:     'separator',
+  },
+  'context_removeFromGroup': {
+    title:              browser.i18n.getMessage('tabContextMenu_removeFromGroup_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_removeFromGroup_label_multiselected')
   },
   'context_separator:afterNewTab': {
     type: 'separator'
@@ -386,6 +409,67 @@ Tab.onChangeMultipleTabsRestorability.addListener(multipleTabsRestorable => {
   mMultipleTabsRestorable = multipleTabsRestorable;
 });
 
+const mNativeTabGroupItems = new Set();
+function updateNativeTabGroups(contextTab) {
+  if (!contextTab) {
+    return;
+  }
+
+  for (const item of mNativeTabGroupItems) {
+    const id = item.id;
+    if (id in mItemsById)
+      delete mItemsById[id];
+    browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
+    onMessageExternal({
+      type: TSTAPI.kCONTEXT_MENU_REMOVE,
+      params: id
+    }, browser.runtime);
+  }
+  mNativeTabGroupItems.clear();
+
+  updateItem('context_addToGroup_newGroup', {
+    visible: true,
+  });
+  updateItem('context_addToGroup_separator:afterNewGroup', {
+    visible: true,
+  });
+
+  const defaultTitle = browser.i18n.getMessage('tabContextMenu_addToGroup_unnamed_label');
+  const darkSuffix = window.matchMedia('(prefers-color-scheme: dark)').matches ? '-invert' : '';
+  const groups = getEffectiveTabGroups(contextTab.windowId);
+  for (const group of groups) {
+    if (contextTab.groupId == group.id) {
+      continue;
+    }
+    const id = `context_addToGroup:group:${group.id}`;
+    const item = {
+      id,
+      parentId:  'context_addToGroup',
+      title:     group.title || defaultTitle,
+      icons:     { 16: `/resources/icons/tab-group-chicklet.svg#${group.color}${darkSuffix}` },
+      contexts:  ['tab'],
+      viewTypes: ['sidebar', 'tab', 'popup'],
+      documentUrlPatterns: SIDEBAR_URL_PATTERN,
+    };
+    browser.menus.create(item);
+    onMessageExternal({
+      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      params: item
+    }, browser.runtime);
+    mNativeTabGroupItems.add(item);
+    mItemsById[item.id] = item;
+    item.lastVisible = true;
+    item.lastEnabled = true;
+  }
+}
+
+function getEffectiveTabGroups(windowId) {
+  return TreeItem.sort(
+    [...TabsStore.windows.get(windowId).tabGroups.values()]
+      .filter(group => !!group.$TST.firstMember)
+  );
+}
+
 const mContextualIdentityItems = new Set();
 function updateContextualIdentities() {
   for (const item of mContextualIdentityItems) {
@@ -448,12 +532,10 @@ function updateContextualIdentities() {
       params: item
     }, browser.runtime);
     mContextualIdentityItems.add(item);
-  });
-  for (const item of mContextualIdentityItems) {
     mItemsById[item.id] = item;
     item.lastVisible = true;
     item.lastEnabled = true;
-  }
+  });
 }
 
 const mLastDevicesSignature = new Map();
@@ -638,13 +720,21 @@ async function updateSharingServiceItems(parentId, contextTab) {
 function updateItem(id, state = {}) {
   let modified = false;
   const item = mItemsById[id];
+  if (!item) {
+    return false;
+  }
   const updateInfo = {
     visible: 'visible' in state ? !!state.visible : true,
     enabled: 'enabled' in state ? !!state.enabled : true
   };
   if ('checked' in state)
     updateInfo.checked = state.checked;
-  const title = String(state.title || (state.multiselected && item.titleMultiselected) || item.title).replace(/%S/g, state.count || 0);
+  const title = String(
+    (state.tab && state.titleTab) ||
+    state.title ||
+    (state.multiselected && item.titleMultiselected) ||
+    item.title
+  ).replace(/%S/g, state.count || 0);
   if (title) {
     updateInfo.title = title;
     modified = title != item.lastTitle;
@@ -691,22 +781,22 @@ async function onShown(info, contextTab) {
   if (!mInitialized)
     return;
 
-  const contextTabId = contextTab && contextTab.id;
+  const contextTabId = contextTab?.id;
   mLastContextTabId = contextTabId;
   try {
-    contextTab = contextTab && Tab.get(contextTabId);
+    contextTab = Tab.get(contextTabId);
 
     const windowId              = contextTab ? contextTab.windowId : (await browser.windows.getLastFocused({}).catch(ApiTabs.createErrorHandler())).id;
     if (mLastContextTabId != contextTabId)
       return; // Skip further operations if the menu was already reopened on a different context tab.
-    const previousTab           = contextTab && contextTab.$TST.previousTab;
-    const previousSiblingTab    = contextTab && contextTab.$TST.previousSiblingTab;
-    const nextTab               = contextTab && contextTab.$TST.nextTab;
-    const nextSiblingTab        = contextTab && contextTab.$TST.nextSiblingTab;
+    const previousTab           = contextTab?.$TST.previousTab;
+    const previousSiblingTab    = contextTab?.$TST.previousSiblingTab;
+    const nextTab               = contextTab?.$TST.nextTab;
+    const nextSiblingTab        = contextTab?.$TST.nextSiblingTab;
     const hasDuplicatedTabs     = Tab.hasDuplicatedTabs(windowId);
     const hasMultipleTabs       = Tab.hasMultipleTabs(windowId);
     const hasMultipleNormalTabs = Tab.hasMultipleTabs(windowId, { normal: true });
-    const multiselected         = contextTab && contextTab.$TST.multiselected;
+    const multiselected         = contextTab?.$TST.multiselected;
     const contextTabs           = multiselected ?
       Tab.getSelectedTabs(windowId) :
       contextTab ?
@@ -715,6 +805,7 @@ async function onShown(info, contextTab) {
     const hasChild              = contextTab && contextTabs.some(tab => tab.$TST.hasChild);
     const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
     const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
+    const hasChoosableNativeTabGroup = contextTab && getEffectiveTabGroups(windowId).filter(group => group.id != contextTab.groupId).length > 0;
 
     if (mOverriddenContext)
       return onOverriddenMenuShown(info, contextTab, windowId);
@@ -730,7 +821,22 @@ async function onShown(info, contextTab) {
 
     updateItem('context_newTab', {
       visible: emulate,
+      tab: !!contextTab,
     }) && modifiedItemsCount++;
+
+    updateItem('context_newGroup', {
+      visible: emulate && !!contextTab && !hasChoosableNativeTabGroup,
+      multiselected
+    }) && modifiedItemsCount++;
+    updateItem('context_addToGroup', {
+      visible: emulate && !!contextTab && hasChoosableNativeTabGroup,
+      multiselected
+    }) && modifiedItemsCount++;
+    updateItem('context_removeFromGroup', {
+      visible: emulate && !!contextTab && contextTab.groupId != -1,
+      multiselected
+    }) && modifiedItemsCount++;
+
     updateItem('context_separator:afterNewTab', {
       visible: emulate,
     }) && modifiedItemsCount++;
@@ -798,7 +904,7 @@ async function onShown(info, contextTab) {
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_unpinTab', {
-      visible: emulate && !!contextTab && contextTab.pinned,
+      visible: emulate && !!contextTab?.pinned,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_toggleSticky', {
@@ -999,6 +1105,7 @@ async function onShown(info, contextTab) {
 
     // these items should be updated at the last to reduce flicking of showing context menu
     await Promise.all([
+      updateNativeTabGroups(contextTab),
       updateSendToDeviceItems('context_sendTabsToDevice', { manage: true }),
       mItemsById.context_topLevel_sendTreeToDevice.lastVisible && updateSendToDeviceItems('context_topLevel_sendTreeToDevice'),
       modifiedItemsCount > 0 && browser.menus.refresh().catch(ApiTabs.createErrorSuppressor()).then(_ => false),
@@ -1126,8 +1233,8 @@ function onHidden() {
   if (!mInitialized)
     return;
 
-  const owner = mOverriddenContext && mOverriddenContext.owner;
-  const windowId = mOverriddenContext && mOverriddenContext.windowId;
+  const owner = mOverriddenContext?.owner;
+  const windowId = mOverriddenContext?.windowId;
   if (mLastOverriddenContextOwner &&
       owner == mLastOverriddenContextOwner) {
     mOverriddenContext = null;
@@ -1150,9 +1257,9 @@ async function onClick(info, contextTab) {
   if (!mInitialized)
     return;
 
-  contextTab = contextTab && Tab.get(contextTab.id);
+  contextTab = Tab.get(contextTab?.id);
   const win       = await browser.windows.getLastFocused({ populate: true }).catch(ApiTabs.createErrorHandler());
-  const windowId  = contextTab && contextTab.windowId || win.id;
+  const windowId  = contextTab?.windowId || win.id;
   const activeTab = TabsStore.activeTabInWindow.get(windowId);
 
   let multiselectedTabs = Tab.getSelectedTabs(windowId);
@@ -1174,6 +1281,24 @@ async function onClick(info, contextTab) {
         as:      behavior,
       });
     }; break;
+
+    case 'context_newGroup':
+    case 'context_addToGroup_newGroup':
+      NativeTabGroups.addTabsToGroup(multiselectedTabs || [contextTab]).then(({ groupId, created }) => {
+        if (!created) {
+          return;
+        }
+        SidebarConnection.sendMessage({
+          type: Constants.kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL,
+          windowId,
+          groupId,
+        });
+      });
+      break;
+
+    case 'context_removeFromGroup':
+      NativeTabGroups.removeTabsFromGroup(multiselectedTabs || [contextTab]);
+      break;
 
     case 'context_reloadTab':
       if (multiselectedTabs) {
@@ -1397,6 +1522,11 @@ async function onClick(info, contextTab) {
     }; break;
 
     default: {
+      const nativeTabGroupMatch = info.menuItemId.match(/^context_addToGroup:group:(.+)$/);
+      if (contextTab &&
+          nativeTabGroupMatch)
+        NativeTabGroups.addTabsToGroup(multiselectedTabs || [contextTab], parseInt(nativeTabGroupMatch[1]));
+
       const contextualIdentityMatch = info.menuItemId.match(/^context_reopenInContainer:(.+)$/);
       if (contextTab &&
           contextualIdentityMatch)
@@ -1610,7 +1740,7 @@ export function onMessageExternal(message, sender) {
       }
       if (shouldAdd) {
         items.push(params);
-        if (parent && params.id) {
+        if (parent?.id) {
           parent.children = parent.children || [];
           parent.children.push(params.id);
         }
@@ -1703,7 +1833,7 @@ export function onMessageExternal(message, sender) {
       const parent = item.parentId && items.filter(item => item.id == item.parentId)[0];
       items = items.filter(item => item.id != id);
       mExtraItems.set(sender.id, items);
-      if (parent && parent.children)
+      if (parent?.children)
         parent.children = parent.children.filter(childId => childId != id);
       if (item.children) {
         for (const childId of item.children) {

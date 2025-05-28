@@ -14,6 +14,7 @@
     "search",
     "sessions",
     "storage",
+    "tabGroups",
     "tabs",
     "theme"
   ],
@@ -275,7 +276,7 @@
   "applications": {
     "gecko": {
       "id": "treestyletab@piro.sakura.ne.jp",
-      "strict_min_version": "115.0"
+      "strict_min_version": "139.0"
     }
   }
 }

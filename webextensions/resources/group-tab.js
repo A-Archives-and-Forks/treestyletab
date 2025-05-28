@@ -366,7 +366,7 @@
     }
 
     browser.runtime.onMessage.addListener((message, _sender) => {
-      switch (message && message.type) {
+      switch (message?.type) {
         case 'treestyletab:clear-temporary-state':
           gTemporaryCheck.checked = gTemporaryAggressiveCheck.checked = false;
           updateParameters();

@@ -55,7 +55,7 @@ export const kCOMMAND_NOTIFY_TAB_SHOWN               = 'treestyletab:notify-tab-
 export const kCOMMAND_NOTIFY_TAB_HIDDEN              = 'treestyletab:notify-tab-hidden';
 export const kCOMMAND_NOTIFY_TAB_RESTORING           = 'treestyletab:notify-tab-restoring';
 export const kCOMMAND_NOTIFY_TAB_RESTORED            = 'treestyletab:notify-tab-restored';
-export const kCOMMAND_NOTIFY_TAB_LABEL_UPDATED       = 'treestyletab:notify-tab-label-updated';
+export const kCOMMAND_NOTIFY_TREE_ITEM_LABEL_UPDATED       = 'treestyletab:notify-tab-label-updated';
 export const kCOMMAND_NOTIFY_TAB_FAVICON_UPDATED     = 'treestyletab:notify-tab-favicon-updated';
 export const kCOMMAND_NOTIFY_TAB_SOUND_STATE_UPDATED = 'treestyletab:notify-tab-sound-state-updated';
 export const kCOMMAND_NOTIFY_TAB_SHARING_STATE_UPDATED = 'treestyletab:notify-tab-sharing-state-updated';
@@ -67,6 +67,9 @@ export const kCOMMAND_NOTIFY_GROUP_TAB_DETECTED      = 'treestyletab:notify-grou
 export const kCOMMAND_NOTIFY_CHILDREN_CHANGED        = 'treestyletab:notify-children-changed';
 export const kCOMMAND_NOTIFY_TAB_COLLAPSED_STATE_CHANGED     = 'treestyletab:notify-tab-collapsed-state-changed';
 export const kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGED = 'treestyletab:notify-subtree-collapsed-state-changed';
+export const kCOMMAND_NOTIFY_TAB_GROUP_CREATED       = 'treestyletab:notify-tab-group-created';
+export const kCOMMAND_NOTIFY_TAB_GROUP_UPDATED       = 'treestyletab:notify-tab-group-updated';
+export const kCOMMAND_NOTIFY_TAB_GROUP_REMOVED       = 'treestyletab:notify-tab-group-removed';
 export const kCOMMAND_SET_SUBTREE_COLLAPSED_STATE                   = 'treestyletab:set-subtree-collapsed-state';
 export const kCOMMAND_SET_SUBTREE_COLLAPSED_STATE_INTELLIGENTLY_FOR = 'treestyletab:set-subtree-collapsed-state-intelligently-for';
 export const kCOMMAND_TOGGLE_STICKY                  = 'treestyletab:toggle-sticky';
@@ -98,6 +101,10 @@ export const kCOMMAND_GET_BELOW_TAB                 = 'treestyletab:get-below-ta
 export const kCOMMAND_GET_LEFT_TAB                  = 'treestyletab:get-left-tab';
 export const kCOMMAND_GET_RIGHT_TAB                 = 'treestyletab:get-right-tab';
 export const kCOMMAND_GET_BOUNDING_CLIENT_RECT      = 'treestyletab:get-bounding-client-rect';
+export const kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL = 'treestyletab:show-native-tab-group-menu-panel';
+export const kCOMMAND_UPDATE_NATIVE_TAB_GROUP       = 'treestyletab:update-native-tab-group';
+export const kCOMMAND_INVOKE_NATIVE_TAB_GROUP_MENU_PANEL_COMMAND = 'treestyletab:invoke-native-tab-group-menu-panel-command';
+export const kCOMMAND_NEW_WINDOW_FROM_NATIVE_TAB_GROUP = 'treestyletab:new-window-from-native-tab-group';
 
 export const kCOMMAND_ACTIVATE_TAB            = 'treestyletab:activate-tab';
 export const kCOMMAND_HIGHLIGHT_TABS          = 'treestyletab:highlight-tabs';
@@ -126,7 +133,9 @@ export const kCONNECTION_HEARTBEAT = 'treestyletab:connection-heartbeat';
 
 export const kAPI_TAB_ID       = 'data-tab-id';
 export const kAPI_WINDOW_ID    = 'data-window-id';
+export const kAPI_NATIVE_TAB_GROUP_ID = 'data-native-tab-group-id';
 
+export const kGROUP_ID      = 'data-group-id';
 export const kPARENT        = 'data-parent-id';
 export const kCHILDREN      = 'data-child-ids';
 export const kLEVEL         = 'data-level';
@@ -449,10 +458,10 @@ export const kINSERTION_CONTEXT_MOVED = 1;
 export const kINSERTION_CONTEXT_SHOWN = 2;
 export const kINSERTION_CONTEXT_CREATED = 3;
 
-export const kTAB_PREVIEW_PANEL_RENDER_NOWHERE    = 0;
-export const kTAB_PREVIEW_PANEL_RENDER_IN_SIDEBAR = 1 << 0;
-export const kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT = 1 << 1;
-export const kTAB_PREVIEW_PANEL_RENDER_IN_ANYWHERE = kTAB_PREVIEW_PANEL_RENDER_IN_SIDEBAR | kTAB_PREVIEW_PANEL_RENDER_IN_CONTENT;
+export const kIN_CONTENT_PANEL_RENDER_NOWHERE    = 0;
+export const kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR = 1 << 0;
+export const kIN_CONTENT_PANEL_RENDER_IN_CONTENT = 1 << 1;
+export const kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE = kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR | kIN_CONTENT_PANEL_RENDER_IN_CONTENT;
 
 export const kAGGRESSIVE_OPENER_TAB_DETECTION_RULES_WITH_URL = [
   { opener: /^about:addons/,

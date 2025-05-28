@@ -24,35 +24,36 @@ tab-favicon {
 
   --favicon-base-z-index:            20;
   --favicon-preferred-image-z-index: 100;
-}
-tab-item tab-favicon,
-tab-item tab-favicon * {
-  vertical-align: baseline;
-}
-tab-item tab-favicon * {
-  position: relative;
-  z-index: var(--favicon-base-z-index);
+
+  tab-item &,
+  tab-item & * {
+    vertical-align: baseline;
+  }
+  tab-item & * {
+    position: relative;
+    z-index: var(--favicon-base-z-index);
+  }
 }
 
 .favicon-image {
   max-height: var(--favicon-size);
   max-width: var(--favicon-size);
-}
 
-/* https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/browser/themes/shared/tabbrowser/tabs.css#466-503 */
-:root.fade-out-pending-tabs tab-item.pending .favicon-image,
-:root.fade-out-discarded-tabs tab-item:not(.pending).discarded .favicon-image {
-  filter: grayscale(100%);
-  @media (prefers-color-scheme: dark) {
-    filter: grayscale(100%) invert();
+  /* https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/browser/themes/shared/tabbrowser/tabs.css#466-503 */
+  :root.fade-out-pending-tabs tab-item.pending &,
+  :root.fade-out-discarded-tabs tab-item:not(.pending).discarded & {
+    filter: grayscale(100%);
+    @media (prefers-color-scheme: dark) {
+      filter: grayscale(100%) invert();
+    }
+    opacity: 0.5;
+    transition-property: filter, opacity;
+    transition-duration: 1s;
   }
-  opacity: 0.5;
-  transition-property: filter, opacity;
-  transition-duration: 1s;
-}
-:root.fade-out-pending-tabs tab-item:not(.pending) .favicon-image,
-:root.fade-out-discarded-tabs tab-item:not(.pending) .favicon-image {
-  transition: none;
+  :root.fade-out-pending-tabs tab-item:not(.pending) &,
+  :root.fade-out-discarded-tabs tab-item:not(.pending) & {
+    transition: none;
+  }
 }
 
 .favicon-builtin::before,
@@ -70,11 +71,13 @@ tab-item tab-favicon * {
   max-width: var(--favicon-size);
   width: var(--svg-small-icon-size);
 }
-:root.simulate-svg-context-fill tab-item .favicon-builtin::before,
-:root.simulate-svg-context-fill tab-item .favicon-sharing-state::before,
-:root.simulate-svg-context-fill tab-item .favicon-sticky-state::after {
-  background: var(--tab-text);
-  mask: url("/resources/icons/defaultFavicon.svg") no-repeat center / 100%;
+:root.simulate-svg-context-fill tab-item {
+  .favicon-builtin::before,
+  .favicon-sharing-state::before,
+  .favicon-sticky-state::after {
+    background: var(--tab-text);
+    mask: url("/resources/icons/defaultFavicon.svg") no-repeat center / 100%;
+  }
 }
 
 tab-item.group-tab .favicon-builtin::before {
@@ -249,65 +252,6 @@ tab-item.loading .favicon-builtin::before {
 }
 
 
-/* Sharing status for faviconized tabs.
-   Styles for regular tabs are degined in sharing-state.css. */
-
-tab-item:not(.faviconized) .favicon-sharing-state,
-tab-item.active .favicon-sharing-state,
-tab-item.loading .favicon-sharing-state,
-tab-item.faviconized:not(.sharing-camera):not(.sharing-microphone):not(.sharing-screen) .favicon-sharing-state {
-  display: none;
-}
-
-tab-item.faviconized:not(.active):not(.loading).sharing-camera .favicon-image,
-tab-item.faviconized:not(.active):not(.loading).sharing-camera .favicon-builtin::before,
-tab-item.faviconized:not(.active):not(.loading).sharing-microphone .favicon-image,
-tab-item.faviconized:not(.active):not(.loading).sharing-microphone .favicon-builtin::before,
-tab-item.faviconized:not(.active):not(.loading).sharing-screen .favicon-image,
-tab-item.faviconized:not(.active):not(.loading).sharing-screen .favicon-builtin::before {
-  animation: var(--tab-sharing-icon-animation-inverted);
-}
-
-.favicon-sharing-state {
-  bottom: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-  inset-inline-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-  inset-inline-end: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-  position: absolute;
-  top: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-}
-
-tab-item.faviconized.sharing-camera .favicon-sharing-state::before {
-  background-image: url("./icons/camera.svg")
-}
-:root.simulate-svg-context-fill tab-item.faviconized.sharing-camera .favicon-sharing-state::before {
-  mask-image: url("./icons/camera.svg");
-}
-
-tab-item.faviconized.sharing-microphone .favicon-sharing-state::before {
-  background-image: url("./icons/microphone.svg")
-}
-:root.simulate-svg-context-fill tab-item.faviconized.sharing-microphone .favicon-sharing-state::before {
-  mask-image: url("./icons/microphone.svg");
-}
-
-tab-item.faviconized.sharing-screen .favicon-sharing-state::before {
-  background-image: url("./icons/screen.svg")
-}
-:root.simulate-svg-context-fill tab-item.faviconized.sharing-screen .favicon-sharing-state::before {
-  mask-image: url("./icons/screen.svg");
-}
-
-.favicon-sharing-state::before {
-  fill: var(--sharing-state-color);
-  animation: var(--tab-sharing-icon-animation);
-}
-:root.simulate-svg-context-fill tab-item .favicon-sharing-state::before {
-  /* put this here to override background-image specivied rules above! */
-  background: var(--sharing-state-color);
-}
-
-
-
 /* Sticky status */
 
 .favicon-sticky-state {
@@ -315,30 +259,30 @@ tab-item.faviconized.sharing-screen .favicon-sharing-state::before {
   inset-inline-start: calc(var(--svg-small-icon-size) - var(--favicon-size));
   position: absolute;
   top: calc(var(--svg-small-icon-size) - var(--favicon-size));
-}
 
-.favicon-sticky-state::before {
-  background: var(--tab-text-inverted);
-  border-radius: 150%;
-  content: "";
-  display: inline-block;
-  height: var(--svg-small-icon-size);
-  inset-inline-start: -10%;
-  opacity: 0.75;
-  position: absolute;
-  top: 10%;
-  transform: scale(1.3, 1.3);
-  width: var(--svg-small-icon-size);
-}
+  &::before {
+    background: var(--tab-text-inverted);
+    border-radius: 150%;
+    content: "";
+    display: inline-block;
+    height: var(--svg-small-icon-size);
+    inset-inline-start: -10%;
+    opacity: 0.75;
+    position: absolute;
+    top: 10%;
+    transform: scale(1.3, 1.3);
+    width: var(--svg-small-icon-size);
+  }
 
-tab-item:not(.sticky) .favicon-sticky-state,
-tab-item.pinned .favicon-sticky-state {
-  display: none;
-}
+  tab-item:not(.sticky) &,
+  tab-item.pinned & {
+    display: none;
+  }
 
-tab-item.sticky .favicon-sticky-state::after {
-  background-image: url("./icons/pin-12.svg")
-}
-:root.simulate-svg-context-fill tab-item.sticky .favicon-sticky-state::after {
-  mask-image: url("./icons/pin-12.svg");
+  tab-item.sticky &::after {
+    background-image: url("./icons/pin-12.svg")
+  }
+  :root.simulate-svg-context-fill tab-item.sticky &::after {
+    mask-image: url("./icons/pin-12.svg");
+  }
 }

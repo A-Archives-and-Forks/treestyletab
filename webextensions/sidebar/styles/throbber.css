@@ -85,15 +85,19 @@ tab-item:not(.collapsed) .throbber {
   -moz-context-properties: fill;
   background: url("/resources/icons/hourglass.svg") no-repeat;
 }
-:root.simulate-svg-context-fill:not(.rtl).blocking-throbber #blocking-screen .throbber::before,
-:root.simulate-svg-context-fill:not(.rtl) #tabbar tab-item:not(.collapsed).loading .throbber::before {
-  background-image: none;
-  mask: url("/resources/icons/hourglass.svg") no-repeat left center / 100%;
+:root.simulate-svg-context-fill:not(.rtl) {
+  &.blocking-throbber #blocking-screen .throbber::before,
+  #tabbar tab-item:not(.collapsed).loading .throbber::before {
+    background-image: none;
+    mask: url("/resources/icons/hourglass.svg") no-repeat left center / 100%;
+  }
 }
-:root.simulate-svg-context-fill.rtl.blocking-throbber #blocking-screen .throbber::before,
-:root.simulate-svg-context-fill.rtl #tabbar tab-item:not(.collapsed).loading .throbber::before {
-  background-image: none;
-  mask: url("/resources/icons/hourglass.svg") no-repeat right center / 100%;
+:root.simulate-svg-context-fill.rtl {
+  &.blocking-throbber #blocking-screen .throbber::before,
+  #tabbar tab-item:not(.collapsed).loading .throbber::before {
+    background-image: none;
+    mask: url("/resources/icons/hourglass.svg") no-repeat right center / 100%;
+  }
 }
 
 :root.animation.blocking-throbber #blocking-screen .throbber::before,

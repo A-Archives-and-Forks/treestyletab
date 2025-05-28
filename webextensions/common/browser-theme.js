@@ -81,8 +81,8 @@ export async function generateThemeDeclarations(theme) {
       });
     }
 
-    const positions = theme.properties && theme.properties.additional_backgrounds_alignment || [];
-    const repeats = theme.properties && theme.properties.additional_backgrounds_tiling || [];
+    const positions = theme.properties?.additional_backgrounds_alignment || [];
+    const repeats = theme.properties?.additional_backgrounds_tiling || [];
     if (Array.isArray(theme.images.additional_backgrounds) &&
         theme.images.additional_backgrounds.length > 0) {
       const leftImageCount = positions.filter(position => position.includes('left')).length;

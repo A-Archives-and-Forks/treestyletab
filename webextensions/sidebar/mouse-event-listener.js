@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -35,6 +35,7 @@ import {
   countMatched,
   configs,
   shouldApplyAnimation,
+  mapAndFilter,
   isMacOS,
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
@@ -45,7 +46,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as BackgroundConnection from './background-connection.js';
 import * as EventUtils from './event-utils.js';
@@ -172,7 +173,7 @@ const mTwistySizeBox   = document.querySelector(`#dummy-tab ${kTAB_TWISTY_ELEMEN
 const mDistanceBox     = document.querySelector('#dummy-shift-tabs-for-scrollbar-distance-box');
 
 function onMouseMove(event) {
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
   if (mTabBar.classList.contains(Constants.kTABBAR_STATE_SCROLLBAR_AUTOHIDE)) {
     const onTabBar    = mTabBar.contains(event.target);
     const tabbarRect  = mTabBar.getBoundingClientRect();
@@ -216,9 +217,9 @@ onMouseMove = EventUtils.wrapWithErrorHandler(onMouseMove);
 let mLastWarmUpTab = -1;
 
 function onMouseOver(event) {
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
 
-  if (tab &&
+  if (tab?.$TST.tab &&
       mLastWarmUpTab != tab.id &&
       typeof browser.tabs.warmup == 'function') {
     browser.tabs.warmup(tab.id);
@@ -252,7 +253,7 @@ function onMouseOver(event) {
 onMouseOver = EventUtils.wrapWithErrorHandler(onMouseOver);
 
 function onMouseOut(event) {
-  const tab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event);
 
   // We leave the tab or any of its children, but not for one of the tabs
   // (other) children, so we are no longer hovering this tab (relatedTarget
@@ -299,7 +300,7 @@ function onMouseDown(event) {
   }
 
   const target = event.target;
-  const tab = EventUtils.getTabFromEvent(event) || EventUtils.getTabFromTabbarEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event) || EventUtils.getTreeItemFromTabbarEvent(event);
   log('onMouseDown: found target tab: ', tab, event);
 
   const extraContentsInfo = TSTAPIFrontend.getOriginalExtraContentsTarget(event);
@@ -337,7 +338,7 @@ function onMouseDown(event) {
       ctrlKey:  mousedownDetail.ctrlKey,
       metaKey:  mousedownDetail.metaKey,
       shiftKey: mousedownDetail.shiftKey,
-      tab:      tab && tab.$TST.export(true),
+      tab:      tab?.$TST?.export(true) || tab,
     }).catch(ApiTabs.createErrorHandler()),
     (async () => {
       log('Sending message to mousedown listeners ', { extraContentsInfo });
@@ -381,7 +382,7 @@ function onMouseDown(event) {
     if (mousedown.detail.button == 0 &&
         onRegularArea &&
         !wasMultiselectionAction &&
-        tab) {
+        tab?.$TST?.type == TreeItem.TYPE_TAB) {
       BackgroundConnection.sendMessage({
         type:  Constants.kCOMMAND_ACTIVATE_TAB,
         tabId: tab.id,
@@ -389,7 +390,7 @@ function onMouseDown(event) {
         keepMultiselection: true
       });
       if (tab.active || tab.$TST.states.has(Constants.kTAB_STATE_BUNDLED_ACTIVE)) // sticky active tab
-        Scroll.scrollToTab(tab);
+        Scroll.scrollToItem(tab);
     }
   });
 
@@ -431,8 +432,8 @@ let mLastMouseUpY = -1;
 let mLastMouseUpOnTab = -1;
 
 async function onMouseUp(event) {
-  const unsafeTab = EventUtils.getTabFromEvent(event, { force: true }) || EventUtils.getTabFromTabbarEvent(event, { force: true });
-  const tab       = EventUtils.getTabFromEvent(event) || EventUtils.getTabFromTabbarEvent(event);
+  const unsafeTab = EventUtils.getTreeItemFromEvent(event, { force: true }) || EventUtils.getTreeItemFromTabbarEvent(event, { force: true });
+  const tab       = EventUtils.getTreeItemFromEvent(event) || EventUtils.getTreeItemFromTabbarEvent(event);
   log('onMouseUp: ', unsafeTab, { living: !!tab });
 
   DragAndDrop.endMultiDrag(unsafeTab, event);
@@ -490,9 +491,12 @@ async function onMouseUp(event) {
   if (lastMousedown.tab && lastMousedown.detail.targetType == 'tab')
     promisedCanceled = lastMousedown.promisedMousedownNotified;
 
+  const lastMousedownTab = lastMousedown.detail.tabType == 'group' ?
+    TabGroup.get(lastMousedown.detail.tabId) :
+    Tab.get(lastMousedown.detail.tabId);
   if (lastMousedown.expired ||
       lastMousedown.detail.targetType != EventUtils.getEventTargetType(event) || // when the cursor was moved before mouseup
-      (tab && tab != Tab.get(lastMousedown.detail.tab))) { // when the tab was already removed
+      (tab && tab != lastMousedownTab)) { // when the tab was already removed
     log(' => expired, different type, or different tab');
     return;
   }
@@ -698,26 +702,39 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
   // we simulate the behavior.
   if (lastMousedown.detail.button == 0 &&
       onRegularArea &&
-      !wasMultiselectionAction)
-    BackgroundConnection.sendMessage({
-      type:  Constants.kCOMMAND_ACTIVATE_TAB,
-      tabId: tab.id,
-      byMouseOperation:   true,
-      keepMultiselection: false // tab.highlighted
-    });
+      !wasMultiselectionAction) {
+    switch (tab.$TST.type) {
+      case 'tab':
+        BackgroundConnection.sendMessage({
+          type:  Constants.kCOMMAND_ACTIVATE_TAB,
+          tabId: tab.id,
+          byMouseOperation:   true,
+          keepMultiselection: false // tab.highlighted
+        });
+        break;
+
+      case 'group':
+        await browser.tabGroups.update(tab.id, { collapsed: !tab.collapsed });
+        break;
+    }
+  }
 
   if (lastMousedown.detail.isMiddleClick) { // Ctrl-click doesn't close tab on Firefox's tab bar!
-    log(`onMouseUp: middle click on the tab ${tab.id}: `, lastMousedown.detail.targetType);
+    log(`onMouseUp: middle click on the tab ${tab.id}: targetType = `, lastMousedown.detail.targetType);
     if (lastMousedown.detail.targetType != 'tab') // ignore middle click on blank area
       return false;
     const tabs = TreeBehavior.getClosingTabsFromParent(tab, {
       byInternalOperation: true
     });
-    Sidebar.confirmToCloseTabs(tabs.map(tab => tab.$TST.sanitized))
+    log('tabs: ', tabs);
+    const sanitizedTabsToClose = mapAndFilter(tabs, tab => tab.type == TreeItem.TYPE_GROUP ? undefined : tab.$TST.sanitized);
+    log('sanitizedTabsToClose: ', sanitizedTabsToClose);
+    (tab.type == TreeItem.TYPE_GROUP ? Promise.resolve(true) : // on Firefox 139, middle click on a group closes it with no warning!
+      Sidebar.confirmToCloseTabs(sanitizedTabsToClose))
       .then(async confirmed => {
         if (!confirmed)
           return;
-        const tabIds = tabs.map(tab => tab.id);
+        const tabIds = sanitizedTabsToClose.map(tab => tab.id);
         await Scroll.tryLockPosition(tabIds, Scroll.LOCK_REASON_REMOVE);
         BackgroundConnection.sendMessage({
           type:   Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
@@ -950,7 +967,7 @@ Tab.onActivated.addListener((tab, _info = {}) => {
 function onClick(_event) {
   // clear unexpectedly left "dragging" state
   // (see also https://github.com/piroor/treestyletab/issues/1921 )
-  DragAndDrop.clearDraggingTabsState();
+  DragAndDrop.clearDraggingItemsState();
 }
 onClick = EventUtils.wrapWithErrorHandler(onClick);
 
@@ -1019,8 +1036,8 @@ async function onDblClick(event) {
   if (EventUtils.isEventFiredOnNewTabButton(event))
     return;
 
-  const tab = EventUtils.getTabFromEvent(event, { force: true }) || EventUtils.getTabFromTabbarEvent(event, { force: true });
-  const livingTab = EventUtils.getTabFromEvent(event);
+  const tab = EventUtils.getTreeItemFromEvent(event, { force: true }) || EventUtils.getTreeItemFromTabbarEvent(event, { force: true });
+  const livingTab = EventUtils.getTreeItemFromEvent(event);
   log('dblclick tab: ', tab, { living: !!livingTab });
 
   if (livingTab &&

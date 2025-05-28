@@ -18,9 +18,10 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabsGroup from './tabs-group.js';
 import * as Tree from './tree.js';
 import * as TreeStructure from './tree-structure.js';
@@ -90,6 +91,11 @@ Tab.onMoving.addListener((tab, moveInfo) => {
 });
 
 async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
+  const internalGroupMoveCount = NativeTabGroups.internallyMovingNativeTabGroups.get(tab.groupId);
+  if (internalGroupMoveCount) {
+    log('ignore internal move of tab groups ', internalGroupMoveCount);
+    return;
+  }
   const parentTabOperationBehavior = TreeBehavior.getParentTabOperationBehavior(tab, {
     context: Constants.kPARENT_TAB_OPERATION_CONTEXT_MOVE,
     ...moveInfo,
@@ -213,10 +219,13 @@ Tab.onMoved.addListener((tab, moveInfo = {}) => {
       !moveInfo.movedInBulk ||
       tab.$TST.duplicating) {
     log('internal move');
+    tab.$TST.nativeTabGroup?.$TST.reindex();
   }
   else {
     log('process moved tab');
-    tryFixupTreeForInsertedTab(tab, moveInfo);
+    tryFixupTreeForInsertedTab(tab, moveInfo).then(() => {
+      tab.$TST.nativeTabGroup?.$TST.reindex();
+    });
   }
   reserveToEnsureRootTabVisible(tab);
 });

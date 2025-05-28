@@ -19,7 +19,7 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TabsInternalOperation from '/common/tabs-internal-operation.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as Background from './background.js';
@@ -193,7 +193,7 @@ Tab.onActivating.addListener(async (tab, info = {}) => { // return false if the 
         if (mMaybeTabSwitchingByShortcut)
           setupDelayedExpand(successor);
         TabsInternalOperation.activateTab(successor, { silently: true });
-        log('Tabs.onActivating: discarded? ', dumpTab(tab), tab && tab.discarded);
+        log('Tabs.onActivating: discarded? ', dumpTab(tab), tab?.discarded);
         if (tab.discarded)
           tab.$TST.temporaryMetadata.set('discardURLAfterCompletelyLoaded', tab.url);
         return false;
@@ -269,7 +269,7 @@ async function tryHighlightBundledTab(tab, { shouldSkipCollapsed, allowed, silen
   const oldBundledTabs = TabsStore.bundledActiveTabsInWindow.get(tab.windowId);
   log('tryHighlightBundledTab ', {
     tab: tab.id,
-    bundledTab: bundledTab && bundledTab.id,
+    bundledTab: bundledTab?.id,
     oldBundledTabs,
     shouldSkipCollapsed,
     allowed,
@@ -317,7 +317,7 @@ Tab.onStateChanged.addListener(tab => {
         configs.autoDiscardTabForUnexpectedFocus) {
       log('Try to discard accidentally restored tab (on restored) ', dumpTab(tab));
       wait(configs.autoDiscardTabForUnexpectedFocusDelay).then(() => {
-        if (!TabsStore.ensureLivingTab(tab) ||
+        if (!TabsStore.ensureLivingItem(tab) ||
             tab.active)
           return;
         if (tab.status == 'complete')
@@ -424,7 +424,7 @@ function onMessage(message, sender) {
         return;
       log('kCOMMAND_NOTIFY_MAY_START_TAB_SWITCH ', message.modifier);
       mMaybeTabSwitchingByShortcut = true;
-      if (sender.tab && sender.tab.active) {
+      if (sender.tab?.active) {
         const win = TabsStore.windows.get(sender.tab.windowId);
         win.lastActiveTab = sender.tab.id;
       }

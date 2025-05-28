@@ -26,9 +26,11 @@ import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 
 import EventListenerManager from '/extlib/EventListenerManager.js';
+
+import * as TabGroupContextMenu from './tab-group-context-menu.js';
 
 function log(...args) {
   internalLogger('sidebar/tab-context-menu', ...args);
@@ -285,7 +287,7 @@ function matchPatternToRegExp(pattern) {
 export async function open(options = {}) {
   await close();
   mLastOpenOptions = options;
-  mContextTab      = options.tab && Tab.get(options.tab.id);
+  mContextTab      = Tab.get(options.tab?.id);
   await rebuild();
   if (mIsDirty) {
     return await open(options);
@@ -577,7 +579,7 @@ function onMessageExternal(message, sender) {
       log('TSTAPI.kCONTEXT_MENU_OPEN:', message, { id: sender.id, url: sender.url });
       return (async () => {
         const tab      = message.tab ? Tab.get(message.tab) : null ;
-        const windowId = message.window || tab && tab.windowId;
+        const windowId = message.window || tab?.windowId;
         if (windowId != TabsStore.getCurrentWindowId())
           return;
         await onShown(tab);
@@ -688,8 +690,8 @@ async function onContextMenu(event) {
 
   const modifierKeyPressed = isMacOS() ? event.metaKey : event.ctrlKey;
 
-  const originalTargetBookmarkElement = originalTarget && originalTarget.closest('[data-bookmark-id]');
-  const bookmarkId = originalTargetBookmarkElement && originalTargetBookmarkElement.dataset.bookmarkId;
+  const originalTargetBookmarkElement = originalTarget?.closest('[data-bookmark-id]');
+  const bookmarkId = originalTargetBookmarkElement?.dataset.bookmarkId;
   if (bookmarkId &&
       !modifierKeyPressed &&
       typeof browser.menus.overrideContext == 'function') {
@@ -701,10 +703,10 @@ async function onContextMenu(event) {
     return;
   }
 
-  const originalTargetTabElement = originalTarget && originalTarget.closest('[data-tab-id]');
-  const tab = originalTargetTabElement ?
-    TabsStore.ensureLivingTab(Tab.get(parseInt(originalTargetTabElement.dataset.tabId))) :
-    EventUtils.getTabFromEvent(event);
+  const originalTargetTreeItemElement = originalTarget?.closest('[data-tab-id]');
+  const tab = originalTargetTreeItemElement ?
+    TabsStore.ensureLivingItem(Tab.get(parseInt(originalTargetTreeItemElement.dataset.tabId))) :
+    EventUtils.getTreeItemFromEvent(event);
   if (tab &&
       !modifierKeyPressed &&
       typeof browser.menus.overrideContext == 'function') {
@@ -724,6 +726,17 @@ async function onContextMenu(event) {
       left: event.clientX,
       top:  event.clientY,
     });
+    return;
+  }
+
+  const originalTargetNativeTabGroupElement = originalTarget?.closest('[data-native-tab-group-id]');
+  const nativeTabGroup = originalTargetNativeTabGroupElement?.$TST.group;
+  if (nativeTabGroup &&
+      !modifierKeyPressed) {
+    log('onContextMenu: on native tab group');
+    event.stopPropagation();
+    event.preventDefault();
+    TabGroupContextMenu.show(nativeTabGroup);
     return;
   }
 
@@ -767,5 +780,17 @@ BackgroundConnection.onMessage.addListener(async message => {
       close();
       mNewTabButtonUI.close();
       break;
+
+    case Constants.kCOMMAND_SHOW_NATIVE_TAB_GROUP_MENU_PANEL: {
+      close();
+      mNewTabButtonUI.close();
+      const group = TabGroup.get(message.groupId);
+      Promise.race([
+        group.$TST?.promisedElement,
+        wait(250),
+      ]).then(() => {
+        TabGroupContextMenu.show(group, true);
+      });
+    }; break;
   }
 });

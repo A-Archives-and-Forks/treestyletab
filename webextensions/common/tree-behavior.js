@@ -12,6 +12,8 @@ import {
 import * as Constants from './constants.js';
 import * as SidebarConnection from './sidebar-connection.js';
 
+import { TreeItem } from './TreeItem.js';
+
 function log(...args) {
   internalLogger('common/tree-behavior', ...args);
 }
@@ -117,6 +119,9 @@ export function getParentTabOperationBehavior(tab, { context, byInternalOperatio
 
 export function getClosingTabsFromParent(tab, removeInfo = {}) {
   log('getClosingTabsFromParent: ', tab, removeInfo);
+  if (tab?.type == TreeItem.TYPE_GROUP) {
+    return tab.$TST.members;
+  }
   const closeParentBehavior = getParentTabOperationBehavior(tab, {
     ...removeInfo,
     context: Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE,
@@ -127,15 +132,20 @@ export function getClosingTabsFromParent(tab, removeInfo = {}) {
   return [tab].concat(tab.$TST.descendants);
 }
 
-export function calculateReferenceTabsFromInsertionPosition(
-  tab,
+export function calculateReferenceItemsFromInsertionPosition(
+  item,
   { context, insertBefore, insertAfter } = {}
 ) {
-  const firstTab = (Array.isArray(tab) ? tab[0] : tab) || tab;
-  const lastTab  = (Array.isArray(tab) ? tab[tab.length - 1] : tab) || tab;
-  log('calculateReferenceTabsFromInsertionPosition ', {
-    firstTab:     firstTab?.id,
-    lastTab:      lastTab?.id,
+  if (!item) {
+    throw new Error('calculateReferenceItemsFromInsertionPosition: no item is given');
+  }
+  let firstItem = (Array.isArray(item) ? item[0] : item) || item;
+  let lastItem  = (Array.isArray(item) ? item[item.length - 1] : item) || item;
+  firstItem = firstItem.$TST?.nativeTabGroup || firstItem;
+  lastItem = lastItem.$TST?.nativeTabGroup?.collapsed && lastItem.$TST?.nativeTabGroup || lastItem;
+  log('calculateReferenceItemsFromInsertionPosition ', {
+    firstItem:    firstItem?.id,
+    lastItem:     lastItem?.id,
     insertBefore: insertBefore?.id,
     insertAfter : insertAfter?.id
   });
@@ -154,7 +164,7 @@ export function calculateReferenceTabsFromInsertionPosition(
          |[TARGET  ]
          +------------------ CASE 4 ---------------------------
          |[        ]
-         |     <= attach to the parent of the target (previous tab), and move
+         |     <= attach to the parent of the target (previous item), and move
          |  [TARGET]
          +-----------------------------------------------------
     */
@@ -164,7 +174,7 @@ export function calculateReferenceTabsFromInsertionPosition(
          |[TARGET  ]
          +------------------ CASE 6 ---------------------------
          |  [      ]
-         |     <= if the inserted tab has a parent and it is not the parent of the target, attach to the parent of the target. Otherwise keep inserted as a root.
+         |     <= if the inserted item has a parent and it is not the parent of the target, attach to the parent of the target. Otherwise keep inserted as a root.
          |[TARGET  ]
          +------------------ CASE 7 ---------------------------
          |[        ]
@@ -172,24 +182,30 @@ export function calculateReferenceTabsFromInsertionPosition(
          |[TARGET  ]
          +------------------ CASE 8 ---------------------------
          |[        ]
-         |     <= attach to the parent of the target (previous tab), and move
+         |     <= attach to the parent of the target (previous item), and move
          |  [TARGET]
          +-----------------------------------------------------
     */
-    let prevTab = insertBefore &&
+    if (insertBefore.type == TreeItem.TYPE_GROUP) {
+      log('calculateReferenceItemsFromInsertionPosition: from insertBefore, special case for a group item');
+      return {
+        insertBefore,
+      };
+    }
+    let prevItem = insertBefore &&
       (configs.fixupTreeOnTabVisibilityChanged ?
         insertBefore.$TST.nearestVisiblePrecedingTab :
         insertBefore.$TST.unsafeNearestExpandedPrecedingTab);
-    if (prevTab == lastTab) // failsafe
-      prevTab = !firstTab ? null :
+    if (prevItem == lastItem) // failsafe
+      prevItem = !firstItem ? null :
         configs.fixupTreeOnTabVisibilityChanged ?
-          firstTab.$TST.nearestVisiblePrecedingTab :
-          firstTab.$TST.unsafeNearestExpandedPrecedingTab;
-    if (!prevTab) {
-      log('calculateReferenceTabsFromInsertionPosition: from insertBefore, CASE 1/5');
-      // allow to move pinned tab to beside of another pinned tab
-      if (!firstTab ||
-          firstTab.pinned == insertBefore?.pinned) {
+          firstItem.$TST.nearestVisiblePrecedingTab :
+          firstItem.$TST.unsafeNearestExpandedPrecedingTab;
+    if (!prevItem) {
+      log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 1/5');
+      // allow to move pinned item to beside of another pinned item
+      if (!firstItem ||
+          !!firstItem.pinned == !!insertBefore?.pinned) {
         return {
           insertBefore
         };
@@ -199,35 +215,35 @@ export function calculateReferenceTabsFromInsertionPosition(
       }
     }
     else {
-      const prevLevel   = Number(prevTab?.$TST?.getAttribute(Constants.kLEVEL) || 0);
+      const prevLevel   = Number(prevItem?.$TST?.getAttribute(Constants.kLEVEL) || 0);
       const targetLevel = Number(insertBefore?.$TST?.getAttribute(Constants.kLEVEL) || 0);
       let parent = null;
-      if (!firstTab || !firstTab.pinned) {
+      if (!firstItem || !firstItem.pinned) {
         if (prevLevel < targetLevel) {
           if (context == Constants.kINSERTION_CONTEXT_MOVED) {
-            log('calculateReferenceTabsFromInsertionPosition: from insertBefore, CASE 4, prevTab = ', prevTab);
-            parent = prevTab;
+            log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 4, prevItem = ', prevItem);
+            parent = prevItem;
           }
           else {
-            log('calculateReferenceTabsFromInsertionPosition: from insertBefore, CASE 8, prevTab = ', prevTab);
-            parent = (firstTab?.$TST?.parent != prevTab) ? prevTab : null;
+            log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 8, prevItem = ', prevItem);
+            parent = (firstItem?.$TST?.parent != prevItem) ? prevItem : null;
           }
         }
         else {
           const possibleParent = insertBefore?.$TST?.parent;
           if (context == Constants.kINSERTION_CONTEXT_MOVED || prevLevel == targetLevel) {
-            log('calculateReferenceTabsFromInsertionPosition: from insertBefore, CASE 2/3/7');
+            log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 2/3/7');
             parent = possibleParent;
           }
           else {
-            log('calculateReferenceTabsFromInsertionPosition: from insertBefore, CASE 6');
-            parent = firstTab?.$TST?.parent != possibleParent && possibleParent || firstTab?.$TST?.parent;
+            log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 6');
+            parent = firstItem?.$TST?.parent != possibleParent && possibleParent || firstItem?.$TST?.parent;
           }
         }
       }
       const result = {
         parent,
-        insertAfter: prevTab,
+        insertAfter: prevItem,
         insertBefore
       };
       log(' => ', result);
@@ -256,10 +272,10 @@ export function calculateReferenceTabsFromInsertionPosition(
     /* strategy for shown case
          +------------------ CASE 5 ---------------------------
          |[TARGET  ]
-         |     <= if the inserted tab has a parent, detach. Otherwise keep inserted as a root.
+         |     <= if the inserted item has a parent, detach. Otherwise keep inserted as a root.
          +------------------ CASE 6 ---------------------------
          |  [TARGET]
-         |     <= if the inserted tab has a parent and it is not the parent of the next tab, attach to the parent of the target. Otherwise attach to the parent of the next tab.
+         |     <= if the inserted item has a parent and it is not the parent of the next item, attach to the parent of the target. Otherwise attach to the parent of the next item.
          |[        ]
          +------------------ CASE 7 ---------------------------
          |[TARGET  ]
@@ -271,34 +287,34 @@ export function calculateReferenceTabsFromInsertionPosition(
          |  [      ]
          +-----------------------------------------------------
     */
-    // We need to refer unsafeNearestExpandedFollowingTab instead of a visible tab, to avoid
-    // placing the tab after hidden tabs (it is too far from the target).
-    let unsafeNextTab = insertAfter?.$TST?.unsafeNearestExpandedFollowingTab;
-    if (firstTab && unsafeNextTab == firstTab) // failsafe
-      unsafeNextTab = lastTab?.$TST?.unsafeNearestExpandedFollowingTab;
-    let nextTab = insertAfter &&
+    // We need to refer unsafeNearestExpandedFollowingTab instead of a visible item, to avoid
+    // placing the item after hidden items (it is too far from the target).
+    let unsafeNextItem = insertAfter?.$TST?.unsafeNearestExpandedFollowingTab;
+    if (firstItem && unsafeNextItem == firstItem) // failsafe
+      unsafeNextItem = lastItem?.$TST?.unsafeNearestExpandedFollowingTab;
+    let nextItem = insertAfter &&
       (configs.fixupTreeOnTabVisibilityChanged ?
         insertAfter.$TST?.nearestVisibleFollowingTab :
-        unsafeNextTab);
-    if (firstTab && nextTab == firstTab) // failsafe
-      nextTab = configs.fixupTreeOnTabVisibilityChanged ?
-        lastTab?.$TST?.nearestVisibleFollowingTab :
-        unsafeNextTab;
-    if (!nextTab) {
+        unsafeNextItem);
+    if (firstItem && nextItem == firstItem) // failsafe
+      nextItem = configs.fixupTreeOnTabVisibilityChanged ?
+        lastItem?.$TST?.nearestVisibleFollowingTab :
+        unsafeNextItem;
+    if (!nextItem) {
       let result;
       if (context == Constants.kINSERTION_CONTEXT_MOVED) {
-        log('calculateReferenceTabsFromInsertionPosition: from insertAfter, CASE 1');
+        log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 1');
         result = {
           parent:       insertAfter?.$TST?.parent,
-          insertBefore: unsafeNextTab,
+          insertBefore: unsafeNextItem,
           insertAfter
         };
       }
       else {
-        log('calculateReferenceTabsFromInsertionPosition: from insertAfter, CASE 5');
+        log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 5');
         result = {
-          parent:       firstTab?.$TST?.parent && insertAfter?.$TST?.parent,
-          insertBefore: unsafeNextTab,
+          parent:       firstItem?.$TST?.parent && insertAfter?.$TST?.parent,
+          insertBefore: unsafeNextItem,
           insertAfter
         };
       }
@@ -307,35 +323,35 @@ export function calculateReferenceTabsFromInsertionPosition(
     }
     else {
       const targetLevel = Number(insertAfter?.$TST?.getAttribute(Constants.kLEVEL) || 0);
-      const nextLevel   = Number(nextTab?.$TST?.getAttribute(Constants.kLEVEL) || 0);
+      const nextLevel   = Number(nextItem?.$TST?.getAttribute(Constants.kLEVEL) || 0);
       let parent = null;
-      if (!firstTab || !firstTab.pinned) {
+      if (!firstItem || !firstItem.pinned) {
         if (targetLevel < nextLevel) {
-          log('calculateReferenceTabsFromInsertionPosition: from insertAfter, CASE 4/8');
+          log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 4/8');
           parent = insertAfter;
         }
         else  {
           const possibleParent = insertAfter?.$TST?.parent;
           if (context == Constants.kINSERTION_CONTEXT_MOVED || targetLevel == nextLevel) {
-            log('calculateReferenceTabsFromInsertionPosition: from insertAfter, CASE 2/3/7');
+            log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 2/3/7');
             parent = possibleParent;
           }
           else {
-            log('calculateReferenceTabsFromInsertionPosition: from insertAfter, CASE 6');
-            parent = firstTab?.$TST?.parent != possibleParent && possibleParent || firstTab?.$TST.parent;
+            log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 6');
+            parent = firstItem?.$TST?.parent != possibleParent && possibleParent || firstItem?.$TST.parent;
           }
         }
       }
       const result = {
         parent,
-        insertBefore: unsafeNextTab || nextTab,
+        insertBefore: unsafeNextItem || nextItem,
         insertAfter
       };
       log(' => ', result);
       return result;
     }
   }
-  throw new Error('calculateReferenceTabsFromInsertionPosition requires one of insertBefore or insertAfter parameter!');
+  throw new Error('calculateReferenceItemsFromInsertionPosition requires one of insertBefore or insertAfter parameter!');
 }
 
 

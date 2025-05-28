@@ -26,7 +26,7 @@ import * as Dialog from './dialog.js';
 import * as Permissions from './permissions.js';
 import * as UserOperationBlocker from './user-operation-blocker.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 function log(...args) {
   internalLogger('common/bookmarks', ...args);
@@ -328,7 +328,7 @@ export async function bookmarkTab(tab, { parentId, showDialog } = {}) {
   let title    = tab.title;
   let url      = tab.url;
   if (!parentId)
-    parentId = parent && parent.id;
+    parentId = parent?.id;
   if (showDialog) {
     const windowId = tab.windowId;
     const inline = location.pathname.startsWith('/sidebar/');
@@ -1068,7 +1068,7 @@ export async function initFolderChooser({ rootItems, defaultItem, defaultValue, 
     switch (event.key) {
       case 'Enter':
         cancelEvent(event);
-        if (focusedItem && focusedItem.matches('.editing'))
+        if (focusedItem?.matches('.editing'))
           focusedItem.$exitTitleEdit();
         toggleItemExpanded(focusedItem);
         break;

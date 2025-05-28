@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -42,7 +42,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as Tree from './tree.js';
@@ -67,6 +67,10 @@ export function init() {
   browser.tabs.onDetached.addListener(onDetached);
   browser.windows.onCreated.addListener(onWindowCreated);
   browser.windows.onRemoved.addListener(onWindowRemoved);
+  browser.tabGroups.onCreated.addListener(onGroupCreated);
+  browser.tabGroups.onUpdated.addListener(onGroupUpdated);
+  browser.tabGroups.onRemoved.addListener(onGroupRemoved);
+  browser.tabGroups.onMoved.addListener(onGroupMoved);
 
   browser.windows.getAll({}).then(windows => {
     mAppIsActive = windows.some(win => win.focused);
@@ -91,6 +95,10 @@ export function destroy() {
   browser.tabs.onDetached.removeListener(onDetached);
   browser.windows.onCreated.removeListener(onWindowCreated);
   browser.windows.onRemoved.removeListener(onWindowRemoved);
+  browser.tabGroups.onCreated.removeListener(onGroupCreated);
+  browser.tabGroups.onUpdated.removeListener(onGroupUpdated);
+  browser.tabGroups.onRemoved.removeListener(onGroupRemoved);
+  browser.tabGroups.onMoved.removeListener(onGroupMoved);
 }
 
 export function start() {
@@ -151,7 +159,7 @@ async function onActivated(activeInfo) {
 
     const newActiveTab = Tab.get(activeInfo.tabId);
     if (!newActiveTab ||
-        !TabsStore.ensureLivingTab(newActiveTab)) {
+        !TabsStore.ensureLivingItem(newActiveTab)) {
       warnTabDestroyedWhileWaiting(activeInfo.tabId);
       onCompleted();
       return;
@@ -161,7 +169,7 @@ async function onActivated(activeInfo) {
     const oldActiveTabs = TabsInternalOperation.setTabActive(newActiveTab);
     const byActiveTabRemove = !activeInfo.previousTabId;
 
-    if (!TabsStore.ensureLivingTab(newActiveTab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(newActiveTab)) { // it can be removed while waiting
       onCompleted();
       warnTabDestroyedWhileWaiting(activeInfo.tabId);
       return;
@@ -194,7 +202,7 @@ async function onActivated(activeInfo) {
       return;
     }
 
-    if (!TabsStore.ensureLivingTab(newActiveTab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(newActiveTab)) { // it can be removed while waiting
       onCompleted();
       warnTabDestroyedWhileWaiting(activeInfo.tabId);
       return;
@@ -245,7 +253,7 @@ async function onUpdated(tabId, changeInfo, tab) {
   try {
     const updatedTab = Tab.get(tabId);
     if (!updatedTab ||
-        !TabsStore.ensureLivingTab(updatedTab)) {
+        !TabsStore.ensureLivingItem(updatedTab)) {
       onCompleted();
       warnTabDestroyedWhileWaiting(tabId, updatedTab);
       return;
@@ -280,7 +288,7 @@ async function onUpdated(tabId, changeInfo, tab) {
     for (const key of Object.keys(changeInfo)) {
       if (key == 'index')
         continue;
-      if ('key' in updatedTab)
+      if (key in updatedTab)
         oldState[key] = updatedTab[key];
       if (key == 'openerTabId') {
         if (changeInfo.openerTabId == updatedTab.openerTabId) // already processed
@@ -473,7 +481,7 @@ async function onNewTabTracked(tab, info) {
   let treeForActionDetection;
   const onTreeModified = (_child, _info) => {
     if (!treeForActionDetection ||
-        !TabsStore.ensureLivingTab(tab))
+        !TabsStore.ensureLivingItem(tab))
       return;
     treeForActionDetection = Tree.snapshotForActionDetection(tab);
     log('Tree modification is detected while waiting. Cached tree for action detection is updated: ', treeForActionDetection);
@@ -506,7 +514,7 @@ async function onNewTabTracked(tab, info) {
     const uniqueId = await tab.$TST.promisedUniqueId;
     metric.add('uniqueId resolved');
 
-    if (!TabsStore.ensureLivingTab(tab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) { // it can be removed while waiting
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
       Tab.untrack(tab.id);
@@ -589,7 +597,7 @@ async function onNewTabTracked(tab, info) {
       log(`onNewTabTracked(${dumpTab(tab)}): continued for restored tab`);
       metric.add('win.promisedAllTabsRestored resolved');
     }
-    if (!TabsStore.ensureLivingTab(tab)) {
+    if (!TabsStore.ensureLivingItem(tab)) {
       log(`onNewTabTracked(${dumpTab(tab)}):  => aborted`);
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
@@ -621,7 +629,7 @@ async function onNewTabTracked(tab, info) {
     }
     moved = moved === false;
 
-    if (!TabsStore.ensureLivingTab(tab)) {
+    if (!TabsStore.ensureLivingItem(tab)) {
       log(`onNewTabTracked(${dumpTab(tab)}):  => aborted`);
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
@@ -644,7 +652,7 @@ async function onNewTabTracked(tab, info) {
     log(`onNewTabTracked(${dumpTab(tab)}): moved = `, moved);
     metric.add('kCOMMAND_NOTIFY_TAB_CREATING notified');
 
-    if (TabsStore.ensureLivingTab(tab)) { // it can be removed while waiting
+    if (TabsStore.ensureLivingItem(tab)) { // it can be removed while waiting
       win.openingTabs.add(tab.id);
       setTimeout(() => { // because window.requestAnimationFrame is decelerate for an invisible document.
         if (!TabsStore.windows.get(tab.windowId)) // it can be removed while waiting
@@ -653,7 +661,7 @@ async function onNewTabTracked(tab, info) {
       }, 0);
     }
 
-    if (!TabsStore.ensureLivingTab(tab)) { // it can be removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) { // it can be removed while waiting
       onCompleted(uniqueId);
       tab.$TST.rejectOpened();
       Tab.untrack(tab.id);
@@ -813,11 +821,11 @@ function checkRecycledTab(windowId) {
   const possibleRecycledTabs = Tab.getRecycledTabs(windowId);
   log(`Detecting recycled tabs`);
   for (const tab of possibleRecycledTabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     const currentId = tab.$TST.uniqueId.id;
     tab.$TST.updateUniqueId().then(uniqueId => {
-      if (!TabsStore.ensureLivingTab(tab) ||
+      if (!TabsStore.ensureLivingItem(tab) ||
           !uniqueId.restored ||
           uniqueId.id == currentId ||
           Constants.kTAB_STATE_RESTORED in tab.$TST.states)
@@ -1031,7 +1039,7 @@ async function onMoved(tabId, moveInfo) {
       await canceled;
     canceled = canceled === false;
     if (!canceled &&
-        TabsStore.ensureLivingTab(movedTab)) { // it is removed while waiting
+        TabsStore.ensureLivingItem(movedTab)) { // it is removed while waiting
       let newNextIndex = extendedMoveInfo.toIndex;
       if (extendedMoveInfo.fromIndex < newNextIndex)
         newNextIndex++;
@@ -1066,7 +1074,7 @@ async function onMoved(tabId, moveInfo) {
           tabId:     movedTab.id,
           fromIndex: moveInfo.fromIndex,
           toIndex:   movedTab.index,
-          nextTabId: nextTab && nextTab.id
+          nextTabId: nextTab?.id,
         });
     }
     if (win.internalMovingTabs.has(tabId))
@@ -1109,7 +1117,7 @@ async function onAttached(tabId, attachInfo) {
       // we should retry for a while.
       // See also: https://github.com/piroor/treestyletab/issues/3311
       const newWindow = await browser.windows.get(attachInfo.newWindowId, { populate: true }).then(_error => null);
-      attachedTab = newWindow && newWindow.tabs.find(tab => tab.id == tabId);
+      attachedTab = newWindow?.tabs.find(tab => tab.id == tabId);
       if (!newWindow || !attachedTab) {
         if (!('$TST_retryCount' in attachInfo))
           attachInfo.$TST_retryCount = 0;
@@ -1127,7 +1135,7 @@ async function onAttached(tabId, attachInfo) {
     if (!tab) {
       log(`tabs.onAttached: Moved tab ${tabId} is not tracked yet.`);
       const newWindow = await browser.windows.get(attachInfo.newWindowId, { populate: true }).then(_error => null);
-      attachedTab = newWindow && newWindow.tabs.find(tab => tab.id == tabId);
+      attachedTab = newWindow?.tabs.find(tab => tab.id == tabId);
       if (!attachedTab) {
         console.log(`tabs.onAttached: the tab ${tabId} is already closed.`);
         onCompleted();
@@ -1141,6 +1149,24 @@ async function onAttached(tabId, attachInfo) {
     tab.windowId = attachInfo.newWindowId
     tab.index    = attachedTab.index;
     tab.reindexedBy = `tabs.onAttached (${tab.index})`;
+
+    if (tab.groupId != -1) {
+      // tabGroups.onMoved may be notified after all tabs are moved across windows,
+      // but we need to use group information in the destination window, thus we
+      // simulate native events here.
+      TabsStore.addNativelyGroupedTab(tab, attachInfo.newWindowId);
+      if (TabGroup.getMembers(tab.groupId, { windowId: attachInfo.newWindowId }).length == 1) {
+        const group = TabGroup.get(tab.groupId);
+        if (group) {
+          TabsStore.windows.get(attachInfo.newWindowId).tabGroups.set(group.id, group);
+          SidebarConnection.sendMessage({
+            type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
+            windowId: attachInfo.newWindowId,
+            group:    group.$TST.sanitized,
+          });
+        }
+      }
+    }
 
     TabsInternalOperation.clearOldActiveStateInWindow(attachInfo.newWindowId);
     const info = {
@@ -1210,6 +1236,21 @@ async function onDetached(tabId, detachInfo) {
     const alreadyMovedAcrossWindows = Array.from(mTreeInfoForTabsMovingAcrossWindows.values(), info => info.descendants.map(tab => tab.id)).some(tabIds => tabIds.includes(tabId));
     if (!alreadyMovedAcrossWindows)
       mTreeInfoForTabsMovingAcrossWindows.set(tabId, info);
+
+    if (oldTab.groupId != -1) {
+      TabsStore.removeNativelyGroupedTab(oldTab, detachInfo.oldWindowId);
+      if (TabGroup.getMembers(oldTab.groupId, { windowId: detachInfo.oldWindowId }).length == 0) {
+        const group = TabGroup.get(oldTab.groupId);
+        if (group) {
+          TabsStore.windows.get(detachInfo.oldWindowId).tabGroups.delete(group.id);
+          SidebarConnection.sendMessage({
+            type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
+            windowId: detachInfo.oldWindowId,
+            group:    group.$TST.sanitized,
+          });
+        }
+      }
+    }
 
     if (!byInternalOperation) // we should process only tabs detached by others.
       Tab.onDetached.dispatch(oldTab, info);
@@ -1290,3 +1331,93 @@ async function onWindowRemoved(windowId) {
 browser.windows.onFocusChanged.addListener(windowId => {
   mAppIsActive = windowId > 0;
 });
+
+
+async function onGroupCreated(group) {
+  log('onGroupCreated ', group);
+
+  const trackedGroup = TabGroup.init(group);
+  TabsStore.windows.get(trackedGroup.windowId).tabGroups.set(group.id, trackedGroup);
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
+    windowId: trackedGroup.windowId,
+    group:    trackedGroup.$TST.sanitized,
+  });
+}
+
+async function onGroupUpdated(group) {
+  if (mPromisedStarted)
+    await mPromisedStarted;
+
+  log('onGroupUpdated ', group);
+
+  const trackedGroup = TabGroup.get(group.id);
+  trackedGroup.$TST.apply(group);
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_UPDATED,
+    windowId: trackedGroup.windowId,
+    group:    trackedGroup.$TST.sanitized,
+  });
+}
+
+async function onGroupRemoved(group) {
+  if (mPromisedStarted)
+    await mPromisedStarted;
+
+  log('onGroupRemoved ', group);
+
+  const trackedGroup = TabGroup.get(group.id);
+  if (trackedGroup.windowId == group.windowId) {
+    trackedGroup.$TST.destroy();
+  }
+  else {
+    log('onGroupRemoved: => moved to another window, no need to destroy');
+  }
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
+    windowId: group.windowId,
+    group,
+  });
+}
+
+async function onGroupMoved(group) {
+  if (mPromisedStarted)
+    await mPromisedStarted;
+
+  log('onGroupMoved ', group);
+  const trackedGroup = TabGroup.get(group.id);
+  if (!trackedGroup) {
+    return;
+  }
+
+  const oldWindowId = trackedGroup.windowId;
+  const newWindowId = group.windowId;
+  if (newWindowId == oldWindowId) {
+    return;
+  }
+
+  const members = trackedGroup.$TST.members;
+  for (const tab of members) {
+    TabsStore.removeNativelyGroupedTab(tab, oldWindowId);
+    TabsStore.addNativelyGroupedTab(tab, newWindowId);
+  }
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_REMOVED,
+    windowId: oldWindowId,
+    group:    trackedGroup.$TST.sanitized,
+  });
+
+  TabsStore.windows.get(oldWindowId).tabGroups.delete(group.id);
+  trackedGroup.windowId = newWindowId;
+  TabsStore.windows.get(newWindowId).tabGroups.set(group.id, trackedGroup);
+
+  SidebarConnection.sendMessage({
+    type:     Constants.kCOMMAND_NOTIFY_TAB_GROUP_CREATED,
+    windowId: newWindowId,
+    group:    trackedGroup.$TST.sanitized,
+  });
+}

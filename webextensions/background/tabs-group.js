@@ -20,7 +20,7 @@ import * as TabsInternalOperation from '/common/tabs-internal-operation.js';
 import * as TabsUpdate from '/common/tabs-update.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as TabsMove from './tabs-move.js';
 import * as TabsOpen from './tabs-open.js';
@@ -122,7 +122,7 @@ export async function groupTabs(tabs, { broadcast, parent, withDescendants, ...g
 function reserveToCleanupNeedlessGroupTab(tabOrTabs) {
   const tabs = Array.isArray(tabOrTabs) ? tabOrTabs : [tabOrTabs] ;
   for (const tab of tabs) {
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       continue;
     if (tab.$TST.temporaryMetadata.has('reservedCleanupNeedlessGroupTab'))
       clearTimeout(tab.$TST.temporaryMetadata.get('reservedCleanupNeedlessGroupTab'));
@@ -341,7 +341,7 @@ function reserveToUpdateRelatedGroupTabs(tab, changedInfo) {
     tab.$TST.bundledTab,
     ...tab.$TST.ancestors,
     ...tab.$TST.ancestors.map(tab => tab.$TST.bundledTab),
-  ].filter(tab => tab && tab.$TST.isGroupTab);
+  ].filter(tab => tab?.$TST.isGroupTab);
   for (const updatingTab of ancestorGroupTabs) {
     const updatingMetadata = updatingTab.$TST.temporaryMetadata;
     const reservedChangedInfo = updatingMetadata.get('reservedUpdateRelatedGroupTabChangedInfo') || new Set();
@@ -382,7 +382,7 @@ function reserveToUpdateRelatedGroupTabs(tab, changedInfo) {
 }
 
 async function updateRelatedGroupTab(groupTab, changedInfo = []) {
-  if (!TabsStore.ensureLivingTab(groupTab))
+  if (!TabsStore.ensureLivingItem(groupTab))
     return;
 
   await tryInitGroupTab(groupTab);
@@ -458,7 +458,7 @@ Tab.onUpdated.addListener((tab, changeInfo) => {
   if ('url' in changeInfo ||
       'previousUrl' in changeInfo ||
       'state' in changeInfo) {
-    const status = changeInfo.status || tab && tab.status;
+    const status = changeInfo.status || tab?.status;
     const url = changeInfo.url ? changeInfo.url :
       status == 'complete' && tab ? tab.url : '';
     if (tab &&
@@ -567,8 +567,8 @@ Tab.onPinned.addListener(async tab => {
     tab.$TST.temporaryMetadata.has('childIdsBeforeMoved') ?
       tab.$TST.temporaryMetadata.get('childIdsBeforeMoved').map(id => Tab.get(id)) :
       tab.$TST.children
-  ).filter(tab => TabsStore.ensureLivingTab(tab));
-  const parent = TabsStore.ensureLivingTab(
+  ).filter(tab => TabsStore.ensureLivingItem(tab));
+  const parent = TabsStore.ensureLivingItem(
     tab.$TST.temporaryMetadata.has('parentIdBeforeMoved') ?
       Tab.get(tab.$TST.temporaryMetadata.get('parentIdBeforeMoved')) :
       tab.$TST.parent

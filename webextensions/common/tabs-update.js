@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2025
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -38,7 +38,7 @@ import * as ContextualIdentities from './contextual-identities.js';
 import * as SidebarConnection from './sidebar-connection.js';
 import * as TabsStore from './tabs-store.js';
 
-import Tab from './Tab.js';
+import { Tab } from './TreeItem.js';
 
 function log(...args) {
   internalLogger('common/tabs-update', ...args);
@@ -64,6 +64,7 @@ function getBufferedUpdate(tab) {
     loadingStateReallyChanged: undefined,
     pinned:       undefined,
     hidden:       undefined,
+    groupId:      undefined,
     soundStateChanged: false,
   };
   mBufferedUpdates.set(tab.id, update);
@@ -120,7 +121,7 @@ function flushBufferedUpdates() {
         });
       if (update.updatedTitle !== undefined)
         SidebarConnection.sendMessage({
-          type:     Constants.kCOMMAND_NOTIFY_TAB_LABEL_UPDATED,
+          type:     Constants.kCOMMAND_NOTIFY_TREE_ITEM_LABEL_UPDATED,
           windowId: update.windowId,
           tabId:    update.tabId,
           title:    update.updatedTitle,
@@ -267,7 +268,7 @@ export function updateTab(tab, newState = {}, options = {}) {
   if (options.forceApply ||
       'mutedInfo' in newState) {
     soundStateChanged = true;
-    const muted = newState.mutedInfo && newState.mutedInfo.muted;
+    const muted = newState.mutedInfo?.muted;
     tab.$TST.toggleState(Constants.kTAB_STATE_MUTED, muted, newState.audible);
     Tab.onMutedStateChanged.dispatch(tab, muted);
   }
@@ -293,9 +294,9 @@ export function updateTab(tab, newState = {}, options = {}) {
   if (options.forceApply ||
       'sharingState' in newState) {
     sharingStateChanged = true;
-    const sharingCamera     = newState.sharingState && newState.sharingState.camera;
-    const sharingMicrophone = newState.sharingState && newState.sharingState.microphone;
-    const sharingScreen     = newState.sharingState && !!newState.sharingState.screen;
+    const sharingCamera     = !!newState.sharingState?.camera;
+    const sharingMicrophone = !!newState.sharingState?.microphone;
+    const sharingScreen     = !!newState.sharingState?.screen;
     tab.$TST.toggleState(Constants.kTAB_STATE_SHARING_CAMERA,     sharingCamera);
     tab.$TST.toggleState(Constants.kTAB_STATE_SHARING_MICROPHONE, sharingMicrophone);
     tab.$TST.toggleState(Constants.kTAB_STATE_SHARING_SCREEN,     sharingScreen);
@@ -366,11 +367,17 @@ export function updateTab(tab, newState = {}, options = {}) {
     });
   }
 
+  if (options.forceApply ||
+      'groupId' in newState) {
+    tab.$TST.onNativeGroupModified(oldState.groupId);
+    update.attributes.added[Constants.kGROUP_ID] = newState.groupId;
+  }
+
   update.soundStateChanged = update.soundStateChanged || soundStateChanged;
   update.sharingStateChanged = update.sharingStateChanged || sharingStateChanged;
   update.attributes.updated = {
     ...update.attributes.updated,
-    ...(newState && newState.$TST && newState.$TST.sanitized || newState),
+    ...(newState?.$TST?.sanitized || newState),
   };
   flushBufferedUpdates();
 

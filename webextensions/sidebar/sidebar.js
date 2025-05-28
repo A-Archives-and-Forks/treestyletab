@@ -34,7 +34,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab, TabGroup } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as BackgroundConnection from './background-connection.js';
@@ -47,7 +47,7 @@ import * as Notifications from './notifications.js';
 import * as PinnedTabs from './pinned-tabs.js';
 import * as RestoringTabCount from './restoring-tab-count.js';
 import * as Scroll from './scroll.js';
-import * as SidebarTabs from './sidebar-tabs.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 import * as SubPanel from './subpanel.js';
 import * as TabContextMenu from './tab-context-menu.js';
@@ -55,12 +55,11 @@ import * as TabContextMenu from './tab-context-menu.js';
 import { TabCloseBoxElement } from './components/TabCloseBoxElement.js';
 import { TabCounterElement } from './components/TabCounterElement.js';
 import {
-  TabElement,
+  TreeItemElement,
   TabInvalidationTarget,
-} from './components/TabElement.js';
+} from './components/TreeItemElement.js';
 import { TabFaviconElement } from './components/TabFaviconElement.js';
-import { TabLabelElement } from './components/TabLabelElement.js';
-import { TabSharingStateElement } from './components/TabSharingStateElement.js';
+import { TreeItemLabelElement } from './components/TreeItemLabelElement.js';
 import { TabSoundButtonElement } from './components/TabSoundButtonElement.js';
 import { TabTwistyElement } from './components/TabTwistyElement.js';
 
@@ -138,11 +137,10 @@ export async function init() {
   TabTwistyElement.define();
   TabCloseBoxElement.define();
   TabFaviconElement.define();
-  TabLabelElement.define();
+  TreeItemLabelElement.define();
   TabCounterElement.define();
-  TabSharingStateElement.define();
   TabSoundButtonElement.define();
-  TabElement.define();
+  TreeItemElement.define();
 
   let promisedAllTabsTracked;
   UserOperationBlocker.setProgress(0);
@@ -208,19 +206,19 @@ export async function init() {
 
   UserOperationBlocker.setProgress(16); // 1/6: wait background page
   const promisedResults = Promise.all([
-    MetricsData.addAsync('importTabsFromBackground()', importTabsFromBackground()),
+    MetricsData.addAsync('importWindowFromBackground()', importWindowFromBackground()),
     MetricsData.addAsync('promisedAllTabsTracked', promisedAllTabsTracked)
   ]);
   log('Start queuing of messages from the background page');
   BackgroundConnection.connect();
-  const [importedTabs] = await promisedResults;
+  const [importedWindow] = await promisedResults;
 
   // we don't need await for these features
   MetricsData.addAsync('API for other addons', TSTAPI.initAsFrontend());
 
   await Promise.all([
     MetricsData.addAsync('parallel initialization: main', async () => {
-      await MetricsData.addAsync('parallel initialization: main: rebuildAll', rebuildAll(importedTabs));
+      await MetricsData.addAsync('parallel initialization: main: rebuildAll', rebuildAll(importedWindow));
 
       TabsUpdate.completeLoadingTabs(mTargetWindow);
 
@@ -274,14 +272,14 @@ export async function init() {
   await MetricsData.addAsync('parallel initialization: post process', Promise.all([
     MetricsData.addAsync('parallel initialization: post process: main', async () => {
       Indent.updateRestoredTree();
-      SidebarTabs.updateAll();
+      SidebarItems.updateAll();
       updateTabbarLayout({ justNow: true });
       SubPanel.onResized.addListener(() => {
         reserveToUpdateTabbarLayout();
       });
       SubPanel.init();
 
-      SidebarTabs.init();
+      SidebarItems.init();
       Indent.tryUpdateVisualMaxTreeLevel();
 
       shouldApplyAnimation.onChanged.addListener(applyAnimationState);
@@ -310,10 +308,10 @@ export async function init() {
   TabsUpdate.completeLoadingTabs(mTargetWindow); // failsafe
 
   // Failsafe. If the sync operation fail after retryings,
-  // SidebarTabs.onSyncFailed is notified then this sidebar page will be
+  // SidebarItems.onSyncFailed is notified then this sidebar page will be
   // reloaded for complete retry.
-  SidebarTabs.onSyncFailed.addListener(() => rebuildAll());
-  SidebarTabs.reserveToSyncTabsOrder();
+  SidebarItems.onSyncFailed.addListener(() => rebuildAll());
+  SidebarItems.reserveToSyncTabsOrder();
 
   Size.onUpdated.addListener(() => {
     updateTabbarLayout({
@@ -546,39 +544,45 @@ function updateContextualIdentitiesSelector() {
   range.detach();
 }
 
-async function rebuildAll(importedTabs) {
+async function rebuildAll(importedWindow) {
   MetricsData.add('rebuildAll: start');
   const trackedWindow = TabsStore.windows.get(mTargetWindow);
   if (!trackedWindow)
     Window.init(mTargetWindow);
 
-  if (!importedTabs)
-    importedTabs = await MetricsData.addAsync('rebuildAll: import tabs', browser.runtime.sendMessage({
+  if (!importedWindow)
+    importedWindow = await MetricsData.addAsync('rebuildAll: import tabs and groups', browser.runtime.sendMessage({
       type:     Constants.kCOMMAND_PING_TO_BACKGROUND,
       windowId: mTargetWindow
     }).catch(ApiTabs.createErrorHandler()));
 
   // Ignore tabs already closed. It can happen when the first tab is
   // immediately reopened by other addons like Temporary Container.
-  const importedTabIds = new Set(importedTabs.map(tab => tab.id));
+  const importedTabIds = new Set(importedWindow.tabs.map(tab => tab.id));
   for (const tab of Tab.getAllTabs()) {
     if (!importedTabIds.has(tab.id))
       Tab.untrack(tab.id);
   }
 
-  const tabs = importedTabs.map(importedTab => Tab.import(importedTab));
+  const tabs = importedWindow.tabs.map(importedTab => Tab.import(importedTab));
 
-  Window.init(mTargetWindow);
+  Window.init(mTargetWindow, importedWindow.tabGroups.map(TabGroup.init));
   let lastDraw = Date.now();
   let count = 0;
   const maxCount = tabs.length;
   for (const tab of tabs) {
     const trackedTab = Tab.init(tab, { existing: true, inBackground: true });
+    const group = trackedTab.$TST.nativeTabGroup;
+    if (group?.collapsed) {
+      CollapseExpand.setCollapsed(tab, {
+        collapsed: true,
+      });
+    }
     TabsUpdate.updateTab(trackedTab, tab, { forceApply: true });
     if (tab.active)
       TabsInternalOperation.setTabActive(trackedTab);
     if (trackedTab.pinned)
-      SidebarTabs.renderTab(trackedTab);
+      SidebarItems.renderItem(trackedTab);
     if (Date.now() - lastDraw > configs.intervalToUpdateProgressForBlockedUserOperation) {
       UserOperationBlocker.setProgress(Math.round(++count / maxCount * 33) + 66); // 3/3: build tab elements
       await nextFrame();
@@ -588,63 +592,63 @@ async function rebuildAll(importedTabs) {
   MetricsData.add('rebuildAll: end (from scratch)');
 
   document.documentElement.classList.toggle(Constants.kTABBAR_STATE_MULTIPLE_HIGHLIGHTED, Tab.getHighlightedTabs(mTargetWindow).length > 1);
-  SidebarTabs.reserveToUpdateLoadingState();
+  SidebarItems.reserveToUpdateLoadingState();
 
-  importedTabs = null; // wipe it out from the RAM.
+  importedWindow = null; // wipe it out from the RAM.
   return false;
 }
 
-let mGiveUpImportTabs = false;
-const mImportedTabs = new Promise((resolve, _reject) => {
-  log('preparing mImportedTabs');
+let mGiveUpImportWindow = false;
+const mImportedWindow = new Promise((resolve, _reject) => {
+  log('preparing mImportedWindow');
   // This must be synchronous , to avoid blocking to other listeners.
   const onBackgroundIsReady = message => {
-    if (mGiveUpImportTabs) {
-      log('mImportedTabs (${windowId}): give up to import, unregister onBackgroundIsReady listener');
+    if (mGiveUpImportWindow) {
+      log('mImportedWindow (${windowId}): give up to import, unregister onBackgroundIsReady listener');
       browser.runtime.onMessage.removeListener(onBackgroundIsReady);
-      resolve([]);
+      resolve({ tabs: [], tabGroups: [] });
       return;
     }
     // This handler may be called before mTargetWindow is initialized, so
     // we need to wait until it is resolved.
     // See also: https://github.com/piroor/treestyletab/issues/2200
     mPromisedTargetWindow.then(windowId => {
-      if (mGiveUpImportTabs) {
-        log('mImportedTabs (${windowId}): give up to import, unregister onBackgroundIsReady listener (with promised target window)');
+      if (mGiveUpImportWindow) {
+        log('mImportedWindow (${windowId}): give up to import, unregister onBackgroundIsReady listener (with promised target window)');
         browser.runtime.onMessage.removeListener(onBackgroundIsReady);
-        resolve([]);
+        resolve({ tabs: [], tabGroups: [] });
         return;
       }
-      log(`mImportedTabs (${windowId}): onBackgroundIsReady `, message?.type, message?.windowId);
+      log(`mImportedWindow (${windowId}): onBackgroundIsReady `, message?.type, message?.windowId);
       if (message?.type != Constants.kCOMMAND_NOTIFY_BACKGROUND_READY ||
           message?.windowId != windowId)
         return;
       browser.runtime.onMessage.removeListener(onBackgroundIsReady);
-      log(`mImportedTabs is resolved with ${message.tabs.length} tabs`);
-      resolve(message.tabs);
+      log(`mImportedWindow is resolved with ${message.exported.tabs.length} tabs`);
+      resolve(message.exported);
     });
   };
   browser.runtime.onMessage.addListener(onBackgroundIsReady);
 });
 
-async function importTabsFromBackground() {
-  log('importTabsFromBackground: start');
+async function importWindowFromBackground() {
+  log('importWindowFromBackground: start');
   try {
-    const importedTabs = await MetricsData.addAsync('importTabsFromBackground: kCOMMAND_PING_TO_BACKGROUND', browser.runtime.sendMessage({
+    const importedWin = await MetricsData.addAsync('importWindowFromBackground: kCOMMAND_PING_TO_BACKGROUND', browser.runtime.sendMessage({
       type:     Constants.kCOMMAND_PING_TO_BACKGROUND,
       windowId: mTargetWindow
     }).catch(ApiTabs.createErrorHandler()));
-    if (importedTabs) {
-      log('importTabsFromBackground: use response of kCOMMAND_PING_TO_BACKGROUND');
-      mGiveUpImportTabs = true;
-      return importedTabs;
+    if (importedWin) {
+      log('importWindowFromBackground: use response of kCOMMAND_PING_TO_BACKGROUND');
+      mGiveUpImportWindow = true;
+      return importedWin;
     }
   }
   catch(e) {
-    log('importTabsFromBackground: error: ', e);
+    log('importWindowFromBackground: error: ', e);
   }
-  log('importTabsFromBackground: waiting for mImportedTabs');
-  return MetricsData.addAsync('importTabsFromBackground: kCOMMAND_PING_TO_SIDEBAR', mImportedTabs);
+  log('importWindowFromBackground: waiting for mImportedWindow');
+  return MetricsData.addAsync('importWindowFromBackground: kCOMMAND_PING_TO_SIDEBAR', mImportedWindow);
 }
 
 
@@ -774,14 +778,14 @@ function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
   log(`updateTabbarLayout reasons: ${readableReasons.join(',')}`);
 
   const lastVisibleTab = Tab.getLastVisibleTab(mTargetWindow);
-  const previousLastVisibleTab = mLastVisibleTabId && Tab.get(mLastVisibleTabId);
+  const previousLastVisibleTab = Tab.get(mLastVisibleTabId);
   if (previousLastVisibleTab &&
       (!lastVisibleTab ||
        lastVisibleTab.id != previousLastVisibleTab.id))
     previousLastVisibleTab.$TST.removeState(Constants.kTAB_STATE_LAST_VISIBLE);
   if (lastVisibleTab)
     lastVisibleTab.$TST.addState(Constants.kTAB_STATE_LAST_VISIBLE);
-  mLastVisibleTabId = lastVisibleTab && lastVisibleTab.id;
+  mLastVisibleTabId = lastVisibleTab?.id;
 
   const visibleNewTabButton = document.querySelector('#tabbar:not(.overflow) .after-tabs .newtab-button-box, #tabbar.overflow ~ .after-tabs .newtab-button-box');
   const newTabButtonSize    = visibleNewTabButton.offsetHeight;
@@ -801,11 +805,11 @@ function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
   if (!(reasons & Constants.kTABBAR_UPDATE_REASON_VIRTUAL_SCROLL_VIEWPORT_UPDATE))
     Scroll.reserveToRenderVirtualScrollViewport({ trigger: 'resized' });
 
-  if (SidebarTabs.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW)) {
+  if (SidebarItems.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW)) {
     const updatedAt = updateTabbarLayout.lastScrollbarAutohideUpdatedAt = Date.now();
     window.requestAnimationFrame(() => {
       if (updatedAt != updateTabbarLayout.lastScrollbarAutohideUpdatedAt ||
-          !SidebarTabs.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW))
+          !SidebarItems.normalContainer.classList.contains(Constants.kTABBAR_STATE_OVERFLOW))
         return;
 
       // scrollbar is shown only when hover on Windows 11, Linux, and macOS.
@@ -834,7 +838,7 @@ updateTabbarLayout.lastScrollbarAutohideUpdatedAt = 0;
 Scroll.onNormalTabsOverflow.addListener(() => {
   log('Normal Tabs Overflow');
   const windowId = TabsStore.getCurrentWindowId();
-  SidebarTabs.normalContainer.classList.add(Constants.kTABBAR_STATE_OVERFLOW);
+  SidebarItems.normalContainer.classList.add(Constants.kTABBAR_STATE_OVERFLOW);
   mTabBar.classList.add(Constants.kTABBAR_STATE_OVERFLOW);
   TSTAPI.broadcastMessage({
     type: TSTAPI.kNOTIFY_TABBAR_OVERFLOW,
@@ -845,17 +849,17 @@ Scroll.onNormalTabsOverflow.addListener(() => {
     // partially (newly opened in small tab bar, or scrolled out when
     // the window is shrunken), so we need to scroll to it explicitely.
     const activeTab = Tab.getActiveTab(windowId);
-    if (activeTab && !Scroll.isTabInViewport(activeTab)) {
+    if (activeTab && !Scroll.isItemInViewport(activeTab)) {
       log('scroll to active tab on updateTabbarLayout');
-      Scroll.scrollToTab(activeTab);
+      Scroll.scrollToItem(activeTab);
       onLayoutUpdated.dispatch()
       return;
     }
     const lastOpenedTab = Tab.getLastOpenedTab(windowId);
     if (updateTabbarLayout.lastUpdateReasons & Constants.kTABBAR_UPDATE_REASON_TAB_OPEN &&
-        !Scroll.isTabInViewport(lastOpenedTab)) {
+        !Scroll.isItemInViewport(lastOpenedTab)) {
       log('scroll to last opened tab on updateTabbarLayout ', updateTabbarLayout.lastUpdateReasons);
-      Scroll.scrollToTab(lastOpenedTab, {
+      Scroll.scrollToItem(lastOpenedTab, {
         anchor:            activeTab,
         notifyOnOutOfView: true
       });
@@ -866,7 +870,7 @@ Scroll.onNormalTabsOverflow.addListener(() => {
 
 Scroll.onNormalTabsUnderflow.addListener(() => {
   log('Normal Tabs Underflow');
-  SidebarTabs.normalContainer.classList.remove(Constants.kTABBAR_STATE_OVERFLOW);
+  SidebarItems.normalContainer.classList.remove(Constants.kTABBAR_STATE_OVERFLOW);
   mTabBar.classList.remove(Constants.kTABBAR_STATE_OVERFLOW);
   TSTAPI.broadcastMessage({
     type:     TSTAPI.kNOTIFY_TABBAR_UNDERFLOW,

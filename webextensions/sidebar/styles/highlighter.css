@@ -5,7 +5,10 @@
 */
 
 :root {
-  --tab-highlighter: var(--browser-tab-highlighter, Highlight);
+  --tab-highlighter: light-dark(
+    var(--browser-tab-highlighter, Highlight),
+    var(--browser-tab-highlighter, var(--dark-tab-line))
+  );
   --tab-highlighter-inactive: var(--grey-10-a20);
   --tab-highlighter-size: calc(var(--favicon-size) / 8);
   --tab-highlighter-animation: 0.25s cubic-bezier(0.07, 0.95, 0, 1);
@@ -19,16 +22,21 @@ tab-item:not(.faviconized).subtree-collapsed.all-descendants-highlighted .highli
   position: absolute;
 }
 
-:root.animation .highlighter::before,
-:root.animation .highlighter::after {
-  transition: opacity var(--tab-highlighter-animation),
-              transform var(--tab-highlighter-animation),
-              width var(--tab-highlighter-animation);
+:root.animation {
+  .highlighter::before,
+  .highlighter::after {
+    transition: opacity var(--tab-highlighter-animation),
+                transform var(--tab-highlighter-animation),
+                width var(--tab-highlighter-animation);
+  }
 }
 
-tab-item:not(.active):not(.bundled-active):not(.highlighted) tab-item-substance:hover .highlighter::before,
-tab-item:not(.active):not(.bundled-active):not(.highlighted):not(.faviconized) tab-item-substance:hover .highlighter::after {
-  background: var(--tab-highlighter-inactive);
+tab-item:not(.active):not(.bundled-active):not(.highlighted) tab-item-substance:hover,
+tab-item:not(.active):not(.bundled-active):not(.highlighted):not(.faviconized) tab-item-substance:hover {
+  .highlighter::before,
+  .highlighter::after {
+    background: var(--tab-highlighter-inactive);
+  }
 }
 tab-item.active .highlighter::before,
 tab-item.bundled-active .highlighter::before,
@@ -38,24 +46,25 @@ tab-item:not(.faviconized).highlighted .highlighter::after {
   background: var(--tab-highlighter);
 }
 
-tab-item:not(.faviconized) .highlighter::before,
-tab-item:not(.faviconized) .highlighter::after {
-  bottom: 0;
-  inset-inline-start: 0;
-  top: 0;
-  transform: scaleY(0);
-  width: var(--tab-highlighter-size);
+tab-item:not(.faviconized) {
+  .highlighter::before,
+  .highlighter::after {
+    bottom: 0;
+    inset-inline-start: 0;
+    top: 0;
+    transform: scaleY(0);
+    width: var(--tab-highlighter-size);
+  }
 }
-tab-item:not(.faviconized) tab-item-substance:hover .highlighter::before,
-tab-item:not(.faviconized) tab-item-substance:hover .highlighter::after,
-tab-item.active:not(.faviconized) .highlighter::before,
-tab-item.active:not(.faviconized) .highlighter::after,
-tab-item.bundled-active:not(.faviconized) .highlighter::before,
-tab-item.bundled-active:not(.faviconized) .highlighter::after,
-tab-item.highlighted:not(.faviconized) .highlighter::before,
-tab-item.highlighted:not(.faviconized) .highlighter::after {
-  opacity: 1;
-  transform: scaleY(1);
+tab-item:not(.faviconized) tab-item-substance:hover,
+tab-item.active:not(.faviconized),
+tab-item.bundled-active:not(.faviconized),
+tab-item.highlighted:not(.faviconized) {
+ .highlighter::before,
+ .highlighter::after {
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }
 
 tab-item.faviconized .highlighter::before {

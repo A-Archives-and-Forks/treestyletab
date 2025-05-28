@@ -17,7 +17,7 @@ import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
-import Tab from '/common/Tab.js';
+import { Tab } from '/common/TreeItem.js';
 
 import * as TabsMove from './tabs-move.js';
 import * as TabsOpen from './tabs-open.js';

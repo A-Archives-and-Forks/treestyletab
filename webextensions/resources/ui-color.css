@@ -118,6 +118,155 @@
 
   --focus-outline-color: #0061E0; /* https://searchfox.org/mozilla-central/rev/f60e5304300b286376664b25143cdc6b38a0f0d7/browser/themes/shared/browser-shared.css#124 */
 
+  /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#107 */
+  --color-blue-0: oklch(97% 0.05 260);
+  --color-blue-10: oklch(90% 0.13 260);
+  --color-blue-20: oklch(83% 0.17 260);
+  --color-blue-30: oklch(76% 0.2 260);
+  --color-blue-40: oklch(69% 0.22 260);
+  --color-blue-50: oklch(62% 0.24 260);
+  --color-blue-60: oklch(55% 0.24 260);
+  --color-blue-70: oklch(48% 0.2 260);
+  --color-blue-80: oklch(41% 0.17 260);
+  --color-blue-90: oklch(34% 0.14 260);
+  --color-blue-100: oklch(27% 0.1 260);
+  --color-blue-110: oklch(20% 0.05 260);
+  --color-cyan-0: oklch(97% 0.05 205);
+  --color-cyan-10: oklch(90% 0.07 205);
+  --color-cyan-20: oklch(83% 0.11 205);
+  --color-cyan-30: oklch(76% 0.14 205);
+  --color-cyan-40: oklch(69% 0.19 205);
+  --color-cyan-50: oklch(62% 0.21 205);
+  --color-cyan-60: oklch(55% 0.21 205);
+  --color-cyan-70: oklch(48% 0.2 205);
+  --color-cyan-80: oklch(41% 0.17 205);
+  --color-cyan-90: oklch(34% 0.14 205);
+  --color-cyan-100: oklch(27% 0.1 205);
+  --color-cyan-110: oklch(20% 0.05 205);
+  --color-gray-05: #fbfbfe;
+  --color-gray-30: #bac2ca;
+  --color-gray-50: #bfbfc9;
+  --color-gray-60: #8f8f9d;
+  --color-gray-70: #5b5b66;
+  --color-gray-80: #23222b;
+  --color-gray-90: #1c1b22;
+  --color-gray-100: #15141a;
+  --color-green-0: oklch(97% 0.05 145);
+  --color-green-10: oklch(90% 0.1 145);
+  --color-green-20: oklch(83% 0.14 145);
+  --color-green-30: oklch(76% 0.17 145);
+  --color-green-40: oklch(69% 0.19 145);
+  --color-green-50: oklch(62% 0.21 145);
+  --color-green-60: oklch(55% 0.21 145);
+  --color-green-70: oklch(48% 0.2 145);
+  --color-green-80: oklch(41% 0.17 145);
+  --color-green-90: oklch(34% 0.14 145);
+  --color-green-100: oklch(27% 0.1 145);
+  --color-green-110: oklch(20% 0.05 145);
+  --color-orange-0: oklch(97% 0.05 50);
+  --color-orange-10: oklch(90% 0.10 50);
+  --color-orange-20: oklch(86% 0.14 50);
+  --color-orange-30: oklch(79% 0.17 50);
+  --color-orange-40: oklch(72% 0.19 50);
+  --color-orange-50: oklch(65% 0.21 50);
+  --color-orange-60: oklch(58% 0.21 50);
+  --color-orange-70: oklch(48% 0.20 50);
+  --color-orange-80: oklch(41% 0.17 50);
+  --color-orange-90: oklch(34% 0.14 50);
+  --color-orange-100: oklch(27% 0.10 50);
+  --color-orange-110: oklch(20% 0.05 50);
+  --color-pink-0: oklch(97% 0.05 360);
+  --color-pink-10: oklch(90% 0.1 360);
+  --color-pink-20: oklch(83% 0.14 360);
+  --color-pink-30: oklch(76% 0.17 360);
+  --color-pink-40: oklch(69% 0.19 360);
+  --color-pink-50: oklch(62% 0.21 360);
+  --color-pink-60: oklch(55% 0.21 360);
+  --color-pink-70: oklch(48% 0.2 360);
+  --color-pink-80: oklch(41% 0.17 360);
+  --color-pink-90: oklch(34% 0.14 360);
+  --color-pink-100: oklch(27% 0.1 360);
+  --color-pink-110: oklch(20% 0.05 360);
+  --color-purple-0: oklch(97% 0.05 315);
+  --color-purple-10: oklch(90% 0.1 315);
+  --color-purple-20: oklch(83% 0.14 315);
+  --color-purple-30: oklch(76% 0.17 315);
+  --color-purple-40: oklch(69% 0.19 315);
+  --color-purple-50: oklch(62% 0.21 315);
+  --color-purple-60: oklch(55% 0.21 315);
+  --color-purple-70: oklch(48% 0.2 315);
+  --color-purple-80: oklch(41% 0.17 315);
+  --color-purple-90: oklch(34% 0.14 315);
+  --color-purple-100: oklch(27% 0.1 315);
+  --color-purple-110: oklch(20% 0.05 315);
+  --color-red-0: oklch(97% 0.05 15);
+  --color-red-10: oklch(90% 0.1 15);
+  --color-red-20: oklch(83% 0.14 15);
+  --color-red-30: oklch(76% 0.17 15);
+  --color-red-40: oklch(69% 0.19 15);
+  --color-red-50: oklch(62% 0.21 15);
+  --color-red-60: oklch(55% 0.21 15);
+  --color-red-70: oklch(48% 0.2 15);
+  --color-red-80: oklch(41% 0.17 15);
+  --color-red-90: oklch(34% 0.14 15);
+  --color-red-100: oklch(27% 0.1 15);
+  --color-red-110: oklch(20% 0.05 15);
+  --color-violet-0: oklch(97% 0.05 290);
+  --color-violet-10: oklch(90% 0.13 290);
+  --color-violet-20: oklch(83% 0.17 290);
+  --color-violet-30: oklch(76% 0.2 290);
+  --color-violet-40: oklch(69% 0.22 290);
+  --color-violet-50: oklch(62% 0.24 290);
+  --color-violet-60: oklch(55% 0.24 290);
+  --color-violet-70: oklch(48% 0.2 290);
+  --color-violet-80: oklch(41% 0.17 290);
+  --color-violet-90: oklch(34% 0.14 290);
+  --color-violet-100: oklch(27% 0.1 290);
+  --color-violet-110: oklch(20% 0.05 290);
+  --color-white: #ffffff;
+  --color-yellow-0: oklch(97% 0.05 90);
+  --color-yellow-10: oklch(93% 0.1 90);
+  --color-yellow-20: oklch(86% 0.14 90);
+  --color-yellow-30: oklch(79% 0.2 90);
+  --color-yellow-40: oklch(72% 0.22 90);
+  --color-yellow-50: oklch(65% 0.24 90);
+  --color-yellow-60: oklch(58% 0.24 90);
+  --color-yellow-70: oklch(51% 0.23 90);
+  --color-yellow-80: oklch(41% 0.2 90);
+  --color-yellow-90: oklch(34% 0.17 90);
+  --color-yellow-100: oklch(27% 0.13 90);
+  --color-yellow-110: oklch(20% 0.08 90);
+
+  /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/browser/themes/shared/tabbrowser/tabs.css#79 */
+  --tab-group-color-blue: var(--color-blue-70);
+  --tab-group-color-blue-invert: var(--color-blue-20);
+  --tab-group-color-blue-pale: var(--color-blue-0);
+  --tab-group-color-purple: var(--color-purple-70);
+  --tab-group-color-purple-invert: var(--color-purple-20);
+  --tab-group-color-purple-pale: var(--color-purple-0);
+  --tab-group-color-cyan: var(--color-cyan-70);
+  --tab-group-color-cyan-invert: var(--color-cyan-20);
+  --tab-group-color-cyan-pale: var(--color-cyan-0);
+  --tab-group-color-orange: var(--color-orange-70);
+  --tab-group-color-orange-invert: var(--color-orange-20);
+  --tab-group-color-orange-pale: var(--color-orange-0);
+  --tab-group-color-yellow: var(--color-yellow-70);
+  --tab-group-color-yellow-invert: var(--color-yellow-20);
+  --tab-group-color-yellow-pale: var(--color-yellow-0);
+  --tab-group-color-pink: var(--color-pink-70);
+  --tab-group-color-pink-invert: var(--color-pink-20);
+  --tab-group-color-pink-pale: var(--color-pink-0);
+  --tab-group-color-green: var(--color-green-70);
+  --tab-group-color-green-invert: var(--color-green-20);
+  --tab-group-color-green-pale: var(--color-green-0);
+  --tab-group-color-red: var(--color-red-70);
+  --tab-group-color-red-invert: var(--color-red-20);
+  --tab-group-color-red-pale: var(--color-red-0);
+  --tab-group-color-grey: #5E6A77;
+  --tab-group-color-grey-invert: #99A6B4;
+  --tab-group-color-grey-pale: #F2F9FF;
+  --tab-group-label-text-dark: var(--color-gray-100);
+
 
   --bg-color: var(--grey-10);
   --text-color: var(--grey-90);
@@ -133,19 +282,23 @@
 
 :link {
   color: var(--in-content-link-color);
+
+  &:hover {
+    color: var(--in-content-link-color-hover);
+  }
+  &:active {
+    color: var(--in-content-link-color-active);
+  }
 }
 :visited {
   color: var(--in-content-link-color-visited);
-}
 
-:link:hover,
-:visited:hover {
-  color: var(--in-content-link-color-hover);
-}
-
-:link:active,
-:visited:active {
-  color: var(--in-content-link-color-active);
+  &:hover {
+    color: var(--in-content-link-color-hover);
+  }
+  &:active {
+    color: var(--in-content-link-color-active);
+  }
 }
 
 textarea,
@@ -153,43 +306,44 @@ input {
   background: var(--in-content-box-background);
   border: thin solid var(--in-content-box-border-color-mixed);
   color: var(--in-content-text-color);
+
+  &:hover {
+    border-color: var(--in-content-border-hover-mixed);
+  }
+  &:focus {
+    border-color: var(--in-content-border-focus);
+    box-shadow: 0 0 0 1px var(--in-content-border-active),
+                0 0 0 4px var(--in-content-border-active-shadow);
+  }
 }
-textarea:hover,
-input:hover {
-  border-color: var(--in-content-border-hover-mixed);
-}
-textarea:focus,
-input:focus {
-  border-color: var(--in-content-border-focus);
-  box-shadow: 0 0 0 1px var(--in-content-border-active),
-              0 0 0 4px var(--in-content-border-active-shadow);
-}
+
 button,
 select {
   background: var(--in-content-button-background-mixed);
   border: 0 none transparent;
   color: var(--in-content-text-color);
+
+  &:hover {
+    background: var(--in-content-button-background-hover-mixed);
+  }
+  &:focus {
+    background: var(--in-content-button-background-active-mixed);
+    box-shadow: 0 0 0 1px var(--in-content-border-active),
+                0 0 0 4px var(--in-content-border-active-shadow);
+  }
 }
-button:hover,
-select:hover {
-  background: var(--in-content-button-background-hover-mixed);
-}
-button:focus,
-select:focus {
-  background: var(--in-content-button-background-active-mixed);
-  box-shadow: 0 0 0 1px var(--in-content-border-active),
-              0 0 0 4px var(--in-content-border-active-shadow);
-}
+
 option {
   background: transparent /* var(--in-content-button-background-mixed) */;
   color: var(--text-color);
-}
-option:active,
-option:focus {
-  background: var(--in-content-item-selected);
-}
-option:hover {
-  background: var(--in-content-item-hover-mixed);
+
+  &:active,
+  &:focus {
+    background: var(--in-content-item-selected);
+  }
+  &:hover {
+    background: var(--in-content-item-hover-mixed);
+  }
 }
 
 fieldset,

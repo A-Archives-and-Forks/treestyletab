@@ -48,7 +48,7 @@ import * as TSTAPI from '/common/tst-api.js';
 import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 
 import MetricsData from '/common/MetricsData.js';
-import Tab from '/common/Tab.js';
+import { Tab, TreeItem } from '/common/TreeItem.js';
 import Window from '/common/Window.js';
 
 import * as TabsMove from './tabs-move.js';
@@ -84,8 +84,8 @@ function isTabIdUnattachable(id) {
 
 // return moved (or not)
 export async function attachTabTo(child, parent, options = {}) {
-  parent = TabsStore.ensureLivingTab(parent);
-  child = TabsStore.ensureLivingTab(child);
+  parent = TabsStore.ensureLivingItem(parent);
+  child = TabsStore.ensureLivingItem(child);
   if (!parent || !child) {
     log('missing information: ', { parent, child });
     return false;
@@ -160,8 +160,8 @@ export async function attachTabTo(child, parent, options = {}) {
   if (!options.synchronously)
     await Tab.waitUntilTrackedAll(child.windowId);
 
-  parent = TabsStore.ensureLivingTab(parent);
-  child = TabsStore.ensureLivingTab(child);
+  parent = TabsStore.ensureLivingItem(parent);
+  child = TabsStore.ensureLivingItem(child);
   if (!parent || !child) {
     log('attachTabTo: parent or child is closed before attaching.');
     return false;
@@ -279,7 +279,7 @@ export async function attachTabTo(child, parent, options = {}) {
   }
 
   child.$TST.opened.then(() => {
-    if (!TabsStore.ensureLivingTab(child) || // not removed while waiting
+    if (!TabsStore.ensureLivingItem(child) || // not removed while waiting
         child.$TST.parent != parent) // not detached while waiting
       return;
 
@@ -331,7 +331,7 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
     { tabProperties: ['tab', 'child'], cache }
   );
   TSTAPI.clearCache(cache);
-  if (!TabsStore.ensureLivingTab(tab)) {
+  if (!TabsStore.ensureLivingItem(tab)) {
     log('  not living tab, do nothing');
     return;
   }
@@ -388,7 +388,7 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
             parentCollasped     = true;
             return;
           }
-          if (!TabsStore.ensureLivingTab(tab))
+          if (!TabsStore.ensureLivingItem(tab))
             return;
           collapseExpandSubtree(ancestor, {
             ...options,
@@ -397,7 +397,7 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
           });
           parentTreeCollasped = false;
         }));
-        if (!TabsStore.ensureLivingTab(tab))
+        if (!TabsStore.ensureLivingItem(tab))
           return;
       }
       if (!parent.$TST.subtreeCollapsed &&
@@ -568,7 +568,7 @@ export function detachTab(child, options = {}) {
   log('detachTab: ', child.id, options,
       { stack: `${configs.debug && new Error().stack}\n${options.stack || ''}` });
   // the "parent" option is used for removing child.
-  const parent = TabsStore.ensureLivingTab(options.parent) || child.$TST.parent;
+  const parent = TabsStore.ensureLivingItem(options.parent) || child.$TST.parent;
 
   if (parent) {
     // we need to set children and parent via setters, to invalidate cached information.
@@ -627,15 +627,11 @@ export function detachTab(child, options = {}) {
 export function getWholeTree(rootTabs) {
   if (!Array.isArray(rootTabs))
     rootTabs = [rootTabs];
-  const wholeTree = [].concat(rootTabs);
-  for (const movedRoot of rootTabs) {
-    const descendants = movedRoot.$TST.descendants;
-    for (const descendant of descendants) {
-      if (!wholeTree.includes(descendant))
-        wholeTree.push(descendant);
-    }
+  const wholeTree = [...rootTabs];
+  for (const rootTab of rootTabs) {
+    wholeTree.push(...rootTab.$TST.descendants);
   }
-  return wholeTree;
+  return TreeItem.sort([...new Set(wholeTree)]);
 }
 
 export async function detachTabsFromTree(tabs, options = {}) {
@@ -647,6 +643,7 @@ export async function detachTabsFromTree(tabs, options = {}) {
     options.partial :
     getWholeTree(tabs).length != tabs.length;
   const promisedAttach = [];
+  const tabsSet = new Set(tabs);
   for (const tab of tabs) {
     let behavior = partial ?
       TreeBehavior.getParentTabOperationBehavior(tab, {
@@ -660,6 +657,10 @@ export async function detachTabsFromTree(tabs, options = {}) {
       behavior,
       ignoreTabs: tabs,
     }));
+    if (options.fromParent &&
+        !tabsSet.has(tab.$TST.parent)) {
+      promisedAttach.push(detachTab(tab, options));
+    }
   }
   if (promisedAttach.length > 0)
     await Promise.all(promisedAttach);
@@ -681,7 +682,7 @@ export async function detachAllChildren(
       { children, parent, nearestFollowingRootTab, newParent, behavior, dontExpand, dontSyncParentToOpenerTab },
       options);
   // the "children" option is used for removing tab.
-  children = children ? children.map(TabsStore.ensureLivingTab) : tab.$TST.children;
+  children = children ? children.map(TabsStore.ensureLivingItem) : tab.$TST.children;
 
   const ignoreTabsSet = new Set(ignoreTabs || []);
 
@@ -702,7 +703,7 @@ export async function detachAllChildren(
   options.dontUpdateInsertionPositionInfo = true;
 
   // the "parent" option is used for removing tab.
-  parent = TabsStore.ensureLivingTab(parent) || tab?.$TST.parent;
+  parent = TabsStore.ensureLivingItem(parent) || tab?.$TST.parent;
   while (ignoreTabsSet.has(parent)) {
     parent = parent.$TST.parent;
   }
@@ -1034,7 +1035,7 @@ function updateTabIndent(tab, level = undefined, options = {}) {
 updateTabIndent.delayed = new Map();
 
 function updateTabIndentNow(tab, level = undefined, options = {}) {
-  if (!TabsStore.ensureLivingTab(tab))
+  if (!TabsStore.ensureLivingItem(tab))
     return;
   tab.$TST.setAttribute(Constants.kLEVEL, level);
   updateTabsIndent(tab.$TST.children, level + 1, options);
@@ -1052,9 +1053,9 @@ function updateTabIndentNow(tab, level = undefined, options = {}) {
 // returns an array of tab ids which are changed their visibility
 export async function collapseExpandSubtree(tab, params = {}) {
   params.collapsed = !!params.collapsed;
-  if (!tab || !TabsStore.ensureLivingTab(tab))
+  if (!tab || !TabsStore.ensureLivingItem(tab))
     return [];
-  if (!TabsStore.ensureLivingTab(tab)) // it was removed while waiting
+  if (!TabsStore.ensureLivingItem(tab)) // it was removed while waiting
     return [];
   params.stack = `${configs.debug && new Error().stack}\n${params.stack || ''}`;
   logCollapseExpand('collapseExpandSubtree: ', dumpTab(tab), tab.$TST.subtreeCollapsed, params);
@@ -1253,7 +1254,7 @@ export async function collapseExpandTab(tab, params = {}) {
     clearTimeout(timer);
   timer = setTimeout(() => {
     collapseExpandTab.delayedNotify.delete(tab.id);
-    if (!TabsStore.ensureLivingTab(tab))
+    if (!TabsStore.ensureLivingItem(tab))
       return;
     SidebarConnection.sendMessage({
       type:      Constants.kCOMMAND_NOTIFY_TAB_COLLAPSED_STATE_CHANGED,
@@ -1388,7 +1389,7 @@ export async function moveTabSubtreeBefore(tab, nextTab, options = {}) {
   win.subTreeMovingCount++;
   try {
     await TabsMove.moveTabInternallyBefore(tab, nextTab, options);
-    if (!TabsStore.ensureLivingTab(tab)) // it is removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) // it is removed while waiting
       throw new Error('the tab was removed before moving of descendants');
     await followDescendantsToMovedRoot(tab, options);
   }
@@ -1413,7 +1414,7 @@ export async function moveTabSubtreeAfter(tab, previousTab, options = {}) {
   win.subTreeMovingCount++;
   try {
     await TabsMove.moveTabInternallyAfter(tab, previousTab, options);
-    if (!TabsStore.ensureLivingTab(tab)) // it is removed while waiting
+    if (!TabsStore.ensureLivingItem(tab)) // it is removed while waiting
       throw new Error('the tab was removed before moving of descendants');
     await followDescendantsToMovedRoot(tab, options);
   }
@@ -1449,12 +1450,12 @@ browser.runtime.getBrowserInfo().then(browserInfo => {
     mSlowDuplication = true;
 });
 
-export async function moveTabs(tabs, options = {}) {
-  tabs = tabs.filter(TabsStore.ensureLivingTab);
+export async function moveTabs(tabs, { duplicate, ...options } = {}) {
+  tabs = tabs.filter(TabsStore.ensureLivingItem);
   if (tabs.length == 0)
     return [];
 
-  log('moveTabs: ', () => ({ tabs: tabs.map(dumpTab), options }));
+  log('moveTabs: ', () => ({ tabs: tabs.map(dumpTab), duplicate, options }));
 
   const windowId = parseInt(tabs[0].windowId || TabsStore.getCurrentWindowId());
 
@@ -1466,6 +1467,7 @@ export async function moveTabs(tabs, options = {}) {
   }
 
   const isAcrossWindows = windowId != destinationWindowId || !!newWindow;
+  log('moveTabs: isAcrossWindows = ', isAcrossWindows, `${windowId} => ${destinationWindowId}`);
 
   options.insertAfter = options.insertAfter || Tab.getLastTab(destinationWindowId);
 
@@ -1478,14 +1480,14 @@ export async function moveTabs(tabs, options = {}) {
     if (tab.active)
       hasActive = true;
     if (isAcrossWindows &&
-        !options.duplicate)
+        !duplicate)
       tab.$TST.temporaryMetadata.set('movingAcrossWindows', true);
   }
 
-  if (!options.duplicate)
+  if (!duplicate)
     await detachTabsFromTree(tabs, options);
 
-  if (isAcrossWindows || options.duplicate) {
+  if (isAcrossWindows || duplicate) {
     if (mSlowDuplication)
       UserOperationBlocker.blockIn(windowId, { throbber: true });
     try {
@@ -1517,7 +1519,7 @@ export async function moveTabs(tabs, options = {}) {
         newWindow,
         (async () => {
           const sourceWindow = TabsStore.windows.get(tabs[0].windowId);
-          if (options.duplicate) {
+          if (duplicate) {
             sourceWindow.toBeOpenedTabsWithPositions += tabs.length;
             sourceWindow.toBeOpenedOrphanTabs += tabs.length;
             sourceWindow.duplicatingTabsCount += tabs.length;
@@ -1529,7 +1531,7 @@ export async function moveTabs(tabs, options = {}) {
           }
 
           log('preparing tabs');
-          if (options.duplicate) {
+          if (duplicate) {
             const startTime = Date.now();
             // This promise will be resolved with very large delay.
             // (See also https://bugzilla.mozilla.org/show_bug.cgi?id=1394376 )
@@ -1647,7 +1649,7 @@ export async function moveTabs(tabs, options = {}) {
         await applyTreeStructureToTabs(newTabs, structure, {
           broadcast: true
         });
-        if (options.duplicate) {
+        if (duplicate) {
           for (const tab of newTabs) {
             tab.$TST.removeState(Constants.kTAB_STATE_DUPLICATING, { broadcast: true });
             TabsStore.removeDuplicatingTab(tab);
@@ -1734,7 +1736,7 @@ export async function openNewWindowFromTabs(tabs, options = {}) {
       return newWindow;
     })
     .catch(ApiTabs.createErrorHandler());
-  tabs = tabs.filter(TabsStore.ensureLivingTab);
+  tabs = tabs.filter(TabsStore.ensureLivingItem);
   const movedTabs = await moveTabs(tabs, {
     ...options,
     destinationPromisedNewWindow: promsiedNewWindow
@@ -2158,7 +2160,7 @@ export function snapshotForActionDetection(targetTab) {
     nextTab,
     targetTab.$TST.parent,
   ]))
-    .filter(TabsStore.ensureLivingTab)
+    .filter(TabsStore.ensureLivingItem)
     .sort((a, b) => a.index - b.index);
   return snapshotTree(targetTab, tabs);
 }
@@ -2168,7 +2170,7 @@ function snapshotTree(targetTab, tabs) {
 
   const snapshotById = {};
   function snapshotChild(tab) {
-    if (!TabsStore.ensureLivingTab(tab) || tab.pinned)
+    if (!TabsStore.ensureLivingItem(tab) || tab.pinned)
       return null;
     return snapshotById[tab.id] = snapshotTab(tab);
   }
