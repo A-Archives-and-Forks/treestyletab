@@ -219,6 +219,7 @@ export async function init() {
   await Promise.all([
     MetricsData.addAsync('parallel initialization: main', async () => {
       await MetricsData.addAsync('parallel initialization: main: rebuildAll', rebuildAll(importedWindow));
+      Size.init(); // this must be called after rebuildAll()
 
       TabsUpdate.completeLoadingTabs(mTargetWindow);
 
@@ -254,9 +255,6 @@ export async function init() {
       onBuilt.dispatch();
 
       DragAndDrop.init();
-    }),
-    MetricsData.addAsync('parallel initialization: Size', async () => {
-      Size.init();
     }),
     MetricsData.addAsync('parallel initialization: contextual identities', async () => {
       await promisedInitializedContextualIdentities;
