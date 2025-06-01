@@ -269,12 +269,13 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
 
   let nextElement = insertBefore?.nodeType == Node.ELEMENT_NODE ?
     insertBefore :
-    (insertBefore?.$TST.element);
-  if (nextElement === undefined &&
+    insertBefore?.$TST.element;
+  if (insertBefore &&
+      nextElement === undefined &&
       (containerElement == win.containerElement ||
        containerElement == win.pinnedContainerElement)) {
     const nextTab = item.$TST.nearestSameTypeRenderedTab;
-    log(`render item element for ${item.id} (pinned=${item.pinned}) before ${nextTab?.id}, item, nextTab = `, item, nextTab);
+    log(`render item element for ${item.id} (pinned=${item.pinned}) before ${nextTab?.id} (originally ${insertBefore?.id}), item, nextTab, insertBefore = `, item, nextTab, insertBefore);
     nextElement = nextTab?.$TST.element.parentNode == containerElement ?
       nextTab.$TST.element :
       null;
