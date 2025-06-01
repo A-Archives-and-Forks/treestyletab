@@ -136,13 +136,10 @@ export function calculateReferenceItemsFromInsertionPosition(
   item,
   { context, insertBefore, insertAfter } = {}
 ) {
-  if (!item) {
-    throw new Error('calculateReferenceItemsFromInsertionPosition: no item is given');
-  }
   let firstItem = (Array.isArray(item) ? item[0] : item) || item;
   let lastItem  = (Array.isArray(item) ? item[item.length - 1] : item) || item;
-  firstItem = firstItem.$TST?.nativeTabGroup || firstItem;
-  lastItem = lastItem.$TST?.nativeTabGroup?.collapsed && lastItem.$TST?.nativeTabGroup || lastItem;
+  firstItem = firstItem?.$TST?.nativeTabGroup || firstItem;
+  lastItem = lastItem?.$TST?.nativeTabGroup?.collapsed && lastItem?.$TST?.nativeTabGroup || lastItem;
   log('calculateReferenceItemsFromInsertionPosition ', {
     firstItem:    firstItem?.id,
     lastItem:     lastItem?.id,
@@ -199,8 +196,8 @@ export function calculateReferenceItemsFromInsertionPosition(
     if (prevItem == lastItem) // failsafe
       prevItem = !firstItem ? null :
         configs.fixupTreeOnTabVisibilityChanged ?
-          firstItem.$TST.nearestVisiblePrecedingTab :
-          firstItem.$TST.unsafeNearestExpandedPrecedingTab;
+          firstItem?.$TST.nearestVisiblePrecedingTab :
+          firstItem?.$TST.unsafeNearestExpandedPrecedingTab;
     if (!prevItem) {
       log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 1/5');
       // allow to move pinned item to beside of another pinned item
