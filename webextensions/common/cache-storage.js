@@ -107,7 +107,7 @@ export async function setValue({ windowId, key, value } = {}) {
     }),
     timeout: TIMEOUT_IN_MSEC,
     onTimedOut() {
-      throw new Error(`CacheStorage.setValue for {windowId}/key timed out`);
+      throw new Error(`CacheStorage.setValue for ${windowId}/key timed out`);
     },
   });
 }
@@ -229,7 +229,7 @@ export async function clearForWindow(windowId) {
     task: () => clearForWindowInternal(windowId),
     timeout: TIMEOUT_IN_MSEC,
     onTimedOut() {
-      throw new Error(`CacheStorage.clearForWindow for {windowId} timed out`);
+      throw new Error(`CacheStorage.clearForWindow for ${windowId} timed out`);
     },
   });
 }
