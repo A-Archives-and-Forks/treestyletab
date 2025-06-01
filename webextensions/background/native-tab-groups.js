@@ -275,8 +275,11 @@ export async function moveGroupBefore(group, insertBefore) {
 
   const members = group.$TST.members;
   const firstMember = group.$TST.firstMember;
+  const delta = insertBefore.windowId == group.windowId && insertBefore.index > firstMember.index ? members.length : 0;
+  const index = insertBefore.index - delta;
+  log('moveGroupBefore: move to ', index, { delta, insertBeforeIndex: insertBefore.index });
   await browser.tabGroups.move(group.id, {
-    index:    insertBefore.index - (insertBefore.windowId == group.windowId && insertBefore.index > firstMember.index ? members.length : 0),
+    index,
     windowId: insertBefore.windowId,
   });
 
@@ -318,8 +321,11 @@ export async function moveGroupAfter(group, insertAfter) {
 
   const members = group.$TST.members;
   const firstMember = group.$TST.firstMember;
+  const delta = insertAfter.windowId == group.windowId && insertAfter.index > firstMember.index ? members.length : 0;
+  const index = insertAfter.index + 1 - delta;
+  log('moveGroupAfter: move to ', index, { delta, insertAfterIndex: insertAfter.index });
   await browser.tabGroups.move(group.id, {
-    index:    insertAfter.index + 1 - (insertAfter.windowId == group.windowId && insertAfter.index > firstMember.index ? members.length : 0),
+    index,
     windowId: insertAfter.windowId,
   });
 

@@ -726,10 +726,16 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
   const { promisedMoved, finish } = NativeTabGroups.waitUntilMoved(group, destinationWindowId);
 
   if (insertAfter) {
+    if (insertAfter.groupId == -1) {
+      insertAfter = insertAfter.$TST.rootTab.$TST.lastDescendant || insertAfter;
+    }
     log('performNativeTabGroupItemDragDrop: move the group below the specified tab ', insertAfter.id);
     await NativeTabGroups.moveGroupAfter(group, insertAfter);
   }
   else if (insertBefore) {
+    if (insertBefore.groupId == -1) {
+      insertBefore = insertBefore.$TST.rootTab;
+    }
     log('performNativeTabGroupItemDragDrop: move the group above the specified tab ', insertBefore.id);
     await NativeTabGroups.moveGroupBefore(group, insertBefore);
   }
