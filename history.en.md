@@ -2,7 +2,7 @@
 
  - master/HEAD
    * Drop support of Firefox older than 139.
-   * Add support of native tab groups feature of Firefox itself.
+   * Add support of native tab groups feature of Firefox itself. TST will create a new tab group of Firefox itself instead of modifying tree, when you drag a tab to the head side edge of another tab.
    * Show muted state indicator and sharing state indicator (for microphone, camera and screen) at the position same to the one on Firefox's native tab.
    * API: Some notification type messages (ex. `tab-mousedown`) can contain Firefox's tab groups as a `tab` (tree item). They have properties similar to regular tabs but there is one difference: they have `"group"` as the value of their `type` property.
  - 4.1.11 (2025.5.29)
