@@ -92,7 +92,8 @@ async function onTabSubstanceEnter(event) {
   if (!canCaptureTab)
     return;
 
-  const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
+  const windowId = TabsStore.getCurrentWindowId();
+  const activeTab = Tab.getActiveTab(windowId) || (await browser.tabs.query({ active: true, windowId }))[0];
 
   if (!configs.tabPreviewTooltip ||
       !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE)) {;
