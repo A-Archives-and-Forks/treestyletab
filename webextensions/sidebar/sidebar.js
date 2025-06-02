@@ -1023,13 +1023,6 @@ async function onConfigChange(changedKey) {
 }
 
 async function isSidebarRightSide() {
-  // This calculation logic is buggy for a window in a screen placed at
-  // left of the primary display and scaled. As the result, a sidebar
-  // placed at left can be mis-detected as placed at right. For safety
-  // I ignore such cases and always treat such cases as "left side placed".
-  // See also: https://github.com/piroor/treestyletab/issues/2984#issuecomment-901907503
-  if (window.screenX < 0 && window.devicePixelRatio > 1)
-    return false;
   const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
   if (configs.sidebarPosition == Constants.kTABBAR_POSITION_AUTO &&
       mayBeRight &&

@@ -527,14 +527,7 @@ export default class InContentPanelController {
       anchorTabRect.bottom = anchorTabRect.top + anchorTabRect.height;
     }
 
-    // This calculation logic is buggy for a window in a screen placed at
-    // left of the primary display and scaled. As the result, a sidebar
-    // placed at left can be mis-detected as placed at right. For safety
-    // I ignore such cases and always treat such cases as "left side placed".
-    // See also: https://github.com/piroor/treestyletab/issues/2984#issuecomment-901907503
-    const mayBeRight = window.screenX < 0 && window.devicePixelRatio > 1 ?
-      false :
-      window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
+    const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
 
     this.log(`show (${this.type}, ${targetItem.id}}) [${Date.now() - timestamp}msec from start]: show in ${playgroundTabId || 'sidebar'} `, messageParams);
     const succeeded = await this.sendMessage(
