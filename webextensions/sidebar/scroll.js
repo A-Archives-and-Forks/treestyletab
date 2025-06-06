@@ -592,18 +592,29 @@ function getScrollBoxFor(item, { allowFallback } = {}) {
   return mPinnedScrollBox;
 }
 
-export function getItemRect(item) {
+export function getItemRect(item, { afterAnimation } = {}) {
   if (item.pinned)
     return item.$TST.element.getBoundingClientRect();
 
-  const calculationTargetTabs = TabsStore.scrollPositionCalculationTargetTabsInWindow.get(item.windowId);
-  const sourceRenderableItems = getRenderableTreeItems(item.windowId);
-  const renderableItems = mapAndFilter(sourceRenderableItems, item => {
-    if (!calculationTargetTabs.has(item.id)) {
-      return undefined;
-    }
-    return item.id;
-  });
+  let renderableItems;
+  if (afterAnimation) {
+    // We need to ignore preceding "going to be collapsed" tabs on determination of the
+    // final tab position.
+    const calculationTargetTabs = TabsStore.scrollPositionCalculationTargetTabsInWindow.get(item.windowId);
+    // On the other hand, preceding "going to be expanded" tabs are naturally included
+    // in the "renderable" tabs (because they are still visible in the tab bar).
+    const sourceRenderableItems = getRenderableTreeItems(item.windowId);
+    // So, we can get the collection of finally visible tabs with "renderable tabs" - "collapsing tabs".
+    renderableItems = mapAndFilter(sourceRenderableItems, item => {
+      if (!calculationTargetTabs.has(item.id)) {
+        return undefined;
+      }
+      return item.id;
+    });
+  }
+  else {
+    renderableItems = getRenderableTreeItems(item.windowId).map(item => item.id);
+  }
   const itemSize       = Size.getTabHeight();
   const scrollBox      = getScrollBoxFor(item);
   const scrollBoxRect  = Size.getScrollBoxRect(scrollBox);
@@ -699,7 +710,7 @@ function calculateScrollDeltaForItem(item, { over } = {}) {
 
   item = item.$TST.collapsed && item.$TST.nearestVisibleAncestorOrSelf || item;
 
-  const itemRect       = getItemRect(item);
+  const itemRect       = getItemRect(item, { afterAnimation: true });
   const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(item, { allowFallback: true }));
   const overScrollOffset = over === false ?
     0 :
@@ -738,7 +749,7 @@ export function isItemInViewport(item, { allowPartial } = {}) {
   if (item.pinned)
     return true;
 
-  const itemRect      = getItemRect(item);
+  const itemRect      = getItemRect(item, { afterAnimation: true });
   const allowedOffset = allowPartial ? (itemRect.height / 2) : 0;
   const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(item));
   log('isItemInViewport ', item.id, {
@@ -900,8 +911,8 @@ export async function scrollToItem(item, options = {}) {
   const scrollBox = getScrollBoxFor(item);
   if (hasAnchor &&
       !anchorTab.pinned) {
-    const targetItemRect = getItemRect(item);
-    const anchorItemRect = getItemRect(anchorTab);
+    const targetItemRect = getItemRect(item, { afterAnimation: true });
+    const anchorItemRect = getItemRect(anchorTab, { afterAnimation: true });
     const scrollBoxRect = Size.getScrollBoxRect(scrollBox);
     let delta = calculateScrollDeltaForItem(item, { over: false });
 
