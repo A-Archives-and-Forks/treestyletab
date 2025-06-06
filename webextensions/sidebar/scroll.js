@@ -1394,14 +1394,14 @@ function onMessageExternal(message, _aSender) {
       return (async () => {
         const params = {};
         const currentWindow = TabsStore.getCurrentWindowId();
-        if ('tab' in message) {
-          await Tab.waitUntilTracked(message.tab);
-          params.item = Tab.get(message.tab);
+        if ('tabId' in message || 'tab' in message) {
+          await Tab.waitUntilTracked(message.tabId || message.tab);
+          params.item = Tab.get(message.tabId || message.tab);
           if (!params.item || params.item.windowId != currentWindow)
             return;
         }
-        else if ('group' in message) {
-          params.item = TabGroup.get(message.group);
+        else if ('groupId' in message || 'group' in message) {
+          params.item = TabGroup.get(message.gorupId || message.group);
           if (!params.item || params.item.windowId != currentWindow)
             return;
         }
