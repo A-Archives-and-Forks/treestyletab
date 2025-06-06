@@ -916,18 +916,11 @@ export async function scrollToItem(item, options = {}) {
     const scrollBoxRect = Size.getScrollBoxRect(scrollBox);
     let delta = calculateScrollDeltaForItem(item, { over: false });
 
-    let topStickyItemsAreaSize, bottomStickyItemsAreaSize;
-    if (mLastStickyItemIdsAbove.has(anchorTab.id) &&
-        mLastStickyItemIdsAbove.size > 0)
-      topStickyItemsAreaSize = Size.getRenderedTabHeight() * (mLastStickyItemIdsAbove.size - 1);
-    else
-      topStickyItemsAreaSize = Size.getRenderedTabHeight() * mLastStickyItemIdsAbove.size;
-
-    if (mLastStickyItemIdsBelow.has(item.id) &&
-        mLastStickyItemIdsBelow.size > 0)
-      bottomStickyItemsAreaSize = Size.getRenderedTabHeight() * (mLastStickyItemIdsBelow.size - 1);
-    else
-      bottomStickyItemsAreaSize = Size.getRenderedTabHeight() * mLastStickyItemIdsBelow.size;
+    const calculationTargetTabIds = new Set(TabsStore.scrollPositionCalculationTargetTabsInWindow.get(item.windowId).keys());
+    const topStickyItems = anchorTab.$TST.precedingCanBecomeStickyTabs.filter(tab => calculationTargetTabIds.has(tab.id));
+    const topStickyItemsAreaSize = Size.getRenderedTabHeight() * (topStickyItems.length - (mLastStickyItemIdsAbove.has(anchorTab.id) ? 1 : 0));
+    const bottomStickyItems = item.$TST.followingCanBecomeStickyTabs.filter(tab => calculationTargetTabIds.has(tab.id));
+    const bottomStickyItemsAreaSize = Size.getRenderedTabHeight() * (bottomStickyItems.length - (mLastStickyItemIdsBelow.has(item.id) ? 1 : 0));
 
     if (targetItemRect.top > anchorItemRect.top) {
       log('=> will scroll down');

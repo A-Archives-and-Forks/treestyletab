@@ -86,6 +86,7 @@ export class TreeItem {
   // key = addon ID
   // value = Set of states
   static autoStickyStates = new Map();
+  static allAutoStickyStates = new Set();
 
   constructor(raw) {
     raw.$TST = this;
@@ -245,9 +246,8 @@ export class TreeItem {
     if (this.sticky)
       return true;
 
-    for (const states of TreeItem.autoStickyStates.values()) {
-      if ((new Set([...this.states, ...states])).size < this.states.size + states.size)
-        return true;
+    if ((new Set([...this.states, ...TreeItem.allAutoStickyStates])).size < this.states.size + TreeItem.allAutoStickyStates.size) {
+      return true;
     }
 
     return false;
@@ -701,6 +701,11 @@ export class TreeItem {
       return;
 
     TreeItem.autoStickyStates.set(providerId, states);
+    for (const state of states) {
+      TreeItem.allAutoStickyStates.add(state);
+    }
+
+    TreeItem.updateCanBecomeStickyTabsIndex(TabsStore.getCurrentWindowId());
 
     if (Constants.IS_BACKGROUND) {
       SidebarConnection.sendMessage({
@@ -729,12 +734,32 @@ export class TreeItem {
     else
       TreeItem.autoStickyStates.delete(providerId);
 
+    TreeItem.allAutoStickyStates = new Set([
+      ...TreeItem.autoStickyStates.values(),
+    ].flat());
+
+    TreeItem.updateCanBecomeStickyTabsIndex(TabsStore.getCurrentWindowId());
+
     if (Constants.IS_BACKGROUND) {
       SidebarConnection.sendMessage({
         type:   Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE,
         providerId,
         remove: [...statesToRemove],
       });
+    }
+  }
+
+  static async updateCanBecomeStickyTabsIndex(windowId) {
+    const tabs = await (windowId ? browser.tabs.query({ windowId }) : browser.tabs.query({}));
+    for (const tab of tabs) {
+      const item = TreeItem.get(tab);
+      if (!item) {
+        continue;
+      }
+      if (item.$TST.canBecomeSticky)
+        TabsStore.addCanBecomeStickyTab(item);
+      else
+        TabsStore.removeCanBecomeStickyTab(item);
     }
   }
 
@@ -1966,6 +1991,29 @@ export class Tab extends TreeItem {
     });
   }
 
+  get precedingCanBecomeStickyTabs() {
+    return TabsStore.queryAll({
+      windowId:   this.raw.windowId,
+      tabs:       TabsStore.canBecomeStickyTabsInWindow.get(this.raw.windowId),
+      normal:     true,
+      '!id':      this.id,
+      ordered:    true,
+      fromId:     this.id,
+      reversed:   true,
+    });
+  }
+
+  get followingCanBecomeStickyTabs() {
+    return TabsStore.queryAll({
+      windowId:   this.raw.windowId,
+      tabs:       TabsStore.canBecomeStickyTabsInWindow.get(this.raw.windowId),
+      normal:     true,
+      '!id':      this.id,
+      ordered:    true,
+      fromId:     this.id,
+    });
+  }
+
   //===================================================================
   // other relations
   //===================================================================
@@ -2241,6 +2289,13 @@ export class Tab extends TreeItem {
         break;
     }
 
+    if (TreeItem.allAutoStickyStates.has(state)) {
+      if (this.canBecomeSticky)
+        TabsStore.addCanBecomeStickyTab(this.raw);
+      else
+        TabsStore.removeCanBecomeStickyTab(this.raw);
+    }
+
     if (this.raw &&
         modified &&
         state != Constants.kTAB_STATE_ACTIVE &&
@@ -2413,6 +2468,13 @@ export class Tab extends TreeItem {
         if (toTab)
           this.raw.discarded = false;
         break;
+    }
+
+    if (TreeItem.allAutoStickyStates.has(state)) {
+      if (this.canBecomeSticky)
+        TabsStore.addCanBecomeStickyTab(this.raw);
+      else
+        TabsStore.removeCanBecomeStickyTab(this.raw);
     }
 
     if (modified &&

@@ -360,6 +360,7 @@ export const loadingTabsInWindow     = new Map();
 export const unsynchronizedTabsInWindow = new Map();
 export const virtualScrollRenderableTabsInWindow  = new Map();
 export const scrollPositionCalculationTargetTabsInWindow = new Map();
+export const canBecomeStickyTabsInWindow = new Map();
 
 function createMapWithName(name) {
   const map = new Map();
@@ -392,6 +393,7 @@ export function prepareIndexesForWindow(windowId) {
   unsynchronizedTabsInWindow.set(windowId, createMapWithName(`unsynchronized tabs in window ${windowId}`));
   virtualScrollRenderableTabsInWindow.set(windowId, createMapWithName(`virtual scroll renderable tabs in window ${windowId}`));
   scrollPositionCalculationTargetTabsInWindow.set(windowId, createMapWithName(`scroll position calculation target tabs in window ${windowId}`));
+  canBecomeStickyTabsInWindow.set(windowId, createMapWithName(`can become sticky tabs in window ${windowId}`));
 }
 
 export function unprepareIndexesForWindow(windowId) {
@@ -418,6 +420,7 @@ export function unprepareIndexesForWindow(windowId) {
   unsynchronizedTabsInWindow.delete(windowId);
   virtualScrollRenderableTabsInWindow.delete(windowId);
   scrollPositionCalculationTargetTabsInWindow.delete(windowId);
+  canBecomeStickyTabsInWindow.delete(windowId);
 }
 
 export function getTabsMap(tabsStore, windowId = null) {
@@ -512,6 +515,11 @@ export function updateIndexesForTab(tab) {
     removeScrollPositionCalculationTargetTab(tab);
   else
     addScrollPositionCalculationTargetTab(tab);
+
+  if (tab.$TST.canBecomeSticky)
+    addCanBecomeStickyTab(tab);
+  else
+    removeCanBecomeStickyTab(tab);
 }
 
 export function updateVirtualScrollRenderabilityIndexForTab(tab) {
@@ -551,6 +559,7 @@ export function removeTabFromIndexes(tab) {
   removeUnsynchronizedTab(tab);
   //removeVirtualScrollRenderableTab(tab);
   removeScrollPositionCalculationTargetTab(tab);
+  removeCanBecomeStickyTab(tab);
 }
 
 function addTabToIndex(tab, indexes, windowId = null) {
@@ -733,6 +742,13 @@ export function addScrollPositionCalculationTargetTab(tab) {
 }
 export function removeScrollPositionCalculationTargetTab(tab) {
   removeTabFromIndex(tab, scrollPositionCalculationTargetTabsInWindow);
+}
+
+export function addCanBecomeStickyTab(tab) {
+  addTabToIndex(tab, canBecomeStickyTabsInWindow);
+}
+export function removeCanBecomeStickyTab(tab) {
+  removeTabFromIndex(tab, canBecomeStickyTabsInWindow);
 }
 
 
