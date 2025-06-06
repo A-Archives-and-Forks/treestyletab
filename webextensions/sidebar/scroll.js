@@ -673,9 +673,9 @@ function scrollTo(params = {}) {
     return smoothScrollTo(params);
 
   //cancelPerformingAutoScroll();
-  const scrollBox = getScrollBoxFor(params.tab, { allowFallback: true });
-  const scrollTop = params.tab ?
-    scrollBox.$scrollTop + calculateScrollDeltaForItem(params.tab) :
+  const scrollBox = getScrollBoxFor(params.item, { allowFallback: true });
+  const scrollTop = params.item ?
+    scrollBox.$scrollTop + calculateScrollDeltaForItem(params.item) :
     typeof params.position == 'number' ?
       params.position :
       typeof params.delta == 'number' ?
@@ -955,7 +955,7 @@ export async function scrollToItem(item, options = {}) {
   else {
     await scrollTo({
       ...options,
-      item
+      item,
     });
   }
   // A tab can be moved after the tabbar is scrolled to the tab.
@@ -1396,8 +1396,8 @@ function onMessageExternal(message, _aSender) {
         const currentWindow = TabsStore.getCurrentWindowId();
         if ('tab' in message) {
           await Tab.waitUntilTracked(message.tab);
-          params.tab = Tab.get(message.tab);
-          if (!params.tab || params.tab.windowId != currentWindow)
+          params.item = Tab.get(message.tab);
+          if (!params.item || params.item.windowId != currentWindow)
             return;
         }
         else {
