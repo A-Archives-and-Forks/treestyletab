@@ -606,7 +606,7 @@ export function getItemRect(item, { afterAnimation } = {}) {
     const sourceRenderableItems = getRenderableTreeItems(item.windowId);
     // So, we can get the collection of finally visible tabs with "renderable tabs" - "collapsing tabs".
     renderableItems = mapAndFilter(sourceRenderableItems, item => {
-      if (!calculationTargetTabs.has(item.id)) {
+      if (item.type == 'tab' && !calculationTargetTabs.has(item.id)) {
         return undefined;
       }
       return item.id;
@@ -704,7 +704,7 @@ function cancelRunningScroll() {
 }
 
 function calculateScrollDeltaForItem(item, { over } = {}) {
-  item = Tab.get(item?.id);
+  item = TreeItem.get(item);
   if (!item)
     return 0;
 
