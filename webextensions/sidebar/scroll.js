@@ -1400,6 +1400,11 @@ function onMessageExternal(message, _aSender) {
           if (!params.item || params.item.windowId != currentWindow)
             return;
         }
+        else if ('group' in message) {
+          params.item = TabGroup.get(message.group);
+          if (!params.item || params.item.windowId != currentWindow)
+            return;
+        }
         else {
           const windowId = message.window || message.windowId;
           if (windowId == 'active') {
