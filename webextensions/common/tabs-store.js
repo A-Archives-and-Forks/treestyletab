@@ -359,6 +359,7 @@ export const nativelyGroupedTabsInWindow = new Map();
 export const loadingTabsInWindow     = new Map();
 export const unsynchronizedTabsInWindow = new Map();
 export const virtualScrollRenderableTabsInWindow  = new Map();
+export const scrollPositionCalculationTargetTabsInWindow = new Map();
 
 function createMapWithName(name) {
   const map = new Map();
@@ -390,6 +391,7 @@ export function prepareIndexesForWindow(windowId) {
   loadingTabsInWindow.set(windowId, createMapWithName(`loading tabs in window ${windowId}`));
   unsynchronizedTabsInWindow.set(windowId, createMapWithName(`unsynchronized tabs in window ${windowId}`));
   virtualScrollRenderableTabsInWindow.set(windowId, createMapWithName(`virtual scroll renderable tabs in window ${windowId}`));
+  scrollPositionCalculationTargetTabsInWindow.set(windowId, createMapWithName(`scroll position calculation target tabs in window ${windowId}`));
 }
 
 export function unprepareIndexesForWindow(windowId) {
@@ -415,6 +417,7 @@ export function unprepareIndexesForWindow(windowId) {
   loadingTabsInWindow.delete(windowId);
   unsynchronizedTabsInWindow.delete(windowId);
   virtualScrollRenderableTabsInWindow.delete(windowId);
+  scrollPositionCalculationTargetTabsInWindow.delete(windowId);
 }
 
 export function getTabsMap(tabsStore, windowId = null) {
@@ -504,6 +507,11 @@ export function updateIndexesForTab(tab) {
     removeNativelyGroupedTab(tab);
 
   updateVirtualScrollRenderabilityIndexForTab(tab);
+
+  if (tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE))
+    removeScrollPositionCalculationTargetTab(tab);
+  else
+    addScrollPositionCalculationTargetTab(tab);
 }
 
 export function updateVirtualScrollRenderabilityIndexForTab(tab) {
@@ -542,6 +550,7 @@ export function removeTabFromIndexes(tab) {
   removeLoadingTab(tab);
   removeUnsynchronizedTab(tab);
   //removeVirtualScrollRenderableTab(tab);
+  removeScrollPositionCalculationTargetTab(tab);
 }
 
 function addTabToIndex(tab, indexes, windowId = null) {
@@ -717,6 +726,13 @@ export function addVirtualScrollRenderableTab(tab) {
 }
 export function removeVirtualScrollRenderableTab(tab) {
   removeTabFromIndex(tab, virtualScrollRenderableTabsInWindow);
+}
+
+export function addScrollPositionCalculationTargetTab(tab) {
+  addTabToIndex(tab, scrollPositionCalculationTargetTabsInWindow);
+}
+export function removeScrollPositionCalculationTargetTab(tab) {
+  removeTabFromIndex(tab, scrollPositionCalculationTargetTabsInWindow);
 }
 
 

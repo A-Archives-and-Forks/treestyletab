@@ -66,6 +66,7 @@ export const kCOMMAND_NOTIFY_TABS_HIGHLIGHTING_COMPLETE    = 'treestyletab:notif
 export const kCOMMAND_NOTIFY_GROUP_TAB_DETECTED      = 'treestyletab:notify-group-tab-detected';
 export const kCOMMAND_NOTIFY_CHILDREN_CHANGED        = 'treestyletab:notify-children-changed';
 export const kCOMMAND_NOTIFY_TAB_COLLAPSED_STATE_CHANGED     = 'treestyletab:notify-tab-collapsed-state-changed';
+export const kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGING = 'treestyletab:notify-subtree-collapsed-state-changing';
 export const kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGED = 'treestyletab:notify-subtree-collapsed-state-changed';
 export const kCOMMAND_NOTIFY_TAB_GROUP_CREATED       = 'treestyletab:notify-tab-group-created';
 export const kCOMMAND_NOTIFY_TAB_GROUP_UPDATED       = 'treestyletab:notify-tab-group-updated';

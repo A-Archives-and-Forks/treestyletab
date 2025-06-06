@@ -596,7 +596,14 @@ export function getItemRect(item) {
   if (item.pinned)
     return item.$TST.element.getBoundingClientRect();
 
-  const renderableItems = getRenderableTreeItems(item.windowId).map(item => item.id);
+  const calculationTargetTabs = TabsStore.scrollPositionCalculationTargetTabsInWindow.get(item.windowId);
+  const sourceRenderableItems = getRenderableTreeItems(item.windowId);
+  const renderableItems = mapAndFilter(sourceRenderableItems, item => {
+    if (!calculationTargetTabs.has(item.id)) {
+      return undefined;
+    }
+    return item.id;
+  });
   const itemSize       = Size.getTabHeight();
   const scrollBox      = getScrollBoxFor(item);
   const scrollBoxRect  = Size.getScrollBoxRect(scrollBox);

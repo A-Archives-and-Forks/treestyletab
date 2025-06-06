@@ -1075,6 +1075,13 @@ async function collapseExpandSubtreeInternal(tab, params = {}) {
       tab.$TST.subtreeCollapsed == params.collapsed)
     return [];
 
+  SidebarConnection.sendMessage({
+    type:      Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGING,
+    windowId:  tab.windowId,
+    tabId:     tab.id,
+    collapsed: !!params.collapsed,
+  });
+
   if (params.collapsed) {
     tab.$TST.addState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
     tab.$TST.removeState(Constants.kTAB_STATE_SUBTREE_EXPANDED_MANUALLY);
