@@ -1,6 +1,11 @@
 # History
 
  - master/HEAD
+ - 4.2.1 (2025.6.7)
+   * Scroll to the active tab correctly with disabled animation mode. (regression at 4.2.0)
+   * Detect sidebar position automatically even if the window is in a screen placed leftside of the primary screen.
+   * Scroll to the new active tab and keep it in the viewport more correctly even if there are going-to-be-collapsed and/or sticky tabs.
+   * API: a [`scroll`](https://github.com/piroor/treestyletab/wiki/API-for-other-addons#scroll-the-tab-bar) type message now accepts a new parameter `group` to scroll the tab bar to the specified tab group.
  - 4.2.0 (2025.6.2)
    * Drop support of Firefox older than 139.
    * Add support of native tab groups feature of Firefox itself. TST will create a new tab group of Firefox itself instead of modifying tree, when you drag a tab to the head side edge of another tab.
