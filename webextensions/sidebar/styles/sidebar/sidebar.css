@@ -24,78 +24,81 @@
 
 @import url("/resources/ui-color.css");
 
-:root {
-  --bg-color: #d4dde5;
-  --bg-color-inactive: #e8e8e8;
-  --shadow-color: #404040;
-  --shadow-color-inactive: #868686;
-  --tab-like-surface: #d4dde5;
-  --tab-surface-regular: transparent;
-  --tab-surface-active-color: #94A1C0;
-  --tab-surface-active-color-pale: #B4C1E0;
-  --tab-surface-active-gradient: linear-gradient(to bottom, #A0B0CF, #7386AB) repeat-x;
-  --tab-surface-active-gradient-pale: linear-gradient(to bottom, #C0D0EF, #93A6CB) repeat-x;
-  --tab-surface-active-gradient-inactive: linear-gradient(to bottom, #B4B4B4, #8A8A8A) repeat-x;
-  --tab-surface-active: var(--tab-surface-active-gradient);
-  --tab-surface-active-hover: var(--tab-surface-active);
-  --tab-text-regular: black;
-  --tab-text-inverted: white;
-  --tab-text-active: white;
-  --badge-bg-color: #91a0c0;
-  --badge-color-inactive: #b5b5b5;
-  --badge-bg-color-inactive: #929292;
-  --dropmarker-border-color: #577bf3;
-  --dropmarker-bg-color: #d0def5;
-  --throbber-color: white;
-  --throbber-color-active: white;
-  --throbber-shadow-color: var(--dropmarker-border-color);
-  --tab-text-shadow: 0 1px var(--shadow-color);
+@media (prefers-color-scheme: dark), not (prefers-color-scheme: dark) {
+  :root.sidebar,
+  :root:not(.sidebar) {
+    --bg-color: #d4dde5;
+    --bg-color-inactive: #e8e8e8;
+    --shadow-color: #404040;
+    --shadow-color-inactive: #868686;
+    --tab-like-surface: #d4dde5;
+    --tab-surface-regular: transparent;
+    --tab-surface-active-color: #94A1C0;
+    --tab-surface-active-color-pale: #B4C1E0;
+    --tab-surface-active-gradient: linear-gradient(to bottom, #A0B0CF, #7386AB) repeat-x;
+    --tab-surface-active-gradient-pale: linear-gradient(to bottom, #C0D0EF, #93A6CB) repeat-x;
+    --tab-surface-active-gradient-inactive: linear-gradient(to bottom, #B4B4B4, #8A8A8A) repeat-x;
+    --tab-surface-active: var(--tab-surface-active-gradient);
+    --tab-surface-active-hover: var(--tab-surface-active);
+    --tab-text-regular: black;
+    --tab-text-inverted: white;
+    --tab-text-active: white;
+    --badge-bg-color: #91a0c0;
+    --badge-color-inactive: #b5b5b5;
+    --badge-bg-color-inactive: #929292;
+    --dropmarker-border-color: #577bf3;
+    --dropmarker-bg-color: #d0def5;
+    --throbber-color: white;
+    --throbber-color-active: white;
+    --throbber-shadow-color: var(--dropmarker-border-color);
+    --tab-text-shadow: 0 1px var(--shadow-color);
 
-  --tab-highlighted-highlight: white;
-  --tab-highlighted-glow: var(--dropmarker-border-color);
-  --tab-highlighted-base: var(--bg-color);
+    --tab-highlighted-highlight: white;
+    --tab-highlighted-glow: var(--dropmarker-border-color);
+    --tab-highlighted-base: var(--bg-color);
 
-  --multiselected-color: var(--tab-surface-active-gradient);
-  --multiselected-color-opacity: 0.35;
+    --multiselected-color: var(--tab-surface-active-gradient);
+    --multiselected-color-opacity: 0.35;
 
-  --tab-vertical-padding: 0.075em; /* We should define this as a variable to reuse calculation of extra tab contents size. */
-}
+    --tab-vertical-padding: 0.075em; /* We should define this as a variable to reuse calculation of extra tab contents size. */
+  }
 
-tab-item:not(.active) {
-  --throbber-color: var(--dropmarker-border-color);
-  --throbber-shadow-color: white;
-}
+  tab-item:not(.active) {
+    --throbber-color: var(--dropmarker-border-color);
+    --throbber-shadow-color: white;
+  }
 
-/* Background colour for the tree sidebar (light blue when window is
-   active, grey otherwise) */
-:root,
-body,
-#background {
-  background: var(--bg-color);
-}
+  /* Background colour for the tree sidebar (light blue when window is
+     active, grey otherwise) */
+  :root,
+  body,
+  #background {
+    background: var(--bg-color);
+  }
 
-:root:not(.active),
-:root:not(.active) #background {
-  background: var(--bg-color-inactive);
-}
+  :root:not(.active),
+  :root:not(.active) #background {
+    background: var(--bg-color-inactive);
+  }
 
-/* Use the splitter to display the border of tab-items */
-:root.left:not(.rtl),
-:root.right.rtl {
-  border-inline-end: 1px solid var(--shadow-color);
-}
-:root:not(.active).left:not(.rtl),
-:root:not(.active).right.rtl {
-  border-inline-end-color: var(--shadow-color-inactive);
-}
+  /* Use the splitter to display the border of tab-items */
+  :root.left:not(.rtl),
+  :root.right.rtl {
+    border-inline-end: 1px solid var(--shadow-color);
+  }
+  :root:not(.active).left:not(.rtl),
+  :root:not(.active).right.rtl {
+    border-inline-end-color: var(--shadow-color-inactive);
+  }
 
-:root.right:not(.rtl),
-:root.left.rtl {
-  border-inline-start: 1px solid var(--shadow-color);
-}
-:root:not(.active).right:not(.rtl),
-:root:not(.active).left.rtl {
-  border-inline-start-color: var(--shadow-color-inactive);
+  :root.right:not(.rtl),
+  :root.left.rtl {
+    border-inline-start: 1px solid var(--shadow-color);
+  }
+  :root:not(.active).right:not(.rtl),
+  :root:not(.active).left.rtl {
+    border-inline-start-color: var(--shadow-color-inactive);
+  }
 }
 
 
