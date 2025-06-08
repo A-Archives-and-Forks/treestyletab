@@ -267,11 +267,15 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
       win.containerElement
   );
 
+  if (item.pinned) {
+    // Pinned tabs are always rendered physically, so we use the next
+    // same type item as the reference.
+    insertBefore = item.$TST.nearestSameTypeRenderedTab;
+  }
   let nextElement = insertBefore?.nodeType == Node.ELEMENT_NODE ?
     insertBefore :
     insertBefore?.$TST.element;
-  if ((insertBefore ||
-       item.pinned) &&
+  if (insertBefore &&
       nextElement === undefined &&
       (containerElement == win.containerElement ||
        containerElement == win.pinnedContainerElement)) {
