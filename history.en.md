@@ -1,6 +1,8 @@
 # History
 
  - master/HEAD
+   * Pinned tabs are rendered with expected position after rearranging by drag-and-drop. (regression at 4.2.0)
+   * Apply designed colors always for the "Sidebar" skin, even if the "Dark" color scheme is active. (regression at 4.2.0)
  - 4.2.1 (2025.6.7)
    * Scroll to the active tab correctly with disabled animation mode. (regression at 4.2.0)
    * Detect sidebar position automatically even if the window is in a screen placed leftside of the primary screen.
