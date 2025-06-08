@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+ - 4.2.2 (2025.6.9)
    * Pinned tabs are rendered with expected position after rearranging by drag-and-drop. (regression at 4.2.0)
    * Apply designed colors always for the "Sidebar" skin, even if the "Dark" color scheme is active. (regression at 4.2.0)
  - 4.2.1 (2025.6.7)
