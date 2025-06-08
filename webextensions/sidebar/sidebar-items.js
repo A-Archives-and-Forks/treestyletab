@@ -270,7 +270,8 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
   let nextElement = insertBefore?.nodeType == Node.ELEMENT_NODE ?
     insertBefore :
     insertBefore?.$TST.element;
-  if (insertBefore &&
+  if ((insertBefore ||
+       item.pinned) &&
       nextElement === undefined &&
       (containerElement == win.containerElement ||
        containerElement == win.pinnedContainerElement)) {
