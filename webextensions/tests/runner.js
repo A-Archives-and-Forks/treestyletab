@@ -222,11 +222,7 @@ function logFailure(name, error) {
     diffBlock.appendChild(document.createElement('legend')).textContent = 'Difference';
     const diff = diffBlock.appendChild(document.createElement('pre'));
     diff.classList.add('diff');
-    const range = document.createRange();
-    range.selectNodeContents(diff);
-    range.collapse(false);
-    diff.appendChild(range.createContextualFragment(Diff.readable(error.expected, error.actual, true)));
-    range.detach();
+    diff.insertAdjacentHTML('beforeend', Diff.readable(error.expected, error.actual, true));
   }
 }
 

@@ -113,9 +113,7 @@ export class TreeItemElement extends HTMLElement {
     // We preserve this class for backward compatibility with other addons.
     this.classList.add(kTAB_CLASS_NAME);
 
-    const range = document.createRange();
-    range.selectNodeContents(this);
-    const panelFragment = range.createContextualFragment(`
+    this.insertAdjacentHTML('beforeend', `
       <span class="native-tab-group-line"></span>
       <span class="${Constants.kEXTRA_ITEMS_CONTAINER} indent"></span>
       <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true">
@@ -141,8 +139,6 @@ export class TreeItemElement extends HTMLElement {
         <span class="${Constants.kCONTEXTUAL_IDENTITY_MARKER}"></span>
       </${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
     `.trim().replace(/>\s+</g, '><'));
-    range.detach();
-    this.appendChild(panelFragment);
 
     this.removeAttribute('draggable');
 

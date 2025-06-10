@@ -126,13 +126,12 @@ yonce
 zenburn
 `.trim().split(/\s+/);
 {
-  const range = document.createRange();
-  range.selectNodeContents(document.querySelector('#userStyleRulesFieldTheme'));
-  range.collapse(false);
-  range.insertNode(range.createContextualFragment(CODEMIRROR_THEMES.map(theme => `
-    <option value=${JSON.stringify(sanitizeForHTMLText(theme))}>${sanitizeForHTMLText(theme)}</option>
-  `.trim()).join('')));
-  range.detach();
+  document.querySelector('#userStyleRulesFieldTheme').insertAdjacentHTML(
+    'beforeend',
+    CODEMIRROR_THEMES.map(theme => `
+      <option value=${JSON.stringify(sanitizeForHTMLText(theme))}>${sanitizeForHTMLText(theme)}</option>
+    `.trim()).join('')
+  );
 }
 
 const mUserStyleRulesField = document.getElementById('userStyleRulesField');
@@ -330,15 +329,11 @@ function applyUserStyleRulesFieldTheme() {
   const theme = getUserStyleRulesFieldTheme();
   if (theme != 'default' &&
       !document.querySelector(`link[href$="/extlib/codemirror-theme/${theme}.css"]`)) {
-    const range = document.createRange();
-    range.selectNodeContents(document.querySelector('head'));
-    range.collapse(false);
-    range.insertNode(range.createContextualFragment(`
+    document.querySelector('head').insertAdjacentHTML('beforeend', `
       <link rel="stylesheet"
             type="text/css"
             href="/extlib/codemirror-theme/${theme}.css"/>
-    `.trim()));
-    range.detach();
+    `.trim());
   }
   mUserStyleRulesFieldEditor.setOption('theme', theme);
 }
@@ -407,17 +402,16 @@ async function initOtherDevices() {
   const range = document.createRange();
   range.selectNodeContents(container);
   range.deleteContents();
+  range.detach();
   for (const device of devices) {
     const icon = device.icon ? `<img src="/resources/icons/${sanitizeForHTMLText(device.icon)}.svg">` : '';
-    const contents = range.createContextualFragment(`
+    container.insertAdjacentHTML('beforeend', `
       <li id="otherDevice:${sanitizeForHTMLText(String(device.id))}"
          ><label>${icon}${sanitizeForHTMLText(String(device.name))}
                  <button title=${JSON.stringify(sanitizeForHTMLText(browser.i18n.getMessage('config_removeDeviceButton_label')))}
                         >${sanitizeForHTMLText(browser.i18n.getMessage('config_removeDeviceButton_label'))}</button></label></li>
     `.trim());
-    range.insertNode(contents);
   }
-  range.detach();
 }
 
 function removeOtherDevice(id) {
@@ -569,11 +563,12 @@ function updateThemeInformation(theme) {
       height:           1em;
       width:            1em;
     ">\u200b</span>`);
+  const container = document.getElementById('browserThemeCustomRules');
   const range = document.createRange();
-  range.selectNodeContents(document.getElementById('browserThemeCustomRules'));
+  range.selectNodeContents(container);
   range.deleteContents();
-  range.insertNode(range.createContextualFragment(rules));
   range.detach();
+  container.insertAdjacentHTML('beforeend', rules);
   document.getElementById('browserThemeCustomRulesBlock').style.display = rules ? 'block' : 'none';
 }
 
@@ -928,10 +923,7 @@ async function initExternalAddons() {
   }
 
   const description = document.getElementById('externalAddonPermissionsGroupDescription');
-  const range = document.createRange();
-  range.selectNodeContents(description);
-  description.appendChild(range.createContextualFragment(browser.i18n.getMessage('config_externaladdonpermissions_description')));
-  range.detach();
+  description.insertAdjacentHTML('beforeend', browser.i18n.getMessage('config_externaladdonpermissions_description'));
 
   const container = document.getElementById('externalAddonPermissions');
   for (const addon of addons) {

@@ -302,10 +302,11 @@ export default class InContentPanel {
     return '';
   }
 
-  generateUI() {
-    const range = document.createRange();
-    range.selectNodeContents(this.root);
-    const panelFragment = range.createContextualFragment(`
+  prepareUI() {
+    if (this.panel) {
+      return;
+    }
+    this.root.insertAdjacentHTML('beforeend', `
       <div class="in-content-panel">
         <div class="in-content-panel-contents">
           <div class="in-content-panel-contents-inner-box">
@@ -314,15 +315,6 @@ export default class InContentPanel {
         </div>
       </div>
     `.trim().replace(/>\s+</g, '><'));
-    range.detach();
-    return panelFragment;
-  }
-
-  prepareUI() {
-    if (this.panel) {
-      return;
-    }
-    this.root.appendChild(this.generateUI());
     this.panel = this.root.querySelector('.in-content-panel');
   }
 

@@ -50,9 +50,7 @@ export class TabFaviconElement extends HTMLElement {
     // We preserve this class for backward compatibility with other addons.
     this.classList.add(KFAVICON_CLASS_NAME);
 
-    const range = document.createRange();
-    range.selectNodeContents(this);
-    const panelFragment = range.createContextualFragment(`
+    this.insertAdjacentHTML('beforeend', `
       <img class="${Constants.kFAVICON_IMAGE}"
            src="${this.getAttribute(kATTR_NAME_SRC)}"/>
       <span class="${Constants.kFAVICON_BUILTIN} ${Constants.kFAVICON_DEFAULT /* just for backward compatibility, and this should be removed from future versions */}"></span>
@@ -60,8 +58,6 @@ export class TabFaviconElement extends HTMLElement {
       <span class="${Constants.kFAVICON_STICKY_STATE}"></span>
       <span class="${Constants.kTHROBBER}"></span>
     `.trim().replace(/>\s+</g, '><'));
-    range.detach();
-    this.appendChild(panelFragment);
 
     this._applySrc();
   }
