@@ -639,13 +639,27 @@ window.addEventListener('mouseup', _event => {
 
 async function onContextMenu(event) {
   reserveToActivateSubpanel();
-  log('onContextMenu: start');
+  const focused = document.querySelector(':focus');
+  log('onContextMenu: start ', event, focused);
 
   const context = mReservedOverrideContext;
   mReservedOverrideContext = null;
 
-  const target         = EventUtils.getElementTarget(event);
-  const originalTarget = EventUtils.getElementOriginalTarget(event);
+  const openedByKeyboardOperation = (
+    event.button == 0 &&
+    !event.aleKey &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.metaKey
+  );
+  const keyboardOperationTarget = focused?.closest('[data-tab-id]') ||
+    Tab.getActiveTab(TabsStore.getCurrentWindowId()).$TST.element;
+  const target = openedByKeyboardOperation ?
+    keyboardOperationTarget :
+    EventUtils.getElementTarget(event);
+  const originalTarget = openedByKeyboardOperation ?
+    keyboardOperationTarget :
+    EventUtils.getElementOriginalTarget(event);
   const onInputField   = (
     target.closest('input, textarea') ||
     originalTarget.closest('input, textarea')
