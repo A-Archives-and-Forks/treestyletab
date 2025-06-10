@@ -673,7 +673,7 @@ function scrollTo(params = {}) {
     return smoothScrollTo(params);
 
   //cancelPerformingAutoScroll();
-  const scrollBox = getScrollBoxFor(params.item, { allowFallback: true });
+  const scrollBox = params.scrollBox || getScrollBoxFor(params.item, { allowFallback: true });
   const scrollTop = params.item ?
     scrollBox.$scrollTop + calculateScrollDeltaForItem(params.item) :
     typeof params.position == 'number' ?
@@ -714,29 +714,35 @@ function calculateScrollDeltaForItem(item, { over } = {}) {
   const scrollBoxRect = Size.getScrollBoxRect(getScrollBoxFor(item, { allowFallback: true }));
   const overScrollOffset = over === false ?
     0 :
-    Math.ceil(itemRect.height / 2);
+    Math.ceil(itemRect.height / (item.pinned ? 3 : 2));
   let delta = 0;
   if (scrollBoxRect.bottom < itemRect.bottom) { // should scroll down
     delta = itemRect.bottom - scrollBoxRect.bottom + overScrollOffset;
-    if (mLastStickyItemIdsBelow.has(item.id) &&
-        mLastStickyItemIdsBelow.size > 0)
-      delta += itemRect.height * (mLastStickyItemIdsBelow.size - 1);
-    else
-      delta += itemRect.height * mLastStickyItemIdsBelow.size;
+    if (!item.pinned) {
+      if (mLastStickyItemIdsBelow.has(item.id) &&
+          mLastStickyItemIdsBelow.size > 0)
+        delta += itemRect.height * (mLastStickyItemIdsBelow.size - 1);
+      else
+        delta += itemRect.height * mLastStickyItemIdsBelow.size;
+    }
   }
   else if (scrollBoxRect.top > itemRect.top) { // should scroll up
     delta = itemRect.top - scrollBoxRect.top - overScrollOffset;
-    if (mLastStickyItemIdsAbove.has(item.id) &&
-        mLastStickyItemIdsAbove.size > 0)
-      delta -= itemRect.height * (mLastStickyItemIdsAbove.size - 1);
-    else
-      delta -= itemRect.height * mLastStickyItemIdsAbove.size;
+    if (!item.pinned) {
+      if (mLastStickyItemIdsAbove.has(item.id) &&
+          mLastStickyItemIdsAbove.size > 0)
+        delta -= itemRect.height * (mLastStickyItemIdsAbove.size - 1);
+      else
+        delta -= itemRect.height * mLastStickyItemIdsAbove.size;
+    }
   }
   log('calculateScrollDeltaForItem ', item.id, {
     delta,
     itemTop:         itemRect.top,
     itemBottom:      itemRect.bottom,
-    scrollBoxBottom: scrollBoxRect.bottom
+    scrollBoxBottom: scrollBoxRect.bottom,
+    itemHeight:      itemRect.height,
+    overScrollOffset,
   });
   return delta;
 }
@@ -745,9 +751,6 @@ export function isItemInViewport(item, { allowPartial } = {}) {
   item = Tab.get(item?.id);
   if (!TabsStore.ensureLivingItem(item))
     return false;
-
-  if (item.pinned)
-    return true;
 
   const itemRect      = getItemRect(item, { afterAnimation: true });
   const allowedOffset = allowPartial ? (itemRect.height / 2) : 0;
@@ -810,6 +813,7 @@ async function smoothScrollTo(params = {}) {
       const spentTime = nowTime - startTime;
       if (spentTime >= duration) {
         scrollTo({
+          scrollBox,
           position: endPosition,
           justNow: true
         });
@@ -822,6 +826,7 @@ async function smoothScrollTo(params = {}) {
       const currentDelta = parseInt(delta * power);
       const newPosition  = startPosition + currentDelta;
       scrollTo({
+        scrollBox,
         position: newPosition,
         justNow:  true
       });
@@ -949,12 +954,14 @@ export async function scrollToItem(item, options = {}) {
     }
     await scrollTo({
       ...options,
+      scrollBox,
       position: scrollBox.$scrollTop + delta,
     });
   }
   else {
     await scrollTo({
       ...options,
+      scrollBox,
       item,
     });
   }
