@@ -47,6 +47,7 @@ function log(...args) {
 }
 
 let mTargetWindow;
+let mContentsHeight = 0;
 let mAreaHeight     = 0;
 let mMaxVisibleRows = 0;
 let mMaxCol         = 0;
@@ -103,10 +104,10 @@ export function reposition(options = {}) {
   const pinnedTabsAreaRatio = Math.min(Math.max(0, configs.maxPinnedTabsRowsAreaPercentage), 100) / 100;
   const allTabsAreaHeight   = Size.getAllTabsAreaSize() + GapCanceller.getOffset();
   mMaxVisibleRows = Math.max(1, Math.floor((allTabsAreaHeight * pinnedTabsAreaRatio) / height));
-  const contentsHeight = height * maxRow + yOffset;
+  mContentsHeight = height * maxRow + yOffset;
   mAreaHeight = mFixedContainerHeight < 0 ?
     Math.min(
-      contentsHeight,
+      mContentsHeight,
       mMaxVisibleRows * height
     ) :
     Math.min(
@@ -166,8 +167,8 @@ export function reposition(options = {}) {
     }
   }
   log('reposition: ', { maxWidth, faviconized, width, height, maxCol, maxRow, pinnedTabsAreaRatio, allTabsAreaHeight, xOffset, yOffset, mMaxVisibleRows, mAreaHeight });
-  log('overflow: contentsHeight > mAreaHeight : ', contentsHeight > mAreaHeight);
-  SidebarItems.pinnedContainer.classList.toggle('overflow', contentsHeight > mAreaHeight);
+  log('overflow: mContentsHeight > mAreaHeight : ', mContentsHeight > mAreaHeight);
+  SidebarItems.pinnedContainer.classList.toggle('overflow', mContentsHeight > mAreaHeight);
 }
 
 export function reserveToReposition(options = {}) {
@@ -353,7 +354,10 @@ mContainerResizer.addEventListener('mouseup', event => {
   event.stopPropagation();
   event.preventDefault();
   document.releaseCapture();
-  mFixedContainerHeight = Math.max(0, mDragStartHeight + (event.clientY - mDragStartY));
+  mFixedContainerHeight = Math.min(
+    Math.max(0, mDragStartHeight + (event.clientY - mDragStartY)),
+    mContentsHeight
+  );
   reposition();
   saveLastHeight();
 });
