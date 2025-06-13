@@ -50,26 +50,19 @@ export async function activateTab(tab, { byMouseOperation, keepMultiselection, s
     win.internallyFocusingSilentlyTabs.delete(tab.id);
     ApiTabs.handleMissingTabError(e);
   };
-  if (configs.supportTabsMultiselect &&
-      typeof browser.tabs.highlight == 'function') {
-    let tabs = [tab];
-    if (tab.$TST.hasOtherHighlighted &&
-        keepMultiselection) {
-      const highlightedTabs = Tab.getHighlightedTabs(tab.windowId);
-      if (highlightedTabs.some(highlightedTab => highlightedTab.id == tab.id)) {
-        // switch active tab with highlighted state
-        tabs = tabs.concat(mapAndFilter(highlightedTabs,
-                                        highlightedTab => highlightedTab.id != tab.id && highlightedTab || undefined));
-      }
+  let tabs = [tab];
+  if (tab.$TST.hasOtherHighlighted &&
+      keepMultiselection) {
+    const highlightedTabs = Tab.getHighlightedTabs(tab.windowId);
+    if (highlightedTabs.some(highlightedTab => highlightedTab.id == tab.id)) {
+      // switch active tab with highlighted state
+      tabs = tabs.concat(mapAndFilter(highlightedTabs,
+                                      highlightedTab => highlightedTab.id != tab.id && highlightedTab || undefined));
     }
-    if (tabs.length == 1)
-      win.tabsToBeHighlightedAlone.add(tab.id);
-    highlightTabs(tabs);
   }
-  else {
-    log('setting tab active ', tab);
-    return browser.tabs.update(tab.id, { active: true }).catch(ApiTabs.createErrorHandler(onError));
-  }
+  if (tabs.length == 1)
+    win.tabsToBeHighlightedAlone.add(tab.id);
+  highlightTabs(tabs);
 }
 
 export async function blurTab(bluredTabs, { windowId, silently, keepDiscarded } = {}) {

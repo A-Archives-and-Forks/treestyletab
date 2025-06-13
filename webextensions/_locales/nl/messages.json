@@ -2395,10 +2395,6 @@
     "message": "\u200b",
     "hash": "aa7906338dbdd2af4993295aa9112e97"
   },
-  "config_supportTabsMultiselect_label": {
-    "message": "Meerdere tabbladen selecteren met behulp van api om de focus te verleggen (*afhankelijk van \"browser.tabs.multiselect\"=\"true\" of de browserinstellingen)",
-    "hash": "e97348e7ee2251b3263a2eac453df653"
-  },
   "config_undoMultipleTabsClose_label": {
     "message": "Onlangs gesloten tabbladen hercstellen als een daarvan hersteld wordt via ‘Onlangs gesloten tabbladen’",
     "hash": "0ecf315e82613f7e2c6613ef1f854a62"

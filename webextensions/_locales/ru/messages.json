@@ -765,8 +765,6 @@
   "config_defaultBookmarkParentId_label_before":  { "message": "Создать новую закладку в" },
   "config_defaultBookmarkParentId_label_after":   { "message": "\u200b" },
 
-  "config_supportTabsMultiselect_label": { "message": "Использовать интерфейс API выбора нескольких вкладок  ( * зависит от \"browser.tabs.multiselect\"=\"true\")" },
-
   "config_undoMultipleTabsClose_label": { "message": "Восстановить набор закрытых вкладок, когда одна из них восстанавливается командой \"Восстановить закрытую вкладку\"" },
 
   "config_scrollLines_label_before": { "message": "Прокручивать вверх или вниз на " },

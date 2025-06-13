@@ -1221,10 +1221,6 @@
     "message": "\u200b",
     "hash": "aa7906338dbdd2af4993295aa9112e97"
   },
-  "config_supportTabsMultiselect_label": {
-    "message": "Utiliser l'API de multi-sélection pour gérer le focus (*dépend du paramètre Firefox \"browser.tabs.multiselect\"=\"true\")",
-    "hash": "68ba74a927292849c18ea65fa865c5a2"
-  },
   "config_userStyleRules_label": {
     "message": "User Style Sheet (Règles d'apparence supplémentaires pour les contenus du panneau)",
     "hash": "8802e1f6f7cf2ff4db4e8d0aaf9bc73e"

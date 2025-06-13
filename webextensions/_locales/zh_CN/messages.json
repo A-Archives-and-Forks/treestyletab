@@ -1884,9 +1884,6 @@
   "config_defaultBookmarkParentId_label_after": {
     "message": "之下"
   },
-  "config_supportTabsMultiselect_label": {
-    "message": "使用标签页多选 API 来控制标签页焦点（ * 依赖于 Firefox 自身的一个内置偏好设置项 \"browser.tabs.multiselect\"=\"true\" ）"
-  },
   "config_undoMultipleTabsClose_label": {
     "message": "当通过 \"重新打开已关闭标签页\" 命令来恢复最近关闭的标签页中的一项时，其整个集合都会被恢复"
   },

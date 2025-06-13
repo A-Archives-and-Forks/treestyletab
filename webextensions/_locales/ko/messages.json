@@ -1951,10 +1951,6 @@
         "message": "안에 작성",
         "hash": "aa7906338dbdd2af4993295aa9112e97"
     },
-    "config_supportTabsMultiselect_label": {
-        "message": "탭을 보는 것을 제어할 때 복수의 선택 API 사용 (※Firefox의 설정인 \"browser.tabs.multiselect\"=\"true\"에 의존)",
-        "hash": "68ba74a927292849c18ea65fa865c5a2"
-    },
     "config_undoMultipleTabsClose_label": {
         "message": "마지막으로 정리하여 닫힌 탭 중 하나가 \"닫은 탭 다시 열기\"로 다시 열릴 경우, 같이 닫힌 탭 전체를 다시 열기",
         "hash": "0ecf315e82613f7e2c6613ef1f854a62"

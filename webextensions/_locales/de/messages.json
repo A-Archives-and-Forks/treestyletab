@@ -766,8 +766,6 @@
   "config_defaultBookmarkParentId_label_before":  { "message": "Neue Lesezeichen erstellen unter" },
   "config_defaultBookmarkParentId_label_after":   { "message": "\u200b" },
 
-  "config_supportTabsMultiselect_label": { "message": "Verwende Schnittstelle zur Mehrfachauswahl von Tabs um den Tab-Fokus zu steuern (*hängt von der eingebauten Einstellung von Firefox \"browser.tabs.multiselect\"=\"true\" ab)" },
-
   "config_undoMultipleTabsClose_label": { "message": "Zuletzt geschlossene Tabs wiederherstellen, wenn einer der Tabs über den \"Geschlossener Tab wiederherstellen\" Befehl wiederhergestellt wird" },
 
   "config_scrollLines_label_before": { "message": "Bewege " },

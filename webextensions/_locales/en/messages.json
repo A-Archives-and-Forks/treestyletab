@@ -789,8 +789,6 @@
 
   "config_defaultBookmarkParentId_label":  { "message": "Default location to create new bookmarks" },
 
-  "config_supportTabsMultiselect_label": { "message": "Use tab multiselection API to control tab focus (*depends on a built-in preference \"browser.tabs.multiselect\"=\"true\" of the browser itself)" },
-
   "config_undoMultipleTabsClose_label": { "message": "Restore the set of tabs most recently closed, when one of them is restored via the \"Reopen Closed Tab\" command" },
 
   "config_scrollLines_label_before": { "message": "Scroll up or down " },

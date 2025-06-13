@@ -661,8 +661,6 @@
     "config_defaultBookmarkParentId_label_before":  { "message": "加入新書籤到" },
     "config_defaultBookmarkParentId_label_after":   { "message": "中" },
   
-    "config_supportTabsMultiselect_label": { "message": "使用分頁多重選取 API 來操作分頁切換(※需要 Firefox 設定「browser.tabs.multiselect」為「true」)" },
-
     "config_undoMultipleTabsClose_label": { "message": "Restore the set of tabs most recently closed, when one of them is restored via the \"Reopen Closed Tab\" command" },
   
     "config_scrollLines_label_before": { "message": "Scroll up or down " },

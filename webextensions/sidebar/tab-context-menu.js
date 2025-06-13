@@ -707,8 +707,7 @@ async function onContextMenu(event) {
   const originalTargetBookmarkElement = originalTarget?.closest('[data-bookmark-id]');
   const bookmarkId = originalTargetBookmarkElement?.dataset.bookmarkId;
   if (bookmarkId &&
-      !modifierKeyPressed &&
-      typeof browser.menus.overrideContext == 'function') {
+      !modifierKeyPressed) {
     log('onContextMenu: override context as bookmark context menu');
     browser.menus.overrideContext({
       context:    'bookmark',
@@ -722,8 +721,7 @@ async function onContextMenu(event) {
     TabsStore.ensureLivingItem(Tab.get(parseInt(originalTargetTreeItemElement.dataset.tabId))) :
     EventUtils.getTreeItemFromEvent(event);
   if (tab &&
-      !modifierKeyPressed &&
-      typeof browser.menus.overrideContext == 'function') {
+      !modifierKeyPressed) {
     log('onContextMenu: override context as tab context menu');
     browser.menus.overrideContext({
       context: 'tab',

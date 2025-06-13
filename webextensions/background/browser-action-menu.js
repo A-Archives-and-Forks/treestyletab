@@ -2215,12 +2215,6 @@ const mItems = [
         expert:  true,
       },
       {
-        title: indent() + browser.i18n.getMessage('config_supportTabsMultiselect_label'),
-        key:   'supportTabsMultiselect',
-        type:  'checkbox',
-        expert: true,
-      },
-      {
         title: indent() + browser.i18n.getMessage('config_undoMultipleTabsClose_label'),
         key:   'undoMultipleTabsClose',
         type:  'checkbox',
