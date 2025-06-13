@@ -535,6 +535,7 @@ async function performTabsDragDrop(tabs, params) {
   }));
 
   const createGroup = params.canCreateGroup && params.nextGroupColor;
+  const beforeIndices = tabs.map(tab => tab.index).join(',');
 
   if (!(params.allowedActions & Constants.kDRAG_BEHAVIOR_MOVE) &&
       !params.duplicate) {
@@ -569,6 +570,7 @@ async function performTabsDragDrop(tabs, params) {
        params.droppedAfter?.type == TreeItem.TYPE_GROUP ||
        params.droppedBefore?.type == TreeItem.TYPE_GROUP) &&
       tabs.some(tab => tab.groupId != -1 && tab.groupId != nativeTabGroupId)) {
+    log('performTabsDragDrop: remove from group');
     await NativeTabGroups.removeTabsFromGroup(tabs);
   }
 
@@ -610,8 +612,10 @@ async function performTabsDragDrop(tabs, params) {
     await NativeTabGroups.rejectGroupFromTree(TabGroup.get(nativeTabGroupId))
   }
 
-  if (nativeTabGroupId != nativeTabGroupIdFromPositionDeterminedByBrowser) {
-    // Automatic tree maintenance done by Firefox based on tabs' destination position
+  const afterIndices = movedTabs.map(tab => tab.index).join(',');
+  if (beforeIndices != afterIndices /* Firefox's automatic group maintenance won't happen if tabs were not moved */ &&
+      nativeTabGroupId != nativeTabGroupIdFromPositionDeterminedByBrowser) {
+    // Automatic group maintenance done by Firefox based on tabs' destination position
     // may change groups. We need to override the result with the given group id.
     log('performTabsDragDrop: final group id = ', nativeTabGroupId);
     let onGroupModified;
