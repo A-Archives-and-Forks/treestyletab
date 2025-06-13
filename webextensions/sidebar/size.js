@@ -90,8 +90,8 @@ export function getRenderedFavIconizedTabHeight() {
 
 export function getScrollBoxRect(scrollBox) {
   return scrollBox == mPinnedScrollBox ?
-    mPinnedTabsScrollBoxRect :
-    mNormalTabsScrollBoxRect;
+    (mPinnedTabsScrollBoxRect ||= mPinnedScrollBox.getBoundingClientRect()) :
+    (mNormalTabsScrollBoxRect ||= mNormalScrollBox.getBoundingClientRect());
 }
 
 export function getNormalTabsViewPortSize() {
