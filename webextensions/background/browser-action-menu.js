@@ -2215,6 +2215,12 @@ const mItems = [
         expert:  true,
       },
       {
+        title: indent() + browser.i18n.getMessage('config_tabGroupsEnabled_label'),
+        key:   'tabGroupsEnabled',
+        type:  'checkbox',
+        expert: true,
+      },
+      {
         title: indent() + browser.i18n.getMessage('config_undoMultipleTabsClose_label'),
         key:   'undoMultipleTabsClose',
         type:  'checkbox',

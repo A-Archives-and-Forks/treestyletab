@@ -785,6 +785,8 @@
 
   "config_defaultBookmarkParentId_label":  { "message": "ブックマークの作成先フォルダーの既定値" },
 
+  "config_tabGroupsEnabled_label": { "message": "ネイティブのタブグループの管理を有効化する（※ブラウザーの設定である\"browser.tabs.groups.enabled\"=\"true\"に対応)" },
+
   "config_undoMultipleTabsClose_label": { "message": "最後にまとめて閉じたタブ群のうちの1つが「閉じたタブを元に戻す」で復元されたとき、タブ群全体を復元する" },
 
   "config_scrollLines_label_before": { "message": "キーボードショートカットの「タブの一覧を数行上/下にスクロール」で" },
