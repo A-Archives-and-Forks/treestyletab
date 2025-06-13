@@ -303,7 +303,16 @@ function getDropAction(event) {
 
       case kDROP_BEFORE:
         if (targetItem.type == TreeItem.TYPE_GROUP) {
-          return targetItem.$TST?.firstMember?.$TST?.unsafePreviousTab?.groupId || -1;
+          const previousTab = targetItem.$TST?.firstMember?.$TST?.unsafePreviousTab;
+          if (!draggedGroup &&
+              (previousTab?.$TST?.nativeTabGroup?.collapsed ||
+               (previousTab &&
+                previousTab.groupId != -1 &&
+                info.draggedItems.some(tab => tab == previousTab)))) {
+            // Keep dropped tabs ungrouped (or remove from groups) when tabs are explicitly dropped between groups
+            return -1;
+          }
+          return previousTab?.groupId || -1;
         }
         return targetItem.groupId == -1 ?
           draggedGroup?.id : // dropping before ungrouped tab => keep the original group
