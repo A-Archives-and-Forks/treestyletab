@@ -44,12 +44,6 @@ export async function activateTab(tab, { byMouseOperation, keepMultiselection, s
     win.internallyFocusingByMouseTabs.add(tab.id);
   if (silently)
     win.internallyFocusingSilentlyTabs.add(tab.id);
-  const onError = (e) => {
-    win.internallyFocusingTabs.delete(tab.id);
-    win.internallyFocusingByMouseTabs.delete(tab.id);
-    win.internallyFocusingSilentlyTabs.delete(tab.id);
-    ApiTabs.handleMissingTabError(e);
-  };
   let tabs = [tab];
   if (tab.$TST.hasOtherHighlighted &&
       keepMultiselection) {
