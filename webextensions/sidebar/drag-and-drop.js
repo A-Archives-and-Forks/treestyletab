@@ -380,7 +380,8 @@ function getDropAction(event) {
     return true;
   });
   info.defineGetter('canCreateGroup', () => {
-    if (!targetItem ||
+    if (!configs.tabGroupsEnabled ||
+        !targetItem ||
         targetItem.groupId != -1 ||
         [targetItem, ...info.draggedItems].some(item => item?.type != TreeItem.TYPE_TAB || item?.pinned || item.groupId != -1)) {
       return false;

@@ -565,6 +565,7 @@ export const configs = new Configs({
   blockStartupOperations: false, // to collect performance profile around the initialization process
   runTestsParameters: '',
   syncEnabled: true,
+  tabGroupsEnabled: true, // corresponding to browser.tabs.groups.enabled
   APIEnabled: true,
   cacheAPITreeItems: false,
   logTimestamp: true,

@@ -411,7 +411,8 @@ Tab.onChangeMultipleTabsRestorability.addListener(multipleTabsRestorable => {
 
 const mNativeTabGroupItems = new Set();
 function updateNativeTabGroups(contextTab) {
-  if (!contextTab) {
+  if (!contextTab ||
+      !configs.tabGroupsEnabled) {
     return;
   }
 
@@ -825,15 +826,15 @@ async function onShown(info, contextTab) {
     }) && modifiedItemsCount++;
 
     updateItem('context_newGroup', {
-      visible: emulate && !!contextTab && !hasChoosableNativeTabGroup,
+      visible: emulate && configs.tabGroupsEnabled && !!contextTab && !hasChoosableNativeTabGroup,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_addToGroup', {
-      visible: emulate && !!contextTab && hasChoosableNativeTabGroup,
+      visible: emulate && configs.tabGroupsEnabled && !!contextTab && hasChoosableNativeTabGroup,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_removeFromGroup', {
-      visible: emulate && !!contextTab && contextTab.groupId != -1,
+      visible: emulate && configs.tabGroupsEnabled && !!contextTab && contextTab.groupId != -1,
       multiselected
     }) && modifiedItemsCount++;
 
