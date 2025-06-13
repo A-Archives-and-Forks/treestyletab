@@ -303,10 +303,7 @@ function getDropAction(event) {
 
       case kDROP_BEFORE:
         if (targetItem.type == TreeItem.TYPE_GROUP) {
-          const groupId = targetItem.$TST?.firstMember?.$TST?.unsafePreviousTab?.groupId;
-          return groupId == -1 ?
-            draggedGroup?.id : // a tab before the target group is ungrouped => keep the original group
-            groupId; // otherwise we try to insert items at the end of the group of the tab before the drop target
+          return targetItem.$TST?.firstMember?.$TST?.unsafePreviousTab?.groupId || -1;
         }
         return targetItem.groupId == -1 ?
           draggedGroup?.id : // dropping before ungrouped tab => keep the original group
