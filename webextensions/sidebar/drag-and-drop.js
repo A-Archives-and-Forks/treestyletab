@@ -1485,7 +1485,7 @@ function onDrop(event) {
         insertAfter:         insertAfter?.$TST?.sanitized || insertAfter,
         destinationWindowId: TabsStore.getCurrentWindowId(),
         duplicate:           dt.dropEffect == 'copy',
-        nextGroupColor:      dropActionInfo.dragData.nextGroupColor,
+        nextGroupColor:      dropActionInfo.dragData?.nextGroupColor,
         canCreateGroup:      dropActionInfo.canCreateGroup,
         import:              false
       });
