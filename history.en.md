@@ -1,6 +1,16 @@
 # History
 
  - master/HEAD
+   * Context menu commands now works even if it is opened on a blank space (by [joanbm](https://github.com/joanbm). Thanks!)
+   * Add an expert option to activate/deactivate native tab groups management UI (corresponding `browser.tabs.groups.enabled` of Firefox itself).
+   * Scroll pinned tabs container when an out-of-view pinned tab become active.
+   * Remove dragged tabs from their group when they are dropped before a group header explicitly.
+   * Don't create needless new group when a last member is dropped before the next another group but the tab is not moved actually.
+   * Disallow to resize pinned tabs area size larger than required.
+   * Unblock user operations correctly after drag-and-drop of tabs across windows. (regression at 4.2.0)
+   * Treat focused or active tab as the context tab if the context menu is opened via the keyboard (ex. Shift-F10 on Windows).
+   * Accept more cases of dropped native tabs.
+   * Delete obsolete option to deactivate using of tab multiselection API.
  - 4.2.2 (2025.6.9)
    * Pinned tabs are rendered with expected position after rearranging by drag-and-drop. (regression at 4.2.0)
    * Apply designed colors always for the "Sidebar" skin, even if the "Dark" color scheme is active. (regression at 4.2.0)
