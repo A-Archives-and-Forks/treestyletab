@@ -13,7 +13,6 @@ import * as Constants from './constants.js';
 import * as SidebarConnection from './sidebar-connection.js';
 import * as TabsStore from './tabs-store.js';
 
-// eslint-disable-next-line no-unused-vars
 function log(...args) {
   internalLogger('common/user-operation-blocker', ...args);
 }
@@ -25,6 +24,7 @@ const mProgressbar = document.querySelector('#blocking-screen progress');
 export function block({ throbber, shade } = {}) {
   mBlockingCount++;
   document.documentElement.classList.add(Constants.kTABBAR_STATE_BLOCKING);
+  log('block ', mBlockingCount, () => new Error().stack);
   if (throbber) {
     mBlockingThrobberCount++;
     mProgressbar.delayedShow = setTimeout(() => {
@@ -55,6 +55,7 @@ export function blockIn(windowId, { throbber, shade } = {}) {
   if (targetWindow && targetWindow != windowId)
     return;
 
+  log(`blockIn(${windowId}) `, () => new Error().stack);
   if (!targetWindow) {
     SidebarConnection.sendMessage({
       type:     Constants.kCOMMAND_BLOCK_USER_OPERATIONS,
@@ -69,6 +70,7 @@ export function blockIn(windowId, { throbber, shade } = {}) {
 
 export function unblock() {
   mBlockingThrobberCount--;
+  log('unblock ', mBlockingCount, () => new Error().stack);
   if (mBlockingThrobberCount < 0)
     mBlockingThrobberCount = 0;
   if (mBlockingThrobberCount == 0) {
@@ -92,6 +94,7 @@ export function unblockIn(windowId, { throbber, shade } = {}) {
   if (targetWindow && targetWindow != windowId)
     return;
 
+  log(`unblockIn(${windowId}) `, () => new Error().stack);
   if (!targetWindow) {
     SidebarConnection.sendMessage({
       type:     Constants.kCOMMAND_UNBLOCK_USER_OPERATIONS,

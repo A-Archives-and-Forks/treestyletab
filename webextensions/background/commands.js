@@ -558,12 +558,12 @@ async function performTabsDragDrop(tabs, params) {
 
   log('performTabsDragDrop: nativeTabGroupId = ', nativeTabGroupId, ', nativeTabGroupIdFromPositionDeterminedByBrowser = ', nativeTabGroupIdFromPositionDeterminedByBrowser, ', draggedGroupParams = ', draggedGroupParams, ', createGroup = ', createGroup);
 
-  let blocking = false;
+  let blockedWindowId = null;
   if ((params.groupId &&
        tabs[0].groupId != params.groupId) ||
       (tabs[0].groupId != (params.droppedOn || params.droppedBefore || params.droppedAfter)?.groupId)) {
-    UserOperationBlocker.blockIn(tabs[0].windowId, { throbber: true });
-    blocking = true;
+    blockedWindowId = tabs[0].windowId;
+    UserOperationBlocker.blockIn(blockedWindowId, { throbber: true });
   }
 
   if ((params.droppedOn?.type == TreeItem.TYPE_GROUP ||
@@ -647,9 +647,11 @@ async function performTabsDragDrop(tabs, params) {
     await NativeTabGroups.matchTabsGrouped(movedTabs, draggedGroupParams || nativeTabGroupId);
   }
 
-  if (blocking) {
-    UserOperationBlocker.unblockIn(tabs[0].windowId, { throbber: true });
+  if (blockedWindowId) {
+    UserOperationBlocker.unblockIn(blockedWindowId, { throbber: true });
   }
+
+  log('performTabsDragDrop: finish');
 
   if (movedTabs.length == 0)
     return movedTabs;
