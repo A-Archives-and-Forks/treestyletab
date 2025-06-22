@@ -1430,12 +1430,16 @@ function onDrop(event) {
   if (dt.types.includes(RetrieveURL.kTYPE_MOZ_TEXT_INTERNAL) &&
       configs.guessDraggedNativeTabs) {
     const url = dt.getData(RetrieveURL.kTYPE_MOZ_TEXT_INTERNAL);
-    log(`there are dragged native tabs with the URL: ${url}`);
-    browser.tabs.query({ url }).then(async tabs => {
-      if (!tabs.length) {
-        log('=> from other profile');
-        handleDroppedNonTreeItems(event, dropActionInfo);
-        return;
+    log(`finding native tabs with the dropped URL: ${url}`);
+    browser.tabs.query({ url, active: true }).then(async tabs => {
+      if (!tabs.length && url.includes('#')) {
+        log(`=> find again without the fragment part`);
+        tabs = await browser.tabs.query({ url: url.replace(/#.*$/, ''), active: true });
+        if (!tabs.length) {
+          log('=> no such tabs, maybe dropped from other profile');
+          handleDroppedNonTreeItems(event, dropActionInfo);
+          return;
+        }
       }
       log('=> possible dragged tabs: ', tabs);
       tabs = tabs.sort((a, b) => b.lastAccessed - a.lastAccessed);
