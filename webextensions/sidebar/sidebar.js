@@ -330,8 +330,6 @@ export async function init() {
 
   GapCanceller.init();
 
-  startWatchingWindowState();
-
   MetricsData.add('init: end');
   if (configs.debug)
     log(`Startup metrics for ${Tab.getTabs(mTargetWindow).length} tabs: `, MetricsData.toString());
@@ -647,25 +645,6 @@ async function importWindowFromBackground() {
   }
   log('importWindowFromBackground: waiting for mImportedWindow');
   return MetricsData.addAsync('importWindowFromBackground: kCOMMAND_PING_TO_SIDEBAR', mImportedWindow);
-}
-
-
-// Workaround for https://github.com/piroor/treestyletab/issues/3413
-// ( https://bugzilla.mozilla.org/show_bug.cgi?id=1875100 )
-// The bug was fixed at Firefox 124, so we should remove this when Firefox 123 and older versions including ESR became outdated.
-async function startWatchingWindowState() {
-  if (!configs.enableWorkaroundForBug1875100)
-    return;
-
-  const browserInfo = await browser.runtime.getBrowserInfo().catch(ApiTabs.createErrorHandler());
-  if (parseInt(browserInfo.version.split('.')[0]) >= 124)
-    return;
-
-  startWatchingWindowState.timer = window.setInterval(async () => {
-    const win = await browser.windows.get(mTargetWindow);
-    document.documentElement.classList.toggle('minimized', win.state == 'minimized');
-    document.documentElement.classList.toggle('maximized', win.state == 'maximized');
-  }, configs.watchWindowStateInterval);
 }
 
 
