@@ -1591,14 +1591,6 @@ async function onDragEnd(event) {
     return;
   }
 
-  // Workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1767165
-  // The bug affects only on Firefox 99 and 100. This hack should be removed after Firefox 101 is released.
-  const fixDragEndCoordinates = (configs.enableWorkaroundForBug1767165_fixDragEndCoordinates && mLastBrowserInfo) ?
-    ((major) => major >= 99 && major <= 100)(parseInt(mLastBrowserInfo.version.split('.')[0])) :
-    false;
-  const subframeXOffset = fixDragEndCoordinates ? (window.mozInnerScreenX - window.screenX) : 0;
-  const subframeYOffset = fixDragEndCoordinates ? (window.mozInnerScreenY - window.screenY) : 0;
-
   if (configs.ignoreTabDropNearSidebarArea) {
     const windowX = window.mozInnerScreenX;
     const windowY = window.mozInnerScreenY;
@@ -1618,8 +1610,6 @@ async function onDragEnd(event) {
       lastDragEventCoordinatesX,
       lastDragEventCoordinatesY,
       offset,
-      subframeXOffset,
-      subframeYOffset,
     });
     if (event.screenX >= windowX - offset &&
         event.screenY >= windowY - offset &&
@@ -1632,8 +1622,8 @@ async function onDragEnd(event) {
     // On macOS sometimes drag gesture is canceled immediately with (0,0) coordinates.
     // (This happens on Windows also.)
     const delayFromLast = now - lastDragEventCoordinatesTimestamp;
-    const rawOffsetX    = Math.abs(event.screenX - subframeXOffset - lastDragEventCoordinatesX);
-    const rawOffsetY    = Math.abs(event.screenY - subframeYOffset - lastDragEventCoordinatesY);
+    const rawOffsetX    = Math.abs(event.screenX - lastDragEventCoordinatesX);
+    const rawOffsetY    = Math.abs(event.screenY - lastDragEventCoordinatesY);
     log('check: ', {
       now,
       lastDragEventCoordinatesTimestamp,
@@ -1642,8 +1632,6 @@ async function onDragEnd(event) {
       offset,
       rawOffsetX,
       rawOffsetY,
-      subframeXOffset,
-      subframeYOffset,
     });
     if (event.screenX == 0 &&
         event.screenY == 0 &&
@@ -1672,8 +1660,8 @@ async function onDragEnd(event) {
       type:      Constants.kCOMMAND_NEW_WINDOW_FROM_TABS,
       tabIds:    detachTabs.map(tab => tab.id),
       duplicate: EventUtils.isAccelKeyPressed(event),
-      left:      event.screenX - subframeXOffset,
-      top:       event.screenY - subframeYOffset,
+      left:      event.screenX,
+      top:       event.screenY,
     });
   }
 
@@ -1688,8 +1676,8 @@ async function onDragEnd(event) {
       windowId:  dragData.item.windowId,
       groupId:   dragData.item.id,
       duplicate: EventUtils.isAccelKeyPressed(event),
-      left:      event.screenX - subframeXOffset,
-      top:       event.screenY - subframeYOffset,
+      left:      event.screenX,
+      top:       event.screenY,
     });
   }
 
