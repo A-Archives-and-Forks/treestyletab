@@ -261,8 +261,6 @@ async function onUpdated(tabId, changeInfo, tab) {
 
     logUpdated('tabs.onUpdated ', tabId, changeInfo, tab, updatedTab);
 
-    const oldState = {};
-
     if ('url' in changeInfo) {
       changeInfo.previousUrl = updatedTab.url;
       // On Linux (and possibly on some other environments) the initial page load
@@ -275,6 +273,14 @@ async function onUpdated(tabId, changeInfo, tab) {
         delete changeInfo.url;
         delete changeInfo.previousUrl;
       }
+    }
+    const oldState = {};
+    for (const key of Object.keys(changeInfo)) {
+      if (key == 'index')
+        continue;
+      if (key in updatedTab)
+        oldState[key] = updatedTab[key];
+      updatedTab[key] = changeInfo[key];
     }
     if (changeInfo.url ||
         changeInfo.status == 'complete') {
