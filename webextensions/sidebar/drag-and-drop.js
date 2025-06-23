@@ -739,7 +739,6 @@ async function getDroppedLinksOnTabBehavior() {
 let mFinishCanceledDragOperation;
 let mCurrentDragDataForExternalsId = null;
 let mCurrentDragDataForExternals = null;
-let mLastBrowserInfo = null;
 
 function onDragStart(event, options = {}) {
   log('onDragStart: start ', event, options);
@@ -758,10 +757,6 @@ function onDragStart(event, options = {}) {
 
   mCurrentDragDataForExternalsId = `${parseInt(Math.random() * 65000)}-${Date.now()}`;
   mCurrentDragDataForExternals = {};
-
-  browser.runtime.getBrowserInfo().then(info => {
-    mLastBrowserInfo = info;
-  });
 
   const originalTarget = EventUtils.getElementOriginalTarget(event);
   const extraTabContentsDragData = JSON.parse(originalTarget?.dataset?.dragData || 'null');
