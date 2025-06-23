@@ -276,27 +276,6 @@ async function onUpdated(tabId, changeInfo, tab) {
         delete changeInfo.previousUrl;
       }
     }
-    /*
-      Workaround for Firefox 130 and olders.
-      Updated openerTabId is not notified via tabs.onUpdated due to
-      https://bugzilla.mozilla.org/show_bug.cgi?id=1409262 , so it can be
-      notified with delay as a part of the complete tabs.Tab object,
-      "tab" given to this handler. To prevent unexpected tree brekage,
-      we should apply updated openerTabId only when it is modified at
-      outside of TST (in other words, by any other addon.)
-    */
-    for (const key of Object.keys(changeInfo)) {
-      if (key == 'index')
-        continue;
-      if (key in updatedTab)
-        oldState[key] = updatedTab[key];
-      if (key == 'openerTabId') {
-        if (changeInfo.openerTabId == updatedTab.openerTabId) // already processed
-          continue;
-        log(`openerTabId of ${tabId} is changed by someone (notified via changeInfo)!: ${updatedTab.openerTabId} (original) => ${changeInfo[key]} (changed by someone)`, configs.debug && new Error().stack);
-      }
-      updatedTab[key] = changeInfo[key];
-    }
     if (changeInfo.url ||
         changeInfo.status == 'complete') {
       // On some edge cases internally changed "favIconUrl" is not
@@ -311,12 +290,6 @@ async function onUpdated(tabId, changeInfo, tab) {
       }).catch(ApiTabs.createErrorSuppressor(
         ApiTabs.handleMissingTabError // the tab can be closed while waiting
       ));
-    }
-    const updatedOpenerTabId = updatedTab.$TST.temporaryMetadata.get('updatedOpenerTabId');
-    if (configs.enableWorkaroundForBug1409262 &&
-        tab.openerTabId != updatedOpenerTabId) {
-      log(`openerTabId of ${tabId} is changed by someone!: ${updatedOpenerTabId} (original) => ${tab.openerTabId} (changed by someone) `, configs.debug && new Error().stack);
-      updatedTab.$TST.temporaryMetadata.set('updatedOpenerTabId', updatedTab.openerTabId = changeInfo.openerTabId = tab.openerTabId);
     }
 
     TabsUpdate.updateTab(updatedTab, changeInfo, { tab, old: oldState });

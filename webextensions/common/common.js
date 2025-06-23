@@ -436,7 +436,6 @@ export const configs = new Configs({
   defaultSearchEngine: 'https://www.google.com/search?q=%s',
   acceleratedTabOperations: true,
   acceleratedTabCreation: false,
-  enableWorkaroundForBug1409262: false,
   enableWorkaroundForBug1548949: true,
   enableWorkaroundForBug1767165_fixDragEndCoordinates: null, // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1767165
   enableWorkaroundForBug1763420_reloadMaskImage: true, // workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=1763420
