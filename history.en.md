@@ -1,6 +1,10 @@
 # History
 
  - master/HEAD
+ - 4.2.4 (2025.6.26)
+   * In-content panels (tab groups menu and tab previews) handle events correctly. (regression at 4.2.3)
+   * Never mix reactions for custom dialogs even if multiple dialogs are shown at a time.
+   * Update `uk` locale by [Taron-art](https://github.com/Taron-art). Thanks!
  - 4.2.3 (2025.6.23)
    * Context menu commands now works even if it is opened on a blank space (by [joanbm](https://github.com/joanbm). Thanks!)
    * Add an expert option to activate/deactivate native tab groups management UI (corresponding `browser.tabs.groups.enabled` of Firefox itself).
