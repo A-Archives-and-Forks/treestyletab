@@ -203,16 +203,17 @@ export default class TabPreviewPanel extends InContentPanel {
     `;
   }
 
-  generateUI() {
-    const panelFragment = super.generateUI();
+  prepareUI() {
+    if (this.panel) {
+      return;
+    }
+    super.prepareUI();
 
-    const preview = panelFragment.querySelector('.in-content-panel-image');
+    const preview = this.panel.querySelector('.in-content-panel-image');
     preview.addEventListener('load', () => {
       if (preview.src)
         preview.classList.remove('loading');
     });
-
-    return panelFragment;
   }
 
   onUpdateUI({ targetId, title, url, tooltipHtml, hasPreview, previewURL, logging, complete, scale, ...params }) {

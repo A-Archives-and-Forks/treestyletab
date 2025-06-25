@@ -574,11 +574,21 @@ export default class TabGroupMenuPanel extends InContentPanel {
       </div>
     `;
   }
+  sanitizeForHTMLText(text) {
+    return (text || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 
-  generateUI() {
-    const panelFragment = super.generateUI();
+  prepareUI() {
+    if (this.panel) {
+      return;
+    }
+    super.prepareUI();
 
-    const titleField = panelFragment.querySelector('.in-content-panel-title-field');
+    const titleField = this.panel.querySelector('.in-content-panel-title-field');
     titleField.addEventListener('input', event => {
       browser.runtime.sendMessage({
         type:    'treestyletab:update-native-tab-group',
@@ -586,7 +596,7 @@ export default class TabGroupMenuPanel extends InContentPanel {
         title:   event.target.value,
       });
     });
-    const colorRadioGroup = panelFragment.querySelector('.tab-group-editor-swatches');
+    const colorRadioGroup = this.panel.querySelector('.tab-group-editor-swatches');
     colorRadioGroup.addEventListener('change', event => {
       if (!event.target.checked) {
         return;
@@ -597,18 +607,9 @@ export default class TabGroupMenuPanel extends InContentPanel {
         color:   event.target.value,
       });
     });
-    const panel = panelFragment.querySelector('.in-content-panel');
+    const panel = this.panel.querySelector('.in-content-panel');
     panel.addEventListener('click', this.onClickSelf);
     panel.addEventListener('keydown', this.onKeyDownSelf);
-
-    return panelFragment;
-  }
-  sanitizeForHTMLText(text) {
-    return (text || '')
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
   }
 
   onUpdateUI({ targetId, groupTitle, groupColor, creating, anchorTabRect, logging, complete, ...params }) {
