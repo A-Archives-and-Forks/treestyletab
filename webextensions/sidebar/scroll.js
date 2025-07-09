@@ -871,14 +871,27 @@ export function scrollToNewTab(item, options = {}) {
 
 function canScrollToItem(item) {
   item = Tab.get(item?.id);
-  return (TabsStore.ensureLivingItem(item) &&
-          !item.hidden);
+  if (!TabsStore.ensureLivingItem(item) ||
+      item.hidden) {
+    return false;
+  }
+
+  // We should not produce any scrolling, when there is only one row.
+  // Otherwise such a scrolling will produce stressfull "shaking" of tabs.
+  // https://github.com/piroor/treestyletab/issues/3768
+  if (item.pinned) {
+    const rows = parseInt(document.documentElement.style.getPropertyValue('--pinned-tabs-rows') || '0');
+    return rows > 1;
+  }
+  else {
+    return Tab.getUnpinnedTabs(TabsStore.getCurrentWindowId()).length > 1;
+  }
 }
 
 export async function scrollToItem(item, options = {}) {
   scrollToItem.lastTargetId = null;
 
-  log('scrollToItem to ', item?.id, options.anchor?.id, options,
+  log('scrollToItem to ', item?.id, ' anchor = ', options.anchor?.id, options,
       { stack: configs.debug && new Error().stack });
   cancelRunningScroll();
   if (!canScrollToItem(item)) {
