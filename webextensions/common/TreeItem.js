@@ -1466,6 +1466,9 @@ export class Tab extends TreeItem {
     return this._shouldBeCollapsedByParent();
   }
   get promisedCollapsedByParent() {
+    if (this.raw.groupId == -1) {
+      return this.collapsedByParent;
+    }
     return browser.tabGroups.get(this.raw.groupId).then(group => {
       return this._shouldBeCollapsedByParent(group)
     });
