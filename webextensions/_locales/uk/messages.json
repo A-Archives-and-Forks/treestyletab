@@ -1447,7 +1447,7 @@
     "hash": "0e8ef863c0adf4a4bad85202c69c8915"
   },
   "tabContextMenu_close_label_multiselected": {
-    "message": "Закрити вибрані вкладки",
+    "message": "За&крити %S вкладок",
     "hash": "4b390c9abd8ac915b722d04f8555ce30"
   },
   "tabGroupMenu_tab-group-editor-title-create": {

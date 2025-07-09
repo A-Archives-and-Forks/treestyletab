@@ -936,7 +936,7 @@
   "tabContextMenu_bookmarkSelected_label":               { "message": "&Lesezeichen für ausgewählten Tab hinzufügen…" },
   "tabContextMenu_bookmarkSelected_label_multiselected": { "message": "&Lesezeichen für ausgewählte Tabs hinzufügen…" },
 
-  "tabContextMenu_close_label_multiselected":       { "message": "Close &Selected Tabs" },
+  "tabContextMenu_close_label_multiselected":       { "message": "%S Tabs s&chließen" },
 
   "tabGroupMenu_tab-group-editor-title-create":                 { "message": "Tab-Gruppe erstellen" },
   "tabGroupMenu_tab-group-editor-title-edit":                   { "message": "Tab-Gruppe verwalten" },

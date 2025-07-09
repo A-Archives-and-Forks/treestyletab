@@ -1028,7 +1028,8 @@ async function onShown(info, contextTab) {
 
     updateItem('context_closeTab', {
       visible: emulate && !!contextTab,
-      multiselected
+      multiselected,
+      count: contextTabs.length
     }) && modifiedItemsCount++;
 
     updateItem('context_closeDuplicatedTabs', {

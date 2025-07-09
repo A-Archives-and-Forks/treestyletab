@@ -935,7 +935,7 @@
   "tabContextMenu_bookmarkSelected_label":               { "message": "Добавить выб&ранную в закладки…" },
   "tabContextMenu_bookmarkSelected_label_multiselected": { "message": "Добавить выб&ранные в закладки…" },
 
-  "tabContextMenu_close_label_multiselected":       { "message": "Close &Selected Tabs" },
+  "tabContextMenu_close_label_multiselected":       { "message": "Закр&ыть %S вкладок" },
 
   "tabGroupMenu_tab-group-editor-title-create":                 { "message": "Создать группу вкладок" },
   "tabGroupMenu_tab-group-editor-title-edit":                   { "message": "Управление группой вкладок" },

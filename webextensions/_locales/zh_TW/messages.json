@@ -820,7 +820,7 @@
     "tabContextMenu_bookmark_label_multiselected": { "message": "將分頁加入書籤(&B)…" },
     "tabContextMenu_bookmarkSelected_label":       { "message": "將分頁加入書籤(&T)…" },
   
-    "tabContextMenu_close_label_multiselected":       { "message": "關閉分頁(&S)" },
+    "tabContextMenu_close_label_multiselected":       { "message": "關閉 %S 個分頁(&C)" },
 
     "tabGroupMenu_tab-group-editor-title-create":                 { "message": "建立分頁群組" },
     "tabGroupMenu_tab-group-editor-title-edit":                   { "message": "管理分頁群組" },

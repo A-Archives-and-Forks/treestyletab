@@ -2910,7 +2910,7 @@
     "hash": "0e8ef863c0adf4a4bad85202c69c8915"
   },
   "tabContextMenu_close_label_multiselected": {
-    "message": "&Selectie sluiten",
+    "message": "%S tabbladen &sluiten",
     "hash": "4b390c9abd8ac915b722d04f8555ce30"
   },
 

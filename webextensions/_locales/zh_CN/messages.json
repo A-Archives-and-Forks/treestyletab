@@ -2272,7 +2272,7 @@
     "message": "将所选标签页添加到书签(&T)…"
   },
   "tabContextMenu_close_label_multiselected": {
-    "message": "关闭所选标签页(&S)"
+    "message": "关闭 %S 个标签页(&C)"
   },
 
   "tabGroupMenu_tab-group-editor-title-create":                 { "message": "创建标签页群组" },
