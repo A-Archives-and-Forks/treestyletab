@@ -1033,7 +1033,7 @@ async function onShown(info, contextTab) {
 
     updateItem('context_closeDuplicatedTabs', {
       visible: emulate && !!contextTab,
-      enabled: hasDuplicatedTabs,
+      enabled: hasDuplicatedTabs && !multiselected,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_closeMultipleTabs', {
