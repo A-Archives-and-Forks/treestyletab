@@ -936,7 +936,7 @@ export class TabGroup extends TreeItem {
     'red',
   ];
 
-  static getUextUnusedColor(windowId = null) {
+  static getNextUnusedColor(windowId = null) {
     if (!windowId) {
       windowId = TabsStore.getCurrentWindowId();
     }
