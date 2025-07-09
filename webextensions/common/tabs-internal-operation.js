@@ -207,6 +207,7 @@ export function setTabActive(tab) {
   tab.$TST.removeState(Constants.kTAB_STATE_UNREAD, { permanently: true });
   tab.$TST.removeState(Constants.kTAB_STATE_PENDING, { broadcast: Constants.IS_BACKGROUND });
   TabsStore.activeTabsInWindow.get(tab.windowId).add(tab);
+  TabsStore.activeTabInWindow.set(tab.windowId, tab);
   Tab.onActivated.dispatch(tab);
   return oldActiveTabs;
 }
