@@ -68,6 +68,7 @@ browser.windows.onRemoved.addListener(windowId => {
 export class TreeItem {
   static TYPE_TAB   = 'tab';
   static TYPE_GROUP = 'group';
+  static TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER = 'group-collapsed-members-counter';
 
   static onElementBound = new EventListenerManager();
 
@@ -193,6 +194,10 @@ export class TreeItem {
 
   get renderingId() {
     return `${this.type}:${this.id}`;
+  }
+
+  get title() {
+    return this.raw.title;
   }
 
   //===================================================================
@@ -772,13 +777,84 @@ export class TreeItem {
   static compare(a, b) {
     const delta = a.index - b.index;
     if (delta == 0) {
-      return (a.type == TreeItem.TYPE_GROUP || !!a.color) ? -1 : 1;
+      return (a.type == TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER) ? 1 :
+        (a.type == TreeItem.TYPE_GROUP || !!a.color) ? -1 :
+          1;
     }
     return delta;
   }
 
   static sort(tabs) {
     return tabs.length == 0 ? tabs : tabs.sort(TreeItem.compare);
+  }
+}
+
+
+export class TabGroupCollapsedMembersCounter extends TreeItem {
+  constructor(raw) {
+    super(raw);
+
+    raw.type = TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER;
+
+    this.reindex();
+  }
+
+  destroy() {
+    super.destroy();
+
+    this.raw.group = null;
+  }
+
+  get type() {
+    return TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER;
+  }
+
+  reindex(maybeLastMember) {
+    const lastMember = this.raw.group.$TST.lastMember || maybeLastMember;
+    if (lastMember) {
+      this.raw.index = lastMember.index;
+    }
+  }
+
+  get group() {
+    return this.raw.group;
+  }
+
+  get nativeTabGroup() {
+    return this.raw.group;
+  }
+
+  update() {
+    this.raw.color = this.raw.group.color;
+    this.raw.windowId = this.raw.group.windowId;
+    this.reindex();
+  }
+
+  get title() {
+    const collapsedItemsCount = Math.max(0, this.raw.group.$TST.members.length - 1);
+    return `+${collapsedItemsCount}`;
+  }
+
+  get sanitized() {
+    if (!this.raw)
+      return {};
+
+    const sanitized = {
+      ...super.sanitized,
+      group: this.raw.group.$TST.sanitized,
+    };
+    return sanitized;
+  }
+
+  export(full) {
+    const exported = super.export(full);
+    exported.group = this.raw.group.$TST.export(full);
+    if (full)
+      return {
+        ...this.sanitized,
+        $TST: exported
+      };
+    return exported;
   }
 }
 
@@ -800,6 +876,11 @@ export class TabGroup extends TreeItem {
     }
 
     TabsStore.tabGroups.delete(this.id);
+
+    if (this._collapsedMembersCounterItem) {
+      this._collapsedMembersCounterItem.destroy();
+      this._collapsedMembersCounterItem = null;
+    }
 
     super.destroy();
   }
@@ -860,6 +941,21 @@ export class TabGroup extends TreeItem {
       collapsed: this.raw.collapsed,
       windowId:  this.raw.windowId,
     };
+  }
+
+  get collapsedMembersCounterItem() {
+    if (this._collapsedMembersCounterItem) {
+      return this._collapsedMembersCounterItem;
+    }
+    this._collapsedMembersCounterItem = {
+      id:        this.raw.id,
+      windowId:  this.raw.windowId,
+      color:     this.raw.color,
+      type:      TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER,
+      group:     this.raw,
+    };
+    new TabGroupCollapsedMembersCounter(this._collapsedMembersCounterItem);
+    return this._collapsedMembersCounterItem;
   }
 
 
@@ -3821,11 +3917,17 @@ TreeItem.get = item => {
   if (!item) {
     return null;
   }
-  if (item?.type == TreeItem.TYPE_TAB) {
-    return Tab.get(item.id);
+  switch (item?.type) {
+    case TreeItem.TYPE_TAB:
+      return Tab.get(item.id);
+
+    case TreeItem.TYPE_GROUP:
+      return TabGroup.get(item.id);
+
+    case TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER:
+      return TabGroup.get(item.id).$TST.collapsedMembersCounterItem;
+
+    default:
+      return TabGroup.get(item) || Tab.get(item);
   }
-  if (item?.type == TreeItem.TYPE_GROUP) {
-    return TabGroup.get(item.id);
-  }
-  return TabGroup.get(item) || Tab.get(item);
 };

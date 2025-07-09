@@ -245,9 +245,15 @@ export function getRenderableTreeItems(windowId = null) {
       [...TabsStore.windows.get(windowId).tabGroups.values()],
       group => {
         group.$TST.reindex();
+        if (group.collapsed &&
+            group.$TST.members.some(tab => tab.active)) {
+          const counterItem = group.$TST.collapsedMembersCounterItem;
+          counterItem.$TST.update();
+          return [group, counterItem];
+        }
         return group;
       }
-    )
+    ).flat(),
   ]);
   log('getRenderableTreeItems: mixedItems = ', mixedItems);
 
@@ -465,6 +471,9 @@ function getRenderableItemById(id) {
   switch (type) {
     case TreeItem.TYPE_GROUP:
       return TabGroup.get(parseInt(rawId));
+
+    case TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER:
+      return TabGroup.get(parseInt(rawId)).$TST.collapsedMembersCounterItem;
 
     case TreeItem.TYPE_TAB:
     default:

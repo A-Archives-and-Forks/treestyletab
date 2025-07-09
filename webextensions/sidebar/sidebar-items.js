@@ -77,10 +77,12 @@ export function getItemFromDOMNode(node, options = {}) {
     node = node.parentNode;
   const itemSubstance = node?.closest(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
   const item = itemSubstance?.closest(kTREE_ITEM_ELEMENT_NAME);
-  if (options.force) {
-    return item?.apiRaw;
+  const raw = item?.apiRaw;
+  if (options.force ||
+      raw?.type == TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER) {
+    return raw;
   }
-  return TabsStore.ensureLivingItem(item?.apiRaw);
+  return TabsStore.ensureLivingItem(raw);
 }
 
 
@@ -242,15 +244,23 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     item.$TST.setAttribute('id', getItemElementId(item));
     item.$TST.setAttribute('type', item.$TST.type);
     item.$TST.setAttribute(Constants.kAPI_WINDOW_ID, item.windowId || -1);
-    if (item.type == TreeItem.TYPE_GROUP) {
-      item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
-      item.$TST.removeAttribute(Constants.kGROUP_ID);
-    }
-    else {
-      item.$TST.setAttribute(Constants.kAPI_TAB_ID, item.id || -1);
-      item.$TST.setAttribute(Constants.kGROUP_ID, item.groupId);
-      item.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
-      TabsStore.addUnsynchronizedTab(item);
+    switch (item.type) {
+      case TreeItem.TYPE_GROUP:
+        item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
+        item.$TST.removeAttribute(Constants.kGROUP_ID);
+        break;
+
+      case TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER:
+        item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
+        item.$TST.setAttribute(Constants.kGROUP_ID, item.id);
+        break;
+
+      default:
+        item.$TST.setAttribute(Constants.kAPI_TAB_ID, item.id || -1);
+        item.$TST.setAttribute(Constants.kGROUP_ID, item.groupId);
+        item.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
+        TabsStore.addUnsynchronizedTab(item);
+        break;
     }
     if (reuseFromPool) {
       itemElement.favIconUrl = null;
