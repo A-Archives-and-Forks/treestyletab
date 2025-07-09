@@ -648,9 +648,22 @@ async function activateRealActiveTab(windowId) {
   const tab = Tab.get(id);
   if (!tab)
     throw new Error(`FATAL ERROR: Active tab ${id} in the window ${windowId} is not tracked`);
-  TabsStore.activeTabInWindow.set(windowId, tab);
   TabsInternalOperation.setTabActive(tab);
 }
+
+Tab.onActivated.addListener(tab => {
+  getItemContainerElement(tab)?.setAttribute('aria-activedescendant', getItemElementId(tab));
+  if (tab.groupId != -1) {
+    reserveToRefreshNativeTabGroup(tab.groupId);
+  }
+});
+
+Tab.onUnactivated.addListener(tab => {
+  getItemContainerElement(tab)?.removeAttribute('aria-activedescendant');
+  if (tab.groupId != -1) {
+    reserveToRefreshNativeTabGroup(tab.groupId);
+  }
+});
 
 const mReindexedTabIds = new Set();
 
@@ -686,7 +699,7 @@ function reserveToRefreshNativeTabGroup(id) {
     group.$TST.updateElement(TabUpdateTarget.TabProperties);
     for (const tab of group.$TST.members) {
       CollapseExpand.setCollapsed(tab, {
-        collapsed: group.collapsed || !!tab.$TST.topmostSubtreeCollapsedAncestor,
+        collapsed: tab.$TST.collapsedByParent,
       });
       tab.$TST.updateElement(TabUpdateTarget.TabProperties);
     }
@@ -695,17 +708,10 @@ function reserveToRefreshNativeTabGroup(id) {
 reserveToRefreshNativeTabGroup.invoked = new Set();
 
 Tab.onNativeGroupModified.addListener(async tab => {
-  const subtreeCollapsedAncestor = tab.$TST.topmostSubtreeCollapsedAncestor;
-  const collapsed = (
-    !!subtreeCollapsedAncestor ||
-    (tab.groupId == -1 ?
-      !!subtreeCollapsedAncestor :
-      (tab.$TST.nativeTabGroup ||
-       await browser.tabGroups.get(tab.groupId)/* failsafe: the group can be not tracked yet! */).collapsed)
-  );
   CollapseExpand.setCollapsed(tab, {
-    collapsed,
+    collapsed: await tab.$TST.promisedCollapsedByParent,
   });
+  tab.$TST.updateElement(TabUpdateTarget.TabProperties);
 });
 
 
@@ -880,7 +886,6 @@ BackgroundConnection.onMessage.addListener(async message => {
           break;
         await Tab.waitUntilTracked(lastMessage.tabId);
         const activeTab = Tab.get(lastMessage.tabId);
-        TabsStore.activeTabInWindow.set(activeTab.windowId, activeTab);
         TabsInternalOperation.setTabActive(activeTab);
       }
     }; break;
@@ -903,12 +908,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       const tab = Tab.get(lastMessage.tabId);
       if (!tab)
         return;
-      const lastActive = TabsStore.activeTabInWindow.get(lastMessage.windowId);
-      if (lastActive)
-        getItemContainerElement(lastActive).removeAttribute('aria-activedescendant');
-      TabsStore.activeTabInWindow.set(lastMessage.windowId, tab);
       TabsInternalOperation.setTabActive(tab);
-      getItemContainerElement(tab).setAttribute('aria-activedescendant', getItemElementId(tab));
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_UPDATED: {

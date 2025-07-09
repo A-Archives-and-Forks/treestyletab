@@ -989,6 +989,7 @@ export class Tab extends TreeItem {
   static onMoved            = new EventListenerManager();
   static onActivating       = new EventListenerManager();
   static onActivated        = new EventListenerManager();
+  static onUnactivated      = new EventListenerManager();
   static onUpdated          = new EventListenerManager();
   static onRestored         = new EventListenerManager();
   static onWindowRestoring  = new EventListenerManager();
@@ -1067,6 +1068,17 @@ export class Tab extends TreeItem {
     else {
       TabsStore.activeTabsInWindow.get(raw.windowId).delete(raw);
     }
+    setTimeout(() => {
+      if (!TabsStore.ensureLivingItem(raw)) {
+        return;
+      }
+      if (raw.active)  {
+        Tab.onActivated.dispatch(raw);
+      }
+      else {
+        Tab.onUnactivated.dispatch(raw);
+      }
+    }, 0);
 
     const incompletelyTrackedTabsPerWindow = mIncompletelyTrackedTabs.get(raw.windowId) || new Set();
     incompletelyTrackedTabsPerWindow.add(raw);
@@ -1448,6 +1460,28 @@ export class Tab extends TreeItem {
     super.unregisterTooltipText(ownerId);
     if (Constants.IS_BACKGROUND)
       Tab.broadcastTooltipText(this.raw);
+  }
+
+  get collapsedByParent() {
+    return this._shouldBeCollapsedByParent();
+  }
+  get promisedCollapsedByParent() {
+    return browser.tabGroups.get(this.raw.groupId).then(group => {
+      return this._shouldBeCollapsedByParent(group)
+    });
+  }
+  _shouldBeCollapsedByParent(group) {
+    if (this.raw.groupId == -1) {
+      return !!this.topmostSubtreeCollapsedAncestor;
+    }
+    if (this.raw.active) {
+      // simulate "visible active tab in collapsed tab group" behavior of Firefox itself
+      return false;
+    }
+    if (this.topmostSubtreeCollapsedAncestor) {
+      return true;
+    }
+    return (group || this.nativeTabGroup)?.collapsed;
   }
 
   //===================================================================
