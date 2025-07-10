@@ -1,6 +1,13 @@
 # History
 
  - master/HEAD
+ - 4.2.5 (2025.7.11)
+   * Support ability to keep the active tab in a collapsed group visible on Firefox 142 and later.
+   * Prevent to show simulated tab preview panel on non-tab items.
+   * Prevent "shaking" of pinned tabs when the height of the pinned tabs area is narrower than a tab.
+   * Restore ability to drop dragged items to the blank area of the tab bar. (regression at 4.2.0)
+   * API: Fix container assignment for extra tab contents below tabs by [emmanuel-ferdman](https://github.com/emmanuel-ferdman). Thanks!
+   * Update `uk` locale by [Taron-art](https://github.com/Taron-art). Thanks!
  - 4.2.4 (2025.6.26)
    * In-content panels (tab groups menu and tab previews) handle events correctly. (regression at 4.2.3)
    * Never mix reactions for custom dialogs even if multiple dialogs are shown at a time.
