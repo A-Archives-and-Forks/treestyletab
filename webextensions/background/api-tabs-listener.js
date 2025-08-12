@@ -1086,10 +1086,7 @@ async function onAttached(tabId, attachInfo) {
   try {
     log('tabs.onAttached, id: ', tabId, attachInfo);
     let tab = Tab.get(tabId);
-    let attachedTab = await browser.tabs.get(tabId).catch(error => {
-      console.error(error);
-      return null;
-    });
+    let attachedTab = await browser.tabs.get(tabId).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
     if (!attachedTab) {
       // We sometimes fail to get window and tab via API if it is opened
       // as a popup window but not exposed to API yet. So for safety

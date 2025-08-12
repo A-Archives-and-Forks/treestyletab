@@ -306,7 +306,7 @@ export default class InContentPanelController {
         browser.tabs.sendMessage(playgroundTabId, {
           type: `treestyletab:${this.type}:ask-container-ready`,
         }).catch(_error => {}),
-        browser.tabs.get(playgroundTabId),
+        browser.tabs.get(playgroundTabId).catch(_error => null),
       ]);
       rawTab = gotRawTab;
       this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });

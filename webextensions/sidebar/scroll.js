@@ -1533,7 +1533,7 @@ async function tryLockScrollToSuccessor(tabIds, reason) {
     return;
 
   // We need to get tabs via WE API here to see its successorTabId certainly.
-  const tabs = await Promise.all(tabIds.map(id => browser.tabs.get(id)));
+  const tabs = await Promise.all(tabIds.map(id => browser.tabs.get(id).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError))));
   for (const tab of tabs) {
     if (!tab.active ||
         !tab.successorTabId ||

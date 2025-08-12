@@ -85,7 +85,7 @@ function setSuccessor(tabId, successorTabId = -1) {
       if (!promisedUpdate)
         break;
 
-      const tab = await browser.tabs.get(tabId);
+      const tab = await browser.tabs.get(tabId).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
       if (tab.successorTabId == initialSuccessorTabId &&
           tab.successorTabId != successorTabId) {
         await wait(200);
