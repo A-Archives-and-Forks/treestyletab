@@ -790,6 +790,11 @@
   "config_defaultBookmarkParentId_label":  { "message": "Default location to create new bookmarks" },
 
   "config_tabGroupsEnabled_label": { "message": "Activate native tab groups management (*corresponding to a built-in preference \"browser.tabs.groups.enabled\"=\"true\" of the browser itself)" },
+  "config_tabGroupMenuPanelRenderIn_label_before": { "message": "Show the context menu for tab groups" },
+  "config_tabGroupMenuPanelRenderIn_content": { "message": "in the conetnt area (and show nothing if impossible)" },
+  "config_tabGroupMenuPanelRenderIn_sidebar": { "message": "in the sidebar always" },
+  "config_tabGroupMenuPanelRenderIn_anywhere": { "message": "in the conetnt area if possible, otherwise in the sidebar" },
+  "config_tabGroupMenuPanelRenderIn_label_after": { "message": "\u200b" },
 
   "config_undoMultipleTabsClose_label": { "message": "Restore the set of tabs most recently closed, when one of them is restored via the \"Reopen Closed Tab\" command" },
 

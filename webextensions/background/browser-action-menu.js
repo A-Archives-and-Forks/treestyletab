@@ -2221,6 +2221,27 @@ const mItems = [
         expert: true,
       },
       {
+        title: indent(2) + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_label_before') + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_anywhere') + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_label_after'),
+        key:   'tabGroupMenuPanelRenderIn',
+        value: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
+        type:  'radio',
+        expert: true
+      },
+      {
+        title: indent(2) + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_label_before') + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_content') + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_label_after'),
+        key:   'tabGroupMenuPanelRenderIn',
+        value: Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT,
+        type:  'radio',
+        expert: true
+      },
+      {
+        title: indent(2) + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_label_before') + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_sidebar') + browser.i18n.getMessage('config_tabGroupMenuPanelRenderIn_label_after'),
+        key:   'tabGroupMenuPanelRenderIn',
+        value: Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR,
+        type:  'radio',
+        expert: true
+      },
+      {
         title: indent() + browser.i18n.getMessage('config_undoMultipleTabsClose_label'),
         key:   'undoMultipleTabsClose',
         type:  'checkbox',

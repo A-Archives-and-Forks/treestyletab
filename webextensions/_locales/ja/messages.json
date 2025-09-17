@@ -786,6 +786,11 @@
   "config_defaultBookmarkParentId_label":  { "message": "ブックマークの作成先フォルダーの既定値" },
 
   "config_tabGroupsEnabled_label": { "message": "ネイティブのタブグループの管理を有効化する（※ブラウザーの設定である\"browser.tabs.groups.enabled\"=\"true\"に対応)" },
+  "config_tabGroupMenuPanelRenderIn_label_before": { "message": "コンテキストメニューの表示先：" },
+  "config_tabGroupMenuPanelRenderIn_content": { "message": "コンテンツ領域内（不可能な場合は何も表示しない）" },
+  "config_tabGroupMenuPanelRenderIn_sidebar": { "message": "常にサイドバー内" },
+  "config_tabGroupMenuPanelRenderIn_anywhere": { "message": "可能な場合はコンテンツ領域内、それ以外の場合はサイドバー内" },
+  "config_tabGroupMenuPanelRenderIn_label_after": { "message": "\u200b" },
 
   "config_undoMultipleTabsClose_label": { "message": "最後にまとめて閉じたタブ群のうちの1つが「閉じたタブを元に戻す」で復元されたとき、タブ群全体を復元する" },
 
