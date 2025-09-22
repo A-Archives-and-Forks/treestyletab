@@ -892,6 +892,7 @@ tab-item.attention tab-favicon::before {
 :root:not(.have-pinned-tabs).ready-to-pin-dragged-tabs {
   --pinned-tabs-area-size: calc(var(--svg-small-icon-size) * 3) !important;
 
+  /* https://searchfox.org/firefox-main/rev/c7b4ff2aadfce11e419c226b7839b0348258a504/browser/themes/shared/tabbrowser/tabs.css#960 */
   & #pinned-tabs-container {
     /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#20 */
     --border-radius-small: 4px;

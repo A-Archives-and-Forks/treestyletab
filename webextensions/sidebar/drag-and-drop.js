@@ -89,6 +89,7 @@ let mLastInlineDropPosition = null;
 let mLastDragEventCoordinates = null;
 let mDragTargetIsClosebox  = false;
 let mCurrentDragData       = null;
+let mReadyToPinDraggedTabsTimer = null;
 
 let mInstanceId;
 
@@ -647,6 +648,10 @@ export function clearAll() {
   clearDraggingItemsState();
   clearDraggingState();
   document.documentElement.classList.remove(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+  if (mReadyToPinDraggedTabsTimer) {
+    clearTimeout(mReadyToPinDraggedTabsTimer);
+    mReadyToPinDraggedTabsTimer = null;
+  }
 }
 
 const mDropPositionHolderItems = new Set();
@@ -1142,12 +1147,16 @@ function onDragOver(event) {
 
   updateLastDragEventCoordinates(event);
 
-  if (!document.documentElement.classList.contains(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS) &&
+  if (!mReadyToPinDraggedTabsTimer &&
+      !document.documentElement.classList.contains(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS) &&
       !event.target.closest('#pinned-tabs-container') &&
       event.clientY < Size.getRenderedTabHeight() * 0.5 &&
       !Tab.getLastPinnedTab(TabsStore.getCurrentWindowId())) {
     log('onDragOver: ready to pin dragged tabs');
-    document.documentElement.classList.add(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+    mReadyToPinDraggedTabsTimer = setTimeout(() => {
+      document.documentElement.classList.add(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+      mReadyToPinDraggedTabsTimer = null;
+    }, configs.pinInteractionCueDelayMS);
   }
 
   // reduce too much handling of too frequent dragover events...

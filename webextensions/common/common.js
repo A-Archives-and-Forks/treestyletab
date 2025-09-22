@@ -311,6 +311,7 @@ export const configs = new Configs({
   guessDraggedNativeTabs: true,
   ignoreTabDropNearSidebarArea: true,
   moveSoloTabOnDropParentToDescendant: true,
+  pinInteractionCueDelayMS: 500, // simulates browser.tabs.dragDrop.pinInteractionCue.delayMS
 
   fixupTreeOnTabVisibilityChanged: false,
   fixupOrderOfTabsFromOtherDevice: true,
