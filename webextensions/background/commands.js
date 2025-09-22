@@ -675,11 +675,39 @@ async function performTabsDragDrop(tabs, params) {
   return movedTabs;
 }
 
+async function ensureTabsPlacedBetweenPinnedAndUnpinnedTabs(tabIds, windowId) {
+  const firstUnpinnedTab = Tab.getFirstUnpinnedTab(windowId);
+  if (firstUnpinnedTab) {
+    await TabsMove.moveTabsBefore(
+      Array.from(tabIds, tabId => Tab.get(tabId)),
+      firstUnpinnedTab,
+      {
+        doNotOptimize: true,
+        broadcast:     true,
+      }
+    );
+  }
+  else {
+    await TabsMove.moveTabsAfter(
+      Array.from(tabIds, tabId => Tab.get(tabId)),
+      Tab.getLastPinnedTab(windowId),
+      {
+        doNotOptimize: true,
+        broadcast:     true,
+      }
+    );
+  }
+
+}
+
 async function ensureTabsPinned(tabs) {
   const toBePinnedTabIds = new Set(mapAndFilter(tabs, tab => !tab.pinned ? tab.id : undefined));
   if (toBePinnedTabIds.size == 0) {
     return;
   }
+
+  // This is required to suppress handling of TabMove events produced by tabs pinning
+  await ensureTabsPlacedBetweenPinnedAndUnpinnedTabs(toBePinnedTabIds, tabs[0].windowId);
 
   let onPinned;
   const promisedComplete = new Promise((resolve, _reject) => {
@@ -708,6 +736,9 @@ async function ensureTabsUnpinned(tabs) {
   if (toBeUnpinnedTabIds.size == 0) {
     return;
   }
+
+  // This is required to suppress handling of TabMove events produced by tabs unpinning
+  await ensureTabsPlacedBetweenPinnedAndUnpinnedTabs(toBeUnpinnedTabIds, tabs[0].windowId);
 
   let onUnpinned;
   const promisedComplete = new Promise((resolve, _reject) => {
