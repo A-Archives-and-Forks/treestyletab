@@ -1,6 +1,13 @@
 # History
 
  - master/HEAD
+ - 4.2.6 (2025.9.22)
+   * Add ability to pin/unpin tabs by drag and drop. Now you can drop pinned tabs below/between unpinned tabs, and unpinned tabs above/between pinned tabs. This simulates behaviors of tab dragging on Firefox's vertical tabs.
+   * Disallow to set the height of the pinned tabs area smaller than the height of a pinned tab.
+   * Use label text for the "new tab" command in the context menu on tabs same to Firefox's native one, if possible.
+   * Show dropdown list in options with colors more easy-to-read, on the dark color scheme.
+   * Expose the expert option to control the position of the context menu popup for native tab groups.
+   * Update `ja` locale by [tkng](https://github.com/tkng). Thanks!
  - 4.2.5 (2025.7.11)
    * Support ability to keep the active tab in a collapsed group visible on Firefox 142 and later.
    * Prevent to show simulated tab preview panel on non-tab items.
