@@ -283,8 +283,7 @@ let mLastDragStartTimestamp = -1;
 function onMouseDown(event) {
   EventUtils.cancelHandleMousedown(event.button);
   TabContextMenu.close();
-  DragAndDrop.clearDropPosition();
-  DragAndDrop.clearDraggingState();
+  DragAndDrop.clearAll();
 
   if (EventUtils.isEventFiredOnAnchor(event) &&
       !EventUtils.isAccelAction(event) &&

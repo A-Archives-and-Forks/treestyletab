@@ -889,6 +889,37 @@ tab-item.attention tab-favicon::before {
   }
 }
 
+:root:not(.have-pinned-tabs).ready-to-pin-dragged-tabs {
+  --pinned-tabs-area-size: calc(var(--svg-small-icon-size) * 3) !important;
+
+  & #pinned-tabs-container {
+    /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#20 */
+    --border-radius-small: 4px;
+
+    align-items: center;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    border: 1px dashed currentColor;
+    border-radius: var(--border-radius-small);
+    color: var(--toolbarbutton-icon-fill-attention);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  & #pinned-tabs-container::before {
+    background: var(--toolbarbutton-icon-fill-attention);
+    content: "";
+    display: inline-block;
+    height: var(--svg-small-icon-size);
+    line-height: 1;
+    margin-block-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
+    mask: url("icons/pin.svg") no-repeat center / 100%;
+    max-height: var(--favicon-size);
+    max-width: var(--favicon-size);
+    width: var(--svg-small-icon-size);
+  }
+}
+
 .tabs.pinned {
   align-items: stretch;
   display: flex;

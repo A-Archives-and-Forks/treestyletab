@@ -231,7 +231,11 @@ function getDropAction(event) {
         enumerable:   true
       });
     },
-    shouldPin:   false,
+    shouldPin: (
+      !targetItem &&
+      document.documentElement.classList.contains(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS) &&
+      !!event.target.closest('#pinned-tabs-container')
+    ),
     shouldUnpin: false,
   };
   info.defineGetter('dragData', () => {
@@ -321,6 +325,12 @@ function getDropAction(event) {
     }
   });
   info.defineGetter('canDrop', () => {
+    if (!targetItem &&
+        info.shouldPin) {
+      log('canDrop:ready to pin dragged tab on the droppable area');
+      return true;
+    }
+
     if (info.dropPosition == kDROP_IMPOSSIBLE) {
       log('canDrop:undroppable: dropPosition == kDROP_IMPOSSIBLE');
       return false;
@@ -632,9 +642,16 @@ function getDropEffectFromDropAction(actionInfo) {
   return 'move';
 }
 
+export function clearAll() {
+  clearDropPosition();
+  clearDraggingItemsState();
+  clearDraggingState();
+  document.documentElement.classList.remove(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+}
+
 const mDropPositionHolderItems = new Set();
 
-export function clearDropPosition() {
+function clearDropPosition() {
   for (const tab of mDropPositionHolderItems) {
     tab.$TST.removeAttribute(kDROP_POSITION);
     tab.$TST.removeAttribute(kINLINE_DROP_POSITION);
@@ -656,7 +673,7 @@ export function clearDraggingItemsState() {
   }
 }
 
-export function clearDraggingState() {
+function clearDraggingState() {
   const win = TabsStore.windows.get(TabsStore.getCurrentWindowId());
   win.containerClassList.remove(Constants.kTABBAR_STATE_TAB_DRAGGING);
   win.pinnedContainerClassList.remove(Constants.kTABBAR_STATE_TAB_DRAGGING);
@@ -1125,6 +1142,14 @@ function onDragOver(event) {
 
   updateLastDragEventCoordinates(event);
 
+  if (!document.documentElement.classList.contains(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS) &&
+      !event.target.closest('#pinned-tabs-container') &&
+      event.clientY < Size.getRenderedTabHeight() * 0.5 &&
+      !Tab.getLastPinnedTab(TabsStore.getCurrentWindowId())) {
+    log('onDragOver: ready to pin dragged tabs');
+    document.documentElement.classList.add(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+  }
+
   // reduce too much handling of too frequent dragover events...
   const now = Date.now();
   if (now - (mLastDragOverTimestamp || 0) < configs.minimumIntervalToProcessDragoverEvent)
@@ -1161,8 +1186,14 @@ function onDragOver(event) {
   if (dropPositionTargetItem?.$TST?.collapsed)
     dropPositionTargetItem = info.targetItem.$TST.nearestVisiblePrecedingTab || info.targetItem;
   if (!dropPositionTargetItem) {
-    log(`onDragOver: no drop target item sessionId=${sessionId}`);
-    dt.dropEffect = 'none';
+    if (document.documentElement.classList.contains(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS)) {
+      log(`onDragOver: ready to pin sessionId=${sessionId}`);
+      dt.dropEffect = 'move';
+    }
+    else {
+      log(`onDragOver: no drop target item sessionId=${sessionId}`);
+      dt.dropEffect = 'none';
+    }
     mLastDropPosition = mLastInlineDropPosition = null;
     return;
   }
@@ -1730,13 +1761,11 @@ function finishDrag(trigger) {
 }
 
 function onFinishDrag() {
-  clearDraggingItemsState();
-  clearDropPosition();
   mLastDropPosition = null;
   mLastInlineDropPosition = null;
   updateLastDragEventCoordinates();
   mLastDragOverTimestamp = null;
-  clearDraggingState();
+  clearAll();
   collapseAutoExpandedItemsWhileDragging();
   mDraggingOnSelfWindow = false;
   mDraggingOnDraggedItems = false;
