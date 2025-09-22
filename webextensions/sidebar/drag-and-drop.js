@@ -430,8 +430,7 @@ function getDropAction(event) {
       info.targetItem   = info.insertAfter = info.lastTargetableItem;
       info.dropPosition = kDROP_AFTER;
       info.action       = action;
-      if (info.draggedItem?.pinned &&
-          !info.targetItem.pinned) {
+      if (info.draggedItem?.pinned) {
         log('unpin: below the last tab');
         info.dropPosition = kDROP_TAIL;
         info.shouldUnpin  = true;
