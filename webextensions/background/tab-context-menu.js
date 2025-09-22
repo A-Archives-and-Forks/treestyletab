@@ -56,7 +56,6 @@ const SAFE_MENU_PROPERTIES = [
 const mItemsById = {
   'context_newTab': {
     title:    browser.i18n.getMessage('tabContextMenu_newTab_label'),
-    titleTab: browser.i18n.getMessage('tabContextMenu_newTabNext_label'),
   },
   'context_newGroup': {
     title:              browser.i18n.getMessage('tabContextMenu_newGroup_label'),
@@ -731,7 +730,6 @@ function updateItem(id, state = {}) {
   if ('checked' in state)
     updateInfo.checked = state.checked;
   const title = String(
-    (state.tab && state.titleTab) ||
     state.title ||
     (state.multiselected && item.titleMultiselected) ||
     item.title
@@ -822,7 +820,12 @@ async function onShown(info, contextTab) {
 
     updateItem('context_newTab', {
       visible: emulate,
-      tab: !!contextTab,
+      title: (
+        !!contextTab &&
+        (configs.autoAttachOnContextNewTabCommand == Constants.kNEWTAB_OPEN_AS_CHILD_TOP ||
+         configs.autoAttachOnContextNewTabCommand == Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING ||
+         configs.autoAttachOnContextNewTabCommand == Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING_WITH_INHERITED_CONTAINER)
+      ) ? browser.i18n.getMessage('tabContextMenu_newTabNext_label') : null,
     }) && modifiedItemsCount++;
 
     updateItem('context_newGroup', {
