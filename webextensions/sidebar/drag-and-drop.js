@@ -230,7 +230,9 @@ function getDropAction(event) {
         configurable: true,
         enumerable:   true
       });
-    }
+    },
+    shouldPin:   false,
+    shouldUnpin: false,
   };
   info.defineGetter('dragData', () => {
     const dragData = event.dataTransfer.getData(kTREE_DROP_TYPE);
@@ -407,8 +409,9 @@ function getDropAction(event) {
       if (info.draggedItem &&
           !info.draggedItem.pinned &&
           info.targetItem.pinned) {
-        log('undroppable: above the first tab');
-        info.dropPosition = kDROP_IMPOSSIBLE;
+        log('head: above the first tab');
+        info.dropPosition = kDROP_HEAD;
+        info.shouldPin    = true;
       }
     }
     else if (event.clientY > Scroll.getItemRect(info.lastTargetableItem).bottom) {
@@ -418,8 +421,9 @@ function getDropAction(event) {
       info.action       = action;
       if (info.draggedItem?.pinned &&
           !info.targetItem.pinned) {
-        log('undroppable: below the last tab');
-        info.dropPosition = kDROP_IMPOSSIBLE;
+        log('unpin: below the last tab');
+        info.dropPosition = kDROP_TAIL;
+        info.shouldUnpin  = true;
       }
     }
     return info;
@@ -486,12 +490,20 @@ function getDropAction(event) {
       info.insertAfter  = insertAt == Constants.kINSERT_TOP ?
         info.parent :
         (info.parent.$TST.lastDescendant || info.parent);
-      if ((info.draggedItem && // we cannot drop pinned tab on unpinned tab, or unpinned tab on pinned tab
-           !!info.draggedItem.pinned != !!targetItem.pinned &&
-           !info.substanceTargetItem) ||
-          (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on tab
-           targetItem.type == TreeItem.TYPE_TAB))
+      if (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on tab
+          targetItem.type == TreeItem.TYPE_TAB) {
         info.dropPosition = kDROP_IMPOSSIBLE;
+      }
+      else if (info.draggedItem && // we cannot drop pinned tab on unpinned tab, or unpinned tab on pinned tab
+               !!info.draggedItem.pinned != !!targetItem.pinned &&
+               !info.substanceTargetItem) {
+        if (info.draggedItem.pinned) {
+          info.shouldUnpin = true;
+        }
+        else {
+          info.shouldPin = true;
+        }
+      }
       if (info.draggedItem &&
           info.insertBefore == info.draggedItem) // failsafe
         info.insertBefore = insertAt == Constants.kINSERT_TOP ?
@@ -518,6 +530,7 @@ function getDropAction(event) {
         context:      Constants.kINSERTION_CONTEXT_MOVED,
         insertBefore: targetItem.$TST.firstMember || targetItem,
       });
+      log('referenceItems ', referenceItems);
       if (referenceItems.parent)
         info.parent = referenceItems.parent;
       if (referenceItems.insertBefore)
@@ -527,15 +540,21 @@ function getDropAction(event) {
       info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH );
       //if (info.insertBefore)
       //  log('insertBefore = ', dumpTab(info.insertBefore));
-      if ((info.draggedItem && // we cannot drop pinned tab beteen unpinned tabs, or unpinned tab between pinned tabs
-           ((info.draggedItem.pinned &&
-             targetItem.$TST.followsUnpinnedTab) ||
-            (!info.draggedItem.pinned &&
-             targetItem.pinned))) ||
-          (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on its member
-           targetItem.type == TreeItem.TYPE_TAB &&
-           targetItem.groupId == info.draggedItem.id))
+      if (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on its member
+          targetItem.type == TreeItem.TYPE_TAB &&
+          targetItem.groupId == info.draggedItem.id) {
         info.dropPosition = kDROP_IMPOSSIBLE;
+      }
+      else if (info.draggedItem) {
+        if (info.draggedItem.pinned &&
+            targetItem.$TST.followsUnpinnedTab) {
+          info.shouldUnpin = true;
+        }
+        else if (!info.draggedItem.pinned &&
+                 targetItem.pinned) {
+          info.shouldPin = true;
+        }
+      }
       if (configs.debug)
         log(' calculated info: ', info);
     }; break;
@@ -545,6 +564,7 @@ function getDropAction(event) {
       const referenceItems = TreeBehavior.calculateReferenceItemsFromInsertionPosition(info.draggedItem, {
         insertAfter: targetItem.$TST.lastMember || (targetItem.$TST.subtreeCollapsed && targetItem.$TST.lastDescendant || targetItem),
       });
+      log('referenceItems ', referenceItems);
       if (referenceItems.parent)
         info.parent = referenceItems.parent;
       if (referenceItems.insertBefore)
@@ -577,15 +597,21 @@ function getDropAction(event) {
           info.insertAfter  = targetItem.$TST.lastDescendant;
         }
       }
-      if ((info.draggedItem && // we cannot drop pinned tab beteen unpinned tabs, or unpinned tab between pinned tabs
-           ((info.draggedItem.pinned &&
-             !targetItem.pinned) ||
-            (!info.draggedItem.pinned &&
-             targetItem.$TST.precedesPinnedTab))) ||
-          (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on its member
-           targetItem.type == TreeItem.TYPE_TAB &&
-           targetItem.groupId == info.draggedItem.id))
+      if (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on its member
+          targetItem.type == TreeItem.TYPE_TAB &&
+          targetItem.groupId == info.draggedItem.id) {
         info.dropPosition = kDROP_IMPOSSIBLE;
+      }
+      else if (info.draggedItem) {
+        if (info.draggedItem.pinned &&
+            !targetItem.pinned) {
+          info.shouldUnpin = true;
+        }
+        else if (!info.draggedItem.pinned &&
+                 targetItem.$TST.precedesPinnedTab) {
+          info.shouldPin = true;
+        }
+      }
       if (configs.debug)
         log(' calculated info: ', info);
     }; break;
@@ -1416,7 +1442,9 @@ function onDrop(event) {
       duplicate:           !fromOtherProfile && dt.dropEffect == 'copy',
       nextGroupColor:      dropActionInfo.dragData.nextGroupColor,
       canCreateGroup:      dropActionInfo.canCreateGroup,
-      import:              fromOtherProfile
+      shouldPin:           dropActionInfo.shouldPin,
+      shouldUnpin:         dropActionInfo.shouldUnpin,
+      import:              fromOtherProfile,
     });
     return;
   }
@@ -1485,7 +1513,9 @@ function onDrop(event) {
         duplicate:           dt.dropEffect == 'copy',
         nextGroupColor:      dropActionInfo.dragData?.nextGroupColor,
         canCreateGroup:      dropActionInfo.canCreateGroup,
-        import:              false
+        shouldPin:           dropActionInfo.shouldPin,
+        shouldUnpin:         dropActionInfo.shouldUnpin,
+        import:              false,
       });
     });
     return;

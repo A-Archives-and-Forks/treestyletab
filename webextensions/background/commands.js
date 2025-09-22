@@ -15,6 +15,7 @@ import {
   configs,
   getWindowParamsFromSource,
   tryRevokeObjectURL,
+  mapAndFilter,
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
 import * as Bookmark from '/common/bookmark.js';
@@ -383,7 +384,7 @@ export async function openNewTabAs(options = {}) {
       options.cookieStoreId = activeTab.cookieStoreId;
     case Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING: {
       parent       = activeTab.$TST.parent;
-      const refTabs = Tree.getReferenceTabsForNewNextSibling(activeTab, options);
+      const refTabs = Tree.getReferenceTabsForNewNextSibling(activeTab);
       insertBefore = refTabs.insertBefore;
       insertAfter  = refTabs.insertAfter;
     }; break;
@@ -531,8 +532,17 @@ async function performTabsDragDrop(tabs, params) {
     windowId:            params.windowId,
     destinationWindowId: params.destinationWindowId,
     action:              params.action,
-    allowedActions:      params.allowedActions
+    allowedActions:      params.allowedActions,
+    shouldPin:           params.shouldPin,
+    shouldUnpin:         params.shouldUnpin,
   }));
+
+  if (params.shouldPin) {
+    await ensureTabsPinned(tabs);
+  }
+  if (params.shouldUnpin) {
+    await ensureTabsUnpinned(tabs);
+  }
 
   const createGroup = params.canCreateGroup && params.nextGroupColor;
   const beforeIndices = tabs.map(tab => tab.index).join(',');
@@ -663,6 +673,62 @@ async function performTabsDragDrop(tabs, params) {
       .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
   }
   return movedTabs;
+}
+
+async function ensureTabsPinned(tabs) {
+  const toBePinnedTabIds = new Set(mapAndFilter(tabs, tab => !tab.pinned ? tab.id : undefined));
+  if (toBePinnedTabIds.size == 0) {
+    return;
+  }
+
+  let onPinned;
+  const promisedComplete = new Promise((resolve, _reject) => {
+    onPinned = (tabId, updateInfo, _tab) => {
+      if (toBePinnedTabIds.has(tabId) && updateInfo.pinned) {
+        toBePinnedTabIds.delete(tabId);
+      }
+      if (toBePinnedTabIds.size == 0) {
+        resolve();
+      }
+    };
+    browser.tabs.onUpdated.addListener(onPinned, {
+      properties: ['pinned'],
+      windowId:   tabs[0].windowId,
+    });
+  });
+  await Promise.all([...toBePinnedTabIds].map(tabId =>
+    browser.tabs.update(tabId, { pinned: true })
+      .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError))));
+  await promisedComplete;
+  browser.tabs.onUpdated.removeListener(onPinned);
+}
+
+async function ensureTabsUnpinned(tabs) {
+  const toBeUnpinnedTabIds = new Set(mapAndFilter(tabs, tab => tab.pinned ? tab.id : undefined));
+  if (toBeUnpinnedTabIds.size == 0) {
+    return;
+  }
+
+  let onUnpinned;
+  const promisedComplete = new Promise((resolve, _reject) => {
+    onUnpinned = (tabId, updateInfo, _tab) => {
+      if (toBeUnpinnedTabIds.has(tabId) && !updateInfo.pinned) {
+        toBeUnpinnedTabIds.delete(tabId);
+      }
+      if (toBeUnpinnedTabIds.size == 0) {
+        resolve();
+      }
+    };
+    browser.tabs.onUpdated.addListener(onUnpinned, {
+      properties: ['pinned'],
+      windowId:   tabs[0].windowId,
+    });
+  });
+  await Promise.all([...toBeUnpinnedTabIds].map(tabId =>
+    browser.tabs.update(tabId, { pinned: false })
+      .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError))));
+  await promisedComplete;
+  browser.tabs.onUpdated.removeListener(onUnpinned);
 }
 
 async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefore, droppedAfter, groupId, attachTo, windowId, destinationWindowId }) {

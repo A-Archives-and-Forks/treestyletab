@@ -547,19 +547,10 @@ export function getReferenceTabsForNewChild(child, parent, { insertAt, ignoreTab
   return { insertBefore, insertAfter };
 }
 
-export function getReferenceTabsForNewNextSibling(base, options = {}) {
+export function getReferenceTabsForNewNextSibling(base) {
   log('getReferenceTabsForNewNextSibling ', base);
-  let insertBefore = base.$TST.nextSiblingTab;
-  if (insertBefore?.pinned &&
-      !options.pinned) {
-    insertBefore = Tab.getFirstNormalTab(base.windowId);
-  }
-  let insertAfter  = base.$TST.lastDescendant || base;
-  if (insertAfter &&
-      !insertAfter.pinned &&
-      options.pinned) {
-    insertAfter = Tab.getLastPinnedTab(base.windowId);
-  }
+  const insertBefore = base.$TST.nextSiblingTab;
+  const insertAfter  = base.$TST.lastDescendant || base;
   return { insertBefore, insertAfter };
 }
 

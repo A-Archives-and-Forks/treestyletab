@@ -200,22 +200,16 @@ export function calculateReferenceItemsFromInsertionPosition(
           firstItem?.$TST.unsafeNearestExpandedPrecedingTab;
     if (!prevItem) {
       log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 1/5');
-      // allow to move pinned item to beside of another pinned item
-      if (!firstItem ||
-          !!firstItem.pinned == !!insertBefore?.pinned) {
-        return {
-          insertBefore
-        };
-      }
-      else {
-        return {};
-      }
+      return {
+        insertBefore,
+      };
     }
     else {
       const prevLevel   = Number(prevItem?.$TST?.getAttribute(Constants.kLEVEL) || 0);
       const targetLevel = Number(insertBefore?.$TST?.getAttribute(Constants.kLEVEL) || 0);
+      log('calculateReferenceItemsFromInsertionPosition: prevLevel = ', prevLevel, ', targetLevel = ', targetLevel);
       let parent = null;
-      if (!firstItem || !firstItem.pinned) {
+      if (!firstItem || firstItem?.type == TreeItem.TYPE_TAB) {
         if (prevLevel < targetLevel) {
           if (context == Constants.kINSERTION_CONTEXT_MOVED) {
             log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 4, prevItem = ', prevItem);
@@ -321,8 +315,9 @@ export function calculateReferenceItemsFromInsertionPosition(
     else {
       const targetLevel = Number(insertAfter?.$TST?.getAttribute(Constants.kLEVEL) || 0);
       const nextLevel   = Number(nextItem?.$TST?.getAttribute(Constants.kLEVEL) || 0);
+      log('calculateReferenceItemsFromInsertionPosition: targetLevel = ', targetLevel, ', nextLevel = ', nextLevel);
       let parent = null;
-      if (!firstItem || !firstItem.pinned) {
+      if (!firstItem || firstItem?.type == TreeItem.TYPE_TAB) {
         if (targetLevel < nextLevel) {
           log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 4/8');
           parent = insertAfter;
