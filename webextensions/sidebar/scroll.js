@@ -693,9 +693,11 @@ function scrollTo(params = {}) {
   if (scrollTop === undefined)
     throw new Error('No parameter to indicate scroll position');
 
-  // render before scroll, to prevent showing blank area
   mScrollingInternallyCount++;
-  renderVirtualScrollViewport(scrollTop);
+  if (scrollBox == mNormalScrollBox) {
+    // render before scroll, to prevent showing blank area
+    renderVirtualScrollViewport(scrollTop);
+  }
   scrollBox.scrollTop =
     scrollBox.$scrollTop = Math.min(
       scrollBox.$scrollTopMax,
