@@ -1211,7 +1211,7 @@ export async function unloadTabs(tabs) {
 //   https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/browser/components/tabbrowser/content/tabbrowser.js#1983
 //   https://searchfox.org/mozilla-central/rev/b7b6aa5e8ffc27bc70d4c129c95adc5921766b93/toolkit/modules/E10SUtils.sys.mjs#394
 export function filterUnloadableTabs(tabs) {
-  return tabs.filter(tab => !/^(about|chrome):/i.test(tab.url));
+  return tabs.filter(tab => !tab.discarded && !/^(about|chrome):/i.test(tab.url));
 }
 
 export async function duplicateTab(sourceTab, options = {}) {
