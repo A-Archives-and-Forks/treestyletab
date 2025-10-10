@@ -497,26 +497,28 @@ Tab.onWindowRestoring.addListener(async ({ windowId, restoredCount }) => {
   MetricsData.add('Tabs.onWindowRestoring restore start');
 
   const tabs = await browser.tabs.query({ windowId }).catch(ApiTabs.createErrorHandler());
+  let restoredFromCache = false;
   try {
-    const restoredFromCache = await restoreWindowFromEffectiveWindowCache(windowId, {
+    restoredFromCache = await restoreWindowFromEffectiveWindowCache(windowId, {
       ignorePinnedTabs: true,
       owner: tabs[tabs.length - 1],
       tabs
     });
     log('Tabs.onWindowRestoring: restoredFromCache = ', restoredFromCache);
-    if (!restoredFromCache) {
-      // We need to treat tabs for a restored window as pending even if we failed to restore tabs from cache.
-      // See https://github.com/piroor/treestyletab/issues/3794
-      for (const tab of tabs) {
-        if (tab.discarded) {
-          tab.$TST.addState(Constants.kTAB_STATE_PENDING);
-        }
-      }
-    }
     MetricsData.add('Tabs.onWindowRestoring restore end');
   }
   catch(e) {
     log('Tabs.onWindowRestoring: FATAL ERROR while restoring tree from cache', String(e), e.stack);
+  }
+  if (!restoredFromCache) {
+    // We need to treat tabs for a restored window as pending even if we failed to restore tabs from cache.
+    // See https://github.com/piroor/treestyletab/issues/3794
+    log('Tabs.onWindowRestoring: failsafe: setting discarded tabs as pending...');
+    for (const tab of tabs) {
+      if (tab.discarded) {
+        tab.$TST.addState(Constants.kTAB_STATE_PENDING);
+      }
+    }
   }
 });
 
