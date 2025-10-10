@@ -515,8 +515,9 @@ Tab.onWindowRestoring.addListener(async ({ windowId, restoredCount }) => {
     // See https://github.com/piroor/treestyletab/issues/3794
     log('Tabs.onWindowRestoring: failsafe: setting discarded tabs as pending...');
     for (const tab of tabs) {
-      if (tab.discarded) {
-        tab.$TST.addState(Constants.kTAB_STATE_PENDING);
+      const trackedTab = Tab.get(tab.id);
+      if (trackedTab?.discarded) {
+        trackedTab.$TST.addState(Constants.kTAB_STATE_PENDING);
       }
     }
   }
