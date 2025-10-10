@@ -498,11 +498,21 @@ Tab.onWindowRestoring.addListener(async ({ windowId, restoredCount }) => {
 
   const tabs = await browser.tabs.query({ windowId }).catch(ApiTabs.createErrorHandler());
   try {
-    await restoreWindowFromEffectiveWindowCache(windowId, {
+    const restoredFromCache = await restoreWindowFromEffectiveWindowCache(windowId, {
       ignorePinnedTabs: true,
       owner: tabs[tabs.length - 1],
       tabs
     });
+    log('Tabs.onWindowRestoring: restoredFromCache = ', restoredFromCache);
+    if (!restoredFromCache) {
+      // We need to treat tabs for a restored window as pending even if we failed to restore tabs from cache.
+      // See https://github.com/piroor/treestyletab/issues/3794
+      for (const tab of tabs) {
+        if (tab.discarded) {
+          tab.$TST.addState(Constants.kTAB_STATE_PENDING);
+        }
+      }
+    }
     MetricsData.add('Tabs.onWindowRestoring restore end');
   }
   catch(e) {
