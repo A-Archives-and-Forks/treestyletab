@@ -648,6 +648,7 @@ export function clearAll() {
   clearDraggingItemsState();
   clearDraggingState();
   document.documentElement.classList.remove(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+  Size.updateContainers();
   if (mReadyToPinDraggedTabsTimer) {
     clearTimeout(mReadyToPinDraggedTabsTimer);
     mReadyToPinDraggedTabsTimer = null;
@@ -1158,6 +1159,7 @@ function onDragOver(event) {
     mReadyToPinDraggedTabsTimer = setTimeout(() => {
       if (mShouldShowPinnedTabsDropArea) {
         document.documentElement.classList.add(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+        Size.updateContainers();
       }
       mReadyToPinDraggedTabsTimer = null;
     }, configs.pinInteractionCueDelayMS);
