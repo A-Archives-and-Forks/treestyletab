@@ -313,7 +313,7 @@ export const configs = new Configs({
   moveSoloTabOnDropParentToDescendant: true,
   pinInteractionCueDelayMS:
      500 /* `browser.tabs.dragDrop.pinInteractionCue.delayMS` */
-     + 240 /* `browser.tabs.dragDrop.pinInteractionCue.delayMS` */,
+     + 240 /* `browser.tabs.dragDrop.createGroup.delayMS` */,
   fixupTreeOnTabVisibilityChanged: false,
   fixupOrderOfTabsFromOtherDevice: true,
 
