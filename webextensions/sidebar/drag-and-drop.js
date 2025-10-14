@@ -89,6 +89,7 @@ let mLastInlineDropPosition = null;
 let mLastDragEventCoordinates = null;
 let mDragTargetIsClosebox  = false;
 let mCurrentDragData       = null;
+let mShouldShowPinnedTabsDropArea = false;
 let mReadyToPinDraggedTabsTimer = null;
 
 let mInstanceId;
@@ -651,6 +652,7 @@ export function clearAll() {
     clearTimeout(mReadyToPinDraggedTabsTimer);
     mReadyToPinDraggedTabsTimer = null;
   }
+  mShouldShowPinnedTabsDropArea = false;
 }
 
 const mDropPositionHolderItems = new Set();
@@ -1146,14 +1148,17 @@ function onDragOver(event) {
 
   updateLastDragEventCoordinates(event);
 
+  mShouldShowPinnedTabsDropArea = event.clientY < Size.getRenderedTabHeight() * 0.5;
   if (!mReadyToPinDraggedTabsTimer &&
       !document.documentElement.classList.contains(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS) &&
       !event.target.closest('#pinned-tabs-container') &&
-      event.clientY < Size.getRenderedTabHeight() * 0.5 &&
+      mShouldShowPinnedTabsDropArea &&
       !Tab.getLastPinnedTab(TabsStore.getCurrentWindowId())) {
     log('onDragOver: ready to pin dragged tabs');
     mReadyToPinDraggedTabsTimer = setTimeout(() => {
-      document.documentElement.classList.add(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+      if (mShouldShowPinnedTabsDropArea) {
+        document.documentElement.classList.add(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS);
+      }
       mReadyToPinDraggedTabsTimer = null;
     }, configs.pinInteractionCueDelayMS);
   }
