@@ -1,6 +1,13 @@
 # History
 
  - master/HEAD
+ - 4.2.7 (2025.10.21)
+   * Fix ability to drop items before the first tab when there is no pinned tab.
+   * Increase the default delay to show the drop area for tabs to be pinned (500ms to 740ms: you can configure it with a secret option `pinInteractionCueDelayMS`).
+   * Prevent grayed favicons of restored tabs in the first window restored from the previous session explicitly.
+   * Treat discarded tabs as pended correctly, even if restoration from cache is failed.
+   * Hide "unload tab" context menu command for already discarded tabs, like Firefox does.
+   * Reduce needless re-rendering of virtually scrolled tabs when pinned tabs are scrolled.
  - 4.2.6 (2025.9.22)
    * Add ability to pin/unpin tabs by drag and drop. Now you can drop pinned tabs below/between unpinned tabs, and unpinned tabs above/between pinned tabs. This simulates behaviors of tab dragging on Firefox's vertical tabs.
    * Disallow to set the height of the pinned tabs area smaller than the height of a pinned tab.
