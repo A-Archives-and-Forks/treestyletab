@@ -8,6 +8,7 @@
    * Treat discarded tabs as pended correctly, even if restoration from cache is failed.
    * Hide "unload tab" context menu command for already discarded tabs, like Firefox does.
    * Reduce needless re-rendering of virtually scrolled tabs when pinned tabs are scrolled.
+   * Update `en` locale to fix a typo by [purplnecropanda](https://github.com/purplnecropanda). Thanks!
  - 4.2.6 (2025.9.22)
    * Add ability to pin/unpin tabs by drag and drop. Now you can drop pinned tabs below/between unpinned tabs, and unpinned tabs above/between pinned tabs. This simulates behaviors of tab dragging on Firefox's vertical tabs.
    * Disallow to set the height of the pinned tabs area smaller than the height of a pinned tab.
