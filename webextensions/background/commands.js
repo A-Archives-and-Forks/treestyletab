@@ -783,6 +783,10 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
   let insertBefore = droppedBefore;
   const firstMember = group.$TST.firstMember;
 
+  if (groupId == -1) {
+    groupId = group.id;
+  }
+
   if (groupId) {
     if (groupId != group.id) {
       const dropTargetGroup = TabGroup.get(groupId);
