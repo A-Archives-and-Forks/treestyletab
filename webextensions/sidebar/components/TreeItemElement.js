@@ -792,7 +792,7 @@ index = ${raw.index}
       return url;
 
     if (!url || url.startsWith('data:')) { // we don't need to use the helper for data: URI.
-      this.favicon.src = url;
+      this.favicon.src = TabFavIconHelper.getSafeFaviconUrl(url);
       this.favicon.classList.remove('error');
       return url;
     }
