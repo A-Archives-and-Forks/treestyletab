@@ -18,16 +18,22 @@ export default class TabPreviewPanel extends InContentPanel {
       .in-content-panel-root.tab-preview-panel {
         bottom: 0;
         height: 100%;
-        pointer-events: none;
         z-index: calc(var(--max-32bit-integer) - 100); /* put preview panel below tab group menu always */
 
-        &:hover {
-          opacity: 0;
+        &:not(.extended) {
+          pointer-events: none;
+
+          &:hover {
+            opacity: 0;
+          }
         }
 
         .in-content-panel {
           overflow: hidden; /* clip the preview with the rounded edges */
-          pointer-events: none;
+
+          &:not(.extended) {
+            pointer-events: none;
+          }
 
           &.extended {
             max-width: min(100%, calc(var(--panel-width) * 2));
@@ -248,6 +254,7 @@ export default class TabPreviewPanel extends InContentPanel {
       const extendedContent = this.panel.querySelector('.in-content-panel-extended-content');
       extendedContent.innerHTML = tooltipHtml;
       this.panel.classList.add('extended');
+      this.root.classList.add('extended');
     }
 
     if (typeof title == 'string' ||
@@ -258,6 +265,7 @@ export default class TabPreviewPanel extends InContentPanel {
       urlElement.textContent = url;
       urlElement.classList.toggle('blank', !url);
       this.panel.classList.remove('extended');
+      this.root.classList.remove('extended');
     }
 
     if (!hasPreview) {

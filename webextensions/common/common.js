@@ -210,6 +210,7 @@ export const configs = new Configs({
   showOverflowTitleByTooltip: true,
   showCollapsedDescendantsByTooltip: true,
   showCollapsedDescendantsByLegacyTooltipOnSidebar: true,
+  showCollapsedDescendantsMouseleaveMaxDelay: 400,
   tabGroupMenuPanelRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
 
   showDialogInSidebar: false,

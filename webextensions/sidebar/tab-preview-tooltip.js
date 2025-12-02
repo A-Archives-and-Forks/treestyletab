@@ -34,6 +34,7 @@ function log(...args) {
 }
 
 const hoveringTabIds = new Set();
+let mLastHoverTabId = -1;
 
 const mTabPreviewPanel = new TabPreviewPanel(document.querySelector('#tabPreviewRoot'));
 const mController = new InContentPanelController({
@@ -66,16 +67,29 @@ const mController = new InContentPanelController({
 
     let destroy;
 
-    const onMouseMove = () => {
-      if (logging)
-        console.log('mouse move on the content area, destroy tab preview container');
+    const onMouseMove = event => {
+      const onPanel = !!event.originalTarget?.closest('.in-content-panel.extended')
+      if (logging) {
+        console.log('mouse move on the content area: ', { onPanel });
+      }
+      if (onPanel) {
+        browser.runtime.sendMessage({
+          type: 'treestyletab:${TabPreviewPanel.TYPE}:keep',
+          timestamp: Date.now(),
+        });
+        return;
+      }
+      if (logging) {
+        console.log('=> destroy tab preview container');
+      }
+      document.documentElement.removeEventListener('mousemove', onMouseMove);
       browser.runtime.sendMessage({
         type: 'treestyletab:${TabPreviewPanel.TYPE}:hide',
         timestamp: Date.now(),
       });
       destroyClosedContents(destroy);
     };
-    document.documentElement.addEventListener('mousemove', onMouseMove, { once: true });
+    document.documentElement.addEventListener('mousemove', onMouseMove);
 
     destroy = createClosedContentsDestructor(tabPreviewPanel, () => {
       window.removeEventListener('mousemove', onMouseMove);
@@ -138,6 +152,7 @@ async function onTabSubstanceEnter(event) {
   log(`onTabSubstanceEnter(${event.target.tab.id}}) start `, timestamp);
 
   hoveringTabIds.add(event.target.tab.id);
+  mLastHoverTabId = event.target.tab.id;
 
   const succeeded = await mController.show({
     anchorItem: event.target.tab,
@@ -187,6 +202,7 @@ async function onTabSubstanceEnter(event) {
 }
 onTabSubstanceEnter = EventUtils.wrapWithErrorHandler(onTabSubstanceEnter);
 
+let mDelayedHideOnTabSubstanceLeaveTimer = 0;
 async function onTabSubstanceLeave(event) {
   const timestamp = Date.now();
   if (!event.target.tab)
@@ -197,7 +213,20 @@ async function onTabSubstanceLeave(event) {
   if (!event.target.tab) // the tab was closed while waiting
     return;
 
-  mController.hide({ targetItem: event.target.tab, timestamp });
+  const tabElement = event.target.tab.$TST?.element;
+  if (tabElement?.hasCustomTooltip) {
+    if (mDelayedHideOnTabSubstanceLeaveTimer) {
+      clearTimeout(mDelayedHideOnTabSubstanceLeaveTimer);
+    }
+    mDelayedHideOnTabSubstanceLeaveTimer = setTimeout(() => {
+      mLastHoverTabId = -1;
+      mDelayedHideOnTabSubstanceLeaveTimer = 0;
+      mController.hide({ targetItem: event.target.tab, timestamp });
+    }, configs.showCollapsedDescendantsMouseleaveMaxDelay);
+  }
+  else {
+    mController.hide({ targetItem: event.target.tab, timestamp });
+  }
 }
 onTabSubstanceLeave = EventUtils.wrapWithErrorHandler(onTabSubstanceLeave);
 
@@ -208,6 +237,7 @@ Sidebar.onReady.addListener(() => {
 
 function hideOnUserAction(timestamp) {
   hoveringTabIds.clear();
+  mLastHoverTabId = -1;
 
   mController.hideInSidebar({ timestamp });
 
@@ -217,14 +247,49 @@ function hideOnUserAction(timestamp) {
   }
 }
 
-document.querySelector('#tabbar').addEventListener('mouseleave', async () => {
+let mDelayedHideOnTabbarLeaveTimer = 0;
+document.querySelector('#tabbar').addEventListener('mouseleave', () => {
   const timestamp = Date.now();
   log('mouse is left from the tab bar ', timestamp);
-  hideOnUserAction(timestamp);
+  const tab = Tab.get(mLastHoverTabId);
+  const tabElement = tab?.$TST?.element;
+  if (tabElement?.hasCustomTooltip) {
+    if (mDelayedHideOnTabbarLeaveTimer) {
+      clearTimeout(mDelayedHideOnTabbarLeaveTimer);
+    }
+    mDelayedHideOnTabbarLeaveTimer = setTimeout(() => {
+      mDelayedHideOnTabbarLeaveTimer = 0;
+      hideOnUserAction(timestamp);
+    }, configs.showCollapsedDescendantsMouseleaveMaxDelay);
+    return;
+  }
+  else {
+    hideOnUserAction(timestamp);
+  }
 });
 
-document.querySelector('#tabbar').addEventListener('dragover', async () => {
+document.querySelector('#tabbar').addEventListener('dragover', () => {
   const timestamp = Date.now();
   log('mouse is dragover on the tab bar ', timestamp);
   hideOnUserAction(timestamp);
+});
+
+browser.runtime.onMessage.addListener((message, sender) => {
+  const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
+  if (!activeTab ||
+      sender.tab?.id != activeTab.id) {
+    return;
+  }
+  switch (message?.type) {
+    case 'treestyletab:' + TabPreviewPanel.TYPE + ':keep':
+      if (mDelayedHideOnTabSubstanceLeaveTimer) {
+        clearTimeout(mDelayedHideOnTabSubstanceLeaveTimer);
+        mDelayedHideOnTabSubstanceLeaveTimer = 0;
+      }
+      if (mDelayedHideOnTabbarLeaveTimer) {
+        clearTimeout(mDelayedHideOnTabbarLeaveTimer);
+        mDelayedHideOnTabbarLeaveTimer = 0;
+      }
+      break;
+  }
 });
