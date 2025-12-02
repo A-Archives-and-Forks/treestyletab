@@ -411,23 +411,29 @@ function getDropAction(event) {
   info.defineGetter('dropEffect', () => getDropEffectFromDropAction(info));
 
   if (!targetItem) {
-    //log('dragging on non-tab element');
+    log('dragging on non-tab element');
     const action = Constants.kACTION_MOVE | Constants.kACTION_DETACH;
     if (event.clientY < Scroll.getItemRect(info.firstTargetableItem).top) {
-      //log('dragging above the first tab');
+      log('dragging above the first tab');
       info.targetItem   = info.insertBefore = info.firstTargetableItem;
       info.dropPosition = kDROP_BEFORE;
       info.action       = action;
-      if (info.draggedItem &&
-          !info.draggedItem.pinned &&
-          info.targetItem.pinned) {
-        log('head: above the first tab');
-        info.dropPosition = kDROP_HEAD;
-        info.shouldPin    = true;
+      if (info.draggedItem) {
+        if (!info.draggedItem.pinned &&
+            info.targetItem.pinned) {
+          log('head: normal tab, above the first tab');
+          info.dropPosition = kDROP_HEAD;
+          info.shouldPin    = true;
+        }
+        else if (info.draggedItem.pinned) {
+          log('head: pinned tab, above the first tab');
+          info.dropPosition = kDROP_HEAD;
+          info.shouldUnpin  = true;
+        }
       }
     }
     else if (event.clientY > Scroll.getItemRect(info.lastTargetableItem).bottom) {
-      //log('dragging below the last tab');
+      log('dragging below the last tab');
       info.targetItem   = info.insertAfter = info.lastTargetableItem;
       info.dropPosition = kDROP_AFTER;
       info.action       = action;
@@ -558,7 +564,7 @@ function getDropAction(event) {
       }
       else if (info.draggedItem) {
         if (info.draggedItem.pinned &&
-            targetItem.$TST.followsUnpinnedTab) {
+            !targetItem.pinned) {
           info.shouldUnpin = true;
         }
         else if (!info.draggedItem.pinned &&
@@ -619,7 +625,7 @@ function getDropAction(event) {
           info.shouldUnpin = true;
         }
         else if (!info.draggedItem.pinned &&
-                 targetItem.$TST.precedesPinnedTab) {
+                 targetItem.pinned) {
           info.shouldPin = true;
         }
       }

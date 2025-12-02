@@ -1332,16 +1332,6 @@ export class Tab extends TreeItem {
              this.hasChild));
   }
 
-  get precedesPinnedTab() {
-    const following = this.nearestVisibleFollowingTab;
-    return following?.pinned;
-  }
-
-  get followsUnpinnedTab() {
-    const preceding = this.nearestVisiblePrecedingTab;
-    return preceding && !preceding.pinned;
-  }
-
   get isNewTabCommandTab() {
     if (!this.raw ||
         !configs.guessNewOrphanTabAsOpenedByNewTabCommand)
