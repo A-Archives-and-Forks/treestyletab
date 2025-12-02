@@ -138,16 +138,27 @@ export default class TabPreviewPanel extends InContentPanel {
             margin-block: 0;
             margin-inline: 1em 0;
             padding: 0;
-            list-style: disc;
+            list-style: none;
+          }
+
+          ul {
+            margin-inline: 0;
           }
 
           .title-line {
+            align-items: center;
             display: flex;
             flex-direction: row;
             max-width: 100%;
             white-space: nowrap;
 
-            &.title {
+            .favicon {
+              max-height: 1em;
+              max-width: 1em;
+            }
+
+            .title {
+              margin-inline-start: 0.25em;
               overflow: hidden;
               text-overflow: ellipsis;
             }

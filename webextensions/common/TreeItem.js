@@ -278,7 +278,10 @@ export class TreeItem {
 
   get tooltipHtml() {
     return `<span class="title-line"
-                 ><span class="title"
+                 ><img class="favicon"
+                       style=""
+                       src="${sanitizeForHTMLText(this.safeFavIconUrl)}"
+                /><span class="title"
                        >${sanitizeForHTMLText(this.raw.title)}</span></span>`;
   }
 
@@ -1529,7 +1532,9 @@ export class Tab extends TreeItem {
   get tooltipHtml() {
     return this.cookieStoreName ?
       `<span class="title-line"
-            ><span class="title"
+            ><img class="favicon"
+                  src="${sanitizeForHTMLText(this.safeFavIconUrl)}"
+            /><span class="title"
                   >${sanitizeForHTMLText(this.raw.title)}</span
             ><span class="cookieStoreName"
                   >${sanitizeForHTMLText(this.cookieStoreName)}</span></span>` :
@@ -2932,6 +2937,13 @@ export class Tab extends TreeItem {
     if (this.element && 'favIconUrl' in this.element)
       this.element.favIconUrl = url;
     this.invalidateCache();
+  }
+
+  get safeFavIconUrl() {
+    return TabFavIconHelper.getSafeFaviconUrl(
+      this.raw.favIconUrl ||
+      browser.runtime.getURL('/resources/icons/defaultFavicon.svg')
+    );
   }
 
 
