@@ -1155,7 +1155,9 @@ function onDragOver(event) {
 
   updateLastDragEventCoordinates(event);
 
-  mShouldShowPinnedTabsDropArea = event.clientY < Size.getRenderedTabHeight() * 0.5;
+  const info = getDropAction(event);
+
+  mShouldShowPinnedTabsDropArea = info.draggedItem?.type == TreeItem.TYPE_TAB && event.clientY < Size.getRenderedTabHeight() * 0.5;
   if (!mReadyToPinDraggedTabsTimer &&
       !document.documentElement.classList.contains(Constants.kTABBAR_STATE_READY_TO_PIN_DRAGGED_TABS) &&
       !event.target.closest('#pinned-tabs-container') &&
@@ -1176,8 +1178,6 @@ function onDragOver(event) {
   if (now - (mLastDragOverTimestamp || 0) < configs.minimumIntervalToProcessDragoverEvent)
     return;
   mLastDragOverTimestamp = now;
-
-  const info = getDropAction(event);
 
   let dragData = dt.getData(kTREE_DROP_TYPE);
   dragData = (dragData && JSON.parse(dragData)) || mCurrentDragData;
