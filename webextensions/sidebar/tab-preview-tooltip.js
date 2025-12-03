@@ -33,8 +33,8 @@ function log(...args) {
   internalLogger('sidebar/tab-preview-tooltip', ...args);
 }
 
-const hoveringTabIds = new Set();
-let mLastHoverTabId = -1;
+const hoveringItemIds = new Set();
+let mLastHoverItemId = -1;
 
 const mTabPreviewPanel = new TabPreviewPanel(document.querySelector('#tabPreviewRoot'));
 const mController = new InContentPanelController({
@@ -55,7 +55,7 @@ const mController = new InContentPanelController({
   canSendPossibleExpiredMessage(message) {
     return (
       message.type != `treestyletab:${TabPreviewPanel.TYPE}:show` ||
-      hoveringTabIds.has(message.targetId)
+      hoveringItemIds.has(message.targetId)
     );
   },
   UIClass: TabPreviewPanel,
@@ -116,7 +116,8 @@ async function onTabSubstanceEnter(event) {
   }
 
   if (!event.target.tab ||
-      event.target.tab.type != TreeItem.TYPE_TAB ||
+      (event.target.tab.type != TreeItem.TYPE_TAB &&
+       event.target.tab.type != TreeItem.TYPE_GROUP) ||
       document.documentElement.classList.contains(Constants.kTABBAR_STATE_TAB_DRAGGING)) {
     return;
   }
@@ -126,7 +127,14 @@ async function onTabSubstanceEnter(event) {
     PREVIEW_WITH_TITLE_URLS_MATCHER.test(event.target.tab?.url) ? null :
       event.target.tab?.url;
   const hasCustomTooltip = !!event.target.hasCustomTooltip;
+
+  if (event.target?.tab?.type == TreeItem.TYPE_GROUP &&
+      !hasCustomTooltip) {
+    return;
+  }
+
   const hasPreview = (
+    event.target.tab.type != TreeItem.TYPE_TAB &&
     !active &&
     !event.target.tab?.discarded &&
     CAPTURABLE_URLS_MATCHER.test(event.target.tab?.url) &&
@@ -149,10 +157,10 @@ async function onTabSubstanceEnter(event) {
   if (!event.target.tab)
     return;
 
-  log(`onTabSubstanceEnter(${event.target.tab.id}}) start `, timestamp);
+  log(`onTabSubstanceEnter(${event.target.tab.id}}) start `, { hasCustomTooltip }, timestamp);
 
-  hoveringTabIds.add(event.target.tab.id);
-  mLastHoverTabId = event.target.tab.id;
+  hoveringItemIds.add(event.target.tab.id);
+  mLastHoverItemId = event.target.tab.id;
 
   const succeeded = await mController.show({
     anchorItem: event.target.tab,
@@ -208,7 +216,7 @@ async function onTabSubstanceLeave(event) {
   if (!event.target.tab)
     return;
 
-  hoveringTabIds.delete(event.target.tab.id);
+  hoveringItemIds.delete(event.target.tab.id);
 
   if (!event.target.tab) // the tab was closed while waiting
     return;
@@ -219,7 +227,7 @@ async function onTabSubstanceLeave(event) {
       clearTimeout(mDelayedHideOnTabSubstanceLeaveTimer);
     }
     mDelayedHideOnTabSubstanceLeaveTimer = setTimeout(() => {
-      mLastHoverTabId = -1;
+      mLastHoverItemId = -1;
       mDelayedHideOnTabSubstanceLeaveTimer = 0;
       if (!document.querySelector('.in-content-panel-root.tab-preview-panel.extended .in-content-panel:hover')) {
         mController.hide({ targetItem: event.target.tab, timestamp });
@@ -238,8 +246,8 @@ Sidebar.onReady.addListener(() => {
 });
 
 function hideOnUserAction(timestamp) {
-  hoveringTabIds.clear();
-  mLastHoverTabId = -1;
+  hoveringItemIds.clear();
+  mLastHoverItemId = -1;
 
   mController.hideInSidebar({ timestamp });
 
@@ -253,9 +261,9 @@ let mDelayedHideOnTabbarLeaveTimer = 0;
 document.querySelector('#tabbar').addEventListener('mouseleave', () => {
   const timestamp = Date.now();
   log('mouse is left from the tab bar ', timestamp);
-  const tab = Tab.get(mLastHoverTabId);
-  const tabElement = tab?.$TST?.element;
-  if (tabElement?.hasCustomTooltip) {
+  const item = TreeItem.get(mLastHoverItemId);
+  const itemElement = item?.$TST?.element;
+  if (itemElement?.hasCustomTooltip) {
     if (mDelayedHideOnTabbarLeaveTimer) {
       clearTimeout(mDelayedHideOnTabbarLeaveTimer);
     }

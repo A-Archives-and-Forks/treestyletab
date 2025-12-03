@@ -387,7 +387,8 @@ export class TreeItemElement extends HTMLElement {
     const canInjectScriptToTab = Permissions.canInjectScriptToTabSync(Tab.getActiveTab(TabsStore.getCurrentWindowId()));
     this.useTabPreviewTooltip = !!(
       configs.tabPreviewTooltip &&
-      canCaptureTab &&
+      (canCaptureTab ||
+       raw.type == TreeItem.TYPE_GROUP) &&
       (((configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_CONTENT) &&
         canInjectScriptToTab) ||
        (configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR))
@@ -439,10 +440,20 @@ index = ${raw.index}
       this.$TST.removeAttribute('title');
   }
 
+  get useTooltipWithDescendants() {
+    return (
+      (
+        (configs.showCollapsedDescendantsByTooltip &&
+         this.$TST.subtreeCollapsed) ||
+        (this.$TST.raw.type == TreeItem.TYPE_GROUP &&
+         this.$TST.raw.collapsed)
+      ) &&
+      this.$TST.hasChild
+    );
+  }
+
   get appliedTooltipText() {
-    if (configs.showCollapsedDescendantsByTooltip &&
-        this.$TST.subtreeCollapsed &&
-        this.$TST.hasChild) {
+    if (this.useTooltipWithDescendants) {
       return this.tooltipWithDescendants;
     }
 
@@ -457,9 +468,10 @@ index = ${raw.index}
     let tooltip = null;
 
     const raw = this.$TST.raw;
-    if (this.classList.contains('faviconized') ||
-        this.overflow ||
-        this.tooltip != raw.title)
+    if (raw.type == TreeItem.TYPE_TAB &&
+        (this.classList.contains('faviconized') ||
+         this.overflow ||
+         this.tooltip != raw.title))
       tooltip = this.tooltip;
     else
       tooltip = null;
@@ -476,9 +488,7 @@ index = ${raw.index}
   }
 
   get appliedTooltipHtml() {
-    if (configs.showCollapsedDescendantsByTooltip &&
-        this.$TST.subtreeCollapsed &&
-        this.$TST.hasChild) {
+    if (this.useTooltipWithDescendants) {
       return this.tooltipHtmlWithDescendants;
     }
 
@@ -493,9 +503,10 @@ index = ${raw.index}
     let tooltip = null;
 
     const raw = this.$TST.raw;
-    if (this.classList.contains('faviconized') ||
-        this.overflow ||
-        this.tooltip != raw.title)
+    if (raw.type == TreeItem.TYPE_TAB &&
+        (this.classList.contains('faviconized') ||
+         this.overflow ||
+         this.tooltip != raw.title))
       tooltip = this.tooltipHtml;
     else
       tooltip = null;

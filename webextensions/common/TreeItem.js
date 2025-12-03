@@ -962,6 +962,44 @@ export class TabGroup extends TreeItem {
     return this._collapsedMembersCounterItem;
   }
 
+  get defaultTooltipText() {
+    return '';
+  }
+
+  get tooltipTextWithDescendants() {
+    if (!this.raw.collapsed) {
+      return '';
+    }
+    const tooltip = [];
+    for (const member of this.members) {
+      if (!member ||
+          !member.$TST ||
+          member.$TST.parentId)
+        continue;
+      tooltip.push(member.$TST.tooltipTextWithDescendants.replace(/^/gm, '  '));
+    }
+    return tooltip.join('\n');
+  }
+
+  get tooltipHtml() {
+    return '';
+  }
+
+  generateTooltipHtmlWithDescendants() {
+    if (!this.raw.collapsed) {
+      return '';
+    }
+    const members = [];
+    for (const member of this.members) {
+      if (!member ||
+          !member.$TST ||
+          member.$TST.parentId)
+        continue;
+      members.push(member.$TST.generateTooltipHtmlWithDescendants());
+    }
+    return members.join('');
+  }
+
 
   //===================================================================
   // class methods
