@@ -138,11 +138,27 @@ tab-item-substance {
   z-index: 0;
 }
 
-tab-item[type="group"] tab-item-substance {
-  max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
-                  2px + 3px /* padding-inline of tab-item-substance */ +
-                  0.25em /* margin-inline of tab-label */ +
-                  0.25em /* margin-inline of tab-label-content */);
+
+tab-item[type="group"] {
+  tab-item-substance,
+  .ui {
+    border: none;
+    background: transparent;
+    height: 100%;
+    max-width: 100%;
+    padding: 0 !important;
+  }
+
+  .caption {
+    background: var(--tab-surface);
+    border: 1px solid var(--tab-border);
+    border-radius: 0.35em;
+    height: 100%;
+    max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
+                    2px + 3px /* padding-inline of tab-item-substance */ +
+                    0.25em /* margin-inline of tab-label */ +
+                    0.25em /* margin-inline of tab-label-content */);
+  }
 }
 
 tab-item.active {
@@ -177,12 +193,6 @@ tab-item.bundled-active tab-item-substance {
   background: var(--tabbar-bg, var(--bg-color-inactive, ButtonFace));
 }
 
-
-tab-item[type="group"] .background {
-  background: var(--tab-surface);
-  border: 1px solid var(--tab-border);
-  border-radius: 0.35em;
-}
 
 tab-item[data-next-group-color] {
   .background {

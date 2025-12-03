@@ -258,11 +258,11 @@ tab-item-substance {
   }
 }
 
-tab-item[type="group"] tab-item-substance {
+tab-item[type="group"] .caption {
+  border-radius: var(--tab-border-radius-size);
   max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
                   0.25em /* margin-inline of tab-label */ +
-                  var(--tab-border-radius-size) + var(--tab-border-radius-size) /* radius of tab-item-substance */ +
-                  0.35em + 0.25em /* padding-inline of tab-item-substance */);
+                  var(--tab-border-radius-size) + var(--tab-border-radius-size) /* radius of tab-item-substance */);
 }
 
 
@@ -298,10 +298,6 @@ tab-item.faviconized .background {
   --tab-dropshadow-padding: 0.13em;
 }
 
-tab-item[type="group"] .background {
-  border: 1px solid var(--tab-border);
-}
-
 tab-item[data-next-group-color] {
   .background,
   tab-item-substance:hover .background {
@@ -333,11 +329,14 @@ tab-item.bundled-active,
   box-shadow: 0 0 var(--tab-dropshadow-blur) rgba(0, 0, 0, 0.2);
 }
 
-tab-item:not([type="group"]):not(.active):not(.bundled-active):not(.highlighted) tab-item-substance:hover .background:not(.base),
+tab-item:not(.active):not(.bundled-active):not(.highlighted) tab-item-substance:hover .background:not(.base),
 .after-tabs button:hover::before,
 .after-tabs [role="button"]:hover::before,
 #subpanel-selector-anchor:hover::before {
   opacity: 0.11;
+}
+tab-item:not(.active):not(.bundled-active):not(.highlighted)[type="group"]:not(.subtree-collapsed) tab-item-substance:hover .background:not(.base) {
+  opacity: 0;
 }
 
 /* extra focus ring for multiselected tabs https://bugzilla.mozilla.org/show_bug.cgi?id=1751807 */

@@ -524,6 +524,7 @@ tab-item-substance {
     flex-wrap: nowrap;
     justify-content: flex-start;
     max-width: calc(100% - var(--favicon-size));
+    z-index: var(--tab-base-z-index);
   }
 
   .caption {
@@ -1194,11 +1195,11 @@ tab-item[type="group"] {
     display: none;
   }
 
-  .ui {
-    max-width: 100%;
-  }
-
-  tab-item-substance {
+  .caption {
+    border: 1px solid var(--tab-border);
+    height: calc(var(--tab-size) * 0.7);
+    background-color: var(--tab-surface);
+    background-image: var(--tab-surface-bgimage);
     max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
                     0.25em /* margin-inline of tab-label */);
   }
@@ -1207,20 +1208,16 @@ tab-item[type="group"] {
     font-weight: bold;
   }
 
-  &,
-  &:hover,
-  tab-item-substance,
-  tab-item-substance:hover {
+  .caption,
+  tab-item-substance:hover .caption {
     --tab-surface: light-dark(var(--tab-group-color), var(--tab-group-color-invert)) !important;
     --tab-border: light-dark(var(--tab-group-color), var(--tab-group-color-invert)) !important;
     --tab-text: light-dark(var(--tab-group-color-pale), var(--tab-group-label-text-dark)) !important;
   }
 
   &.subtree-collapsed {
-    &,
-    &:hover,
-    tab-item-substance,
-    tab-item-substance:hover {
+    .caption,
+    tab-item-substance:hover .caption {
       --tab-surface: light-dark(var(--tab-group-color-pale), var(--tab-group-color)) !important;
       --tab-text: light-dark(var(--tab-group-color), var(--tab-group-color-pale)) !important;
     }
