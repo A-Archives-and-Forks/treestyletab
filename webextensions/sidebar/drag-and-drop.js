@@ -40,19 +40,19 @@ import {
   dumpTab,
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
-import * as BackgroundConnection from './background-connection.js';
 import * as Constants from '/common/constants.js';
-import * as EventUtils from './event-utils.js';
 import * as RetrieveURL from '/common/retrieve-url.js';
-import * as Scroll from './scroll.js';
-import * as SidebarItems from './sidebar-items.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TreeBehavior from '/common/tree-behavior.js';
 import * as TSTAPI from '/common/tst-api.js';
 
 import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
+import * as BackgroundConnection from './background-connection.js';
+import * as EventUtils from './event-utils.js';
 import * as Notifications from './notifications.js';
+import * as Scroll from './scroll.js';
+import * as SidebarItems from './sidebar-items.js';
 import * as Size from './size.js';
 
 function log(...args) {
