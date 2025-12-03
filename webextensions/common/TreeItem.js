@@ -816,7 +816,7 @@ export class TabGroupCollapsedMembersCounter extends TreeItem {
   reindex(maybeLastMember) {
     const lastMember = this.raw.group.$TST.lastMember || maybeLastMember;
     if (lastMember) {
-      this.raw.index = lastMember.index;
+      this.raw.index = lastMember.index + 1;
     }
   }
 
