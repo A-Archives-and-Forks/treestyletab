@@ -209,8 +209,8 @@ export const configs = new Configs({
   tabPreviewTooltipOffsetTop: null, // migrated to inContentUIOffsetTop
   showOverflowTitleByTooltip: true,
   showCollapsedDescendantsByTooltip: true,
-  showCollapsedDescendantsByLegacyTooltipOnSidebar: true,
-  showCollapsedDescendantsMouseleaveMaxDelay: 400,
+  showCollapsedDescendantsByLegacyTooltipOnSidebar: false,
+  showCollapsedDescendantsMouseleaveMaxDelay: 500,
   tabGroupMenuPanelRenderIn: Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE,
 
   showDialogInSidebar: false,
