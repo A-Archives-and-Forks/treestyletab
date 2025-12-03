@@ -222,7 +222,9 @@ async function onTabSubstanceLeave(event) {
     mDelayedHideOnTabSubstanceLeaveTimer = setTimeout(() => {
       mLastHoverTabId = -1;
       mDelayedHideOnTabSubstanceLeaveTimer = 0;
-      mController.hide({ targetItem: event.target.tab, timestamp });
+      if (!document.querySelector('.in-content-panel-root.tab-preview-panel.extended .in-content-panel:hover')) {
+        mController.hide({ targetItem: event.target.tab, timestamp });
+      }
     }, configs.showCollapsedDescendantsMouseleaveMaxDelay);
   }
   else {
@@ -260,7 +262,9 @@ document.querySelector('#tabbar').addEventListener('mouseleave', () => {
     }
     mDelayedHideOnTabbarLeaveTimer = setTimeout(() => {
       mDelayedHideOnTabbarLeaveTimer = 0;
-      hideOnUserAction(timestamp);
+      if (!document.querySelector('.in-content-panel-root.tab-preview-panel.extended .in-content-panel:hover')) {
+        hideOnUserAction(timestamp);
+      }
     }, configs.showCollapsedDescendantsMouseleaveMaxDelay);
     return;
   }
@@ -291,14 +295,6 @@ browser.runtime.onMessage.addListener((message, sender) => {
         clearTimeout(mDelayedHideOnTabbarLeaveTimer);
         mDelayedHideOnTabbarLeaveTimer = 0;
       }
-      break;
-
-    case 'treestyletab:' + TabPreviewPanel.TYPE + ':tab-item-clicked':
-      BackgroundConnection.sendMessage({
-        type:  Constants.kCOMMAND_ACTIVATE_TAB,
-        tabId: message.tabId,
-        byMouseOperation: true,
-      });
       break;
   }
 });

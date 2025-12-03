@@ -16,9 +16,16 @@ export default class TabPreviewPanel extends InContentPanel {
   get styleRules() {
     return super.styleRules + `
       .in-content-panel-root.tab-preview-panel {
-        bottom: 0;
-        height: 100%;
         z-index: calc(var(--max-32bit-integer) - 100); /* put preview panel below tab group menu always */
+
+        &:not(.in-sidebar) {
+          bottom: 0;
+          height: 100%;
+        }
+        &.in-sidebar {
+          bottom: auto !important;
+          height: 0 !important;
+        }
 
         &:not(.extended) {
           pointer-events: none;
@@ -76,6 +83,7 @@ export default class TabPreviewPanel extends InContentPanel {
           &.loading,
           & .loading {
             opacity: 0;
+            pointer-events: none;
           }
 
           &.updating,
@@ -241,7 +249,7 @@ export default class TabPreviewPanel extends InContentPanel {
       event.stopImmediatePropagation();
       event.preventDefault();
       browser.runtime.sendMessage({
-        type:  `treestyletab:${this.type}:tab-item-clicked`,
+        type:  'treestyletab:api:focus',
         tabId: parseInt(id),
       });
     }, { useCapture: true });

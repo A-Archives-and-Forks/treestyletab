@@ -150,6 +150,9 @@ export default class InContentPanel {
           &.open {
             opacity: 1;
           }
+          &:not(.open) {
+            pointer-events: none;
+          }
 
           &.updating,
           & .updating {
@@ -324,6 +327,8 @@ export default class InContentPanel {
   onShown() {} // this can be overridden by subclasses
 
   updateUI({ targetId, anchorTabRect, offsetTop, align, rtl, scale, logging, animation, backgroundColor, borderColor, color, widthInOuterWorld, fixedOffsetTop, ...params }) {
+    this.root.classList.toggle('in-sidebar', this.inSidebar);
+
     if (!this.panel)
       return;
 
@@ -420,7 +425,7 @@ export default class InContentPanel {
       const panelHeight = panelBox.height;
 
       let top;
-      if (this.windowId) { // in-sidebar
+      if (this.inSidebar) {
         if (logging)
           console.log(`${this.type} updateUI/complete: in-sidebar, alignment calculating: `, { half: window.innerHeight, maxY, scale, anchorTabRect });
         if (anchorTabRect.top > (window.innerHeight / 2)) { // align to bottom edge of the tab
@@ -511,11 +516,8 @@ export default class InContentPanel {
   }
 
   // for SIDEBAR case
-  set windowId(id) {
-    return this.windowId = id;
-  }
-  get windowId() {
-    return this.windowId;
+  get inSidebar() {
+    return !!this.windowId;
   }
 
   // for SIDEBAR case

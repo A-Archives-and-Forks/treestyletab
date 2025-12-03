@@ -14,10 +14,6 @@ export default class TabGroupMenuPanel extends InContentPanel {
     return super.styleRules + `
       .in-content-panel-root.tab-group-menu-panel {
         .in-content-panel {
-          &:not(.open) {
-            pointer-events: none;
-          }
-
           overflow-y: auto;
 
           /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/browser/themes/shared/tabbrowser/tabs.css#1145 */
