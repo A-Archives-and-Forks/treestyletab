@@ -278,6 +278,7 @@ export class TreeItem {
 
   get tooltipHtml() {
     return `<span class="title-line"
+                  data-tab-id="${this.raw.id}"
                  ><img class="favicon"
                        style=""
                        src="${sanitizeForHTMLText(this.safeFavIconUrl)}"
@@ -1532,6 +1533,7 @@ export class Tab extends TreeItem {
   get tooltipHtml() {
     return this.cookieStoreName ?
       `<span class="title-line"
+             data-tab-id="${this.raw.id}"
             ><img class="favicon"
                   src="${sanitizeForHTMLText(this.safeFavIconUrl)}"
             /><span class="title"

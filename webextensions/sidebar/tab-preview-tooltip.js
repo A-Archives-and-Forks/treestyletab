@@ -17,6 +17,7 @@ import { Tab, TreeItem } from '/common/TreeItem.js';
 import InContentPanelController from '/resources/module/InContentPanelController.js';
 import TabPreviewPanel from '/resources/module/TabPreviewPanel.js'; // the IMPL
 
+import * as BackgroundConnection from './background-connection.js';
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
 
@@ -290,6 +291,14 @@ browser.runtime.onMessage.addListener((message, sender) => {
         clearTimeout(mDelayedHideOnTabbarLeaveTimer);
         mDelayedHideOnTabbarLeaveTimer = 0;
       }
+      break;
+
+    case 'treestyletab:' + TabPreviewPanel.TYPE + ':tab-item-clicked':
+      BackgroundConnection.sendMessage({
+        type:  Constants.kCOMMAND_ACTIVATE_TAB,
+        tabId: message.tabId,
+        byMouseOperation: true,
+      });
       break;
   }
 });

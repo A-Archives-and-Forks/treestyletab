@@ -29,6 +29,7 @@ export default class TabPreviewPanel extends InContentPanel {
         }
 
         .in-content-panel {
+          cursor: default;
           overflow: hidden; /* clip the preview with the rounded edges */
 
           &:not(.extended) {
@@ -153,10 +154,15 @@ export default class TabPreviewPanel extends InContentPanel {
 
           .title-line {
             align-items: center;
+            border-radius: 0.4em;
             display: flex;
             flex-direction: row;
             max-width: 100%;
             white-space: nowrap;
+
+            &:hover {
+              background: light-dark(rgba(207, 207, 216, 0.66), rgba(207, 207, 216, 0.2)); /* https://searchfox.org/firefox-main/rev/256e8bad1a52af07e29574baf4aaf02f05b39d93/browser/themes/shared/browser-colors.css#90 */
+            }
 
             .favicon {
               max-height: 1em;
@@ -225,6 +231,20 @@ export default class TabPreviewPanel extends InContentPanel {
       return;
     }
     super.prepareUI();
+
+    this.panel.addEventListener('click', event => {
+      const item = event.target.closest('.title-line[data-tab-id]');
+      const id = item?.dataset.tabId;
+      if (!id) {
+        return;
+      }
+      event.stopImmediatePropagation();
+      event.preventDefault();
+      browser.runtime.sendMessage({
+        type:  `treestyletab:${this.type}:tab-item-clicked`,
+        tabId: parseInt(id),
+      });
+    }, { useCapture: true });
 
     const preview = this.panel.querySelector('.in-content-panel-image');
     preview.addEventListener('load', () => {
