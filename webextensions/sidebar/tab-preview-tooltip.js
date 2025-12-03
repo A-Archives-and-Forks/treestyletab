@@ -17,7 +17,6 @@ import { Tab, TreeItem } from '/common/TreeItem.js';
 import InContentPanelController from '/resources/module/InContentPanelController.js';
 import TabPreviewPanel from '/resources/module/TabPreviewPanel.js'; // the IMPL
 
-import * as BackgroundConnection from './background-connection.js';
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
 
