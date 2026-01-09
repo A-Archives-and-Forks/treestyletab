@@ -1,6 +1,17 @@
 # History
 
  - master/HEAD
+ - 4.2.8 (2026.1.9)
+   * Show collapsed group member tabs with the in-content custom tooltip, like Firefox natively does.
+   * In the in-content custom tooltip for a hovered collapsed tree, show favicon and provide ability to switch to the tab corresponding to the clicked tree item.
+   * Activate the custom tooltip in the sidebar area by default, for collapsed trees and groups, if we cannot render the in-content custom tooltip in the active tab.
+   * Allow pinning a tab by dropping after the last pinned tab, and allow to unpinning a tab by dropping before the first unpinned tab. This simulates behaviors of Firefox's native tab bar more naturally.
+   * Update appearance of group items to match to the native one more.
+   * Show collapsed members counter after the active tab in a collapsed group, even if it is the last member.
+   * Move dragged group correctly when it is dropped before any existing group.
+   * Don't break tree structure of grouped tabs by drag and drop of child tabs.
+   * Never show the drop area to pin dragged items if a tab group is dragged.
+   * Don't show broken favicon in UI for invalid PNG provided as a data: URI.
  - 4.2.7 (2025.10.21)
    * Fix ability to drop items before the first tab when there is no pinned tab.
    * Increase the default delay to show the drop area for tabs to be pinned (500ms to 740ms: you can configure it with a secret option `pinInteractionCueDelayMS`).
