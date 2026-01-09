@@ -14,7 +14,6 @@ import * as ApiTabs from './api-tabs.js';
 import * as Constants from './constants.js';
 import * as TabsStore from './tabs-store.js';
 
-// eslint-disable-next-line no-unused-vars
 function log(...args) {
   internalLogger('common/unique-id', ...args);
 }
@@ -89,6 +88,7 @@ export function readyToDetectDuplicatedTab() {
 }
 
 export async function request(tabOrId, options = {}) {
+  log('requested for ', tabOrId?.id || tabOrId);
   if (typeof options != 'object')
     options = {};
 
@@ -97,6 +97,7 @@ export async function request(tabOrId, options = {}) {
     tab = TabsStore.tabs.get(tabOrId);
 
   if (TabsStore.getCurrentWindowId()) {
+    log(' => redirect to the backgound page');
     return browser.runtime.sendMessage({
       type:  Constants.kCOMMAND_REQUEST_UNIQUE_ID,
       tabId: tab.id
@@ -118,6 +119,7 @@ export async function request(tabOrId, options = {}) {
     if (oldId && !oldId.tabId) // ignore broken information!
       oldId = null;
 
+    log(' => oldId: ', oldId, tab.id);
     if (oldId) {
       // If the tab detected from stored tabId is different, it is duplicated tab.
       try {
@@ -126,12 +128,14 @@ export async function request(tabOrId, options = {}) {
           throw new Error(`Invalid tab ID: ${oldId.tabId}`);
         originalId = (tabWithOldId.$TST.uniqueId || await tabWithOldId.$TST.promisedUniqueId).id;
         duplicated = tab && tabWithOldId.id != tab.id && originalId == oldId.id;
+        log(' => duplicated: ', !!duplicated, tab.id);
         if (duplicated)
           originalTabId = oldId.tabId;
         else
           throw new Error(`Invalid tab ID: ${oldId.tabId}`);
       }
       catch(e) {
+        log(' => error: ', e, tab.id);
         ApiTabs.handleMissingTabError(e);
         // It fails if the tab doesn't exist.
         // There is no live tab for the tabId, thus
@@ -152,6 +156,7 @@ export async function request(tabOrId, options = {}) {
   }
 
   const id = `tab-${generate()}`;
+  log(' => new id: ', id, tab.id);
   // tabId is for detecttion of duplicated tabs
   await browser.sessions.setTabValue(tab.id, Constants.kPERSISTENT_ID, { id, tabId: tab.id }).catch(ApiTabs.createErrorSuppressor());
   return { id, originalId, originalTabId, duplicated };
