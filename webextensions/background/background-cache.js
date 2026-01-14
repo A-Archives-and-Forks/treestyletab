@@ -596,7 +596,7 @@ browser.windows.onRemoved.addListener(async windowId => {
   catch(_error) {
   }
 
-  const storageKeyPart = `Cache-${await UniqueId.ensureWindowId(windowId)}-`;
+  const storageKeyPart = `backgroundCache-${await UniqueId.ensureWindowId(windowId)}-`;
   for (const key in mCaches) {
     if (key.includes(storageKeyPart))
       delete mCaches[key];
