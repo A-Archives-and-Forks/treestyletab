@@ -816,6 +816,8 @@ function checkRecycledTab(windowId) {
   }
 }
 
+const mTreeInfoForTabsMovingAcrossWindows = new Map();
+
 async function onRemoved(tabId, removeInfo) {
   Tree.markTabIdAsUnattachable(tabId);
 
@@ -833,6 +835,8 @@ async function onRemoved(tabId, removeInfo) {
   win.keepDescendantsTabs.delete(tabId);
   win.highlightingTabs.delete(tabId);
   win.tabsToBeHighlightedAlone.delete(tabId);
+  mTreeInfoForTabsMovingAcrossWindows.delete(tabId); // clean up leaks for detached-then-removed tabs
+
 
   win.internallyFocusingTabs.delete(tabId);
   win.internallyFocusingByMouseTabs.delete(tabId);
@@ -1072,8 +1076,6 @@ async function onMoved(tabId, moveInfo) {
     onCompleted();
   }
 }
-
-const mTreeInfoForTabsMovingAcrossWindows = new Map();
 
 async function onAttached(tabId, attachInfo) {
   if (mPromisedStarted)

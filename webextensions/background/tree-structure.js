@@ -475,6 +475,11 @@ Tab.onRestored.addListener(tab => {
     mProcessingTabRestorations[0]();
 });
 
+browser.windows.onRemoved.addListener(windowId => {
+  mRestoringTabs.delete(windowId);
+  mMaxRestoringTabs.delete(windowId);
+});
+
 
 // Implementation for the "Undo Close Tab*s*" feature
 // https://github.com/piroor/treestyletab/issues/2627

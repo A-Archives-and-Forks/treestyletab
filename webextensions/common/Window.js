@@ -86,6 +86,10 @@ export default class Window {
   }
 
   destroy() {
+    if (this.delayedDestroy) {
+      clearTimeout(this.delayedDestroy);
+      this.delayedDestroy = null;
+    }
     for (const tab of this.tabs.values()) {
       if (tab.$TST)
         tab.$TST.destroy();
