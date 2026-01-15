@@ -46,6 +46,10 @@ export class TabCounterElement extends HTMLElement {
     this.initialized = true;
   }
 
+  disconnectedCallback() {
+    this.owner = null;
+  }
+
   update() {
     const tab = this.owner;
     if (!tab || !tab.$TST)

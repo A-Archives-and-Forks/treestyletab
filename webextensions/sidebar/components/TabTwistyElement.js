@@ -55,6 +55,7 @@ export class TabTwistyElement extends HTMLElement {
       this.removeEventListener('mouseover', this._reservedUpdate);
       this._reservedUpdate = null;
     }
+    this.owner = null;
   }
 
   invalidate() {

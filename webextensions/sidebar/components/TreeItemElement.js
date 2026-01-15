@@ -157,6 +157,7 @@ export class TreeItemElement extends HTMLElement {
     }
     this._endListening();
     this._raw = null;
+    this._$TST = null;
   }
 
   get initialized() {

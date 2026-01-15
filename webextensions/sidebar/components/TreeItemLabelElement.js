@@ -99,6 +99,7 @@ export class TreeItemLabelElement extends HTMLElement {
   disconnectedCallback() {
     this._overflowChangeListeners.clear();
     this._endListening();
+    this.owner = null;
   }
 
   get initialized() {
