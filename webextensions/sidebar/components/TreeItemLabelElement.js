@@ -186,9 +186,8 @@ export class TreeItemLabelElement extends HTMLElement {
     // So we need to throttle the process for better formance.
     if (this._startListening_invoked)
       return;
-    this._startListening_invoked = true;
-    window.requestAnimationFrame(() => {
-      this._startListening_invoked = false;
+    this._startListening_invoked = window.requestAnimationFrame(() => {
+      this._startListening_invoked = null;
       if (!this.closest('body')) // already detached from document!
         return;
       this.__unwatch     = watchOverflowStateChange({
@@ -201,6 +200,10 @@ export class TreeItemLabelElement extends HTMLElement {
   }
 
   _endListening() {
+    if (this._startListening_invoked) {
+      window.cancelAnimationFrame(this._startListening_invoked);
+      this._startListening_invoked = null;
+    }
     if (!this.__unwatch)
       return;
     this.__unwatch();
