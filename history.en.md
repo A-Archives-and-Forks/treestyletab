@@ -1,6 +1,8 @@
 # History
 
  - master/HEAD
+ - 4.2.9 (2026.1.20)
+   * Fix some possible memory leaks around closed windows, tabs, and removed elements.
  - 4.2.8 (2026.1.9)
    * Show collapsed group member tabs with the in-content custom tooltip, like Firefox natively does.
    * In the in-content custom tooltip for a hovered collapsed tree, show favicon and provide ability to switch to the tab corresponding to the clicked tree item.
