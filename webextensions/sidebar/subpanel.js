@@ -240,6 +240,12 @@ async function load(params) {
   updateLayout();
 }
 
+let mHeaderSize = 0;
+
+function updateHeaderSize() {
+  mHeaderSize = mHeader.offsetHeight;
+}
+
 function updateLayout() {
   if (!mProviderId && !mSelector.hasChildNodes()) {
     mContainer.classList.add('collapsed');
@@ -248,11 +254,12 @@ function updateLayout() {
   else {
     mHeight = Math.max(0, mHeight);
     mContainer.classList.toggle('collapsed', mHeight == 0);
-    const headerSize = mHeader.offsetHeight;
+    if (!mHeaderSize)
+      updateHeaderSize();
     const maxHeight = window.innerHeight * Math.max(0, Math.min(1, configs.maxSubPanelSizeRatio));
     const appliedHeight = Math.min(maxHeight, mHeight);
     document.documentElement.style.setProperty('--subpanel-content-size', `${appliedHeight}px`);
-    document.documentElement.style.setProperty('--subpanel-area-size', `${appliedHeight + headerSize}px`);
+    document.documentElement.style.setProperty('--subpanel-area-size', `${appliedHeight + mHeaderSize}px`);
 
     if (mHeight > 0 &&
         (!mSubPanel.src || mSubPanel.src == 'about:blank')) {
@@ -344,6 +351,7 @@ mToggler.addEventListener('click', async event => {
 });
 
 window.addEventListener('resize', _event => {
+  updateHeaderSize();
   updateLayout();
 });
 

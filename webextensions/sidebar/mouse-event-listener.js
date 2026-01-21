@@ -72,6 +72,7 @@ const mNewTabActionSelector       = document.getElementById(Constants.kNEWTAB_AC
 const mRootClasses = document.documentElement.classList;
 
 let mHasMouseOverListeners = false;
+let mCachedRects = null;
 
 Sidebar.onInit.addListener(() => {
   mTargetWindow = TabsStore.getCurrentWindowId();
@@ -113,7 +114,14 @@ Sidebar.onReady.addListener(() => {
 
 Sidebar.onLayoutUpdated.addListener(() => {
   updateSpecialEventListenersForAPIListeners();
+  if (mCachedRects)
+    updateRects();
 });
+
+window.addEventListener('resize', () => {
+  if (mCachedRects)
+    updateRects();
+}, { passive: true });
 
 TSTAPI.onRegistered.addListener(() => {
   updateSpecialEventListenersForAPIListeners();
@@ -172,15 +180,31 @@ const mFaviconSizeBox  = document.querySelector(`#dummy-tab ${kTAB_FAVICON_ELEME
 const mTwistySizeBox   = document.querySelector(`#dummy-tab ${kTAB_TWISTY_ELEMENT_NAME}`);
 const mDistanceBox     = document.querySelector('#dummy-shift-tabs-for-scrollbar-distance-box');
 
+function updateRects() {
+  if (!mTabBar.classList.contains(Constants.kTABBAR_STATE_SCROLLBAR_AUTOHIDE)) {
+    mCachedRects = null;
+    return;
+  }
+  mCachedRects = {
+    tabbar:   mTabBar.getBoundingClientRect(),
+    twisty:   mTwistySizeBox.getBoundingClientRect(),
+    favicon:  mFaviconSizeBox.getBoundingClientRect(),
+    close:    mCloseBoxSizeBox.getBoundingClientRect(),
+    distance: mDistanceBox.getBoundingClientRect(),
+  };
+}
+
 function onMouseMove(event) {
   const tab = EventUtils.getTreeItemFromEvent(event);
   if (mTabBar.classList.contains(Constants.kTABBAR_STATE_SCROLLBAR_AUTOHIDE)) {
     const onTabBar    = mTabBar.contains(event.target);
-    const tabbarRect  = mTabBar.getBoundingClientRect();
-    const twistyRect  = mTwistySizeBox.getBoundingClientRect();
-    const faviconRect = mFaviconSizeBox.getBoundingClientRect();
-    const closeRect   = mCloseBoxSizeBox.getBoundingClientRect();
-    const placeholderSizeRect = mDistanceBox.getBoundingClientRect();
+    if (!mCachedRects)
+      updateRects();
+    const tabbarRect  = mCachedRects.tabbar;
+    const twistyRect  = mCachedRects.twisty;
+    const faviconRect = mCachedRects.favicon;
+    const closeRect   = mCachedRects.close;
+    const placeholderSizeRect = mCachedRects.distance;
     const isRightSide = mRootClasses.contains('right');
     const leftAreaSize = onTabBar &&(
       isRightSide ? closeRect.width :
