@@ -588,11 +588,11 @@ index = ${raw.index}
     }
     const tabSubstanceEnterEvent = new MouseEvent(kEVENT_TREE_ITEM_SUBSTANCE_ENTER, {
       ...event,
-      clientX: event.clientX,
-      clientY: event.clientY,
-      screenX: event.screenX,
-      screenY: event.screenY,
-      bubbles: true,
+      clientX:  event.clientX,
+      clientY:  event.clientY,
+      screenX:  event.screenX,
+      screenY:  event.screenY,
+      bubbles:  true,
       composed: true,
     });
     this.dispatchEvent(tabSubstanceEnterEvent);
@@ -603,7 +603,7 @@ index = ${raw.index}
       return;
     const tabSubstanceLeaveEvent = new UIEvent(kEVENT_TREE_ITEM_SUBSTANCE_LEAVE, {
       ...event,
-      bubbles: true,
+      bubbles:  true,
       composed: true,
     });
     this.dispatchEvent(tabSubstanceLeaveEvent);
@@ -811,7 +811,7 @@ index = ${raw.index}
 
     TabFavIconHelper.loadToImage({
       image: this.favicon,
-      tab: this.$TST.tab,
+      tab:   this.$TST.tab,
       url
     });
     return url;

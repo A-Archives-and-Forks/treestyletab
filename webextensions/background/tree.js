@@ -97,22 +97,22 @@ export async function attachTabTo(child, parent, options = {}) {
   }
 
   log('attachTabTo: ', {
-    child:            child.id,
-    parent:           parent.id,
-    children:         parent.$TST.getAttribute(Constants.kCHILDREN),
-    insertAt:         options.insertAt,
-    insertBefore:     options.insertBefore?.id,
-    insertAfter:      options.insertAfter?.id,
-    lastRelatedTab:   options.lastRelatedTab?.id,
-    dontMove:         options.dontMove,
-    dontUpdateIndent: options.dontUpdateIndent,
-    forceExpand:      options.forceExpand,
-    dontExpand:       options.dontExpand,
-    delayedMove:      options.delayedMove,
+    child:                     child.id,
+    parent:                    parent.id,
+    children:                  parent.$TST.getAttribute(Constants.kCHILDREN),
+    insertAt:                  options.insertAt,
+    insertBefore:              options.insertBefore?.id,
+    insertAfter:               options.insertAfter?.id,
+    lastRelatedTab:            options.lastRelatedTab?.id,
+    dontMove:                  options.dontMove,
+    dontUpdateIndent:          options.dontUpdateIndent,
+    forceExpand:               options.forceExpand,
+    dontExpand:                options.dontExpand,
+    delayedMove:               options.delayedMove,
     dontSyncParentToOpenerTab: options.dontSyncParentToOpenerTab,
-    broadcast:        options.broadcast,
-    broadcasted:      options.broadcasted,
-    stack:            `${configs.debug && new Error().stack}\n${options.stack || ''}`
+    broadcast:                 options.broadcast,
+    broadcasted:               options.broadcasted,
+    stack:                     `${configs.debug && new Error().stack}\n${options.stack || ''}`
   });
 
   if (isTabIdUnattachable(child.id)) {
@@ -210,10 +210,10 @@ export async function attachTabTo(child, parent, options = {}) {
       updateTabsIndent(child, parentLevel + 1, { justNow: options.synchronously });
 
     SidebarConnection.sendMessage({
-      type:     Constants.kCOMMAND_NOTIFY_CHILDREN_CHANGED,
-      windowId: parent.windowId,
-      tabId:    parent.id,
-      childIds: parent.$TST.childIds,
+      type:            Constants.kCOMMAND_NOTIFY_CHILDREN_CHANGED,
+      windowId:        parent.windowId,
+      tabId:           parent.id,
+      childIds:        parent.$TST.childIds,
       addedChildIds:   [child.id],
       removedChildIds: [],
       newlyAttached
@@ -325,7 +325,7 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
   const cache = {};
   const allowed = (options.forceExpand || !options.dontExpand) && await TSTAPI.tryOperationAllowed(
     TSTAPI.kNOTIFY_TRY_EXPAND_TREE_FROM_ATTACHED_CHILD,
-    { tab: parent,
+    { tab:   parent,
       child: tab },
     { tabProperties: ['tab', 'child'], cache }
   );
@@ -377,7 +377,7 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
             return;
           const allowed = await TSTAPI.tryOperationAllowed(
             TSTAPI.kNOTIFY_TRY_EXPAND_TREE_FROM_ATTACHED_CHILD,
-            { tab: ancestor,
+            { tab:   ancestor,
               child: tab },
             { tabProperties: ['tab', 'child'], cache }
           );
@@ -391,8 +391,8 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
             return;
           collapseExpandSubtree(ancestor, {
             ...options,
-            collapsed:    false,
-            broadcast:    true
+            collapsed: false,
+            broadcast: true
           });
           parentTreeCollasped = false;
         }));
@@ -418,8 +418,8 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
     log('  collapse auto expanded tree');
     collapseExpandTabAndSubtree(tab, {
       ...options,
-      collapsed:    true,
-      broadcast:    true
+      collapsed: true,
+      broadcast: true
     });
   }
   else {
@@ -429,9 +429,9 @@ async function collapseExpandForAttachedTab(tab, parent, options = {}) {
     log('  collapse tab because the parent is collapsed');
     collapseExpandTabAndSubtree(tab, {
       ...options,
-      collapsed: true,
+      collapsed:   true,
       forceExpand: false,
-      broadcast: true
+      broadcast:   true
     });
   }
 }
@@ -566,13 +566,13 @@ export function detachTab(child, options = {}) {
     parent.$TST.invalidateCache();
     log('detachTab: children information is updated ', parent.id, parent.$TST.childIds);
     SidebarConnection.sendMessage({
-      type:     Constants.kCOMMAND_NOTIFY_CHILDREN_CHANGED,
-      windowId: parent.windowId,
-      tabId:    parent.id,
-      childIds: parent.$TST.childIds,
+      type:            Constants.kCOMMAND_NOTIFY_CHILDREN_CHANGED,
+      windowId:        parent.windowId,
+      tabId:           parent.id,
+      childIds:        parent.$TST.childIds,
       addedChildIds:   [],
       removedChildIds: [child.id],
-      detached: true
+      detached:        true
     });
     if (TSTAPI.hasListenerForMessageType(TSTAPI.kNOTIFY_TREE_DETACHED)) {
       const cache = {};
@@ -1081,9 +1081,9 @@ async function collapseExpandSubtreeInternal(tab, params = {}) {
   //setTabValue(tab, Constants.kTAB_STATE_SUBTREE_COLLAPSED, params.collapsed);
 
   const isInViewport = await browser.runtime.sendMessage({
-    type:     Constants.kCOMMAND_ASK_TAB_IS_IN_VIEWPORT,
-    windowId: tab.windowId,
-    tabId:    tab.id,
+    type:         Constants.kCOMMAND_ASK_TAB_IS_IN_VIEWPORT,
+    windowId:     tab.windowId,
+    tabId:        tab.id,
     allowPartial: true,
   }).catch(_error => false);
   const anchor = isInViewport ? tab : null;
@@ -1715,7 +1715,7 @@ export async function openNewWindowFromTabs(tabs, options = {}) {
   const sourceParams = getWindowParamsFromSource(sourceWindow, options);
   const windowParams = {
     //active: true,  // not supported in Firefox...
-    url:       'about:blank',
+    url: 'about:blank',
     ...sourceParams,
   };
   // positions are not provided for a maximized or fullscren window!
@@ -1838,7 +1838,7 @@ export async function applyTreeStructureToTabs(tabs, treeStructure, options = {}
     const expanded = expandStates[i];
     collapseExpandSubtree(tab, {
       ...options,
-      collapsed: expanded === undefined ? !tab.$TST.hasChild : !expanded ,
+      collapsed: expanded === undefined ? !tab.$TST.hasChild : !expanded,
       justNow:   true,
       force:     true
     });
@@ -1878,10 +1878,10 @@ class TabActionForNewPosition {
 
       case 'attach': {
         const attached = attachTabTo(this.tab, Tab.get(this.parent), {
-          insertBefore: Tab.get(this.insertBefore),
-          insertAfter:  Tab.get(this.insertAfter),
-          forceExpand:  this.isTabCreating || this.isMovingByShortcut,
-          broadcast:    true,
+          insertBefore:  Tab.get(this.insertBefore),
+          insertAfter:   Tab.get(this.insertAfter),
+          forceExpand:   this.isTabCreating || this.isMovingByShortcut,
+          broadcast:     true,
           synchronously: this.isTabCreating,
         });
         if (!this.isTabCreating)
@@ -1981,8 +1981,8 @@ export function detectTabActionFromNewPosition(tab, moveInfo = {}) {
 
   const prevLevel  = prevTab ? prevTab.level : -1 ;
   const nextLevel  = nextTab ? nextTab.level : -1 ;
-  log('prevLevel: '+prevLevel);
-  log('nextLevel: '+nextLevel);
+  log('prevLevel: ' + prevLevel);
+  log('nextLevel: ' + nextLevel);
 
   const oldParent = tree.tabsById[target.parent] || snapshotTab(Tab.get(target.parent));
   if (oldParent)
@@ -2192,15 +2192,15 @@ function snapshotTab(tab) {
   if (!tab)
     return null;
   return {
-    id:            tab.id,
-    url:           tab.url,
-    cookieStoreId: tab.cookieStoreId,
-    active:        tab.active,
-    children:      tab.$TST.children.map(child => child.id),
-    collapsed:     tab.$TST.subtreeCollapsed,
-    pinned:        tab.pinned,
-    level:         tab.$TST.level, // parseInt(tab.$TST.getAttribute(Constants.kLEVEL) || 0), // we need to use the number of real ancestors instead of a cached "level", because it will be updated with delay
-    trackedAt:     tab.$TST.trackedAt,
+    id:                         tab.id,
+    url:                        tab.url,
+    cookieStoreId:              tab.cookieStoreId,
+    active:                     tab.active,
+    children:                   tab.$TST.children.map(child => child.id),
+    collapsed:                  tab.$TST.subtreeCollapsed,
+    pinned:                     tab.pinned,
+    level:                      tab.$TST.level, // parseInt(tab.$TST.getAttribute(Constants.kLEVEL) || 0), // we need to use the number of real ancestors instead of a cached "level", because it will be updated with delay
+    trackedAt:                  tab.$TST.trackedAt,
     mayBeReplacedWithContainer: tab.$TST.mayBeReplacedWithContainer,
   };
 }

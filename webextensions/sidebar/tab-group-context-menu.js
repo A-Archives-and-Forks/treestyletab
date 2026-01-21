@@ -58,8 +58,8 @@ const TAB_GROUP_MENU_LABELS_CODE = JSON.stringify(TAB_GROUP_MENU_LABELS);
 
 const mTabGroupMenuPanel = new TabGroupMenuPanel(document.querySelector('#tabGroupContextMenuRoot'), TAB_GROUP_MENU_LABELS);
 const mController = new InContentPanelController({
-  type:    TabGroupMenuPanel.TYPE,
-  logger:  log,
+  type:   TabGroupMenuPanel.TYPE,
+  logger: log,
   shouldLog() {
     return configs.logFor['sidebar/tab-group-context-menu'] && configs.debug;
   },
@@ -72,8 +72,8 @@ const mController = new InContentPanelController({
   shouldFallbackToSidebar() {
     return !!(configs.tabGroupMenuPanelRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_SIDEBAR);
   },
-  UIClass: TabGroupMenuPanel,
-  inSidebarUI: mTabGroupMenuPanel,
+  UIClass:         TabGroupMenuPanel,
+  inSidebarUI:     mTabGroupMenuPanel,
   initializerCode: `
     const root = document.createElement('div');
     appendClosedContents(root);
@@ -114,12 +114,12 @@ export async function show(group, creating = false) {
   }
 
   mController.show({
-    anchorItem: group,
-    targetItem: group,
+    anchorItem:    group,
+    targetItem:    group,
     messageParams: {
       groupTitle: group.title,
       groupColor: group.color,
-      creating: !!creating,
+      creating:   !!creating,
     },
   });
 }

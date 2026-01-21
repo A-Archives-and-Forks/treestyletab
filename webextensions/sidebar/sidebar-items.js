@@ -617,7 +617,7 @@ function tryApplyUpdate(update) {
 
   if (update.removedAttributes) {
     for (const key of update.removedAttributes) {
-      tab.$TST.removeAttribute(key, );
+      tab.$TST.removeAttribute(key,);
     }
   }
 
@@ -844,8 +844,8 @@ BackgroundConnection.onMessage.addListener(async message => {
     case Constants.kCOMMAND_NOTIFY_TAB_CREATED: {
       if (message.active) {
         BackgroundConnection.handleBufferedMessage({
-          type:  Constants.kCOMMAND_NOTIFY_TAB_ACTIVATED,
-          tabId: message.tabId,
+          type:     Constants.kCOMMAND_NOTIFY_TAB_ACTIVATED,
+          tabId:    message.tabId,
           windowId: message.windowId
         }, `${BUFFER_KEY_PREFIX}window-${message.windowId}`);
       }

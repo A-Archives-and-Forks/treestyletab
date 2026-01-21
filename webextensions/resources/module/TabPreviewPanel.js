@@ -316,7 +316,7 @@ export default class TabPreviewPanel extends InContentPanel {
       requestAnimationFrame(complete);
       return true;
     }
-    catch (error) {
+    catch(error) {
       if (logging)
         console.log('updateUI: could not detemine preview size ', error, previewURL);
     }

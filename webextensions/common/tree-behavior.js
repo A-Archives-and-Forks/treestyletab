@@ -144,7 +144,7 @@ export function calculateReferenceItemsFromInsertionPosition(
     firstItem:    firstItem?.id,
     lastItem:     lastItem?.id,
     insertBefore: insertBefore?.id,
-    insertAfter : insertAfter?.id
+    insertAfter:  insertAfter?.id
   });
   if (insertBefore) {
     /* strategy for moved case

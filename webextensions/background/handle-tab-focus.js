@@ -268,7 +268,7 @@ async function tryHighlightBundledTab(tab, { shouldSkipCollapsed, allowed, silen
   const bundledTab = tab.$TST.bundledTab;
   const oldBundledTabs = TabsStore.bundledActiveTabsInWindow.get(tab.windowId);
   log('tryHighlightBundledTab ', {
-    tab: tab.id,
+    tab:        tab.id,
     bundledTab: bundledTab?.id,
     oldBundledTabs,
     shouldSkipCollapsed,

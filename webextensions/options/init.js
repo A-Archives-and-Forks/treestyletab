@@ -366,9 +366,9 @@ async function updateBookmarksUI(enabled) {
     document.querySelector('#defaultBookmarkParentChooserStyle').textContent = Bookmark.FOLDER_CHOOSER_STYLE;
     Bookmark.initFolderChooser({
       defaultValue: defaultParentFolder.id,
-      rootItems: (await browser.bookmarks.getTree().catch(ApiTabs.createErrorHandler()))[0].children,
-      container: document.querySelector('#defaultBookmarkParentGroup'),
-      inline: true,
+      rootItems:    (await browser.bookmarks.getTree().catch(ApiTabs.createErrorHandler()))[0].children,
+      container:    document.querySelector('#defaultBookmarkParentGroup'),
+      inline:       true,
     });
   }
   else {
@@ -1050,10 +1050,10 @@ import('/extlib/codemirror.js').then(async () => {
     colorpicker: {
       mode: 'edit'
     },
-    lineNumbers: true,
+    lineNumbers:  true,
     lineWrapping: true,
-    mode: 'css',
-    theme: getUserStyleRulesFieldTheme()
+    mode:         'css',
+    theme:        getUserStyleRulesFieldTheme()
   });
   mDarkModeMedia.addListener(async _event => {
     applyUserStyleRulesFieldTheme();

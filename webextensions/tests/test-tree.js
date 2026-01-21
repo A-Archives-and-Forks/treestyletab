@@ -421,11 +421,11 @@ async function preparePinnedTabsAndChildrenToTestInsertionPosition() {
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtTop() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_END,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_END,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_TOP,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  false,
+    insertNewChildAt:              Constants.kINSERT_END,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_END,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_TOP,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    false,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -448,11 +448,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtTop() {
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtEnd() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_TOP,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_END,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_END,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  false,
+    insertNewChildAt:              Constants.kINSERT_TOP,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_END,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_END,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    false,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -475,11 +475,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtEnd() {
 
 export async function testInsertNewTabFromPinnedTabAt_nextToLastRelatedTab() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_TOP,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_END,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  false,
+    insertNewChildAt:              Constants.kINSERT_TOP,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_END,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    false,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -502,11 +502,11 @@ export async function testInsertNewTabFromPinnedTabAt_nextToLastRelatedTab() {
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtTop_autoGroup_insertAtTopInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_TOP,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_TOP,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_TOP,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_TOP,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_TOP,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_TOP,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -529,11 +529,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtTop_autoGroup_inse
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtTop_autoGroup_insertAtEndInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_END,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_END,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_TOP,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_END,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_END,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_TOP,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -556,11 +556,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtTop_autoGroup_inse
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtTop_autoGroup_insertNextToLastRelatedInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_NEXT_TO_LAST_RELATED_TAB,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_TOP,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_NEXT_TO_LAST_RELATED_TAB,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_TOP,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -583,11 +583,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtTop_autoGroup_inse
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtEnd_autoGroup_insertAtTopInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_TOP,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_TOP,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_END,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_TOP,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_TOP,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_END,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -610,11 +610,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtEnd_autoGroup_inse
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtEnd_autoGroup_insertAtEndInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_END,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_END,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_END,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_END,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_END,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_END,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -637,11 +637,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtEnd_autoGroup_inse
 
 export async function testInsertNewTabFromPinnedTabAt_insertAtEnd_autoGroup_insertNextToLastRelatednTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_NEXT_TO_LAST_RELATED_TAB,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_END,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_NEXT_TO_LAST_RELATED_TAB,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_END,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -663,11 +663,11 @@ export async function testInsertNewTabFromPinnedTabAt_insertAtEnd_autoGroup_inse
 }
 export async function testInsertNewTabFromPinnedTabAt_nextToLastRelatedTab_autoGroup_insertAtTopInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_TOP,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_TOP,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_TOP,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_TOP,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -690,11 +690,11 @@ export async function testInsertNewTabFromPinnedTabAt_nextToLastRelatedTab_autoG
 
 export async function testInsertNewTabFromPinnedTabAt_nextToLastRelatedTab_autoGroup_insertAtEndInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_END,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_END,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_END,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_END,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 
@@ -717,11 +717,11 @@ export async function testInsertNewTabFromPinnedTabAt_nextToLastRelatedTab_autoG
 
 export async function testInsertNewTabFromPinnedTabAt_nextToLastRelatedTab_autoGroup_insertNextToLastRelatedInTree() {
   await Utils.setConfigs({
-    insertNewChildAt:            Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
-    autoAttachOnOpenedWithOwner: Constants.kNEWTAB_OPEN_AS_CHILD_NEXT_TO_LAST_RELATED_TAB,
-    insertNewTabFromPinnedTabAt: Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
-    autoGroupNewTabsFromOthers:  false,
-    autoGroupNewTabsFromPinned:  true,
+    insertNewChildAt:              Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
+    autoAttachOnOpenedWithOwner:   Constants.kNEWTAB_OPEN_AS_CHILD_NEXT_TO_LAST_RELATED_TAB,
+    insertNewTabFromPinnedTabAt:   Constants.kINSERT_NEXT_TO_LAST_RELATED_TAB,
+    autoGroupNewTabsFromOthers:    false,
+    autoGroupNewTabsFromPinned:    true,
     autoGroupNewTabsFromBookmarks: false,
   });
 

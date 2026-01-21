@@ -248,8 +248,8 @@ export function getEventDetail(event) {
 export function getTreeItemEventDetail(event, tab) {
   return {
     ...getEventDetail(event),
-    tab:   tab?.id,
-    tabId: tab?.id,
+    tab:     tab?.id,
+    tabId:   tab?.id,
     tabType: tab?.$TST?.type || tab?.type,
   };
 }
@@ -257,13 +257,13 @@ export function getTreeItemEventDetail(event, tab) {
 export function getMouseEventDetail(event, tab) {
   return {
     ...getTreeItemEventDetail(event, tab),
-    twisty:        isEventFiredOnTwisty(event),
-    sharingState:  isEventFiredOnSharingState(event),
-    soundButton:   isEventFiredOnSoundButton(event),
-    closebox:      isEventFiredOnClosebox(event),
-    button:        event.button,
-    isMiddleClick: isMiddleClick(event),
-    isAccelClick:  isAccelAction(event),
+    twisty:           isEventFiredOnTwisty(event),
+    sharingState:     isEventFiredOnSharingState(event),
+    soundButton:      isEventFiredOnSoundButton(event),
+    closebox:         isEventFiredOnClosebox(event),
+    button:           event.button,
+    isMiddleClick:    isMiddleClick(event),
+    isAccelClick:     isAccelAction(event),
     lastInnerScreenY: window.mozInnerScreenY,
   };
 }

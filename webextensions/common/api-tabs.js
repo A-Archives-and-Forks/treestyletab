@@ -89,7 +89,7 @@ export function createErrorHandler(...handlers) {
         throw error;
       }
     }
-    catch(newError){
+    catch(newError) {
       if (!configs.debug)
         throw newError;
       if (error == newError)
@@ -121,7 +121,7 @@ export function createErrorSuppressor(...handlers) {
         throw error;
       }
     }
-    catch(newError){
+    catch(newError) {
       if (error &&
           error.message &&
           error.message.indexOf('Could not establish connection. Receiving end does not exist.') == 0)

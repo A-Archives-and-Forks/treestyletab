@@ -120,24 +120,24 @@ export function endMultiDrag(tab, coordinates) {
     document.releaseCapture();
 
     TSTAPI.broadcastMessage({
-      type:    TSTAPI.kNOTIFY_TAB_DRAGEND,
+      type:     TSTAPI.kNOTIFY_TAB_DRAGEND,
       tab,
-      window:  tab?.windowId,
+      window:   tab?.windowId,
       windowId: tab?.windowId,
-      clientX: coordinates.clientX,
-      clientY: coordinates.clientY
+      clientX:  coordinates.clientX,
+      clientY:  coordinates.clientY
     }, { tabProperties: ['tab'] }).catch(_error => {});
 
     mLastDragEnteredTarget = null;
   }
   else if (mReadyToCaptureMouseEvents) {
     TSTAPI.broadcastMessage({
-      type:    TSTAPI.kNOTIFY_TAB_DRAGCANCEL,
+      type:     TSTAPI.kNOTIFY_TAB_DRAGCANCEL,
       tab,
-      window:  tab?.windowId,
+      window:   tab?.windowId,
       windowId: tab?.windowId,
-      clientX: coordinates.clientX,
-      clientY: coordinates.clientY
+      clientX:  coordinates.clientX,
+      clientY:  coordinates.clientY
     }, { tabProperties: ['tab'] }).catch(_error => {});
   }
   mCapturingForDragging = false;
@@ -155,10 +155,10 @@ function getDragDataFromOneItem(item, options = {}) {
   const sessionId = `${Date.now()}-${Math.floor(Math.random() * 65000)}`;
   if (!item)
     return {
-      tab:      null,
-      tabs:     [],
-      item:     null,
-      items:    [],
+      tab:            null,
+      tabs:           [],
+      item:           null,
+      items:          [],
       structure:      [],
       nextGroupColor: TabGroup.getNextUnusedColor(),
       windowId:       null,
@@ -196,16 +196,16 @@ function getDraggedItemsFromOneItem(item, { asTree } = {}) {
 
 function sanitizeDragData(dragData) {
   return {
-    item:       dragData.item?.$TST.sanitized,
-    items:      dragData.items.map(item => item?.$TST.sanitized),
-    tab:        dragData.tab?.$TST.sanitized,
-    tabs:       dragData.tabs.map(tab => tab?.$TST.sanitized),
-    structure:  dragData.structure,
-    nextGroupColor: dragData.nextGroupColor,
-    windowId:   dragData.windowId,
-    instanceId: dragData.instanceId,
-    sessionId:  dragData.sessionId,
-    behavior:   dragData.behavior,
+    item:                dragData.item?.$TST.sanitized,
+    items:               dragData.items.map(item => item?.$TST.sanitized),
+    tab:                 dragData.tab?.$TST.sanitized,
+    tabs:                dragData.tabs.map(tab => tab?.$TST.sanitized),
+    structure:           dragData.structure,
+    nextGroupColor:      dragData.nextGroupColor,
+    windowId:            dragData.windowId,
+    instanceId:          dragData.instanceId,
+    sessionId:           dragData.sessionId,
+    behavior:            dragData.behavior,
     individualOnOutside: dragData.individualOnOutside,
   };
 }
@@ -217,12 +217,12 @@ function getDropAction(event) {
     dragOverItem,
     targetItem,
     substanceTargetItem: targetItem?.pinned && targetItem.$TST.bundledTab,
-    dropPosition:  null,
-    inlineDropPosition: '',
-    action:        null,
-    parent:        null,
-    insertBefore:  null,
-    insertAfter:   null,
+    dropPosition:        null,
+    inlineDropPosition:  '',
+    action:              null,
+    parent:              null,
+    insertBefore:        null,
+    insertAfter:         null,
     defineGetter(name, getter) {
       delete this[name];
       Object.defineProperty(this, name, {
@@ -570,7 +570,7 @@ function getDropAction(event) {
         info.insertBefore = referenceItems.insertBefore;
       if (referenceItems.insertAfter)
         info.insertAfter = referenceItems.insertAfter;
-      info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH );
+      info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH);
       //if (info.insertBefore)
       //  log('insertBefore = ', dumpTab(info.insertBefore));
       if (info.draggedItem?.type == TreeItem.TYPE_GROUP && // we cannot drop group on its member
@@ -604,7 +604,7 @@ function getDropAction(event) {
         info.insertBefore = referenceItems.insertBefore;
       if (referenceItems.insertAfter)
         info.insertAfter = referenceItems.insertAfter;
-      info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH );
+      info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH);
       if (info.insertBefore) {
         /* strategy
              +-----------------------------------------------------
@@ -752,8 +752,8 @@ async function handleDroppedNonTreeItems(event, dropActionInfo) {
       return;
     if (behavior & Constants.kDROPLINK_LOAD) {
       BackgroundConnection.sendMessage({
-        type:  Constants.kCOMMAND_ACTIVATE_TAB,
-        tabId: dropActionInfo.dragOverItem.id,
+        type:             Constants.kCOMMAND_ACTIVATE_TAB,
+        tabId:            dropActionInfo.dragOverItem.id,
         byMouseOperation: true
       });
       BackgroundConnection.sendMessage({
@@ -1347,8 +1347,8 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }
       if (!dragOverItem.active &&
           dropEffect == 'link') {
         BackgroundConnection.sendMessage({
-          type:  Constants.kCOMMAND_ACTIVATE_TAB,
-          tabId: dragOverItem.id,
+          type:             Constants.kCOMMAND_ACTIVATE_TAB,
+          tabId:            dragOverItem.id,
           byMouseOperation: true
         });
       }
@@ -1547,7 +1547,7 @@ function onDrop(event) {
       const structureFromMultiselectedTabs = (recentTab.windowId == TabsStore.getCurrentWindowId()) ?
         TreeBehavior.getTreeStructureFromTabs(multiselectedTabs.map(tab => Tab.get(tab.id))) :
         (await browser.runtime.sendMessage({
-          type: Constants.kCOMMAND_PULL_TREE_STRUCTURE,
+          type:   Constants.kCOMMAND_PULL_TREE_STRUCTURE,
           tabIds: multiselectedTabs.map(tab => tab.id),
         })).structure;
       log('maybe dragged tabs: ', multiselectedTabs, structureFromMultiselectedTabs);
@@ -1812,8 +1812,8 @@ function onFinishDrag() {
 
 function updateLastDragEventCoordinates(event = null) {
   mLastDragEventCoordinates = !event ? null : {
-    x: event.screenX,
-    y: event.screenY,
+    x:         event.screenX,
+    y:         event.screenY,
     timestamp: Date.now(),
   };
 }

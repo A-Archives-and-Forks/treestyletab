@@ -106,9 +106,9 @@ Tab.onCreating.addListener((tab, info = {}) => {
             activeTab,
             autoAttachBehavior,
             dontMove,
-            openedWithCookieStoreId: info.openedWithCookieStoreId,
+            openedWithCookieStoreId:       info.openedWithCookieStoreId,
             inheritContextualIdentityMode: configs.inheritContextualIdentityToChildTabMode,
-            context: TSTAPI.kNEWTAB_CONTEXT_NEWTAB_COMMAND,
+            context:                       TSTAPI.kNEWTAB_CONTEXT_NEWTAB_COMMAND,
           }).then(moved => !moved);
         }
         return false;
@@ -289,10 +289,10 @@ async function handleNewTabFromActiveTab(tab, { url, activeTab, autoAttachBehavi
   const win = TabsStore.windows.get(tab.windowId);
   win.openedNewTabs.delete(tab.id);
   await TabsOpen.openURIInTab(url || null, {
-    windowId: activeTab.windowId,
+    windowId:     activeTab.windowId,
     parent,
     insertBefore: tab,
-    active: tab.active,
+    active:       tab.active,
     cookieStoreId
   });
   TabsInternalOperation.removeTab(tab);
@@ -301,7 +301,7 @@ async function handleNewTabFromActiveTab(tab, { url, activeTab, autoAttachBehavi
 
 async function handleTabsFromPinnedOpener(tab, opener, { activeTab } = {}) {
   const allowed = await notifyToTryHandleNewTab(tab, {
-    context: TSTAPI.kNEWTAB_CONTEXT_FROM_PINNED,
+    context:   TSTAPI.kNEWTAB_CONTEXT_FROM_PINNED,
     activeTab,
     openerTab: opener,
   });
@@ -331,8 +331,8 @@ async function handleTabsFromPinnedOpener(tab, opener, { activeTab } = {}) {
     return Tree.attachTabTo(tab, parent, {
       lastRelatedTab,
       insertAt,
-      forceExpand:    true, // this is required to avoid the group tab itself is active from active tab in collapsed tree
-      broadcast:      true
+      forceExpand: true, // this is required to avoid the group tab itself is active from active tab in collapsed tree
+      broadcast:   true
     });
   }
 
@@ -461,8 +461,8 @@ Tab.onUpdated.addListener((tab, changeInfo) => {
        tab.$TST.temporaryMetadata.has('fromExternal') ||
        tab.$TST.temporaryMetadata.has('anyOtherTrigger'))) {
     log('loaded tab ', dumpTab(tab), {
-      isNewTab: tab.$TST.temporaryMetadata.has('isNewTab'),
-      fromExternal: tab.$TST.temporaryMetadata.has('fromExternal'),
+      isNewTab:        tab.$TST.temporaryMetadata.has('isNewTab'),
+      fromExternal:    tab.$TST.temporaryMetadata.has('fromExternal'),
       anyOtherTrigger: tab.$TST.temporaryMetadata.has('anyOtherTrigger'),
     });
     tab.$TST.temporaryMetadata.delete('isNewTab');
@@ -504,9 +504,9 @@ Tab.onUpdated.addListener((tab, changeInfo) => {
         tab.$TST.temporaryMetadata.has('openedWithOthers') ||
         tab.$TST.temporaryMetadata.has('positionedBySelf')) {
       log(' => no need to control ', {
-        parent: tab.$TST.parent,
+        parent:           tab.$TST.parent,
         possibleOpenerTab,
-        openedNewTab: win.openedNewTabs.has(tab.id),
+        openedNewTab:     win.openedNewTabs.has(tab.id),
         openedWithOthers: tab.$TST.temporaryMetadata.has('openedWithOthers'),
         positionedBySelf: tab.$TST.temporaryMetadata.has('positionedBySelf')
       });
@@ -567,7 +567,7 @@ Tab.onAttached.addListener(async (tab, attachInfo = {}) => {
     return;
 
   const parentTabOperationBehavior = TreeBehavior.getParentTabOperationBehavior(tab, {
-    context:  Constants.kPARENT_TAB_OPERATION_CONTEXT_MOVE,
+    context: Constants.kPARENT_TAB_OPERATION_CONTEXT_MOVE,
     ...attachInfo,
   });
   if (parentTabOperationBehavior != Constants.kPARENT_TAB_OPERATION_BEHAVIOR_ENTIRE_TREE)

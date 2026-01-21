@@ -94,16 +94,16 @@ Sidebar.onBuilt.addListener(async () => {
 
   if (!mRootClasses.contains('incognito'))
     mContextualIdentitySelector.ui = new MenuUI({
-      root:       mContextualIdentitySelector,
-      appearance: 'panel',
-      onCommand:  onContextualIdentitySelect,
+      root:              mContextualIdentitySelector,
+      appearance:        'panel',
+      onCommand:         onContextualIdentitySelect,
       animationDuration: shouldApplyAnimation() ? configs.collapseDuration : 0.001
     });
 
   mNewTabActionSelector.ui = new MenuUI({
-    root:       mNewTabActionSelector,
-    appearance: 'panel',
-    onCommand:  onNewTabActionSelect,
+    root:              mNewTabActionSelector,
+    appearance:        'panel',
+    onCommand:         onNewTabActionSelect,
     animationDuration: shouldApplyAnimation() ? configs.collapseDuration : 0.001
   });
 });
@@ -206,11 +206,11 @@ function onMouseMove(event) {
     const closeRect   = mCachedRects.close;
     const placeholderSizeRect = mCachedRects.distance;
     const isRightSide = mRootClasses.contains('right');
-    const leftAreaSize = onTabBar &&(
+    const leftAreaSize = onTabBar && (
       isRightSide ? closeRect.width :
         Math.max(twistyRect.right, faviconRect.right) - Math.min(twistyRect.left, faviconRect.left)
     ) + placeholderSizeRect.width;
-    const rightAreaSize = onTabBar &&(
+    const rightAreaSize = onTabBar && (
       !isRightSide ? closeRect.width :
         Math.max(twistyRect.right, faviconRect.right) - Math.min(twistyRect.left, faviconRect.left)
     ) + placeholderSizeRect.width;
@@ -341,10 +341,10 @@ function onMouseDown(event) {
   }
 
   const mousedown = {
-    detail: mousedownDetail,
+    detail:                    mousedownDetail,
     tab,
     promisedMousedownNotified: Promise.resolve(),
-    timestamp: Date.now(),
+    timestamp:                 Date.now(),
   };
 
   const apiEventType = (tab && mousedownDetail.targetType == 'tab') ?
@@ -407,8 +407,8 @@ function onMouseDown(event) {
         !wasMultiselectionAction &&
         tab?.$TST?.type == TreeItem.TYPE_TAB) {
       BackgroundConnection.sendMessage({
-        type:  Constants.kCOMMAND_ACTIVATE_TAB,
-        tabId: tab.id,
+        type:               Constants.kCOMMAND_ACTIVATE_TAB,
+        tabId:              tab.id,
         byMouseOperation:   true,
         keepMultiselection: true
       });
@@ -523,8 +523,8 @@ async function onMouseUp(event) {
       lastMousedown.detail.targetType != EventUtils.getEventTargetType(event) || // when the cursor was moved before mouseup
       (tab && tab != lastMousedownTab)) { // when the tab was already removed
     log(' => expired, different type, or different tab ', {
-      expired: lastMousedown.expired,
-      targetType: lastMousedown.detail.targetType,
+      expired:             lastMousedown.expired,
+      targetType:          lastMousedown.detail.targetType,
       targetTypeFromEvent: EventUtils.getEventTargetType(event),
     });
     return;
@@ -606,7 +606,7 @@ async function handleDefaultMouseUp({ lastMousedown, tab, event }) {
         handleNewTabAction(event, {
           action: actionForNewTabCommand,
           cookieStoreId,
-          url: urls.length > 0 ? urls[0] : null,
+          url:    urls.length > 0 ? urls[0] : null,
         });
       }
     }
@@ -642,8 +642,8 @@ async function handleDefaultMouseUp({ lastMousedown, tab, event }) {
       TSTAPI.kNOTIFY_TABBAR_MOUSEUP,
       {
         ...lastMousedown,
-        detail:   EventUtils.getMouseEventDetail(event),
-        tab:      null,
+        detail: EventUtils.getMouseEventDetail(event),
+        tab:    null,
       },
       lastMousedown.detail.$extraContentsInfo
     );
@@ -678,8 +678,8 @@ async function handleDefaultMouseUp({ lastMousedown, tab, event }) {
       TSTAPI.kNOTIFY_TABBAR_CLICKED,
       {
         ...lastMousedown,
-        detail:   EventUtils.getMouseEventDetail(event),
-        tab:      null,
+        detail: EventUtils.getMouseEventDetail(event),
+        tab:    null,
       },
       lastMousedown.detail.$extraContentsInfo
     );
@@ -736,8 +736,8 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
       case TreeItem.TYPE_TAB:
         log(' => activate');
         BackgroundConnection.sendMessage({
-          type:  Constants.kCOMMAND_ACTIVATE_TAB,
-          tabId: tab.id,
+          type:               Constants.kCOMMAND_ACTIVATE_TAB,
+          tabId:              tab.id,
           byMouseOperation:   true,
           keepMultiselection: false // tab.highlighted
         });
@@ -774,7 +774,7 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
         const tabIds = sanitizedTabsToClose.map(tab => tab.id);
         await Scroll.tryLockPosition(tabIds, Scroll.LOCK_REASON_REMOVE);
         BackgroundConnection.sendMessage({
-          type:   Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
+          type: Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
           tabIds
         });
       });
@@ -848,7 +848,7 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
         const tabIds = tabsToBeClosed.map(tab => tab.id);
         await Scroll.tryLockPosition(tabIds, Scroll.LOCK_REASON_REMOVE);
         BackgroundConnection.sendMessage({
-          type:   Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
+          type: Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
           tabIds
         });
       });
@@ -904,8 +904,8 @@ function updateMultiselectionByTabClick(tab, event) {
       log(' => highlightedTabIds: ', highlightedTabIds);
 
       BackgroundConnection.sendMessage({
-        type:   Constants.kCOMMAND_HIGHLIGHT_TABS,
-        tabIds: [...highlightedTabIds],
+        type:                          Constants.kCOMMAND_HIGHLIGHT_TABS,
+        tabIds:                        [...highlightedTabIds],
         inheritToCollapsedDescendants: false,
       });
     }
@@ -970,8 +970,8 @@ function updateMultiselectionByTabClick(tab, event) {
       }
 
       BackgroundConnection.sendMessage({
-        type:   Constants.kCOMMAND_HIGHLIGHT_TABS,
-        tabIds: [...highlightedTabIds],
+        type:                          Constants.kCOMMAND_HIGHLIGHT_TABS,
+        tabIds:                        [...highlightedTabIds],
         inheritToCollapsedDescendants: false,
       });
     }
@@ -1123,7 +1123,7 @@ async function onDblClick(event) {
           const tabIds = [livingTab.id];
           await Scroll.tryLockPosition(tabIds, Scroll.LOCK_REASON_REMOVE);
           BackgroundConnection.sendMessage({
-            type:   Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
+            type: Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
             tabIds
           });
           break;

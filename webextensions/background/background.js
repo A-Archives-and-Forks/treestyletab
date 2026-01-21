@@ -280,7 +280,7 @@ async function waitUntilPersistentIdBecomeAvailable(tabId, retryCount = 0) {
 
 function destroy() {
   browser.runtime.sendMessage({
-    type:  TSTAPI.kUNREGISTER_SELF
+    type: TSTAPI.kUNREGISTER_SELF
   }).catch(ApiTabs.createErrorSuppressor());
 
   // This API doesn't work as expected because it is not notified to
@@ -314,8 +314,8 @@ async function rebuildAll(windows) {
         if (configs.useCachedTree) {
           log(`trying to restore window ${win.id} from cache`);
           const restored = await MetricsData.addAsync(`rebuildAll: restore tabs in window ${win.id} from cache`, BackgroundCache.restoreWindowFromEffectiveWindowCache(win.id, {
-            owner: win.tabs[win.tabs.length - 1],
-            tabs:  win.tabs,
+            owner:  win.tabs[win.tabs.length - 1],
+            tabs:   win.tabs,
             caches: mPreloadedCaches
           }));
           restoredFromCache.set(win.id, restored);
@@ -395,10 +395,10 @@ export async function tryStartHandleAccelKeyOnTab(tab) {
     if (browser.scripting) // Manifest V3
       browser.scripting.executeScript({
         target: {
-          tabId: tab.id,
+          tabId:     tab.id,
           allFrames: true,
         },
-        files:  ['/common/handle-accel-key.js'],
+        files: ['/common/handle-accel-key.js'],
       }).catch(ApiTabs.createErrorSuppressor(ApiTabs.handleMissingTabError, ApiTabs.handleMissingHostPermissionError));
     else
       browser.tabs.executeScript(tab.id, {
@@ -626,7 +626,7 @@ export async function confirmToCloseTabs(tabs, { windowId, configKey, messageKey
   const listing = configs.warnOnCloseTabsWithListing ?
     Dialog.tabsToHTMLList(tabs, {
       maxHeight: Math.round(win.height * 0.8),
-      maxWidth: Math.round(win.width * 0.75)
+      maxWidth:  Math.round(win.width * 0.75)
     }) :
     '';
 
@@ -639,11 +639,11 @@ export async function confirmToCloseTabs(tabs, { windowId, configKey, messageKey
       browser.i18n.getMessage('warnOnCloseTabs_cancel')
     ],
     checkMessage: browser.i18n.getMessage('warnOnCloseTabs_warnAgain'),
-    checked: true,
-    modal:   !configs.debug, // for popup
-    type:    'common-dialog', // for popup
-    url:     ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'), // for popup
-    title:   browser.i18n.getMessage(titleKey || 'warnOnCloseTabs_title'), // for popup
+    checked:      true,
+    modal:        !configs.debug, // for popup
+    type:         'common-dialog', // for popup
+    url:          ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'), // for popup
+    title:        browser.i18n.getMessage(titleKey || 'warnOnCloseTabs_title'), // for popup
     onShownInPopup(container) {
       setTimeout(() => { // because window.requestAnimationFrame is decelerate for an invisible document.
         // this need to be done on the next tick, to use the height of

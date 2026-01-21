@@ -243,7 +243,7 @@ export async function openURIsInTabs(uris, { windowId, insertBefore, insertAfter
   const openedTabs = tabs.filter(tab => actuallyOpenedTabIds.has(tab));
 
   if (fixPositions &&
-      openedTabs.every((tab, index) => (index == 0) || (openedTabs[index-1].index - tab.index) == 1)) {
+      openedTabs.every((tab, index) => (index == 0) || (openedTabs[index - 1].index - tab.index) == 1)) {
     // tabs are opened with reversed order due to browser.tabs.insertAfterCurrent=true
     let lastTab;
     for (const tab of openedTabs.slice(0).reverse()) {

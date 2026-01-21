@@ -70,14 +70,14 @@ const mTabItemsById = {
   },
   // This item won't be handled by the onClicked handler, so you may need to handle it with something experiments API.
   'unblockAutoplayTree': {
-    title:                browser.i18n.getMessage('context_unblockAutoplayTree_label'),
-    titleMultiselected:   browser.i18n.getMessage('context_unblockAutoplayTree_label_multiselected'),
+    title:                     browser.i18n.getMessage('context_unblockAutoplayTree_label'),
+    titleMultiselected:        browser.i18n.getMessage('context_unblockAutoplayTree_label_multiselected'),
     requireAutoplayBlockedTab: true,
   },
   // This item won't be handled by the onClicked handler, so you may need to handle it with something experiments API.
   'unblockAutoplayDescendants': {
-    title:                browser.i18n.getMessage('context_unblockAutoplayDescendants_label'),
-    titleMultiselected:   browser.i18n.getMessage('context_unblockAutoplayDescendants_label_multiselected'),
+    title:                            browser.i18n.getMessage('context_unblockAutoplayDescendants_label'),
+    titleMultiselected:               browser.i18n.getMessage('context_unblockAutoplayDescendants_label_multiselected'),
     requireAutoplayBlockedDescendant: true,
   },
   'toggleMuteTree': {
@@ -116,7 +116,7 @@ const mTabItemsById = {
     titleMultiselectedStick:   browser.i18n.getMessage('context_toggleSticky_label_multiselected_stick'),
     titleUnstick:              browser.i18n.getMessage('context_toggleSticky_label_unstick'),
     titleMultiselectedUnstick: browser.i18n.getMessage('context_toggleSticky_label_multiselected_unstick'),
-    requireNormal: true,
+    requireNormal:             true,
   },
   'separatorAfterToggleSticky': {
     type: 'separator'
@@ -124,7 +124,7 @@ const mTabItemsById = {
   'collapseTree': {
     title:              browser.i18n.getMessage('context_collapseTree_label'),
     titleMultiselected: browser.i18n.getMessage('context_collapseTree_label_multiselected'),
-    requireTree: true,
+    requireTree:        true,
   },
   'collapseTreeRecursively': {
     title:              browser.i18n.getMessage('context_collapseTreeRecursively_label'),
@@ -138,7 +138,7 @@ const mTabItemsById = {
   'expandTree': {
     title:              browser.i18n.getMessage('context_expandTree_label'),
     titleMultiselected: browser.i18n.getMessage('context_expandTree_label_multiselected'),
-    requireTree:       true,
+    requireTree:        true,
   },
   'expandTreeRecursively': {
     title:              browser.i18n.getMessage('context_expandTreeRecursively_label'),
@@ -170,11 +170,11 @@ const mTabItemsById = {
   },
   'pinnedTab': {
     title: browser.i18n.getMessage('context_pinnedTab_label'),
-    type: 'radio'
+    type:  'radio'
   },
   'unpinnedTab': {
     title: browser.i18n.getMessage('context_unpinnedTab_label'),
-    type: 'radio'
+    type:  'radio'
   }
 };
 const mTabItems = [];
@@ -206,21 +206,21 @@ for (const id of Object.keys(mTabItemsById)) {
 }
 
 const mTabSeparator = {
-  id:        `separatprBefore${kROOT_TAB_ITEM}`,
-  type:      'separator',
-  contexts:  ['tab'],
-  viewTypes: ['sidebar'],
+  id:                  `separatprBefore${kROOT_TAB_ITEM}`,
+  type:                'separator',
+  contexts:            ['tab'],
+  viewTypes:           ['sidebar'],
   documentUrlPatterns: [`moz-extension://${location.host}/*`],
-  visible:   false,
-  lastVisible: false
+  visible:             false,
+  lastVisible:         false
 };
 const mTabRootItem = {
-  id:       kROOT_TAB_ITEM,
-  type:     'normal',
-  contexts: ['tab'],
-  title:    browser.i18n.getMessage('context_menu_label'),
-  icons:    manifest.icons,
-  visible:  false,
+  id:          kROOT_TAB_ITEM,
+  type:        'normal',
+  contexts:    ['tab'],
+  title:       browser.i18n.getMessage('context_menu_label'),
+  icons:       manifest.icons,
+  visible:     false,
   lastVisible: false
 };
 
@@ -287,21 +287,21 @@ for (const id of Object.keys(mBookmarkItemsById)) {
 }
 
 const mBookmarkSeparator = {
-  id:        `separatprBefore${kROOT_BOOKMARK_ITEM}`,
-  type:      'separator',
-  contexts:  ['bookmark'],
-  viewTypes: ['sidebar'],
+  id:                  `separatprBefore${kROOT_BOOKMARK_ITEM}`,
+  type:                'separator',
+  contexts:            ['bookmark'],
+  viewTypes:           ['sidebar'],
   documentUrlPatterns: [`moz-extension://${location.host}/*`],
-  visible:   false,
-  lastVisible: false
+  visible:             false,
+  lastVisible:         false
 };
 const mBookmarkRootItem = {
-  id:       kROOT_BOOKMARK_ITEM,
-  type:     'normal',
-  contexts: ['bookmark'],
-  title:    manifest.name,
-  icons:    manifest.icons,
-  visible:  false,
+  id:          kROOT_BOOKMARK_ITEM,
+  type:        'normal',
+  contexts:    ['bookmark'],
+  title:       manifest.name,
+  icons:       manifest.icons,
+  visible:     false,
   lastVisible: false
 };
 
@@ -373,9 +373,9 @@ function updateItemsVisibility(items, { forceVisible = null, multiselected = fal
       const title = Commands.getMenuItemTitle(item, { multiselected, hasUnmutedTab, hasUnmutedDescendant, sticky });
       let visible = !hidden && (!(item.configKey in configs) || configs[item.configKey] || false);
       log('checking ', item.id, {
-        config: visible,
+        config:        visible,
         multiselected: item.hideOnMultiselected && multiselected,
-        lastVisible: item.lastVisible,
+        lastVisible:   item.lastVisible,
         forceVisible,
       });
       if (forceVisible !== null && forceVisible !== undefined)
@@ -575,7 +575,7 @@ function onTabItemClick(info, tab) {
           sendToDeviceMatch)
         Sync.sendTabsToDevice(
           contextTabs,
-          { to: sendToDeviceMatch[1],
+          { to:          sendToDeviceMatch[1],
             recursively: true }
         );
     }; break;

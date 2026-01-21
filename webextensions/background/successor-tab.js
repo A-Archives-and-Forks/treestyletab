@@ -163,10 +163,10 @@ async function updateInternal(tabId, excludeTabIds = []) {
       !TabsStore.ensureLivingItem(tab))
     return;
   log('updateInternal: ', dumpTab(tab), {
-    tabSuccessorTabId: tab.successorTabId,
-    renewedSuccessorTabId: renewedTab.successorTabId,
+    tabSuccessorTabId:         tab.successorTabId,
+    renewedSuccessorTabId:     renewedTab.successorTabId,
     lastSuccessorTabIdByOwner: tab.$TST.temporaryMetadata.get('lastSuccessorTabIdByOwner'),
-    lastSuccessorTabId: tab.$TST.temporaryMetadata.get('lastSuccessorTabId'),
+    lastSuccessorTabId:        tab.$TST.temporaryMetadata.get('lastSuccessorTabId'),
   });
   if (tab.$TST.temporaryMetadata.has('lastSuccessorTabIdByOwner')) {
     log('respect last successor by owner');
@@ -186,7 +186,7 @@ async function updateInternal(tabId, excludeTabIds = []) {
   }
   else {
     log(`  ${dumpTab(tab)} is under control: `, {
-      successorTabId: renewedTab.successorTabId,
+      successorTabId:     renewedTab.successorTabId,
       lastSuccessorTabId: tab.$TST.temporaryMetadata.get('lastSuccessorTabId'),
     });
     if (renewedTab.successorTabId != -1 &&
@@ -213,8 +213,8 @@ async function updateInternal(tabId, excludeTabIds = []) {
     };
     if (configs.successorTabControlLevel == Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE) {
       const closeParentBehavior = TreeBehavior.getParentTabOperationBehavior(tab, {
-        context: Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE,
-        parent: tab.$TST.parent,
+        context:  Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE,
+        parent:   tab.$TST.parent,
         windowId: tab.windowId,
       });
       const collapsedChildSuccessorAllowed = (
@@ -232,9 +232,9 @@ async function updateInternal(tabId, excludeTabIds = []) {
       log(`  possible successor: ${dumpTab(tab)}: `, successor, {
         closeParentBehavior,
         collapsedChildSuccessorAllowed,
-        parent: tab.$TST.parentId,
-        firstChild: firstChild?.id,
-        nextVisibleSibling: nextVisibleSibling?.id,
+        parent:                  tab.$TST.parentId,
+        firstChild:              firstChild?.id,
+        nextVisibleSibling:      nextVisibleSibling?.id,
         nearestVisiblePreceding: nearestVisiblePreceding?.id,
       });
       if (successor &&

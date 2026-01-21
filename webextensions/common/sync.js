@@ -498,9 +498,9 @@ export async function sendTabsToAllDevices(tabs, { recursively } = {}) {
 
 function getTabsDataToSend(tabs) {
   return {
-    type:       Constants.kSYNC_DATA_TYPE_TABS,
-    tabs:       tabs.map(tab => ({ url: tab.url, cookieStoreId: tab.cookieStoreId })),
-    structure : TreeBehavior.getTreeStructureFromTabs(tabs).map(item => item.parent)
+    type:      Constants.kSYNC_DATA_TYPE_TABS,
+    tabs:      tabs.map(tab => ({ url: tab.url, cookieStoreId: tab.cookieStoreId })),
+    structure: TreeBehavior.getTreeStructureFromTabs(tabs).map(item => item.parent)
   };
 }
 

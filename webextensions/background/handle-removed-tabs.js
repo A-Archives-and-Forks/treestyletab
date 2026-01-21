@@ -66,17 +66,17 @@ Tab.onRemoving.addListener(async (tab, removeInfo = {}) => {
     });
 
   const postProcessParams = {
-    windowId:     tab.windowId,
-    removedTab:   tab.$TST.export(true),
-    structure:    TreeBehavior.getTreeStructureFromTabs([tab, ...tab.$TST.descendants], {
+    windowId:   tab.windowId,
+    removedTab: tab.$TST.export(true),
+    structure:  TreeBehavior.getTreeStructureFromTabs([tab, ...tab.$TST.descendants], {
       full:                 true,
       keepParentOfRootTabs: true
     }),
-    insertBefore: tab, // not firstChild, because the "tab" is disappeared from tree.
-    parent:       tab.$TST.parent,
+    insertBefore:            tab, // not firstChild, because the "tab" is disappeared from tree.
+    parent:                  tab.$TST.parent,
     newParent,
-    children:     tab.$TST.children,
-    descendants:  tab.$TST.descendants,
+    children:                tab.$TST.children,
+    descendants:             tab.$TST.descendants,
     nearestFollowingRootTab: tab.$TST.nearestFollowingRootTab,
     closeParentBehavior
   };
@@ -105,9 +105,9 @@ Tab.onRemoving.addListener(async (tab, removeInfo = {}) => {
   const win = TabsStore.windows.get(tab.windowId);
   if (!win.internalClosingTabs.has(tab.$TST.parentId))
     Tree.detachTab(tab, {
-      dontUpdateIndent: true,
+      dontUpdateIndent:          true,
       dontSyncParentToOpenerTab: true,
-      broadcast:        true
+      broadcast:                 true
     });
 });
 async function handleRemovingPostProcess({ closeParentBehavior, windowId, parent, newParent, insertBefore, nearestFollowingRootTab, children, descendants, removedTab, structure } = {}) {
@@ -187,9 +187,9 @@ async function tryGrantCloseTab(tab, closeParentBehavior) {
     if (restorableClosingTabsCount > 0) {
       log('tryGrantClose: show confirmation for ', allClosingTabs);
       return Background.confirmToCloseTabs(allClosingTabs.slice(1).map(tab => tab.$TST.sanitized), {
-        windowId:   tab.windowId,
-        messageKey: 'warnOnCloseTabs_fromOutside_message',
-        titleKey:   'warnOnCloseTabs_fromOutside_title',
+        windowId:        tab.windowId,
+        messageKey:      'warnOnCloseTabs_fromOutside_message',
+        titleKey:        'warnOnCloseTabs_fromOutside_title',
         minConfirmCount: 0
       });
     }
@@ -253,8 +253,8 @@ Tab.onRemoved.addListener((tab, info) => {
   if (info.oldParent) {
     Tree.detachTab(tab, {
       dontSyncParentToOpenerTab: true,
-      parent:    info.oldParent,
-      broadcast: true
+      parent:                    info.oldParent,
+      broadcast:                 true
     });
   }
 });

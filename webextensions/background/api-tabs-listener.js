@@ -560,7 +560,7 @@ async function onNewTabTracked(tab, info) {
           }, 200);
         })).then(async lastCount => {
           await Tab.onWindowRestoring.dispatch({
-            windowId: tab.windowId,
+            windowId:      tab.windowId,
             restoredCount: lastCount,
           });
           metric.add('Tab.onWindowRestoring proceeded');
@@ -621,11 +621,11 @@ async function onNewTabTracked(tab, info) {
     }
 
     SidebarConnection.sendMessage({
-      type:     Constants.kCOMMAND_NOTIFY_TAB_CREATING,
-      windowId: tab.windowId,
-      tabId:    tab.id,
-      tab:      tab.$TST.sanitized,
-      order:    win.order,
+      type:       Constants.kCOMMAND_NOTIFY_TAB_CREATING,
+      windowId:   tab.windowId,
+      tabId:      tab.id,
+      tab:        tab.$TST.sanitized,
+      order:      win.order,
       maybeMoved: moved
     });
     log(`onNewTabTracked(${dumpTab(tab)}): moved = `, moved);
@@ -662,7 +662,7 @@ async function onNewTabTracked(tab, info) {
       restored,
       duplicated,
       duplicatedInternally,
-      originalTab: duplicated && Tab.get(uniqueId.originalTabId),
+      originalTab:              duplicated && Tab.get(uniqueId.originalTabId),
       treeForActionDetection,
       fromExternal
     });
@@ -670,11 +670,11 @@ async function onNewTabTracked(tab, info) {
     metric.add('Tab.onCreated proceeded');
 
     SidebarConnection.sendMessage({
-      type:     Constants.kCOMMAND_NOTIFY_TAB_CREATED,
-      windowId: tab.windowId,
-      tabId:    tab.id,
-      collapsed: tab.$TST.collapsed, // it may be really collapsed by some reason (for example, opened under a collapsed tree), not just for "created" animation!
-      active:   tab.active,
+      type:       Constants.kCOMMAND_NOTIFY_TAB_CREATED,
+      windowId:   tab.windowId,
+      tabId:      tab.id,
+      collapsed:  tab.$TST.collapsed, // it may be really collapsed by some reason (for example, opened under a collapsed tree), not just for "created" animation!
+      active:     tab.active,
       maybeMoved: moved
     });
     metric.add('kCOMMAND_NOTIFY_TAB_CREATED notified');
@@ -693,7 +693,7 @@ async function onNewTabTracked(tab, info) {
     if (TSTAPI.hasListenerForMessageType(TSTAPI.kNOTIFY_NEW_TAB_PROCESSED)) {
       const cache = {};
       TSTAPI.broadcastMessage({
-        type:      TSTAPI.kNOTIFY_NEW_TAB_PROCESSED,
+        type:        TSTAPI.kNOTIFY_NEW_TAB_PROCESSED,
         tab,
         originalTab: duplicated && Tab.get(uniqueId.originalTabId),
         restored,
@@ -872,7 +872,7 @@ async function onRemoved(tabId, removeInfo) {
       preventEntireTreeBehavior,
       oldChildren: oldTab.$TST.children,
       oldParent:   oldTab.$TST.parent,
-      context: Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE
+      context:     Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE
     };
 
     if (!removeInfo.isWindowClosing) {
@@ -1012,7 +1012,7 @@ async function onMoved(tabId, moveInfo) {
       // Multiselected tabs can be moved together in bulk, by drag and drop
       // in the horizontal tab bar, or addons like
       // https://addons.mozilla.org/firefox/addon/move-tab-hotkeys/
-      movedInBulk: !maybeInternalOperation && (movedTab.$TST.multiselected || movedTab.$TST.movedInBulk),
+      movedInBulk:         !maybeInternalOperation && (movedTab.$TST.multiselected || movedTab.$TST.movedInBulk),
     };
     log('tabs.onMoved: ', movedTab, extendedMoveInfo);
 
@@ -1041,7 +1041,7 @@ async function onMoved(tabId, moveInfo) {
         }
         movedTab.reindexedBy = `tabs.onMoved (${movedTab.index})`;
         win.trackTab(movedTab);
-        log('Tab nodes rearranged by tabs.onMoved listener:\n'+(!configs.debug ? '' :
+        log('Tab nodes rearranged by tabs.onMoved listener:\n' + (!configs.debug ? '' :
           toLines(Array.from(win.getOrderedTabs()),
                   tab => ` - ${tab.index}: ${tab.id}${tab.id == movedTab.id ? '[MOVED]' : ''}`)),
             { moveInfo });
@@ -1206,9 +1206,9 @@ async function onDetached(tabId, detachInfo) {
     const info = {
       ...detachInfo,
       byInternalOperation,
-      trigger:     'tabs.onDetached',
-      windowId:    detachInfo.oldWindowId,
-      structure:   TreeBehavior.getTreeStructureFromTabs([oldTab, ...descendants]),
+      trigger:   'tabs.onDetached',
+      windowId:  detachInfo.oldWindowId,
+      structure: TreeBehavior.getTreeStructureFromTabs([oldTab, ...descendants]),
       descendants
     };
     const alreadyMovedAcrossWindows = Array.from(mTreeInfoForTabsMovingAcrossWindows.values(), info => info.descendants.map(tab => tab.id)).some(tabIds => tabIds.includes(tabId));
@@ -1234,8 +1234,8 @@ async function onDetached(tabId, detachInfo) {
       Tab.onDetached.dispatch(oldTab, info);
 
     SidebarConnection.sendMessage({
-      type:     Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW,
-      windowId: detachInfo.oldWindowId,
+      type:      Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW,
+      windowId:  detachInfo.oldWindowId,
       tabId,
       wasPinned: oldTab.pinned
     });
@@ -1245,7 +1245,7 @@ async function onDetached(tabId, detachInfo) {
         type: Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW,
       }).catch(_error => {});
     }
-    catch (_error) {
+    catch(_error) {
     }
 
     TabsStore.addRemovedTab(oldTab);

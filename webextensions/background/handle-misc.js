@@ -959,7 +959,7 @@ function onMessageExternal(message, sender) {
             return Commands.duplicateTab(tab, {
               destinationWindowId: tab.windowId,
               behavior,
-              multiselected: false
+              multiselected:       false
             });
           },
           message.interval

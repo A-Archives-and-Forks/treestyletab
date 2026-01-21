@@ -124,7 +124,8 @@ export class SequenceMatcher {
     for (const item in this.toIndexes) {
       if (this.junkPredicate(item)) {
         this.junks[item] = true;
-      } else {
+      }
+      else {
         toIndexesWithoutJunk[item] = this.toIndexes[item];
       }
     }
@@ -234,7 +235,8 @@ export class SequenceMatcher {
       if (currentFromIndex + currentSize == fromIndex &&
             currentToIndex + currentSize == toIndex) {
         currentSize += size;
-      } else {
+      }
+      else {
         if (currentSize > 0)
           blocks.push([currentFromIndex, currentToIndex, currentSize]);
         currentFromIndex = fromIndex;
@@ -281,11 +283,14 @@ export class SequenceMatcher {
     matchFromIndex, matchToIndex) {
     if (fromIndex < matchFromIndex && toIndex < matchToIndex) {
       return 'replace';
-    } else if (fromIndex < matchFromIndex) {
+    }
+    else if (fromIndex < matchFromIndex) {
       return 'delete';
-    } else if (toIndex < matchToIndex) {
+    }
+    else if (toIndex < matchToIndex) {
       return 'insert';
-    } else {
+    }
+    else {
       return 'equal';
     }
   }
@@ -303,14 +308,16 @@ export class SequenceMatcher {
           fromEnd,
           Math.max(toStart, toEnd - contextSize),
           toEnd]);
-      } else if (tag == 'equal' && index == length - 1) {
+      }
+      else if (tag == 'equal' && index == length - 1) {
         expandedOperations.push([tag,
           fromStart,
           Math.min(fromEnd, fromStart + contextSize),
           toStart,
           Math.min(toEnd, toStart + contextSize),
           toEnd]);
-      } else {
+      }
+      else {
         expandedOperations.push(operation);
       }
     }
@@ -412,7 +419,7 @@ export class ReadableDiffer {
     for (const line of lines) {
       const lineType = line.match(/^<span class="line ([^" ]+)/)[1];
       if (lineType != lastLineType) {
-        blocks.push(lastBlock + (lastBlock ? '</span>' : '' ));
+        blocks.push(lastBlock + (lastBlock ? '</span>' : ''));
         lastBlock = `<span class="block ${lineType}">`;
         lastLineType = lineType;
       }
@@ -538,10 +545,12 @@ export class ReadableDiffer {
     if (fromStart < fromEnd) {
       if (toStart < toEnd) {
         return this._diffLines(fromStart, fromEnd, toStart, toEnd, encoded);
-      } else {
+      }
+      else {
         return this._tagDeleted(this.from.slice(fromStart, fromEnd), encoded);
       }
-    } else {
+    }
+    else {
       return this._tagInserted(this.to.slice(toStart, toEnd), encoded);
     }
   }
@@ -561,11 +570,11 @@ export class ReadableDiffer {
         case 'delete':
         case 'insert':
         case 'equal':
-          phrases.push({ tag         : tag,
-            from        : fromPhrase,
-            encodedFrom : this._escapeForEncoded(fromPhrase),
-            to          : toPhrase,
-            encodedTo   : this._escapeForEncoded(toPhrase), });
+          phrases.push({ tag:         tag,
+            from:        fromPhrase,
+            encodedFrom: this._escapeForEncoded(fromPhrase),
+            to:          toPhrase,
+            encodedTo:   this._escapeForEncoded(toPhrase), });
           break;
         default:
           throw new Error(`unknown tag: ${tag}`);
@@ -577,8 +586,7 @@ export class ReadableDiffer {
     let replaced = 0;
     let inserted = 0;
     let deleted = 0;
-    for (let i = 0, maxi = phrases.length; i < maxi; i++)
-    {
+    for (let i = 0, maxi = phrases.length; i < maxi; i++) {
       current = phrases[i];
       switch (current.tag) {
         case 'replace':
@@ -600,8 +608,8 @@ export class ReadableDiffer {
           // \95ύX\93_\82̊Ԃɋ\B2\82܂ꂽ1\95\B6\8E\9A\82\BE\82\AF\82̖\B3\95ύX\95\94\95\AA\82\BE\82\AF\82͓\C1\95ʈ\B5\82\A2
           if (
             current.from.length == 1 &&
-                    (i > 0 && phrases[i-1].tag != 'equal') &&
-                    (i < maxi-1 && phrases[i+1].tag != 'equal')
+                    (i > 0 && phrases[i - 1].tag != 'equal') &&
+                    (i < maxi - 1 && phrases[i + 1].tag != 'equal')
           ) {
             encodedPhrases.push('<span class="phrase equal">');
             encodedPhrases.push(this._encodedTagPhrase('duplicated', current.encodedFrom));

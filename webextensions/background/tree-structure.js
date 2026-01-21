@@ -149,8 +149,8 @@ export async function loadTreeStructure(windows, restoredFromCacheResults) {
       // unknown tabs may appear inside tree, so we need to fixup tree based on their position.
       for (const tab of unattachedTabs) {
         const action = Tree.detectTabActionFromNewPosition(tab, {
-          fromIndex: tabs.length - 1,
-          toIndex:   tab.index,
+          fromIndex:     tabs.length - 1,
+          toIndex:       tab.index,
           isTabCreating: true,
         });
         switch (action.action) {
@@ -603,11 +603,11 @@ async function tryRestoreClosedSetFor(tab, countToBeRestored) {
         url:           tabInfo.url,
         cookieStoreId: tabInfo.cookieStoreId
       }, {
-        windowId:      tab.windowId,
-        isOrphan:      true,
-        inBackground:  true,
-        discarded:     true,
-        fixPositions:  true
+        windowId:     tab.windowId,
+        isOrphan:     true,
+        inBackground: true,
+        discarded:    true,
+        fixPositions: true
       });
     }));
     let lastTab;

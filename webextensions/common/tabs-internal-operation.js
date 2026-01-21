@@ -271,7 +271,7 @@ export async function highlightTabs(tabs, { inheritToCollapsedDescendants } = {}
     inheritToCollapsedDescendants,
   });
   SidebarConnection.sendMessage({
-    type:     Constants.kCOMMAND_NOTIFY_HIGHLIGHTED_TABS_CHANGED,
+    type: Constants.kCOMMAND_NOTIFY_HIGHLIGHTED_TABS_CHANGED,
     windowId,
     tabIds,
   });

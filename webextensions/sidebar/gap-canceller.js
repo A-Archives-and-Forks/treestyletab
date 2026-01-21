@@ -111,17 +111,17 @@ function updateOffset() {
     (mByMouseOperation || !configs.suppressGapFromShownOrHiddenToolbarOnlyOnMouseOperation)
   );
   log('updateOffset: ', {
-    title:             mDataset.activeTabTitle,
-    url:               mDataset.activeTabUrl,
+    title:            mDataset.activeTabTitle,
+    url:              mDataset.activeTabUrl,
     isNewTab,
-    state:             mDataset.ownerWindowState,
+    state:            mDataset.ownerWindowState,
     mByMouseOperation,
     dimension,
-    lastDimension:     mLastWindowDimension,
-    innerScreenY:      window.mozInnerScreenY,
-    lastInnerScreenY:  mLastMozInnerScreenY,
-    windowNotChanged:  dimension == mLastWindowDimension,
-    sidebarMoved:      mLastMozInnerScreenY != window.mozInnerScreenY
+    lastDimension:    mLastWindowDimension,
+    innerScreenY:     window.mozInnerScreenY,
+    lastInnerScreenY: mLastMozInnerScreenY,
+    windowNotChanged: dimension == mLastWindowDimension,
+    sidebarMoved:     mLastMozInnerScreenY != window.mozInnerScreenY
   });
   if (dimension == mLastWindowDimension &&
       mLastMozInnerScreenY != window.mozInnerScreenY) {

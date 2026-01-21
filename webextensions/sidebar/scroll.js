@@ -144,8 +144,8 @@ export function init(scrollPosition) {
 
 function startObserveOverflowStateChange() {
   watchOverflowStateChange({
-    target: mNormalScrollBox,
-    vertical: true,
+    target:            mNormalScrollBox,
+    vertical:          true,
     moreResizeTargets: [
       // We need to watch resizing of the virtual scroll container to detect the changed state correctly.
       mNormalScrollBox.querySelector('.virtual-scroll-container'),
@@ -229,16 +229,16 @@ export function getRenderableTreeItems(windowId = null) {
     log('getRenderableTreeItems: no native tab group');
     return TabsStore.queryAll({
       windowId,
-      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
+      tabs:         TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
       skipMatching: true,
-      ordered: true,
+      ordered:      true,
     });
   }
 
   const mixedItems = TreeItem.sort([
     ...TabsStore.queryAll({
       windowId,
-      tabs:    TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
+      tabs:         TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
       skipMatching: true,
     }),
     ...mapAndFilter(
@@ -367,9 +367,9 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
       firstRenderableIndex,
       firstRenderableItemIndex: renderableItems[firstRenderableIndex]?.index,
       lastRenderableIndex,
-      lastRenderableItemIndex: renderableItems[lastRenderableIndex]?.index,
-      old: mLastRenderedVirtualScrollItemIds.slice(0),
-      new: toBeRenderedItemIds.slice(0),
+      lastRenderableItemIndex:  renderableItems[lastRenderableIndex]?.index,
+      old:                      mLastRenderedVirtualScrollItemIds.slice(0),
+      new:                      toBeRenderedItemIds.slice(0),
       renderOperations,
       scrollPosition,
       viewPortSize,
@@ -830,7 +830,7 @@ async function smoothScrollTo(params = {}) {
         scrollTo({
           scrollBox,
           position: endPosition,
-          justNow: true
+          justNow:  true
         });
         smoothScrollTo.stopped       = true;
         smoothScrollTo.currentOffset = 0;
@@ -851,7 +851,7 @@ async function smoothScrollTo(params = {}) {
     window.requestAnimationFrame(scrollStep);
   });
 }
-smoothScrollTo.currentOffset= 0;
+smoothScrollTo.currentOffset = 0;
 
 async function smoothScrollBy(delta) {
   const scrollBox = getScrollBoxFor(
@@ -955,7 +955,7 @@ export async function scrollToItem(item, options = {}) {
       }
       log('calculated result: ', {
         boundingHeight, overHeight, delta,
-        container:      scrollBoxRect.height
+        container: scrollBoxRect.height
       });
     }
     else if (targetItemRect.bottom < anchorItemRect.bottom) {
@@ -966,7 +966,7 @@ export async function scrollToItem(item, options = {}) {
         delta += overHeight;
       log('calculated result: ', {
         boundingHeight, overHeight, delta,
-        container:      scrollBoxRect.height
+        container: scrollBoxRect.height
       });
     }
     await scrollTo({
@@ -1119,9 +1119,9 @@ async function onWheel(event) {
   event.preventDefault();
 
   TSTAPI.notifyScrolled({
-    tab: item,
+    tab:             item,
     scrollContainer: scrollBox,
-    overflow: scrollBox.classList.contains(Constants.kTABBAR_STATE_OVERFLOW),
+    overflow:        scrollBox.classList.contains(Constants.kTABBAR_STATE_OVERFLOW),
     event
   });
 }
@@ -1581,9 +1581,9 @@ function trySimulateLockTabSizing(tabIds, reason) {
   // Lock scroll position only when the closing affects to the max scroll position.
   if (mNormalScrollBox.$scrollTop < mNormalScrollBox.$scrollTopMax - Size.getRenderedTabHeight() - mTabbarSpacerSize) {
     log('trySimulateLockTabSizing: scroll position is not affected ', tabIds, {
-      scrollTop: mNormalScrollBox.$scrollTop,
+      scrollTop:    mNormalScrollBox.$scrollTop,
       scrollTopMax: mNormalScrollBox.$scrollTopMax,
-      height: Size.getRenderedTabHeight(),
+      height:       Size.getRenderedTabHeight(),
     });
     return;
   }
@@ -1607,7 +1607,7 @@ function unlockScrollToSuccessor(canContinueToScroll) {
     try {
       callback(canContinueToScroll);
     }
-    catch (_error) {
+    catch(_error) {
     }
   }
   tryLockScrollToSuccessor.onUnlocked.clear();

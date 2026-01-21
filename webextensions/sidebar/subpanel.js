@@ -401,9 +401,9 @@ function updateSelector() {
 }
 
 mSelector.ui = new MenuUI({
-  root:       mSelector,
-  appearance: 'panel',
-  onCommand:  onSelect,
+  root:              mSelector,
+  appearance:        'panel',
+  onCommand:         onSelect,
   animationDuration: shouldApplyAnimation() ? configs.collapseDuration : 0.001
 });
 

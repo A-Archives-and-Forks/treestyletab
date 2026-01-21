@@ -92,8 +92,8 @@ function analyzeQueryLogs() {
       if (type != lastType) {
         if (lastType) {
           results.push({
-            count: lastCount,
-            query: fromString(lastType),
+            count:        lastCount,
+            query:        fromString(lastType),
             totalElapsed: totalElapsedTimes[lastType]
           });
         }
@@ -104,15 +104,15 @@ function analyzeQueryLogs() {
     }
     if (lastType)
       results.push({
-        count: lastCount,
-        query: fromString(lastType),
+        count:        lastCount,
+        query:        fromString(lastType),
         totalElapsed: totalElapsedTimes[lastType]
       });
     return results;
   }
 
   const results = [];
-  results.push('Top 10 slowest queries:\n' + logs.sort((a,b) => (b.elasped || b.elapsed || 0) - (a.elasped || a.elapsed || 0)).slice(0, 10).map(toString).join('\n'));
+  results.push('Top 10 slowest queries:\n' + logs.sort((a, b) => (b.elasped || b.elapsed || 0) - (a.elasped || a.elapsed || 0)).slice(0, 10).map(toString).join('\n'));
   results.push('Count of query tyepes:\n' + uniq(normalizedLogs).sort((a, b) => b.count - a.count).map(toString).join('\n'));
   results.push('Sorted in total elapsed time:\n' + uniq(normalizedLogs).sort((a, b) => b.totalElapsed - a.totalElapsed).map(toString).join('\n'));
   document.getElementById('queryLogsAnalysis').textContent = '`\n' + results.join('\n') + '\n`';
@@ -146,6 +146,6 @@ function analyzeConnectionMessageLogs() {
   }
 
   const results = [];
-  results.push('Top 10 message types:\n' + sortableCounts.sort((a,b) => b.count- a.count).slice(0, 10).map(count => `${count.type}: ${count.count} (${parseInt(count.count / totalCount * 100)} %)`).join('\n'));
+  results.push('Top 10 message types:\n' + sortableCounts.sort((a, b) => b.count - a.count).slice(0, 10).map(count => `${count.type}: ${count.count} (${parseInt(count.count / totalCount * 100)} %)`).join('\n'));
   document.getElementById('connectionMessageLogsAnalysis').textContent = '`\n' + results.join('\n') + '\n`';
 }

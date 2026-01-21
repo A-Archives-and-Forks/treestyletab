@@ -55,7 +55,7 @@ async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
 
   await Tree.detachTabsFromTree(tabsToGrouped, {
     fromParent: true,
-    partial: true,
+    partial:    true,
   });
 
   const { promisedGrouped, finish } = waitUntilGrouped(tabsToGrouped, {
@@ -135,7 +135,7 @@ export async function rejectGroupFromTree(group) {
   log('rejectGroupFromTree ', group.id);
   await Tree.detachTabsFromTree(group.$TST.members, {
     fromParent: true,
-    partial: true,
+    partial:    true,
   });
 
   // The group is in a middle of a tree. We need to move the new group away from the tree.

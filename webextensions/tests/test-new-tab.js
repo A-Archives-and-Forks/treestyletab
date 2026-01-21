@@ -32,11 +32,11 @@ export async function teardown() {
 export async function testInheritContainerFromAutoAttachedParent() {
   await Utils.setConfigs({
     inheritContextualIdentityToChildTabMode: Constants.kCONTEXTUAL_IDENTITY_FROM_PARENT,
-    autoAttachOnNewTabCommand: Constants.kNEWTAB_OPEN_AS_CHILD
+    autoAttachOnNewTabCommand:               Constants.kNEWTAB_OPEN_AS_CHILD
   });
 
   const parent = await browser.tabs.create({
-    windowId: win.id,
+    windowId:      win.id,
     cookieStoreId: 'firefox-container-1'
   });
   let originalTab;
@@ -66,7 +66,7 @@ export async function testDoNotInheritContainerFromExplicitParent() {
   });
 
   const parent = await browser.tabs.create({
-    windowId: win.id,
+    windowId:      win.id,
     cookieStoreId: 'firefox-container-1'
   });
   const newTabs = await Utils.doAndGetNewTabs(async () => {
@@ -99,7 +99,7 @@ export async function testTryToOpenUnpinnedTabBeforePinnedTab() {
   }, { windowId: win.id });
   const newTabs = await Utils.doAndGetNewTabs(async () => {
     await browser.runtime.sendMessage({
-      type: Constants.kCOMMAND_SIMULATE_SIDEBAR_MESSAGE,
+      type:    Constants.kCOMMAND_SIMULATE_SIDEBAR_MESSAGE,
       message: {
         type:      Constants.kCOMMAND_NEW_TAB_AS,
         baseTabId: tabs.A.id,
@@ -167,7 +167,7 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
         if (browser.scripting)
           await browser.scripting.executeScript({ // Manifest V3
             target: { tabId: reopenedTab.id },
-            func: function() { return location.href; },
+            func:   function() { return location.href; },
           });
         else
           await browser.tabs.executeScript(reopenedTab.id, {
@@ -176,7 +176,7 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
         browser.tabs.remove(tab.id);
         resolve(reopenedTab);
       }
-      catch(e){
+      catch(e) {
         reject(e);
       }
     };
@@ -195,8 +195,8 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
   // wait until TST's operation is finished
   await wait(1000);
   tabs = await Utils.refreshTabs({
-    A: tabs.A,
-    B: tabs.B,
+    A:        tabs.A,
+    B:        tabs.B,
     reopened: reopenedTab
   });
   is([

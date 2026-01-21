@@ -42,7 +42,7 @@ export function getIdFromBookmark(bookmark) {
   if (!matchedContainer)
     return {};
 
-  const idPart = matchedContainer[matchedContainer.length-1];
+  const idPart = matchedContainer[matchedContainer.length - 1];
   const url    = bookmark.url.replace(containerMatcher, '');
 
   // old method

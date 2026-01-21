@@ -126,8 +126,8 @@ export default class InContentPanelController {
     this.log(`preparePlaygroundTab (${this.type}): insert container to the tab contents `, playgroundTab.url);
     await browser.tabs.executeScript(playgroundTabId, {
       matchAboutBlank: true,
-      runAt: 'document_start',
-      code: `(() => { // the MANAGER
+      runAt:           'document_start',
+      code:            `(() => { // the MANAGER
         const logging = ${!!this.value(this.shouldLog)};
 
         ${InContentPanel.toString()}
@@ -352,7 +352,7 @@ export default class InContentPanelController {
         return promisedResult;
       }
     }
-    catch (error) {
+    catch(error) {
       this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): failed to ask to the tab `, error);
       // We cannot show in-content UI in a tab with privileged contents.
       // Let's fall back to the in-sidebar UI.
@@ -374,9 +374,9 @@ export default class InContentPanelController {
         ...message,
         ...this.inSidebarUI.getColors(),
         widthInOuterWorld: rawTab.width,
-        fixedOffsetTop: configs.inContentUIOffsetTop,
-        animation: shouldApplyAnimation(),
-        logging: this.value(this.shouldLog),
+        fixedOffsetTop:    configs.inContentUIOffsetTop,
+        animation:         shouldApplyAnimation(),
+        logging:           this.value(this.shouldLog),
       });
       this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): message was sent, response=`, response, ', promisedMessage =',   promisedMessage);
       if (deferredResultResolver)
@@ -392,15 +392,15 @@ export default class InContentPanelController {
             ...(resolvedMessage || {}),
             ...this.inSidebarUI.getColors(),
             widthInOuterWorld: rawTab.width,
-            fixedOffsetTop: configs.inContentUIOffsetTop,
-            animation: shouldApplyAnimation(),
-            logging: this.value(this.shouldLog),
+            fixedOffsetTop:    configs.inContentUIOffsetTop,
+            animation:         shouldApplyAnimation(),
+            logging:           this.value(this.shouldLog),
           });
           this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}, with previewURL): message was sent again, response = `,   response);
         });
       }
     }
-    catch (error) {
+    catch(error) {
       this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): failed to send message `, error);
       if (!message.canRetry) {
         this.log(`sendMessage (${this.type}) => no response, give up to send`);
@@ -465,9 +465,9 @@ export default class InContentPanelController {
     await this.inSidebarUI.handleMessage({
       timestamp,
       ...message,
-      windowId: TabsStore.getCurrentWindowId(),
+      windowId:  TabsStore.getCurrentWindowId(),
       animation: shouldApplyAnimation(),
-      logging: this.value(this.shouldLog),
+      logging:   this.value(this.shouldLog),
     });
     if (promisedMessage) {
       promisedMessage.then(resolvedMessage => {
@@ -478,9 +478,9 @@ export default class InContentPanelController {
           timestamp,
           ...message,
           ...resolvedMessage,
-          windowId: TabsStore.getCurrentWindowId(),
+          windowId:  TabsStore.getCurrentWindowId(),
           animation: shouldApplyAnimation(),
-          logging: this.value(this.shouldLog),
+          logging:   this.value(this.shouldLog),
         });
       });
     }
@@ -533,20 +533,20 @@ export default class InContentPanelController {
     const succeeded = await this.sendMessage(
       playgroundTabId,
       {
-        type:     `treestyletab:${this.type}:show`,
-        targetId: targetItem.id,
+        type:       `treestyletab:${this.type}:show`,
+        targetId:   targetItem.id,
         ...(messageParams || {}),
         anchorTabRect,
         /* These information is used to calculate offset of the sidebar header */
-        offsetTop: window.mozInnerScreenY - window.screenY,
+        offsetTop:  window.mozInnerScreenY - window.screenY,
         offsetLeft: window.mozInnerScreenX - window.screenX,
-        align: mayBeRight ? 'right' : 'left',
-        rtl: isRTL(),
-        scale: 1 / window.devicePixelRatio,
+        align:      mayBeRight ? 'right' : 'left',
+        rtl:        isRTL(),
+        scale:      1 / window.devicePixelRatio,
         // Don't call Date.now() here, because it can become larger than
         // the timestamp on mouseleave.
         timestamp,
-        canRetry: !!playgroundTabId,
+        canRetry:   !!playgroundTabId,
       },
       {
         promisedMessage: promisedMessageParams,
@@ -585,7 +585,7 @@ export default class InContentPanelController {
 
     this.log(`hide (${this.type}) (${targetItem?.id}}) hide UI in ${playgroundTabId} `, timestamp);
     this.sendMessage(playgroundTabId, {
-      type: `treestyletab:${this.type}:hide`,
+      type:     `treestyletab:${this.type}:hide`,
       targetId: targetItem?.id,
       timestamp,
     });
@@ -598,7 +598,7 @@ export default class InContentPanelController {
 
     this.log(`hide (${this.type}) (${targetItem?.id}}) hide UI in sidebar `, timestamp);
     this.sendInSidebarMessage({
-      type: `treestyletab:${this.type}:hide`,
+      type:     `treestyletab:${this.type}:hide`,
       targetId: targetItem?.id,
       timestamp,
     });

@@ -66,10 +66,10 @@ export async function testCloseTabsToBottomTabs() {
   });
 
   let tabs = await Utils.createTabs({
-    A: { index: 1 },
-    B: { index: 2 },
-    C: { index: 3 },
-    D: { index: 4 },
+    A:  { index: 1 },
+    B:  { index: 2 },
+    C:  { index: 3 },
+    D:  { index: 4 },
     P1: { pinned: true },
     P2: { pinned: true }
   }, { windowId: win.id });

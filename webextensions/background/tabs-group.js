@@ -112,8 +112,8 @@ export async function groupTabs(tabs, { broadcast, parent, withDescendants, ...g
   for (const tab of rootTabs) {
     await Tree.attachTabTo(tab, groupTab, {
       forceExpand: true, // this is required to avoid the group tab itself is active from active tab in collapsed tree
-      dontMove:  true,
-      broadcast: !!broadcast,
+      dontMove:    true,
+      broadcast:   !!broadcast,
     });
   }
   return groupTab;
@@ -183,7 +183,7 @@ export async function tryReplaceTabWithGroup(tab, { windowId, parent, children, 
 
   const firstChild = children[0];
   const uri = makeGroupTabURI({
-    title:     browser.i18n.getMessage('groupTab_label', firstChild.title),
+    title:               browser.i18n.getMessage('groupTab_label', firstChild.title),
     ...temporaryStateParams(configs.groupTabTemporaryStateForOrphanedTabs),
     replacedParentCount: (tab?.$TST?.replacedParentGroupTabCount || 0) + 1,
   });
@@ -322,9 +322,9 @@ async function tryInitGroupTab(tab) {
   if (tab.$TST.states.has(Constants.kTAB_STATE_UNREAD)) {
     tab.$TST.removeState(Constants.kTAB_STATE_UNREAD, { permanently: true });
     SidebarConnection.sendMessage({
-      type:     Constants.kCOMMAND_NOTIFY_TAB_UPDATED,
-      windowId: tab.windowId,
-      tabId:    tab.id,
+      type:          Constants.kCOMMAND_NOTIFY_TAB_UPDATED,
+      windowId:      tab.windowId,
+      tabId:         tab.id,
       removedStates: [Constants.kTAB_STATE_UNREAD]
     });
   }
@@ -581,9 +581,9 @@ Tab.onPinned.addListener(async tab => {
     openedGroupTab = await groupTabs(children, {
       // If the tab is a group tab, the opened tab should be treated as an alias of the pinned group tab.
       // Otherwise it should be treated just as a temporary group tab to group children.
-      title:       tab.$TST.isGroupTab ? tab.title : browser.i18n.getMessage('groupTab_fromPinnedTab_label', tab.title),
-      temporary:   !tab.$TST.isGroupTab,
-      openerTabId: tab.$TST.uniqueId.id,
+      title:           tab.$TST.isGroupTab ? tab.title : browser.i18n.getMessage('groupTab_fromPinnedTab_label', tab.title),
+      temporary:       !tab.$TST.isGroupTab,
+      openerTabId:     tab.$TST.uniqueId.id,
       parent,
       withDescendants: true,
     });
@@ -608,7 +608,7 @@ Tab.onPinned.addListener(async tab => {
     log(' => no need to group left tabs, just detaching');
     await Tree.detachAllChildren(tab, {
       behavior: TreeBehavior.getParentTabOperationBehavior(tab, {
-        context: Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE,
+        context:                   Constants.kPARENT_TAB_OPERATION_CONTEXT_CLOSE,
         preventEntireTreeBehavior: true,
       }),
       broadcast: true
@@ -628,7 +628,7 @@ Tab.onPinned.addListener(async tab => {
     await Promise.all([
       browser.tabs.sendMessage(tab.id, {
         type: 'treestyletab:replace-state-url',
-        url: url.href,
+        url:  url.href,
       }).catch(ApiTabs.createErrorHandler()),
       browser.tabs.executeScript(tab.id, { // failsafe
         runAt: 'document_start',
@@ -637,7 +637,7 @@ Tab.onPinned.addListener(async tab => {
     ]);
     await browser.tabs.sendMessage(tab.id, {
       type: 'treestyletab:update-tree',
-      url: url.href,
+      url:  url.href,
     }).catch(ApiTabs.createErrorHandler());
     tab.url = url.href;
   }

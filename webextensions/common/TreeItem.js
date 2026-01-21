@@ -402,7 +402,7 @@ export class TreeItem {
 
   get lastDescendant() {
     const descendants = this.descendants;
-    return descendants.length ? descendants[descendants.length-1] : null ;
+    return descendants.length ? descendants[descendants.length - 1] : null ;
   }
 
   get nextSiblingTab() { return null; }
@@ -570,9 +570,9 @@ export class TreeItem {
 
     const sanitized = {
       ...this.raw,
-      '$possibleInitialUrl': null,
-      '$TST': null,
-      '$exportedForAPI': null,
+      '$possibleInitialUrl':            null,
+      '$TST':                           null,
+      '$exportedForAPI':                null,
       '$exportedForAPIWithPermissions': null,
     };
     delete sanitized.$TST;
@@ -581,13 +581,13 @@ export class TreeItem {
 
   export(full) {
     const exported = {
-      id:         this.id,
-      uniqueId:   this.uniqueId,
-      states:     Array.from(this.states),
-      attributes: this.attributes,
-      parentId:   this.parentId,
-      childIds:   this.childIds,
-      collapsed:  this.collapsed,
+      id:               this.id,
+      uniqueId:         this.uniqueId,
+      states:           Array.from(this.states),
+      attributes:       this.attributes,
+      parentId:         this.parentId,
+      childIds:         this.childIds,
+      collapsed:        this.collapsed,
       subtreeCollapsed: this.subtreeCollapsed
     };
     if (full)
@@ -625,7 +625,7 @@ export class TreeItem {
         id:             this.raw.id,
         windowId:       this.raw.windowId,
         type:           this.type,
-        states:         tabStates && tabStates.size > 0 &&Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)) || [],
+        states:         tabStates && tabStates.size > 0 && Constants.kTAB_SAFE_STATES_ARRAY.filter(state => tabStates.has(state)) || [],
         indent:         parseInt(this.raw.$TST.getAttribute(Constants.kLEVEL) || 0),
         children,
         ancestorTabIds: this.raw.$TST.ancestorIds || [],
@@ -952,11 +952,11 @@ export class TabGroup extends TreeItem {
       return this._collapsedMembersCounterItem;
     }
     this._collapsedMembersCounterItem = {
-      id:        this.raw.id,
-      windowId:  this.raw.windowId,
-      color:     this.raw.color,
-      type:      TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER,
-      group:     this.raw,
+      id:       this.raw.id,
+      windowId: this.raw.windowId,
+      color:    this.raw.color,
+      type:     TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER,
+      group:    this.raw,
     };
     new TabGroupCollapsedMembersCounter(this._collapsedMembersCounterItem);
     return this._collapsedMembersCounterItem;
@@ -1027,8 +1027,8 @@ export class TabGroup extends TreeItem {
     const windowId = TabGroup.get(groupId)?.windowId || TabsStore.getCurrentWindowId();
     return TabsStore.queryAll({
       windowId,
-      tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-      living: true,
+      tabs:    TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+      living:  true,
       groupId,
       ordered: true,
       ...options
@@ -1039,12 +1039,12 @@ export class TabGroup extends TreeItem {
     const windowId = TabGroup.get(groupId)?.windowId || TabsStore.getCurrentWindowId();
     return TabsStore.query({
       windowId,
-      tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-      living: true,
+      tabs:    TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+      living:  true,
       groupId,
       ...options,
       ordered: true,
-      first: true,
+      first:   true,
     });
   }
 
@@ -1052,12 +1052,12 @@ export class TabGroup extends TreeItem {
     const windowId = TabGroup.get(groupId)?.windowId || TabsStore.getCurrentWindowId();
     return TabsStore.query({
       windowId,
-      tabs:   TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
-      living: true,
+      tabs:    TabsStore.getTabsMap(TabsStore.nativelyGroupedTabsInWindow, windowId),
+      living:  true,
       groupId,
       ...options,
       ordered: true,
-      last: true,
+      last:    true,
     });
   }
 
@@ -1161,8 +1161,8 @@ export class Tab extends TreeItem {
     this.newRelatedTabsCount = 0;
 
     this.lastSoundStateCounts = {
-      soundPlaying: 0,
-      muted:        0,
+      soundPlaying:    0,
+      muted:           0,
       autoPlayBlocked: 0,
     };
     this.soundPlayingChildrenIds = new Set();
@@ -1624,22 +1624,22 @@ export class Tab extends TreeItem {
 
   get nextTab() {
     return this.raw && TabsStore.query({
-      windowId: this.raw.windowId,
-      tabs:     TabsStore.controllableTabsInWindow.get(this.raw.windowId),
-      fromId:   this.id,
+      windowId:     this.raw.windowId,
+      tabs:         TabsStore.controllableTabsInWindow.get(this.raw.windowId),
+      fromId:       this.id,
       controllable: true,
-      index:    (index => index > this.raw.index)
+      index:        (index => index > this.raw.index)
     });
   }
 
   get previousTab() {
     return this.raw && TabsStore.query({
-      windowId: this.raw.windowId,
-      tabs:     TabsStore.controllableTabsInWindow.get(this.raw.windowId),
-      fromId:   this.id,
+      windowId:     this.raw.windowId,
+      tabs:         TabsStore.controllableTabsInWindow.get(this.raw.windowId),
+      fromId:       this.id,
       controllable: true,
-      index:    (index => index < this.raw.index),
-      last:     true
+      index:        (index => index < this.raw.index),
+      last:         true
     });
   }
 
@@ -1965,7 +1965,7 @@ export class Tab extends TreeItem {
 
   get rootTab() {
     const ancestors = this.ancestors;
-    return ancestors.length > 0 ? ancestors[ancestors.length-1] : this.raw ;
+    return ancestors.length > 0 ? ancestors[ancestors.length - 1] : this.raw ;
   }
 
   get topmostSubtreeCollapsedAncestor() {
@@ -2011,7 +2011,7 @@ export class Tab extends TreeItem {
         ancestorsOfSelf: this.ancestors,
         tabs,
         tab,
-        stack: new Error().stack
+        stack:           new Error().stack
       });
       return undefined;
     });
@@ -2155,30 +2155,30 @@ export class Tab extends TreeItem {
         Constants.kPERSISTENT_ORIGINAL_OPENER_TAB_ID, openerTabUniqueId,
         Constants.kPERSISTENT_ALREADY_GROUPED_FOR_PINNED_OPENER, ''
       ],
-      ordered:    true
+      ordered: true
     });
   }
 
   get precedingCanBecomeStickyTabs() {
     return TabsStore.queryAll({
-      windowId:   this.raw.windowId,
-      tabs:       TabsStore.canBecomeStickyTabsInWindow.get(this.raw.windowId),
-      normal:     true,
-      '!id':      this.id,
-      ordered:    true,
-      fromId:     this.id,
-      reversed:   true,
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.canBecomeStickyTabsInWindow.get(this.raw.windowId),
+      normal:   true,
+      '!id':    this.id,
+      ordered:  true,
+      fromId:   this.id,
+      reversed: true,
     });
   }
 
   get followingCanBecomeStickyTabs() {
     return TabsStore.queryAll({
-      windowId:   this.raw.windowId,
-      tabs:       TabsStore.canBecomeStickyTabsInWindow.get(this.raw.windowId),
-      normal:     true,
-      '!id':      this.id,
-      ordered:    true,
-      fromId:     this.id,
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.canBecomeStickyTabsInWindow.get(this.raw.windowId),
+      normal:   true,
+      '!id':    this.id,
+      ordered:  true,
+      fromId:   this.id,
     });
   }
 
@@ -2735,11 +2735,11 @@ export class Tab extends TreeItem {
         parent.$TST.inheritSoundStateFromChildren();
 
       SidebarConnection.sendMessage({
-        type:                  Constants.kCOMMAND_NOTIFY_TAB_SOUND_STATE_UPDATED,
-        windowId:              this.raw.windowId,
-        tabId:                 this.id,
-        hasSoundPlayingMember: this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER),
-        hasMutedMember:        this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER),
+        type:                     Constants.kCOMMAND_NOTIFY_TAB_SOUND_STATE_UPDATED,
+        windowId:                 this.raw.windowId,
+        tabId:                    this.id,
+        hasSoundPlayingMember:    this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER),
+        hasMutedMember:           this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER),
         hasAutoplayBlockedMember: this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER),
       });
     }, 100);
@@ -2807,9 +2807,9 @@ export class Tab extends TreeItem {
         parent.$TST.inheritSharingStateFromChildren();
 
       SidebarConnection.sendMessage({
-        type:     Constants.kCOMMAND_NOTIFY_TAB_SHARING_STATE_UPDATED,
-        windowId: this.raw.windowId,
-        tabId:    this.id,
+        type:                       Constants.kCOMMAND_NOTIFY_TAB_SHARING_STATE_UPDATED,
+        windowId:                   this.raw.windowId,
+        tabId:                      this.id,
         hasSharingCameraMember:     this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER),
         hasSharingMicrophoneMember: this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER),
         hasSharingScreenMember:     this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER),
@@ -3328,9 +3328,9 @@ export class Tab extends TreeItem {
   static getAllTabs(windowId = null, options = {}) {
     return TabsStore.queryAll({
       windowId,
-      tabs:     TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-      living:   true,
-      ordered:  true,
+      tabs:    TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living:  true,
+      ordered: true,
       ...options
     });
   }
@@ -3457,10 +3457,10 @@ export class Tab extends TreeItem {
   static getSubtreeCollapsedTabs(windowId = null, options = {}) {
     return TabsStore.queryAll({
       windowId,
-      tabs:     TabsStore.getTabsMap(TabsStore.subtreeCollapsableTabsInWindow, windowId),
-      living:   true,
-      hidden:   false,
-      ordered:  true,
+      tabs:    TabsStore.getTabsMap(TabsStore.subtreeCollapsableTabsInWindow, windowId),
+      living:  true,
+      hidden:  false,
+      ordered: true,
       ...options
     });
   }
@@ -3566,24 +3566,24 @@ export class Tab extends TreeItem {
   static hasNeedToBeSynchronizedTab(windowId) {
     return !!TabsStore.query({
       windowId,
-      tabs:     TabsStore.getTabsMap(TabsStore.unsynchronizedTabsInWindow, windowId),
-      visible:  true
+      tabs:    TabsStore.getTabsMap(TabsStore.unsynchronizedTabsInWindow, windowId),
+      visible: true
     });
   }
 
   static hasLoadingTab(windowId) {
     return !!TabsStore.query({
       windowId,
-      tabs:     TabsStore.getTabsMap(TabsStore.loadingTabsInWindow, windowId),
-      visible:  true
+      tabs:    TabsStore.getTabsMap(TabsStore.loadingTabsInWindow, windowId),
+      visible: true
     });
   }
 
   static hasDuplicatedTabs(windowId, options = {}) {
     const tabs = TabsStore.queryAll({
       windowId,
-      tabs:   TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-      living: true,
+      tabs:     TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living:   true,
       ...options,
       iterator: true
     });
@@ -3600,8 +3600,8 @@ export class Tab extends TreeItem {
   static hasMultipleTabs(windowId, options = {}) {
     const tabs = TabsStore.queryAll({
       windowId,
-      tabs:   TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
-      living: true,
+      tabs:     TabsStore.getTabsMap(TabsStore.livingTabsInWindow, windowId),
+      living:   true,
       ...options,
       iterator: true
     });

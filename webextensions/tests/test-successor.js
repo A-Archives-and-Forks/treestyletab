@@ -32,7 +32,7 @@ async function getActiveTabName(tabs) {
 
 export async function testSuccessorForLastChildWithPreviousSibling() {
   await Utils.setConfigs({
-    successorTabControlLevel: Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
     simulateSelectOwnerOnClose: false
   });
 
@@ -62,7 +62,7 @@ export async function testSuccessorForLastChildWithPreviousSibling() {
 
 export async function testSuccessorForLastChildWithoutPreviousSibling() {
   await Utils.setConfigs({
-    successorTabControlLevel: Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
     simulateSelectOwnerOnClose: false
   });
 
@@ -99,12 +99,12 @@ export async function testSuccessorForLastChildWithoutPreviousSibling() {
 
 export async function testMissingSuccessor() {
   await Utils.setConfigs({
-    successorTabControlLevel:           Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
-    parentTabOperationBehaviorMode:     Constants.kPARENT_TAB_OPERATION_BEHAVIOR_MODE_CUSTOM,
-    closeParentBehavior:                Constants.kPARENT_TAB_OPERATION_BEHAVIOR_PROMOTE_FIRST_CHILD,
+    successorTabControlLevel:                    Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    parentTabOperationBehaviorMode:              Constants.kPARENT_TAB_OPERATION_BEHAVIOR_MODE_CUSTOM,
+    closeParentBehavior:                         Constants.kPARENT_TAB_OPERATION_BEHAVIOR_PROMOTE_FIRST_CHILD,
     closeParentBehavior_outsideSidebar_expanded: Constants.kPARENT_TAB_OPERATION_BEHAVIOR_PROMOTE_FIRST_CHILD,
     closeParentBehavior_noSidebar_expanded:      Constants.kPARENT_TAB_OPERATION_BEHAVIOR_PROMOTE_FIRST_CHILD,
-    simulateSelectOwnerOnClose:         true
+    simulateSelectOwnerOnClose:                  true
   });
 
   const A = await browser.tabs.create({ windowId: win.id, active: true });
@@ -152,7 +152,7 @@ export async function testMissingSuccessor() {
 
 export async function testSimulateSelectOwnerOnClose() {
   await Utils.setConfigs({
-    successorTabControlLevel: Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
     simulateSelectOwnerOnClose: true
   });
 
@@ -184,7 +184,7 @@ export async function testSimulateSelectOwnerOnClose() {
 
 export async function testSimulateSelectOwnerOnCloseCleared() {
   await Utils.setConfigs({
-    successorTabControlLevel: Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
     simulateSelectOwnerOnClose: true
   });
 
@@ -223,7 +223,7 @@ export async function testSimulateSelectOwnerOnCloseCleared() {
 
 export async function testAvoidDiscardedTabToBeActivatedAsSuccessor() {
   await Utils.setConfigs({
-    successorTabControlLevel: Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    successorTabControlLevel:                 Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
     avoidDiscardedTabToBeActivatedIfPossible: true
   });
 

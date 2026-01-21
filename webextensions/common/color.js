@@ -80,7 +80,7 @@ export function isParsable(color) {
 }
 
 export function parseCSSColor(color, baseColor) {
-  if (typeof color!= 'string')
+  if (typeof color != 'string')
     return color;
 
   let red, green, blue, alpha;
@@ -162,7 +162,7 @@ export function parseCSSColor(color, baseColor) {
     }
   }
   if (!parts) {
-    switch(color.toLowerCase()) {
+    switch (color.toLowerCase()) {
       case 'transparent':
         red   = 0;
         green = 0;

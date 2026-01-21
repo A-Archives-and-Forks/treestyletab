@@ -163,8 +163,8 @@ browser.runtime.onMessage.addListener((message, _sender) => {
     return;
 
   browser.runtime.sendMessage({
-    type: Constants.kCOMMAND_RESPONSE_CONNECTION_MESSAGE_LOGS,
-    logs: JSON.parse(JSON.stringify(counts)),
+    type:     Constants.kCOMMAND_RESPONSE_CONNECTION_MESSAGE_LOGS,
+    logs:     JSON.parse(JSON.stringify(counts)),
     windowId: TabsStore.getCurrentWindowId()
   });
 });

@@ -198,7 +198,7 @@ function matchedWithQuery(tab, query) {
     const queryStates = query.states;
     for (let i = 0, maxi = queryStates.length; i < maxi; i += 2) {
       const state   = queryStates[i];
-      const pattern = queryStates[i+1];
+      const pattern = queryStates[i + 1];
       if (!matched(tabStates.has(state), pattern))
         return false;
     }
@@ -208,7 +208,7 @@ function matchedWithQuery(tab, query) {
     const queryAttributes = query.attributes;
     for (let i = 0, maxi = queryAttributes.length; i < maxi; i += 2) {
       const attribute = queryAttributes[i];
-      const pattern   = queryAttributes[i+1];
+      const pattern   = queryAttributes[i + 1];
       if (!matched(tabAttributes[attribute], pattern))
         return false;
     }
@@ -309,7 +309,7 @@ export function query(query) {
     }
   }
   else {
-    tabs = extractMatchedTabs((query.tabs ||tabs).values(), query);
+    tabs = extractMatchedTabs((query.tabs || tabs).values(), query);
   }
   query.elapsed = Date.now() - startAt;
   return tabs.length > 0 ? tabs[0] : null ;
@@ -791,8 +791,8 @@ browser.runtime.onMessage.addListener((message, _sender) => {
     return;
 
   browser.runtime.sendMessage({
-    type: Constants.kCOMMAND_RESPONSE_QUERY_LOGS,
-    logs: JSON.parse(JSON.stringify(queryLogs)),
+    type:     Constants.kCOMMAND_RESPONSE_QUERY_LOGS,
+    logs:     JSON.parse(JSON.stringify(queryLogs)),
     windowId: mTargetWindow || 'background'
   });
 });

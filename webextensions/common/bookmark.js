@@ -78,8 +78,8 @@ if (Constants.IS_BACKGROUND) {
       case 'treestyletab:create-new-bookmark-folder':
         return (async () => {
           const folder = await browser.bookmarks.create({
-            type: 'folder',
-            title: browser.i18n.getMessage('bookmarkDialog_newFolder_defaultTitle'),
+            type:     'folder',
+            title:    browser.i18n.getMessage('bookmarkDialog_newFolder_defaultTitle'),
             parentId: message.parentId,
             ...(typeof message.index == 'number' ? { index: message.index } : {}),
           }).catch(ApiTabs.createErrorHandler());
@@ -95,7 +95,7 @@ if (Constants.IS_BACKGROUND) {
         return (async () => {
           const win = await browser.windows.get(sender.tab.windowId);
           return browser.windows.update(win.id, {
-            width: win.width + (message.width || 0),
+            width:  win.width + (message.width || 0),
             height: win.height + (message.height || 0),
           });
         })();
@@ -599,7 +599,7 @@ export async function bookmarkTabs(tabs, { parentId, index, showDialog, title } 
         initFolderChooser,
         parentId: folderParams.parentId,
         inline,
-        isRTL: isRTL(),
+        isRTL:    isRTL(),
       },
       buttons: [
         browser.i18n.getMessage('bookmarkDialog_accept'),
@@ -757,8 +757,8 @@ export async function initFolderChooser({ rootItems, defaultItem, defaultValue, 
         150
       );
       await browser.runtime.sendMessage({
-        type: 'treestyletab:resize-bookmark-dialog-by',
-        width: 0,
+        type:   'treestyletab:resize-bookmark-dialog-by',
+        width:  0,
         height: expanded ? fullChooserHeight : -fullChooserHeight,
       });
     }

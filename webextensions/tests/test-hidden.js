@@ -29,8 +29,8 @@ export async function teardown() {
 
 export async function testAutoFixupForHiddenTabs() {
   await Utils.setConfigs({
-    fixupTreeOnTabVisibilityChanged: true,
-    inheritContextualIdentityToChildTabMode: Constants.kCONTEXTUAL_IDENTITY_DEFAULT,
+    fixupTreeOnTabVisibilityChanged:               true,
+    inheritContextualIdentityToChildTabMode:       Constants.kCONTEXTUAL_IDENTITY_DEFAULT,
     inheritContextualIdentityToSameSiteOrphanMode: Constants.kCONTEXTUAL_IDENTITY_DEFAULT
   });
 
@@ -193,7 +193,7 @@ export async function testNewTabBeforeHiddenTab() {
   async function assertNewTabOpenedAs(expectedIndex, baseTab, position) {
     const newTabs = await Utils.doAndGetNewTabs(async () => {
       await browser.runtime.sendMessage({
-        type: Constants.kCOMMAND_SIMULATE_SIDEBAR_MESSAGE,
+        type:    Constants.kCOMMAND_SIMULATE_SIDEBAR_MESSAGE,
         message: {
           type:      Constants.kCOMMAND_NEW_TAB_AS,
           baseTabId: baseTab.id,

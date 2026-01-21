@@ -35,12 +35,12 @@ export async function show(ownerWindow, dialogParams) {
         SidebarConnection.hasFocus(ownerWindow.id)*/) {
       UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false });
       result = await browser.runtime.sendMessage({
-        type:     Constants.kCOMMAND_SHOW_DIALOG,
-        params:   {
+        type:   Constants.kCOMMAND_SHOW_DIALOG,
+        params: {
           ...dialogParams,
-          onShown: null,
-          onShownInTab: null,
-          onShownInPopup: null,
+          onShown:                    null,
+          onShownInTab:               null,
+          onShownInPopup:             null,
           userOperationBlockerParams: { throbber: false },
         },
         windowId: ownerWindow.id

@@ -185,7 +185,7 @@ export default class InContentPanel {
         type: `treestyletab:${this.type}:ready`,
       });
     }
-    catch (error) {
+    catch(error) {
       console.log('TST In Content Panel fatal error: ', error);
       this.root = this.onMessageSelf = this.destroySelf = null;
     }
@@ -536,16 +536,16 @@ export default class InContentPanel {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       return {
         backgroundColor: this.getPreferredColor(style.getPropertyValue('--panel-background'), { isDark }),
-        borderColor: this.getPreferredColor(style.getPropertyValue('--panel-border-color'), { isDark }),
-        color: this.getPreferredColor(style.getPropertyValue('--panel-color'), { isDark }),
+        borderColor:     this.getPreferredColor(style.getPropertyValue('--panel-border-color'), { isDark }),
+        color:           this.getPreferredColor(style.getPropertyValue('--panel-color'), { isDark }),
       };
     }
     catch(_error) {
     }
     return {
       backgroundColor: style.backgroundColor,
-      borderColor: style.borderColor,
-      color: style.color,
+      borderColor:     style.borderColor,
+      color:           style.color,
     };
   }
 

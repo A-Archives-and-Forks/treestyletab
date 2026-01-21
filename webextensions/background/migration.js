@@ -383,7 +383,7 @@ export function openInitialStartupPage() {
     text: null,
   });
   browser.tabs.create({
-    url: Constants.kSHORTHAND_URIS.startup,
+    url:    Constants.kSHORTHAND_URIS.startup,
     active: true,
   });
 }

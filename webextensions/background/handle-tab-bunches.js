@@ -55,14 +55,14 @@ Tab.onBeforeCreate.addListener(async (tab, info) => {
     }
     else {
       win.openedNewTabs.set(tab.id, {
-        id:       tab.id,
-        windowId: tab.windowId,
-        indexOnCreated: tab.$indexOnCreated,
-        openerId: openerTab?.id,
-        openerIsPinned: openerTab?.pinned,
+        id:                  tab.id,
+        windowId:            tab.windowId,
+        indexOnCreated:      tab.$indexOnCreated,
+        openerId:            openerTab?.id,
+        openerIsPinned:      openerTab?.pinned,
         openerIsFirefoxView: isFirefoxViewTab(openerTab),
-        maybeFromBookmark: tab.$TST.maybeFromBookmark,
-        shouldNotGrouped: TSTAPI.isGroupingBlocked(),
+        maybeFromBookmark:   tab.$TST.maybeFromBookmark,
+        shouldNotGrouped:    TSTAPI.isGroupingBlocked(),
       });
     }
   }
@@ -237,11 +237,11 @@ async function confirmToAutoGroupNewTabsFromOthers(tabs) {
       browser.i18n.getMessage('warnOnAutoGroupNewTabs_cancel')
     ],
     checkMessage: browser.i18n.getMessage('warnOnAutoGroupNewTabs_warnAgain'),
-    checked: true,
-    modal: true, // for popup
-    type:  'common-dialog', // for popup
-    url:   ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'), // for popup
-    title: browser.i18n.getMessage('warnOnAutoGroupNewTabs_title'), // for popup
+    checked:      true,
+    modal:        true, // for popup
+    type:         'common-dialog', // for popup
+    url:          ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'), // for popup
+    title:        browser.i18n.getMessage('warnOnAutoGroupNewTabs_title'), // for popup
     onShownInPopup(container) {
       setTimeout(() => { // because window.requestAnimationFrame is decelerate for an invisible document.
         // this need to be done on the next tick, to use the height of the box for calculation of dialog size
@@ -379,10 +379,10 @@ async function tryGroupTabBunchesFromPinnedOpener(rootTabs) {
       ...TabsGroup.temporaryStateParams(isFirefoxViewTab(opener) ? configs.groupTabTemporaryStateForChildrenOfFirefoxView : configs.groupTabTemporaryStateForChildrenOfPinned)
     });
     parent = await TabsOpen.openURIInTab(uri, {
-      windowId:     opener.windowId,
-      insertBefore: children[0],
+      windowId:      opener.windowId,
+      insertBefore:  children[0],
       cookieStoreId: opener.cookieStoreId,
-      inBackground: true
+      inBackground:  true
     });
     log('opened group tab: ', dumpTab(parent));
     newGroupTabs.set(opener, true);

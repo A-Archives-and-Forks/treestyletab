@@ -325,7 +325,7 @@
         if (event.button != 0)
           return;
         browser.runtime.sendMessage({
-          type: 'treestyletab:open-tab',
+          type:   'treestyletab:open-tab',
           uri,
           active: true,
         });
@@ -335,7 +335,7 @@
             event.key != 'Space')
           return;
         browser.runtime.sendMessage({
-          type: 'treestyletab:open-tab',
+          type:   'treestyletab:open-tab',
           uri,
           active: true,
         });
@@ -347,8 +347,8 @@
           return;
         hint.style.display = 'none';
         browser.runtime.sendMessage({
-          type: 'treestyletab:set-config-value',
-          key:  optionKey,
+          type:  'treestyletab:set-config-value',
+          key:   optionKey,
           value: false
         });
       });
@@ -358,8 +358,8 @@
           return;
         hint.style.display = 'none';
         browser.runtime.sendMessage({
-          type: 'treestyletab:set-config-value',
-          key:  optionKey,
+          type:  'treestyletab:set-config-value',
+          key:   optionKey,
           value: false
         });
       });
@@ -418,7 +418,7 @@
     rootClassList.add('updating');
 
     const baseRequest = {
-      type: 'treestyletab:api:get-tree',
+      type:     'treestyletab:api:get-tree',
       interval: 50,
     };
     const [thisTab, openerTab, aliasTab] = await Promise.all([
@@ -508,7 +508,7 @@
   function reflow() {
     const container = document.getElementById('tabs');
     columnizeTree(container.firstChild, {
-      columnWidth: 'var(--column-width, 20em)',
+      columnWidth:   'var(--column-width, 20em)',
       containerRect: container.getBoundingClientRect()
     });
   }

@@ -187,10 +187,10 @@ async function restoreTabsFromCache(windowId, params = {}) {
 
   return (await restoreTabsFromCacheInternal({
     windowId,
-    tabs:         params.tabs,
+    tabs:            params.tabs,
     permanentStates: params.permanentStates,
-    offset:       params.cache.offset || 0,
-    cache:        params.cache.tabs
+    offset:          params.cache.offset || 0,
+    cache:           params.cache.tabs
   })).length > 0;
 }
 
@@ -333,13 +333,13 @@ async function updateWindowCache(owner, key, value) {
           windowId: owner.windowId,
           key,
           value,
-          store: CacheStorage.BACKGROUND,
+          store:    CacheStorage.BACKGROUND,
         });
       else
         await CacheStorage.deleteValue({
           windowId: owner.windowId,
           key,
-          store: CacheStorage.BACKGROUND,
+          store:    CacheStorage.BACKGROUND,
         });
       return;
     }
@@ -373,7 +373,7 @@ async function getWindowCache(owner, key) {
       const value = await CacheStorage.getValue({
         windowId: owner.windowId,
         key,
-        store: CacheStorage.BACKGROUND,
+        store:    CacheStorage.BACKGROUND,
       });
       return value;
     }
@@ -501,7 +501,7 @@ Tab.onWindowRestoring.addListener(async ({ windowId, restoredCount }) => {
   try {
     restoredFromCache = await restoreWindowFromEffectiveWindowCache(windowId, {
       ignorePinnedTabs: true,
-      owner: tabs[tabs.length - 1],
+      owner:            tabs[tabs.length - 1],
       tabs
     });
     log('Tabs.onWindowRestoring: restoredFromCache = ', restoredFromCache);

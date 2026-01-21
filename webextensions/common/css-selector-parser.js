@@ -10,7 +10,7 @@ export function splitSelectors(selectors) {
     return [selectors];
 
   return split(selectors, {
-    splitter: ',',
+    splitter:       ',',
     appendSplitter: false,
   });
 }

@@ -542,9 +542,9 @@ export async function initAsBackend() {
 
   const manifest = browser.runtime.getManifest();
   registerAddon(browser.runtime.id, {
-    id:         browser.runtime.id,
-    internalId: browser.runtime.getURL('').replace(/^moz-extension:\/\/([^\/]+)\/.*$/, '$1'),
-    icons:      manifest.icons,
+    id:             browser.runtime.id,
+    internalId:     browser.runtime.getURL('').replace(/^moz-extension:\/\/([^\/]+)\/.*$/, '$1'),
+    icons:          manifest.icons,
     listeningTypes: [
       kNOTIFY_EXTRA_CONTENTS_CLICKED,
       kNOTIFY_EXTRA_CONTENTS_DBLCLICKED,
@@ -798,7 +798,8 @@ function onBackendCommand(message, sender) {
           if (!url || url.hostname !== message.internalId) {
             console.error(`"subPanel.url" must refer to a page packed in the registering extension.`);
             message.subPanel.url = 'about:blank?error=invalid-origin'
-          } else
+          }
+          else
             message.subPanel.url = url.href;
         }
         message.newlyInstalled = !configs.cachedExternalAddons.includes(sender.id);
@@ -844,7 +845,7 @@ function onBackendCommand(message, sender) {
               if (!shouldUninit)
                 return;
             }
-            catch (_error) {
+            catch(_error) {
               // Extension was disabled.
             }
             finally {
@@ -995,11 +996,11 @@ export async function notifyScrolled(params = {}) {
   const tabs    = Tab.getTabs(windowId);
   const cache   = {};
   const results = await broadcastMessage({
-    type: kNOTIFY_SCROLLED,
-    tab:  tab && tabs.find(another => another.id == tab.id),
+    type:     kNOTIFY_SCROLLED,
+    tab:      tab && tabs.find(another => another.id == tab.id),
     tabs,
     overflow: params.overflow,
-    window: windowId,
+    window:   windowId,
     windowId,
 
     deltaX:       params.event.deltaX,
@@ -1014,10 +1015,10 @@ export async function notifyScrolled(params = {}) {
     metaKey:  params.event.metaKey,
     shiftKey: params.event.shiftKey,
 
-    clientX:  params.event.clientX,
-    clientY:  params.event.clientY,
+    clientX: params.event.clientX,
+    clientY: params.event.clientY,
   }, {
-    targets: lockers,
+    targets:       lockers,
     tabProperties: ['tab', 'tabs'],
     cache,
   });

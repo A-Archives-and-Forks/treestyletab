@@ -38,8 +38,8 @@ let mLastHoverItemId = -1;
 
 const mTabPreviewPanel = new TabPreviewPanel(document.querySelector('#tabPreviewRoot'));
 const mController = new InContentPanelController({
-  type:    TabPreviewPanel.TYPE,
-  logger:  log,
+  type:   TabPreviewPanel.TYPE,
+  logger: log,
   shouldLog() {
     return configs.logFor['sidebar/tab-preview-tooltip'] && configs.debug;
   },
@@ -58,8 +58,8 @@ const mController = new InContentPanelController({
       hoveringItemIds.has(message.targetId)
     );
   },
-  UIClass: TabPreviewPanel,
-  inSidebarUI: mTabPreviewPanel,
+  UIClass:         TabPreviewPanel,
+  inSidebarUI:     mTabPreviewPanel,
   initializerCode: `
     const root = document.createElement('div');
     appendClosedContents(root);
@@ -110,7 +110,8 @@ async function onTabSubstanceEnter(event) {
   const activeTab = Tab.getActiveTab(windowId) || (await browser.tabs.query({ active: true, windowId }))[0];
 
   if (!configs.tabPreviewTooltip ||
-      !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE)) {;
+      !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE)) {
+    ;
     mController.hideIn(activeTab.id);
     return;
   }
@@ -148,7 +149,7 @@ async function onTabSubstanceEnter(event) {
       try {
         return await browser.tabs.captureTab(event.target.tab?.id);
       }
-      catch (_error) {
+      catch(_error) {
       }
       return null;
     })
@@ -163,8 +164,8 @@ async function onTabSubstanceEnter(event) {
   mLastHoverItemId = event.target.tab.id;
 
   const succeeded = await mController.show({
-    anchorItem: event.target.tab,
-    targetItem: event.target.tab,
+    anchorItem:    event.target.tab,
+    targetItem:    event.target.tab,
     messageParams: {
       hasCustomTooltip,
       ...(hasCustomTooltip ?
@@ -177,7 +178,7 @@ async function onTabSubstanceEnter(event) {
         }
       ),
       hasPreview,
-      previewURL: null,
+      previewURL:           null,
       // This is required to simulate the behavior:
       // show tab preview panel with delay only when the panel is not shown yet.
       waitInitialShowUntil: timestamp + Math.max(configs.tabPreviewTooltipDelayMsec, 0),

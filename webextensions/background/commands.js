@@ -600,7 +600,7 @@ async function performTabsDragDrop(tabs, params) {
     destinationWindowId,
     // TST automatically optimize rearrangement of tabs, but we need to disable it here to avoid unexpected group modifications by moved other tabs.
     doNotOptimize: TabsStore.windows.get(destinationWindowId).tabGroups.size > 0 || nativeTabGroupId != -1,
-    broadcast: true
+    broadcast:     true
   });
   log('performTabsDragDrop: movedTabs = ', movedTabs, { isAcrossWindows });
 
@@ -772,7 +772,7 @@ async function performNativeTabGroupItemDragDrop(group, { droppedOn, droppedBefo
     if (group.$TST.firstMember.index < firstMember.index) {
       await NativeTabGroups.moveGroupBefore(group, firstMember);
     }
-    else{
+    else {
       await NativeTabGroups.moveGroupAfter(group, droppedOn.$TST.lastMember);
     }
     await NativeTabGroups.addTabsToGroup(members, droppedOn.id);
@@ -909,7 +909,7 @@ export async function moveTabsWithStructure(tabs, params = {}) {
   if (params.import) {
     const win = TabsStore.windows.get(destinationWindowId);
     const initialIndex = params.insertBefore ? params.insertBefore.index :
-      params.insertAfter ? params.insertAfter.index+1 :
+      params.insertAfter ? params.insertAfter.index + 1 :
         win.tabs.size;
     win.toBeOpenedOrphanTabs += tabs.length;
     movedTabs = [];
@@ -1232,7 +1232,7 @@ export async function duplicateTab(sourceTab, options = {}) {
   const duplicatedTabs = await Tree.moveTabs(sourceTabs, {
     duplicate:           true,
     destinationWindowId: options.destinationWindowId || sourceTabs[0].windowId,
-    insertAfter:         sourceTabs[sourceTabs.length-1]
+    insertAfter:         sourceTabs[sourceTabs.length - 1]
   });
   await Tree.behaveAutoAttachedTabs(duplicatedTabs, {
     baseTabs:  sourceTabs,
@@ -1305,10 +1305,10 @@ export async function openTabInWindow(tab, options = {}) {
     const sourceParams = getWindowParamsFromSource(sourceWindow, options);
     const windowParams = {
       //active: true,  // not supported in Firefox...
-      tabId:     tab.id,
+      tabId: tab.id,
       ...sourceParams,
-      left: sourceParams.left + 20,
-      top:  sourceParams.top + 20,
+      left:  sourceParams.left + 20,
+      top:   sourceParams.top + 20,
     };
     const win = await browser.windows.create(windowParams).catch(ApiTabs.createErrorHandler());
     return win.id;
@@ -1591,7 +1591,7 @@ async function collectBookmarkItems(root, { recursively,  grouped } = {}) {
         title: root.title,
         ...TabsGroup.temporaryStateParams(configs.groupTabTemporaryStateForNewTabsFromBookmarks),
       }),
-      group: true,
+      group:     true,
       discarded: false,
     });
   }

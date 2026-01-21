@@ -124,7 +124,7 @@ async function moveTabsInternallyBefore(tabs, referenceTab, options = {}) {
       Tab.track(tab);
       movedTabs.push(tab);
       Tab.onTabInternallyMoved.dispatch(tab, {
-        nextTab: referenceTab,
+        nextTab:     referenceTab,
         oldPreviousTab,
         oldNextTab,
         broadcasted: !!options.broadcasted
@@ -377,7 +377,7 @@ async function syncToNativeTabsInternal(windowId) {
   // Tabs may be removed while waiting.
   const internalOrder   = TabsStore.windows.get(windowId).order;
   const nativeTabsOrder = (await browser.tabs.query({ windowId }).catch(ApiTabs.createErrorHandler())).map(tab => tab.id);
-  log(`syncToNativeTabs(${windowId}): rearrange `, { internalOrder:internalOrder.join(','), nativeTabsOrder:nativeTabsOrder.join(',') });
+  log(`syncToNativeTabs(${windowId}): rearrange `, { internalOrder: internalOrder.join(','), nativeTabsOrder: nativeTabsOrder.join(',') });
 
   log(`syncToNativeTabs(${windowId}): step1, internalOrder => nativeTabsOrder`);
   let tabIdsForUpdatedIndices = Array.from(nativeTabsOrder);

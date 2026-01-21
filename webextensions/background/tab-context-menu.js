@@ -55,7 +55,7 @@ const SAFE_MENU_PROPERTIES = [
 
 const mItemsById = {
   'context_newTab': {
-    title:    browser.i18n.getMessage('tabContextMenu_newTab_label'),
+    title: browser.i18n.getMessage('tabContextMenu_newTab_label'),
   },
   'context_newGroup': {
     title:              browser.i18n.getMessage('tabContextMenu_newGroup_label'),
@@ -99,13 +99,13 @@ const mItemsById = {
   },
   // This item won't be handled by the onClicked handler, so you may need to handle it with something experiments API.
   'context_topLevel_unblockAutoplayTree': {
-    title:                browser.i18n.getMessage('context_unblockAutoplayTree_label'),
-    titleMultiselected:   browser.i18n.getMessage('context_unblockAutoplayTree_label_multiselected'),
+    title:              browser.i18n.getMessage('context_unblockAutoplayTree_label'),
+    titleMultiselected: browser.i18n.getMessage('context_unblockAutoplayTree_label_multiselected'),
   },
   // This item won't be handled by the onClicked handler, so you may need to handle it with something experiments API.
   'context_topLevel_unblockAutoplayDescendants': {
-    title:                browser.i18n.getMessage('context_unblockAutoplayDescendants_label'),
-    titleMultiselected:   browser.i18n.getMessage('context_unblockAutoplayDescendants_label_multiselected'),
+    title:              browser.i18n.getMessage('context_unblockAutoplayDescendants_label'),
+    titleMultiselected: browser.i18n.getMessage('context_unblockAutoplayDescendants_label_multiselected'),
   },
   'context_toggleMuteTab': {
     titleMute:                browser.i18n.getMessage('tabContextMenu_mute_label'),
@@ -231,15 +231,15 @@ const mItemsById = {
   },
   'context_closeTabsToTheStart': {
     parentId: 'context_closeMultipleTabs',
-    title: browser.i18n.getMessage('tabContextMenu_closeTabsToTop_label')
+    title:    browser.i18n.getMessage('tabContextMenu_closeTabsToTop_label')
   },
   'context_closeTabsToTheEnd': {
     parentId: 'context_closeMultipleTabs',
-    title: browser.i18n.getMessage('tabContextMenu_closeTabsToBottom_label')
+    title:    browser.i18n.getMessage('tabContextMenu_closeTabsToBottom_label')
   },
   'context_closeOtherTabs': {
     parentId: 'context_closeMultipleTabs',
-    title: browser.i18n.getMessage('tabContextMenu_closeOther_label')
+    title:    browser.i18n.getMessage('tabContextMenu_closeOther_label')
   },
   'context_topLevel_closeTree': {
     title:              browser.i18n.getMessage('context_closeTree_label'),
@@ -254,8 +254,8 @@ const mItemsById = {
     titleMultiselected: browser.i18n.getMessage('context_closeOthers_label_multiselected')
   },
   'context_undoCloseTab': {
-    title: browser.i18n.getMessage('tabContextMenu_undoClose_label'),
-    titleRegular: browser.i18n.getMessage('tabContextMenu_undoClose_label'),
+    title:                       browser.i18n.getMessage('tabContextMenu_undoClose_label'),
+    titleRegular:                browser.i18n.getMessage('tabContextMenu_undoClose_label'),
     titleMultipleTabsRestorable: browser.i18n.getMessage('tabContextMenu_undoClose_label_multiple')
   },
   'context_separator:afterClose': {
@@ -352,11 +352,11 @@ export async function init() {
     }
     const info = {
       id,
-      title:    item.title,
-      type:     item.type || 'normal',
-      contexts: ['tab'],
-      viewTypes: ['sidebar', 'tab', 'popup'],
-      visible:  false, // hide all by default
+      title:               item.title,
+      type:                item.type || 'normal',
+      contexts:            ['tab'],
+      viewTypes:           ['sidebar', 'tab', 'popup'],
+      visible:             false, // hide all by default
       documentUrlPatterns: SIDEBAR_URL_PATTERN
     };
     if (item.parentId)
@@ -364,7 +364,7 @@ export async function init() {
     if (!item.fakeMenu)
       browser.menus.create(info);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: info
     }, browser.runtime);
   }
@@ -421,7 +421,7 @@ function updateNativeTabGroups(contextTab) {
       delete mItemsById[id];
     browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_REMOVE,
+      type:   TSTAPI.kCONTEXT_MENU_REMOVE,
       params: id
     }, browser.runtime);
   }
@@ -444,16 +444,16 @@ function updateNativeTabGroups(contextTab) {
     const id = `context_addToGroup:group:${group.id}`;
     const item = {
       id,
-      parentId:  'context_addToGroup',
-      title:     group.title || defaultTitle,
-      icons:     { 16: `/resources/icons/tab-group-chicklet.svg#${group.color}${darkSuffix}` },
-      contexts:  ['tab'],
-      viewTypes: ['sidebar', 'tab', 'popup'],
+      parentId:            'context_addToGroup',
+      title:               group.title || defaultTitle,
+      icons:               { 16: `/resources/icons/tab-group-chicklet.svg#${group.color}${darkSuffix}` },
+      contexts:            ['tab'],
+      viewTypes:           ['sidebar', 'tab', 'popup'],
       documentUrlPatterns: SIDEBAR_URL_PATTERN,
     };
     browser.menus.create(item);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: item
     }, browser.runtime);
     mNativeTabGroupItems.add(item);
@@ -478,38 +478,38 @@ function updateContextualIdentities() {
       delete mItemsById[id];
     browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_REMOVE,
+      type:   TSTAPI.kCONTEXT_MENU_REMOVE,
       params: id
     }, browser.runtime);
   }
   mContextualIdentityItems.clear();
 
   const defaultItem = {
-    parentId:  'context_reopenInContainer',
-    id:        'context_reopenInContainer:firefox-default',
-    title:     browser.i18n.getMessage('tabContextMenu_reopenInContainer_noContainer_label'),
-    contexts:  ['tab'],
-    viewTypes: ['sidebar', 'tab', 'popup'],
+    parentId:            'context_reopenInContainer',
+    id:                  'context_reopenInContainer:firefox-default',
+    title:               browser.i18n.getMessage('tabContextMenu_reopenInContainer_noContainer_label'),
+    contexts:            ['tab'],
+    viewTypes:           ['sidebar', 'tab', 'popup'],
     documentUrlPatterns: SIDEBAR_URL_PATTERN
   };
   browser.menus.create(defaultItem);
   onMessageExternal({
-    type: TSTAPI.kCONTEXT_MENU_CREATE,
+    type:   TSTAPI.kCONTEXT_MENU_CREATE,
     params: defaultItem
   }, browser.runtime);
   mContextualIdentityItems.add(defaultItem);
 
   const defaultSeparator = {
-    parentId:  'context_reopenInContainer',
-    id:        'context_reopenInContainer_separator',
-    type:      'separator',
-    contexts:  ['tab'],
-    viewTypes: ['sidebar', 'tab', 'popup'],
+    parentId:            'context_reopenInContainer',
+    id:                  'context_reopenInContainer_separator',
+    type:                'separator',
+    contexts:            ['tab'],
+    viewTypes:           ['sidebar', 'tab', 'popup'],
     documentUrlPatterns: SIDEBAR_URL_PATTERN
   };
   browser.menus.create(defaultSeparator);
   onMessageExternal({
-    type: TSTAPI.kCONTEXT_MENU_CREATE,
+    type:   TSTAPI.kCONTEXT_MENU_CREATE,
     params: defaultSeparator
   }, browser.runtime);
   mContextualIdentityItems.add(defaultSeparator);
@@ -517,18 +517,18 @@ function updateContextualIdentities() {
   ContextualIdentities.forEach(identity => {
     const id = `context_reopenInContainer:${identity.cookieStoreId}`;
     const item = {
-      parentId: 'context_reopenInContainer',
-      id:       id,
-      title:    identity.name.replace(/^([a-z0-9])/i, '&$1'),
-      contexts: ['tab'],
-      viewTypes: ['sidebar', 'tab', 'popup'],
+      parentId:            'context_reopenInContainer',
+      id:                  id,
+      title:               identity.name.replace(/^([a-z0-9])/i, '&$1'),
+      contexts:            ['tab'],
+      viewTypes:           ['sidebar', 'tab', 'popup'],
       documentUrlPatterns: SIDEBAR_URL_PATTERN
     };
     if (identity.iconUrl)
       item.icons = { 16: identity.iconUrl };
     browser.menus.create(item);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: item
     }, browser.runtime);
     mContextualIdentityItems.add(item);
@@ -553,7 +553,7 @@ export async function updateSendToDeviceItems(parentId, { manage } = {}) {
     const id = item.id;
     browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_REMOVE,
+      type:   TSTAPI.kCONTEXT_MENU_REMOVE,
       params: id
     }, browser.runtime);
   }
@@ -580,7 +580,7 @@ export async function updateSendToDeviceItems(parentId, { manage } = {}) {
         };
       browser.menus.create(item);
       onMessageExternal({
-        type: TSTAPI.kCONTEXT_MENU_CREATE,
+        type:   TSTAPI.kCONTEXT_MENU_CREATE,
         params: item
       }, browser.runtime);
       items.add(item);
@@ -593,7 +593,7 @@ export async function updateSendToDeviceItems(parentId, { manage } = {}) {
     };
     browser.menus.create(separator);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: separator
     }, browser.runtime);
     items.add(separator);
@@ -606,7 +606,7 @@ export async function updateSendToDeviceItems(parentId, { manage } = {}) {
     };
     browser.menus.create(sendToAllItem);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: sendToAllItem
     }, browser.runtime);
     items.add(sendToAllItem);
@@ -621,7 +621,7 @@ export async function updateSendToDeviceItems(parentId, { manage } = {}) {
     };
     browser.menus.create(manageItem);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: manageItem
     }, browser.runtime);
     items.add(manageItem);
@@ -650,7 +650,7 @@ async function updateSharingServiceItems(parentId, contextTab) {
     const id = item.id;
     browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_REMOVE,
+      type:   TSTAPI.kCONTEXT_MENU_REMOVE,
       params: id
     }, browser.runtime);
   }
@@ -677,7 +677,7 @@ async function updateSharingServiceItems(parentId, contextTab) {
         };
       browser.menus.create(item);
       onMessageExternal({
-        type: TSTAPI.kCONTEXT_MENU_CREATE,
+        type:   TSTAPI.kCONTEXT_MENU_CREATE,
         params: item,
       }, browser.runtime);
       items.add(item);
@@ -690,7 +690,7 @@ async function updateSharingServiceItems(parentId, contextTab) {
     };
     browser.menus.create(separator);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: separator,
     }, browser.runtime);
     items.add(separator);
@@ -706,7 +706,7 @@ async function updateSharingServiceItems(parentId, contextTab) {
     };
     browser.menus.create(moreItem);
     onMessageExternal({
-      type: TSTAPI.kCONTEXT_MENU_CREATE,
+      type:   TSTAPI.kCONTEXT_MENU_CREATE,
       params: moreItem,
     }, browser.runtime);
     items.add(moreItem);
@@ -748,7 +748,7 @@ function updateItem(id, state = {}) {
     browser.menus.update(id, updateInfo).catch(ApiTabs.createErrorSuppressor());
   }
   onMessageExternal({
-    type: TSTAPI.kCONTEXT_MENU_UPDATE,
+    type:   TSTAPI.kCONTEXT_MENU_UPDATE,
     params: [id, updateInfo]
   }, browser.runtime);
   return modified;
@@ -820,7 +820,7 @@ async function onShown(info, contextTab) {
 
     updateItem('context_newTab', {
       visible: emulate,
-      title: (
+      title:   (
         !!contextTab &&
         (configs.autoAttachOnContextNewTabCommand == Constants.kNEWTAB_OPEN_AS_CHILD_TOP ||
          configs.autoAttachOnContextNewTabCommand == Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING ||
@@ -861,28 +861,28 @@ async function onShown(info, contextTab) {
     updateItem('context_unblockAutoplay', {
       visible: emulate && contextTab?.$TST.autoplayBlocked,
       multiselected,
-      title: contextTab && Commands.getMenuItemTitle(mItemsById.context_unblockAutoplay, {
+      title:   contextTab && Commands.getMenuItemTitle(mItemsById.context_unblockAutoplay, {
         multiselected,
       }),
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_unblockAutoplayTree', {
       visible: emulate && hasChild && hasAutoplayBlockedTab && configs.context_topLevel_unblockAutoplayTree,
       multiselected,
-      title: contextTab && Commands.getMenuItemTitle(mItemsById.context_topLevel_unblockAutoplayTree, {
+      title:   contextTab && Commands.getMenuItemTitle(mItemsById.context_topLevel_unblockAutoplayTree, {
         multiselected,
       }),
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_unblockAutoplayDescendants', {
       visible: emulate && hasChild && hasAutoplayBlockedDescendant && configs.context_topLevel_unblockAutoplayDescendants,
       multiselected,
-      title: contextTab && Commands.getMenuItemTitle(mItemsById.context_topLevel_unblockAutoplayDescendants, {
+      title:   contextTab && Commands.getMenuItemTitle(mItemsById.context_topLevel_unblockAutoplayDescendants, {
         multiselected,
       }),
     }) && modifiedItemsCount++;
     updateItem('context_toggleMuteTab', {
       visible: emulate && !!contextTab,
       multiselected,
-      title: contextTab && Commands.getMenuItemTitle(mItemsById.context_toggleMuteTab, {
+      title:   contextTab && Commands.getMenuItemTitle(mItemsById.context_toggleMuteTab, {
         multiselected,
         unmuted: (!contextTab.mutedInfo || !contextTab.mutedInfo.muted),
       }),
@@ -891,7 +891,7 @@ async function onShown(info, contextTab) {
       visible: emulate && !!contextTab && configs.context_topLevel_toggleMuteTree,
       enabled: hasChild,
       multiselected,
-      title: Commands.getMenuItemTitle(mItemsById.context_topLevel_toggleMuteTree, { multiselected, hasUnmutedTab, hasUnmutedDescendant }),
+      title:   Commands.getMenuItemTitle(mItemsById.context_topLevel_toggleMuteTree, { multiselected, hasUnmutedTab, hasUnmutedDescendant }),
       hasUnmutedTab,
       hasUnmutedDescendant,
     }) && modifiedItemsCount++;
@@ -899,7 +899,7 @@ async function onShown(info, contextTab) {
       visible: emulate && !!contextTab && configs.context_topLevel_toggleMuteDescendants,
       enabled: hasChild,
       multiselected,
-      title: Commands.getMenuItemTitle(mItemsById.context_topLevel_toggleMuteDescendants, { multiselected, hasUnmutedTab, hasUnmutedDescendant }),
+      title:   Commands.getMenuItemTitle(mItemsById.context_topLevel_toggleMuteDescendants, { multiselected, hasUnmutedTab, hasUnmutedDescendant }),
       hasUnmutedTab,
       hasUnmutedDescendant,
     }) && modifiedItemsCount++;
@@ -915,16 +915,16 @@ async function onShown(info, contextTab) {
       visible: emulate && !!contextTab,
       enabled: contextTab && !contextTab.pinned,
       multiselected,
-      title: contextTab && Commands.getMenuItemTitle(mItemsById.context_topLevel_toggleSticky, {
+      title:   contextTab && Commands.getMenuItemTitle(mItemsById.context_topLevel_toggleSticky, {
         multiselected,
         sticky: contextTab?.$TST.sticky,
       }),
     }) && modifiedItemsCount++;
     const unloadableCount = Commands.filterUnloadableTabs(contextTabs).length;
     updateItem('context_unloadTab', {
-      visible: emulate && unloadableCount > 0,
+      visible:       emulate && unloadableCount > 0,
       multiselected: unloadableCount > 1,
-      count: unloadableCount,
+      count:         unloadableCount,
     }) && modifiedItemsCount++;
     updateItem('context_duplicateTab', {
       visible: emulate && !!contextTab,
@@ -932,7 +932,7 @@ async function onShown(info, contextTab) {
     }) && modifiedItemsCount++;
 
     updateItem('context_bookmarkTab', {
-      visible: emulate && !!contextTab,
+      visible:       emulate && !!contextTab,
       multiselected: multiselected || !contextTab
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_bookmarkTree', {
@@ -966,7 +966,7 @@ async function onShown(info, contextTab) {
     updateItem('context_sendTabsToDevice', {
       visible: emulate && !!contextTab && contextTabs.filter(Sync.isSendableTab).length > 0,
       multiselected,
-      count: contextTabs.length
+      count:   contextTabs.length
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_sendTreeToDevice', {
       visible: emulate && !!contextTab && contextTabs.filter(Sync.isSendableTab).length > 0 && configs.context_topLevel_sendTreeToDevice && hasChild,
@@ -1032,7 +1032,7 @@ async function onShown(info, contextTab) {
     updateItem('context_closeTab', {
       visible: emulate && !!contextTab,
       multiselected,
-      count: contextTabs.length
+      count:   contextTabs.length
     }) && modifiedItemsCount++;
 
     updateItem('context_closeDuplicatedTabs', {
@@ -1162,41 +1162,41 @@ function onOverriddenMenuShown(info, contextTab, windowId) {
   const message = {
     type: TSTAPI.kCONTEXT_MENU_SHOWN,
     info: {
-      bookmarkId:    info.bookmarkId || null,
-      button:        info.button,
-      checked:       info.checked,
-      contexts:      contextTab ? ['tab'] : info.bookmarkId ? ['bookmark'] : [],
-      editable:      false,
-      frameId:       null,
-      frameUrl:      null,
-      linkText:      null,
-      linkUrl:       null,
-      mediaType:     null,
-      menuIds:       [],
-      menuItemId:    null,
-      modifiers:     [],
-      pageUrl:       null,
+      bookmarkId:       info.bookmarkId || null,
+      button:           info.button,
+      checked:          info.checked,
+      contexts:         contextTab ? ['tab'] : info.bookmarkId ? ['bookmark'] : [],
+      editable:         false,
+      frameId:          null,
+      frameUrl:         null,
+      linkText:         null,
+      linkUrl:          null,
+      mediaType:        null,
+      menuIds:          [],
+      menuItemId:       null,
+      modifiers:        [],
+      pageUrl:          null,
       parentMenuItemId: null,
-      selectionText: null,
-      srcUrl:        null,
-      targetElementId: null,
-      viewType:      'sidebar',
-      wasChecked:    false
+      selectionText:    null,
+      srcUrl:           null,
+      targetElementId:  null,
+      viewType:         'sidebar',
+      wasChecked:       false
     },
     tab: contextTab,
     windowId
   }
   TSTAPI.broadcastMessage(message, {
-    targets: [mOverriddenContext.owner],
+    targets:       [mOverriddenContext.owner],
     tabProperties: ['tab'],
-    isContextTab: true,
+    isContextTab:  true,
     cache,
   });
   TSTAPI.broadcastMessage({
     ...message,
     type: TSTAPI.kFAKE_CONTEXT_MENU_SHOWN
   }, {
-    targets: [mOverriddenContext.owner],
+    targets:       [mOverriddenContext.owner],
     tabProperties: ['tab']
   });
 
@@ -1555,7 +1555,7 @@ async function onClick(info, contextTab) {
           sendTreeToDeviceMatch)
         Sync.sendTabsToDevice(
           multiselectedTabs || [contextTab],
-          { to: sendTreeToDeviceMatch[1],
+          { to:          sendTreeToDeviceMatch[1],
             recursively: true }
         );
 
@@ -1565,24 +1565,24 @@ async function onClick(info, contextTab) {
         const message = {
           type: TSTAPI.kCONTEXT_MENU_CLICK,
           info: {
-            bookmarkId:    info.bookmarkId || null,
-            button:        info.button,
-            checked:       info.checked,
-            editable:      false,
-            frameId:       null,
-            frameUrl:      null,
-            linkText:      null,
-            linkUrl:       null,
-            mediaType:     null,
+            bookmarkId:       info.bookmarkId || null,
+            button:           info.button,
+            checked:          info.checked,
+            editable:         false,
+            frameId:          null,
+            frameUrl:         null,
+            linkText:         null,
+            linkUrl:          null,
+            mediaType:        null,
             menuItemId,
-            modifiers:     [],
-            pageUrl:       null,
+            modifiers:        [],
+            pageUrl:          null,
             parentMenuItemId: null,
-            selectionText: null,
-            srcUrl:        null,
-            targetElementId: null,
-            viewType:      'sidebar',
-            wasChecked:    info.wasChecked
+            selectionText:    null,
+            srcUrl:           null,
+            targetElementId:  null,
+            viewType:         'sidebar',
+            wasChecked:       info.wasChecked
           },
           tab: contextTab,
         };
@@ -1764,11 +1764,11 @@ export function onMessageExternal(message, sender) {
           mLastOverriddenContextOwner == sender.id
         );
         const createParams = {
-          id:        getExternalTopLevelItemId(sender.id, params.id),
-          type:      params.type || 'normal',
+          id:                  getExternalTopLevelItemId(sender.id, params.id),
+          type:                params.type || 'normal',
           visible,
-          viewTypes: ['sidebar', 'tab', 'popup'],
-          contexts:  (params.contexts || []).filter(context => context == 'tab' || context == 'bookmark'),
+          viewTypes:           ['sidebar', 'tab', 'popup'],
+          contexts:            (params.contexts || []).filter(context => context == 'tab' || context == 'bookmark'),
           documentUrlPatterns: SIDEBAR_URL_PATTERN
         };
         if (params.parentId)

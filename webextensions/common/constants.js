@@ -448,10 +448,10 @@ export const kGROUP_TAB_FROM_PINNED_DEFAULT_TITLE_MATCHER = new RegExp(`^${brows
 export const kSHORTHAND_CUSTOM_URI = /^ext\+treestyletab:([^:?#]+)(?:[:?]([^#]*))?(#.*)?$/;
 export const kSHORTHAND_ABOUT_URI = /^about:treestyletab-([^?]+)/;
 export const kSHORTHAND_URIS = {
-  tabbar:  browser.runtime.getURL('sidebar/sidebar.html'),
-  group:   kGROUP_TAB_URI,
-  options: browser.runtime.getURL('options/options.html?independent=true'),
-  startup: browser.runtime.getURL('resources/startup.html'),
+  tabbar:        browser.runtime.getURL('sidebar/sidebar.html'),
+  group:         kGROUP_TAB_URI,
+  options:       browser.runtime.getURL('options/options.html?independent=true'),
+  startup:       browser.runtime.getURL('resources/startup.html'),
   testRunner:    browser.runtime.getURL('tests/runner.html'),
   'test-runner': browser.runtime.getURL('tests/runner.html')
 };

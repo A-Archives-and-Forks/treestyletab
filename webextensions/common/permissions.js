@@ -108,7 +108,7 @@ browser.runtime.onMessage.addListener((message, _sender) => {
 
   for (const request of requests) {
     const { onChanged, checkbox } = destroyRequest(request);
-    const checked =onChanged ?
+    const checked = onChanged ?
       onChanged(true) :
       undefined;
     checkbox.checked = checked !== undefined ? !!checked : true;

@@ -49,23 +49,23 @@ const mBufferedUpdates = new Map();
 
 function getBufferedUpdate(tab) {
   const update = mBufferedUpdates.get(tab.id) || {
-    windowId: tab.windowId,
-    tabId:    tab.id,
+    windowId:   tab.windowId,
+    tabId:      tab.id,
     attributes: {
       updated: {},
       added:   {},
       removed: new Set(),
     },
-    isGroupTab:   false,
-    updatedTitle: undefined,
-    updatedLabel: undefined,
-    favIconUrl:   undefined,
-    loadingState: undefined,
+    isGroupTab:                false,
+    updatedTitle:              undefined,
+    updatedLabel:              undefined,
+    favIconUrl:                undefined,
+    loadingState:              undefined,
     loadingStateReallyChanged: undefined,
-    pinned:       undefined,
-    hidden:       undefined,
-    groupId:      undefined,
-    soundStateChanged: false,
+    pinned:                    undefined,
+    hidden:                    undefined,
+    groupId:                   undefined,
+    soundStateChanged:         false,
   };
   mBufferedUpdates.set(tab.id, update);
   return update;
@@ -101,13 +101,13 @@ function flushBufferedUpdates() {
           update.soundStateChanged ||
           update.sharingStateChanged)
         SidebarConnection.sendMessage({
-          type:              Constants.kCOMMAND_NOTIFY_TAB_UPDATED,
-          windowId:          update.windowId,
-          tabId:             update.tabId,
-          updatedProperties: update.attributes.updated,
-          addedAttributes:   update.attributes.added,
-          removedAttributes: [...update.attributes.removed],
-          soundStateChanged: update.soundStateChanged,
+          type:                Constants.kCOMMAND_NOTIFY_TAB_UPDATED,
+          windowId:            update.windowId,
+          tabId:               update.tabId,
+          updatedProperties:   update.attributes.updated,
+          addedAttributes:     update.attributes.added,
+          removedAttributes:   [...update.attributes.removed],
+          soundStateChanged:   update.soundStateChanged,
           sharingStateChanged: update.sharingStateChanged,
         });
 
@@ -136,10 +136,10 @@ function flushBufferedUpdates() {
         });
       if (update.loadingState !== undefined)
         SidebarConnection.sendMessage({
-          type:     Constants.kCOMMAND_UPDATE_LOADING_STATE,
-          windowId: update.windowId,
-          tabId:    update.tabId,
-          status:   update.loadingState,
+          type:          Constants.kCOMMAND_UPDATE_LOADING_STATE,
+          windowId:      update.windowId,
+          tabId:         update.tabId,
+          status:        update.loadingState,
           reallyChanged: update.loadingStateReallyChanged,
         });
       if (update.pinned !== undefined)

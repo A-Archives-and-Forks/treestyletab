@@ -102,7 +102,7 @@ export async function generateThemeDeclarations(theme) {
             rightImageCount > 0)
           continue;
         images.push({
-          url: image,
+          url:  image,
           position,
           repeat,
           size: repeat == 'reepat-y' ? 'auto' : 'auto 100%',

@@ -158,7 +158,7 @@ export async function deleteValue({ windowId, key } = {}) {
 
 export async function getValue({ windowId, key } = {}) {
   return asyncRunWithTimeout({
-    task: () => getValueInternal({ windowId, key }),
+    task:    () => getValueInternal({ windowId, key }),
     timeout: TIMEOUT_IN_MSEC,
     onTimedOut() {
       throw new Error(`CacheStorage.getValue for {windowId}/${key} timed out`);
@@ -226,7 +226,7 @@ async function getValueInternal({ windowId, key } = {}) {
 
 export async function clearForWindow(windowId) {
   return asyncRunWithTimeout({
-    task: () => clearForWindowInternal(windowId),
+    task:    () => clearForWindowInternal(windowId),
     timeout: TIMEOUT_IN_MSEC,
     onTimedOut() {
       throw new Error(`CacheStorage.clearForWindow for ${windowId} timed out`);

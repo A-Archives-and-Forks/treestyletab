@@ -57,10 +57,10 @@ Tab.onCreated.addListener((tab, info = {}) => {
         (info.treeForActionDetection.target.next ||
          info.treeForActionDetection.target.previous)))) {
     tryFixupTreeForInsertedTab(tab, {
-      toIndex:   tab.index,
-      fromIndex: Tab.getLastTab(tab.windowId).index,
+      toIndex:                tab.index,
+      fromIndex:              Tab.getLastTab(tab.windowId).index,
       treeForActionDetection: info.treeForActionDetection,
-      isTabCreating: true
+      isTabCreating:          true
     });
   }
   else {
@@ -85,7 +85,7 @@ Tab.onMoving.addListener((tab, moveInfo) => {
   if (!tab.$TST.openerTab)
     return true;
 
-  log('onTabMove for new child tab: move back '+moveInfo.toIndex+' => '+moveInfo.fromIndex);
+  log('onTabMove for new child tab: move back ' + moveInfo.toIndex + ' => ' + moveInfo.fromIndex);
   moveBack(tab, moveInfo);
   return false;
 });
@@ -101,7 +101,7 @@ async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
     ...moveInfo,
   });
   log('tryFixupTreeForInsertedTab ', {
-    tab: tab.id,
+    tab:      tab.id,
     parentTabOperationBehavior,
     moveInfo,
     childIds: tab.$TST.childIds,
@@ -119,9 +119,9 @@ async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
       if (tab.$TST.isGroupTab)
         await TabsGroup.clearTemporaryState(tab);
       await Tree.detachAllChildren(tab, {
-        behavior:  parentTabOperationBehavior,
+        behavior:                parentTabOperationBehavior,
         nearestFollowingRootTab: tab.$TST.firstChild.$TST.nearestFollowingRootTab,
-        broadcast: true
+        broadcast:               true
       });
     }
     if (tab.$TST.parentId)

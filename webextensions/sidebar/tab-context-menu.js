@@ -70,7 +70,7 @@ export function init() {
   });
   mNewTabButtonUI = new MenuUI({
     ...commonOptions,
-    root: mNewTabButtonMenu,
+    root:      mNewTabButtonMenu,
     onCommand: onNewTabButtonMenuCommand,
   });
 
@@ -453,19 +453,19 @@ async function onShown(contextTab) {
   const message = {
     type: TSTAPI.kCONTEXT_MENU_SHOWN,
     info: {
-      editable:         false,
-      frameUrl:         null,
-      linkUrl:          null,
-      mediaType:        null,
-      pageUrl:          null,
-      selectionText:    null,
-      srcUrl:           null,
-      contexts:         ['tab'],
-      menuIds:          [],
-      viewType:         'sidebar',
-      bookmarkId:       null
+      editable:      false,
+      frameUrl:      null,
+      linkUrl:       null,
+      mediaType:     null,
+      pageUrl:       null,
+      selectionText: null,
+      srcUrl:        null,
+      contexts:      ['tab'],
+      menuIds:       [],
+      viewType:      'sidebar',
+      bookmarkId:    null
     },
-    tab: contextTab,
+    tab:      contextTab,
     windowId: TabsStore.getCurrentWindowId()
   };
   const cache = {};
@@ -491,7 +491,7 @@ async function onShown(contextTab) {
 
 async function onHidden() {
   const message = {
-    type: TSTAPI.kCONTEXT_MENU_HIDDEN,
+    type:     TSTAPI.kCONTEXT_MENU_HIDDEN,
     windowId: TabsStore.getCurrentWindowId()
   };
   return Promise.all([
@@ -586,8 +586,8 @@ function onMessageExternal(message, sender) {
         await wait(25);
         return open({
           tab,
-          left:     message.left,
-          top:      message.top
+          left: message.left,
+          top:  message.top
         });
       })();
 
@@ -599,8 +599,8 @@ function onMessageExternal(message, sender) {
           { context:    'bookmark',
             bookmarkId: message.bookmarkId } :
           message.context == 'tab' ?
-            { context:    'tab',
-              tabId:      message.tabId } :
+            { context: 'tab',
+              tabId:   message.tabId } :
             null
       );
       if (mReservedOverrideContext) {
@@ -725,7 +725,7 @@ async function onContextMenu(event) {
     log('onContextMenu: override context as tab context menu');
     browser.menus.overrideContext({
       context: 'tab',
-      tabId: tab.id
+      tabId:   tab.id
     });
     return;
   }

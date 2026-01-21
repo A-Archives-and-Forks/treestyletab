@@ -183,10 +183,10 @@ TSTAPI.onMessageExternal.addListener((message, sender) => {
       TSTAPI.getTargetTabs(message, sender).then(tabs => {
         log(' => setting properties for contents in tabs: ', tabs, message);
         setExtraContentsProperties({
-          id:    sender.id,
+          id:         sender.id,
           tabs,
-          place: message.place || null,
-          part:  message.part,
+          place:      message.place || null,
+          part:       message.part,
           properties: message.properties || {},
         });
       });
@@ -948,9 +948,9 @@ export function getOriginalExtraContentsTarget(event) {
     if (extraContents) {
       const targetPart = target.closest(`[part]`)
       return {
-        owners: new Set([extraContents.dataset.owner]),
-        target: cleanupExtraContentsPartName(target.outerHTML),
-        targetPart: cleanupExtraContentsPartName(targetPart.getAttribute('part')).trim(),
+        owners:      new Set([extraContents.dataset.owner]),
+        target:      cleanupExtraContentsPartName(target.outerHTML),
+        targetPart:  cleanupExtraContentsPartName(targetPart.getAttribute('part')).trim(),
         fieldValues: getFieldValues(event),
       };
     }
@@ -960,9 +960,9 @@ export function getOriginalExtraContentsTarget(event) {
   }
 
   return {
-    owners: new Set(),
-    target: null,
-    targetPart: null,
+    owners:      new Set(),
+    target:      null,
+    targetPart:  null,
     fieldValues: {},
   };
 }

@@ -39,7 +39,7 @@ function isRTL(text) {
     return true;
   const textCount = text.replace(/[0-9\s\\\/.,\-+="']/g, '').length; // remove multilengual characters from count
   const rtlCount  = (text.match(reRTL) || []).length;
-  return rtlCount >= (textCount-rtlCount) && textCount > 0;
+  return rtlCount >= (textCount - rtlCount) && textCount > 0;
 };
 //****************************************************************************
 
