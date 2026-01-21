@@ -793,8 +793,8 @@ function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
     }
     if (updateSizesCount > 0)
       Size.updateContainers();
+    updateTabbarLayout.lastSizes.initialized = true;
   }
-  updateTabbarLayout.lastSizes.initialized = true;
 
   const sidebarWidthInWindow = { ...configs.sidebarWidthInWindow };
   sidebarWidthInWindow[TabsStore.getCurrentWindowId()] = window.innerWidth;
