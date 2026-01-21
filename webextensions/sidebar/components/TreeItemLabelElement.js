@@ -135,6 +135,8 @@ export class TreeItemLabelElement extends HTMLElement {
     content.textContent = this.getAttribute(kATTR_NAME_VALUE) || '';
     this.classList.toggle('rtl', isRTL(content.textContent));
     this.invalidateOverflow();
+    if (!this.checkVisibility({ visibilityProperty: false, opacityProperty: false }))
+      return;
     // Don't touch to offsetWidth if not needed - touching it will triggers indent animation unexpectedly
     this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
   }
@@ -149,6 +151,8 @@ export class TreeItemLabelElement extends HTMLElement {
     window.requestAnimationFrame(() => {
       this.updateOverflow.invoked = false;
       if (!this.closest('body')) // already detached from document!
+        return;
+      if (!this.checkVisibility({ visibilityProperty: false, opacityProperty: false }))
         return;
       const tab = this.owner;
       const overflow = tab && !tab.pinned && this._content.offsetWidth > this.offsetWidth;
