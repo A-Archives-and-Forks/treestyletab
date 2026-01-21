@@ -109,7 +109,7 @@ const ESModuleFiles = [
 export default [{ // global
   ignores: ["!**/.eslintrc.js", "**/extlib/", "**/eslint.config.mjs", "**/for-module.mjs"],
 }, { // regular JS files
-  files: ["**/*.js"],
+  files: ["**/*.js", "**/*.mjs"],
   ignores: [...ESModuleFiles],
   languageOptions,
   rules,
