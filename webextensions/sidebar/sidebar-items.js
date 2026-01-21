@@ -118,8 +118,9 @@ async function synchronizeThrobberAnimation() {
   classList.remove(Constants.kTABBAR_STATE_HAVE_UNSYNCHRONIZED_THROBBER);
 
   classList.add(Constants.kTABBAR_STATE_THROBBER_SYNCHRONIZING);
-  void document.documentElement.offsetWidth; // ensure to apply updated appearance
+  window.requestAnimationFrame(() => {
   classList.remove(Constants.kTABBAR_STATE_THROBBER_SYNCHRONIZING);
+  });
 }
 
 
