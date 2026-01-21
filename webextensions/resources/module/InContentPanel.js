@@ -210,8 +210,8 @@ export default class InContentPanel {
   async onBeforeShow(_message, _sender) {} // this can be overridden by subclasses
 
   onMessage(message, sender) {
-    if ((this.windowId &&
-        message?.windowId != this.windowId))
+    if (this.windowId &&
+        message?.windowId != this.windowId)
       return;
 
     if (message?.logging)
@@ -465,7 +465,7 @@ export default class InContentPanel {
       // (with/without previewURL), so we should not set positions again
       // if not needed. Otherwise the animation may be canceled in middle.
       if (top &&
-        this.panel.style.top != top) {
+          this.panel.style.top != top) {
         this.panel.style.top = top;
       }
 

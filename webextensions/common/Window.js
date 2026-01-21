@@ -264,7 +264,7 @@ export default class Window {
           clearTimeout(this.delayedDestroy);
         this.delayedDestroy = setTimeout(() => {
           if (this.tabs &&
-            this.tabs.size == 0)
+              this.tabs.size == 0)
             this.destroy();
         }, (configs.collapseDuration, 1000) * 5);
       }

@@ -992,11 +992,14 @@ BackgroundConnection.onMessage.addListener(async message => {
       const win = TabsStore.windows.get(message.windowId);
       win.trackTab(tab);
 
-      for (const tab of Tab.getAllTabs(message.windowId, {
-        fromIndex: Math.min(message.fromIndex, message.toIndex),
-        toIndex:   Math.max(message.fromIndex, message.toIndex),
-        iterator:  true,
-      })) {
+      for (const tab of Tab.getAllTabs(
+        message.windowId,
+        {
+          fromIndex: Math.min(message.fromIndex, message.toIndex),
+          toIndex:   Math.max(message.fromIndex, message.toIndex),
+          iterator:  true,
+        }
+      )) {
         mReindexedTabIds.add(tab.id);
       }
       reserveToUpdateTabsIndex();
@@ -1031,11 +1034,14 @@ BackgroundConnection.onMessage.addListener(async message => {
       tab.reindexedBy = `internally moved (${tab.index})`;
       Tab.track(tab);
 
-      for (const tab of Tab.getAllTabs(message.windowId, {
-        fromIndex: Math.min(message.fromIndex, message.toIndex),
-        toIndex:   Math.max(message.fromIndex, message.toIndex),
-        iterator:  true,
-      })) {
+      for (const tab of Tab.getAllTabs(
+        message.windowId,
+        {
+          fromIndex: Math.min(message.fromIndex, message.toIndex),
+          toIndex:   Math.max(message.fromIndex, message.toIndex),
+          iterator:  true,
+        }
+      )) {
         mReindexedTabIds.add(tab.id);
       }
       reserveToUpdateTabsIndex();

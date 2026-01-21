@@ -326,7 +326,7 @@ function fixupQuery(query) {
        query.visible ||
        query.controllable ||
        query.pinned) &&
-       !('living' in query))
+      !('living' in query))
     query.living = true;
 }
 

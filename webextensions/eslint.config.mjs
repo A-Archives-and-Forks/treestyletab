@@ -2,6 +2,7 @@ import _import from "eslint-plugin-import";
 import { fixupPluginRules } from "@eslint/compat";
 import babelParser from "@babel/eslint-parser";
 import globals from "globals";
+import indentInParens from "eslint-plugin-indent-in-parens";
 
 const languageOptions = {
   globals: {
@@ -94,6 +95,7 @@ const rules = {
   "comma-spacing": ["warn", { before: false, after: true }],
   "key-spacing": ["warn", { beforeColon: false, afterColon: true, align: "value" }],
   "space-infix-ops": "warn",
+  "indent-in-parens/indent-in-parens": "warn",
 };
 
 const ESModuleFiles = [
@@ -112,6 +114,9 @@ export default [{ // global
   files: ["**/*.js", "**/*.mjs"],
   ignores: [...ESModuleFiles],
   languageOptions,
+  plugins: {
+    "indent-in-parens": indentInParens,
+  },
   rules,
 }, { // ES modules
   files: [...ESModuleFiles],
@@ -120,6 +125,7 @@ export default [{ // global
 
   plugins: {
     import: fixupPluginRules(_import),
+    "indent-in-parens": indentInParens,
   },
 
   settings: {

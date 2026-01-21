@@ -760,7 +760,7 @@ function initCollapsibleSections({ focusedItem }) {
     const section = heading.parentNode;
     section.style.maxHeight = `${heading.offsetHeight}px`;
     if (!configs.optionsExpandedSections.includes(section.id) &&
-          (!focusedItem || !section.contains(focusedItem)))
+        (!focusedItem || !section.contains(focusedItem)))
       section.classList.add('collapsed');
     heading.addEventListener('click', () => {
       section.classList.toggle('collapsed');
@@ -841,7 +841,7 @@ function initPermissionOptions() {
         };
         const onUpdated = async (tabId, changeInfo, tab) => {
           if (tabId != tab.id ||
-                !('hidden' in changeInfo))
+              !('hidden' in changeInfo))
             return;
           await wait(60 * 1000);
           if (aborted)
@@ -890,7 +890,7 @@ function initPreviews() {
     container.dataset.value = select.dataset.value = select.value;
     container.addEventListener('mouseover', event => {
       if (event.target != select &&
-            select.contains(event.target))
+          select.contains(event.target))
         return;
       const rect = select.getBoundingClientRect();
       previewImage.style.insetInlineStart = `${isRTL() ? rect.right : rect.left}px`;

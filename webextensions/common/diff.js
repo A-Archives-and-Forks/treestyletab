@@ -233,7 +233,7 @@ export class SequenceMatcher {
       const [fromIndex, toIndex, size] = match;
 
       if (currentFromIndex + currentSize == fromIndex &&
-            currentToIndex + currentSize == toIndex) {
+          currentToIndex + currentSize == toIndex) {
         currentSize += size;
       }
       else {

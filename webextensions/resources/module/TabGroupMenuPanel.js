@@ -347,8 +347,8 @@ export default class TabGroupMenuPanel extends InContentPanel {
   }
 
   onMessage(message, sender) {
-    if ((this.windowId &&
-        message?.windowId != this.windowId))
+    if (this.windowId &&
+        message?.windowId != this.windowId)
       return;
 
     switch (message?.type) {
