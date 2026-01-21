@@ -141,7 +141,7 @@ export class TreeItemLabelElement extends HTMLElement {
     window.requestAnimationFrame(() => {
       if (!this.closest('body')) // already detached from document!
         return;
-    this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
+      this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
     });
   }
 
