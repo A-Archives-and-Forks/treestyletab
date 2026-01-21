@@ -769,30 +769,30 @@ function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
                           (reasons & Constants.kTABBAR_UPDATE_REASON_RESIZE) ||
                           (reasons & Constants.kTABBAR_UPDATE_REASON_ANIMATION_END);
   if (needsSizeUpdate) {
-  const visibleNewTabButton = document.querySelector('#tabbar:not(.overflow) .after-tabs .newtab-button-box, #tabbar.overflow ~ .after-tabs .newtab-button-box');
-  const newTabButtonSize    = visibleNewTabButton.offsetHeight;
-  const extraTabbarTopContainerSize    = document.querySelector('#tabbar-top > *').offsetHeight;
-  const extraTabbarBottomContainerSize = document.querySelector('#tabbar-bottom > *').offsetHeight;
-  log('height: ', { newTabButtonSize, extraTabbarTopContainerSize, extraTabbarBottomContainerSize });
+    const visibleNewTabButton = document.querySelector('#tabbar:not(.overflow) .after-tabs .newtab-button-box, #tabbar.overflow ~ .after-tabs .newtab-button-box');
+    const newTabButtonSize    = visibleNewTabButton.offsetHeight;
+    const extraTabbarTopContainerSize    = document.querySelector('#tabbar-top > *').offsetHeight;
+    const extraTabbarBottomContainerSize = document.querySelector('#tabbar-bottom > *').offsetHeight;
+    log('height: ', { newTabButtonSize, extraTabbarTopContainerSize, extraTabbarBottomContainerSize });
 
     let updateSizesCount = 0;
     if (updateTabbarLayout.lastSizes.extraTabbarTopContainerSize != extraTabbarTopContainerSize) {
-  document.documentElement.style.setProperty('--tabbar-top-area-size', `${extraTabbarTopContainerSize}px`);
+      document.documentElement.style.setProperty('--tabbar-top-area-size', `${extraTabbarTopContainerSize}px`);
       updateTabbarLayout.lastSizes.extraTabbarTopContainerSize = extraTabbarTopContainerSize;
       updateSizesCount++;
     }
     if (updateTabbarLayout.lastSizes.extraTabbarBottomContainerSize != extraTabbarBottomContainerSize) {
-  document.documentElement.style.setProperty('--tabbar-bottom-area-size', `${extraTabbarBottomContainerSize}px`);
+      document.documentElement.style.setProperty('--tabbar-bottom-area-size', `${extraTabbarBottomContainerSize}px`);
       updateTabbarLayout.lastSizes.extraTabbarBottomContainerSize = extraTabbarBottomContainerSize;
       updateSizesCount++;
     }
     if (updateTabbarLayout.lastSizes.newTabButtonSize != newTabButtonSize) {
-  document.documentElement.style.setProperty('--after-tabs-area-size', `${newTabButtonSize}px`);
+      document.documentElement.style.setProperty('--after-tabs-area-size', `${newTabButtonSize}px`);
       updateTabbarLayout.lastSizes.newTabButtonSize = newTabButtonSize;
       updateSizesCount++;
     }
     if (updateSizesCount > 0)
-  Size.updateContainers();
+      Size.updateContainers();
   }
   updateTabbarLayout.lastSizes.initialized = true;
 
