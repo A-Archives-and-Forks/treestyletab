@@ -119,7 +119,7 @@ async function synchronizeThrobberAnimation() {
 
   classList.add(Constants.kTABBAR_STATE_THROBBER_SYNCHRONIZING);
   window.requestAnimationFrame(() => {
-  classList.remove(Constants.kTABBAR_STATE_THROBBER_SYNCHRONIZING);
+    classList.remove(Constants.kTABBAR_STATE_THROBBER_SYNCHRONIZING);
   });
 }
 
