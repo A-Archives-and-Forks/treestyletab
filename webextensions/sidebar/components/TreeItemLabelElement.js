@@ -138,7 +138,11 @@ export class TreeItemLabelElement extends HTMLElement {
     if (!this.checkVisibility({ visibilityProperty: false, opacityProperty: false }))
       return;
     // Don't touch to offsetWidth if not needed - touching it will triggers indent animation unexpectedly
+    window.requestAnimationFrame(() => {
+      if (!this.closest('body')) // already detached from document!
+        return;
     this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
+    });
   }
 
   updateOverflow() {

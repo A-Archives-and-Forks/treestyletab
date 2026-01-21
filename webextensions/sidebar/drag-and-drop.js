@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2025
+ * Portions created by the Initial Developer are Copyright (C) 2010-2026
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -80,6 +80,7 @@ let mLongHoverTimerNext;
 
 let mDraggingOnSelfWindow = false;
 let mDraggingOnDraggedItems = false;
+let mCachedDragTargetDimensions = null;
 
 let mCapturingForDragging = false;
 let mReadyToCaptureMouseEvents = false;
@@ -529,12 +530,27 @@ function getDropAction(event) {
            info.draggedItem.$TST.unsafeNearestFollowingForeignerTab);
       const isRightside = document.documentElement.classList.contains('right');
       const substanceElement = targetItem?.$TST?.element?.substanceElement;
+      let substanceLeft, substanceWidth;
+      if (mCachedDragTargetDimensions &&
+          mCachedDragTargetDimensions.id === targetItem.id) {
+        substanceLeft  = mCachedDragTargetDimensions.offsetLeft;
+        substanceWidth = mCachedDragTargetDimensions.offsetWidth;
+      }
+      else {
+        substanceLeft  = substanceElement.offsetLeft;
+        substanceWidth = substanceElement.offsetWidth;
+        mCachedDragTargetDimensions = {
+          id:          targetItem.id,
+          offsetLeft:  substanceLeft,
+          offsetWidth: substanceWidth
+        };
+      }
       if (isRTL() == isRightside) {
-        const neck = substanceElement.offsetLeft + Size.getFavIconSize();
+        const neck = substanceLeft + Size.getFavIconSize();
         info.inlineDropPosition = event.clientX < neck ? kDROP_HEAD : kDROP_TAIL;
       }
       else {
-        const neck = substanceElement.offsetLeft + substanceElement.offsetWidth - Size.getFavIconSize();
+        const neck = substanceLeft + substanceWidth - Size.getFavIconSize();
         info.inlineDropPosition = event.clientX > neck ? kDROP_HEAD : kDROP_TAIL;
       }
       if (configs.debug)
@@ -672,6 +688,7 @@ function clearDropPosition() {
   }
   mDropPositionHolderItems.clear();
   configs.lastDragOverSidebarOwnerWindowId = null;
+  mCachedDragTargetDimensions = null;
 }
 
 export function clearDraggingItemsState() {
