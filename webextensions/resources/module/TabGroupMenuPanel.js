@@ -454,7 +454,7 @@ export default class TabGroupMenuPanel extends InContentPanel {
 
   get focusibleItems() {
     return [...this.panel.querySelectorAll('input[type="text"], input[type="radio"]:checked, button')]
-      .filter(item => item.checkVisibility ? item.checkVisibility({ checkVisibilityCSS: false, checkOpacity: false }) : (item.offsetWidth > 0 && item.offsetHeight > 0));
+      .filter(item => item.checkVisibility({ visibilityProperty: false, opacityProperty: false }));
   }
 
   onBeforeDestroy() {
