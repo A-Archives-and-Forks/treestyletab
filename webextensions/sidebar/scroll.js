@@ -300,7 +300,7 @@ function renderVirtualScrollViewport(scrollPosition = undefined) {
   const resized              = totalItemsSizeHolder.$lastHeight != totalRenderableItemsSize;
   totalItemsSizeHolder.$lastHeight = totalRenderableItemsSize;
   if (resized) {
-    mNormalScrollBox.$offsetHeight = mNormalScrollBox.offsetHeight;
+    // mNormalScrollBox.$offsetHeight = mNormalScrollBox.offsetHeight; // we don't need to do this here, because Size.onUpdated listener does it and  renderVirtualScrollViewport is also called by the listener.
     mNormalScrollBox.$scrollTopMax = /*mNormalScrollBox.scrollTopMax*/Math.max(0, totalRenderableItemsSize - viewPortSize);
   }
 
