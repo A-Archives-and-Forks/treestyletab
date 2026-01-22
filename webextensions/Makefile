@@ -9,11 +9,11 @@ TOOLS_DIR := $(CURDIR)/tools
 all: xpi
 
 install_dependency:
-	[ -e "$(NPM_BIN_DIR)/eslint" -a -e "$(NPM_BIN_DIR)/jsonlint-cli" ] || npm install --save-dev
+	[ -e "$(NPM_BIN_DIR)/eslint" -a -e "$(NPM_BIN_DIR)/jsonlint" ] || npm install --save-dev
 
 lint: install_dependency
 	"$(NPM_BIN_DIR)/eslint" . --report-unused-disable-directives
-	find . -type d -name node_modules -prune -o -type f -name '*.json' -print | xargs "$(NPM_BIN_DIR)/jsonlint-cli"
+	find . -type d -name node_modules -prune -o -type f -name '*.json' -print | xargs "$(NPM_BIN_DIR)/jsonlint" --quiet
 
 format: install_dependency
 	"$(NPM_BIN_DIR)/eslint" . --report-unused-disable-directives --fix
