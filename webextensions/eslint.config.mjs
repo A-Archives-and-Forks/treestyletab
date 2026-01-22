@@ -17,7 +17,7 @@ const languageOptions = {
     requireConfigFile: false,
   },
 
-  ecmaVersion: 2020,
+  ecmaVersion: 2022,
   sourceType: "module",
 };
 
