@@ -1,6 +1,8 @@
 # History
 
  - master/HEAD
+   * Show new tab action selectors on both side of the new tab button correctly, when both container selector and relation selector are active. ([by bb010g](https://github.com/piroor/treestyletab/pull/3826), thanks!)
+   * Optimize with less needless reflowing.
  - 4.2.9 (2026.1.20)
    * Fix some possible memory leaks around closed windows, tabs, and removed elements.
  - 4.2.8 (2026.1.9)
