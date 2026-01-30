@@ -89,6 +89,12 @@ export function clearItemRectCache() {
   mCachedItemRects.clear();
 }
 
+let mCachedRenderableTreeItems = null;
+
+export function clearRenderableTreeItemsCache() {
+  mCachedRenderableTreeItems = null;
+}
+
 let mScrollingInternallyCount = 0;
 
 export function init(scrollPosition) {
@@ -231,14 +237,20 @@ export function getRenderableTreeItems(windowId = null) {
   if (!windowId) {
     windowId = TabsStore.getCurrentWindowId();
   }
+  if (mCachedRenderableTreeItems) {
+    return mapAndFilter(mCachedRenderableTreeItems, id => TreeItem.get(id));
+  }
+
   if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
     log('getRenderableTreeItems: no native tab group');
-    return TabsStore.queryAll({
+    const items = TabsStore.queryAll({
       windowId,
       tabs:         TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
       skipMatching: true,
       ordered:      true,
     });
+    mCachedRenderableTreeItems = items.map(item => item.id);
+    return items;
   }
 
   const mixedItems = TreeItem.sort([
@@ -263,6 +275,7 @@ export function getRenderableTreeItems(windowId = null) {
   ]);
   log('getRenderableTreeItems: mixedItems = ', mixedItems);
 
+  mCachedRenderableTreeItems = mixedItems.map(item => item.id);
   return mixedItems;
 };
 
