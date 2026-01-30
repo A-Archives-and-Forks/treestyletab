@@ -83,6 +83,12 @@ const mOutOfViewTabNotifier = document.querySelector('#out-of-view-tab-notifier'
 
 let mTabbarSpacerSize = 0;
 
+const mCachedItemRects = new Map();
+
+export function clearItemRectCache() {
+  mCachedItemRects.clear();
+}
+
 let mScrollingInternallyCount = 0;
 
 export function init(scrollPosition) {
@@ -605,6 +611,10 @@ export function getItemRect(item, { afterAnimation } = {}) {
   if (item.pinned)
     return item.$TST.element.getBoundingClientRect();
 
+  const cacheKey = `${item.id}:${!!afterAnimation}`;
+  if (mCachedItemRects.has(cacheKey))
+    return mCachedItemRects.get(cacheKey);
+
   let renderableItems;
   if (afterAnimation) {
     // We need to ignore preceding "going to be collapsed" tabs on determination of the
@@ -654,11 +664,13 @@ export function getItemRect(item, { afterAnimation } = {}) {
     scrollBox_$scrollTop: scrollBox.$scrollTop,
   });
   */
-  return {
+  const rect = {
     top:    itemTop,
     bottom: itemTop + itemSize,
     height: itemSize,
   };
+  mCachedItemRects.set(cacheKey, rect);
+  return rect;
 }
 
 configs.$addObserver(key => {
@@ -1132,6 +1144,7 @@ function onScroll(event) {
   scrollBox.$scrollTop = Math.min(scrollBox.$scrollTopMax, scrollBox.scrollTop);
   reserveToUpdateScrolledState(scrollBox);
   if (scrollBox == mNormalScrollBox) {
+    clearItemRectCache();
     reserveToRenderVirtualScrollViewport({ trigger: 'scroll' });
   }
   reserveToSaveScrollPosition();

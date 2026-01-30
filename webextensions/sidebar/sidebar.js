@@ -719,6 +719,7 @@ let mLastVisibleTabId = null;
 updateTabbarLayout.lastSizes = {};
 
 function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
+  Scroll.clearItemRectCache();
   if (reason && !reasons)
     reasons = reason;
   if (reserveToUpdateTabbarLayout.reasons) {
