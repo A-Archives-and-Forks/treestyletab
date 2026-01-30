@@ -93,6 +93,9 @@ let mCurrentDragData       = null;
 let mShouldShowPinnedTabsDropArea = false;
 let mReadyToPinDraggedTabsTimer = null;
 
+let mCachedDragDataString = null;
+let mCachedDragData = null;
+
 let mInstanceId;
 
 export function init() {
@@ -242,8 +245,7 @@ function getDropAction(event) {
     shouldUnpin: false,
   };
   info.defineGetter('dragData', () => {
-    const dragData = event.dataTransfer.getData(kTREE_DROP_TYPE);
-    return (dragData && JSON.parse(dragData)) || mCurrentDragData;
+    return getDragData(event.dataTransfer);
   });
   info.defineGetter('draggedItem', () => {
     const dragData = info.dragData;
@@ -676,6 +678,12 @@ export function clearAll() {
     mReadyToPinDraggedTabsTimer = null;
   }
   mShouldShowPinnedTabsDropArea = false;
+  clearCachedDragData();
+}
+
+function clearCachedDragData() {
+  mCachedDragDataString = null;
+  mCachedDragData = null;
 }
 
 const mDropPositionHolderItems = new Set();
@@ -965,13 +973,15 @@ function onDragStart(event, options = {}) {
   dt.effectAllowed = 'copyMove';
 
   const sanitizedDragData = sanitizeDragData(dragData);
-  dt.setData(kTREE_DROP_TYPE, JSON.stringify(sanitizedDragData));
+  const sanitizedDragDataString = JSON.stringify(sanitizedDragData);
+  dt.setData(kTREE_DROP_TYPE, sanitizedDragDataString);
 
   log(`onDragStart: starting drag session ${sanitizedDragData.sessionId}`);
 
   // Because addon cannot read drag data across private browsing mode,
   // we need to share detailed information of dragged items in different way!
-  mCurrentDragData = sanitizedDragData;
+  mCurrentDragData = mCachedDragData = sanitizedDragData;
+  mCachedDragDataString = sanitizedDragDataString;
   browser.runtime.sendMessage({
     type:     Constants.kCOMMAND_BROADCAST_CURRENT_DRAG_DATA,
     windowId: TabsStore.getCurrentWindowId(),
@@ -1196,8 +1206,7 @@ function onDragOver(event) {
     return;
   mLastDragOverTimestamp = now;
 
-  let dragData = dt.getData(kTREE_DROP_TYPE);
-  dragData = (dragData && JSON.parse(dragData)) || mCurrentDragData;
+  const dragData = getDragData(dt);
   const sessionId = dragData?.sessionId || '';
   log(`onDragOver: sessionId=${sessionId}, types=${dt.types}, dropEffect=${dt.dropEffect}, effectAllowed=${dt.effectAllowed}, item=`, dragData?.item);
 
@@ -1453,8 +1462,7 @@ function onDrop(event) {
 
   const dropActionInfo = getDropAction(event);
 
-  let dragData = event.dataTransfer.getData(kTREE_DROP_TYPE);
-  dragData = (dragData && JSON.parse(dragData)) || mCurrentDragData;
+  const dragData = getDragData(event.dataTransfer);
   const sessionId = dragData?.sessionId || '';
   log(`onDrop ${sessionId}`, dropActionInfo, event.dataTransfer);
 
@@ -1626,8 +1634,7 @@ async function onDragEnd(event) {
   const lastDragEventCoordinatesTimestamp = mLastDragEventCoordinates.timestamp;
   const droppedOnSidebarArea = !!configs.lastDragOverSidebarOwnerWindowId;
 
-  let dragData = event.dataTransfer?.getData(kTREE_DROP_TYPE);
-  dragData = (dragData && JSON.parse(dragData)) || mCurrentDragData;
+  const dragData = getDragData(event.dataTransfer);
   if (dragData) {
     dragData.item  = TreeItem.get(dragData.item) || dragData.item;
     dragData.items = dragData.items && dragData.items.map(item => TreeItem.get(item) || item);
@@ -1909,3 +1916,22 @@ TSTAPI.onMessageExternal.addListener((message, _sender) => {
       break;
   }
 });
+
+function getDragData(dt) {
+  if (!dt)
+    return mCurrentDragData;
+  const dragDataString = dt.getData(kTREE_DROP_TYPE);
+  if (!dragDataString)
+    return mCurrentDragData;
+  if (dragDataString == mCachedDragDataString)
+    return mCachedDragData;
+  try {
+    mCachedDragData = JSON.parse(dragDataString);
+    mCachedDragDataString = dragDataString;
+    return mCachedDragData;
+  }
+  catch(_e) {
+    return mCurrentDragData;
+  }
+}
+
