@@ -95,7 +95,7 @@ const rules = {
   'comma-spacing':                     ['warn', { before: false, after: true }],
   'key-spacing':                       ['warn', { beforeColon: false, afterColon: true, align: 'value' }],
   'space-infix-ops':                   'warn',
-  'indent-in-parens/indent-in-parens': 'warn',
+  'indent-in-parens/indent-in-parens': ['warn', 2],
 };
 
 const ESModuleFiles = [
