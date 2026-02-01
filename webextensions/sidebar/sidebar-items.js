@@ -1352,7 +1352,7 @@ BackgroundConnection.onMessage.addListener(async message => {
         onNormalTabsChanged.dispatch(tab);
       // Allow to move tabs to this window again, after a timeout.
       // https://github.com/piroor/treestyletab/issues/2316
-      wait(500).then(() => TabsStore.removeRemovedTab(tab));
+      wait(500).then(TabsStore.removeRemovedTab.bind(TabsStore, tab));
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_GROUP_TAB_DETECTED: {

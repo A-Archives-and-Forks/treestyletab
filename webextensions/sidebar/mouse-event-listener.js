@@ -108,9 +108,7 @@ Sidebar.onBuilt.addListener(async () => {
   });
 });
 
-Sidebar.onReady.addListener(() => {
-  updateSpecialEventListenersForAPIListeners();
-});
+Sidebar.onReady.addListener(updateSpecialEventListenersForAPIListeners);
 
 Sidebar.onLayoutUpdated.addListener(() => {
   updateSpecialEventListenersForAPIListeners();
@@ -123,13 +121,9 @@ window.addEventListener('resize', () => {
     updateRects();
 }, { passive: true });
 
-TSTAPI.onRegistered.addListener(() => {
-  updateSpecialEventListenersForAPIListeners();
-});
+TSTAPI.onRegistered.addListener(updateSpecialEventListenersForAPIListeners);
 
-TSTAPI.onUnregistered.addListener(() => {
-  updateSpecialEventListenersForAPIListeners();
-});
+TSTAPI.onUnregistered.addListener(updateSpecialEventListenersForAPIListeners);
 
 configs.$addObserver(changedKey => {
   switch (changedKey) {

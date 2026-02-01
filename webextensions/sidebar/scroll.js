@@ -166,12 +166,8 @@ function startObserveOverflowStateChange() {
     onUnderflow() { onNormalTabsUnderflow.dispatch(); },
   });
 
-  onNormalTabsOverflow.addListener(() => {
-    reserveToUpdateScrolledState(mNormalScrollBox);
-  });
-  onNormalTabsUnderflow.addListener(() => {
-    reserveToUpdateScrolledState(mNormalScrollBox);
-  });
+  onNormalTabsOverflow.addListener(reserveToUpdateScrolledState.bind(null, mNormalScrollBox));
+  onNormalTabsUnderflow.addListener(reserveToUpdateScrolledState.bind(null, mNormalScrollBox));
 }
 
 function onInitialOverflow() {
@@ -224,7 +220,7 @@ export function reserveToRenderVirtualScrollViewport({ trigger, force } = {}) {
   if (renderVirtualScrollViewport.invoked)
     return;
   renderVirtualScrollViewport.invoked = true;
-  window.requestAnimationFrame(() => renderVirtualScrollViewport());
+  window.requestAnimationFrame(renderVirtualScrollViewport.bind(null, undefined));
 }
 
 let mLastRenderableItems;
@@ -1094,7 +1090,7 @@ async function notifyOutOfViewItem(item) {
   item = Tab.get(item?.id);
   if (RestoringTabCount.hasMultipleRestoringTabs()) {
     log('notifyOutOfViewItem: skip until completely restored');
-    wait(100).then(() => notifyOutOfViewItem(item));
+    wait(100).then(notifyOutOfViewItem.bind(null, item));
     return;
   }
   await nextFrame();

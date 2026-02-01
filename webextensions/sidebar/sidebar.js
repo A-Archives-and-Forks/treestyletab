@@ -272,9 +272,7 @@ export async function init() {
       Indent.updateRestoredTree();
       SidebarItems.updateAll();
       updateTabbarLayout({ justNow: true });
-      SubPanel.onResized.addListener(() => {
-        reserveToUpdateTabbarLayout();
-      });
+      SubPanel.onResized.addListener(reserveToUpdateTabbarLayout);
       SubPanel.init();
 
       SidebarItems.init();
@@ -308,14 +306,12 @@ export async function init() {
   // Failsafe. If the sync operation fail after retryings,
   // SidebarItems.onSyncFailed is notified then this sidebar page will be
   // reloaded for complete retry.
-  SidebarItems.onSyncFailed.addListener(() => rebuildAll());
+  SidebarItems.onSyncFailed.addListener(rebuildAll);
   SidebarItems.reserveToSyncTabsOrder();
 
-  Size.onUpdated.addListener(() => {
-    updateTabbarLayout({
-      reason: Constants.kTABBAR_UPDATE_REASON_RESIZE,
-    });
-  });
+  Size.onUpdated.addListener(updateTabbarLayout.bind(null, {
+    reason: Constants.kTABBAR_UPDATE_REASON_RESIZE,
+  }));
 
   document.documentElement.classList.remove('initializing');
   mInitialized = true;
@@ -347,7 +343,7 @@ async function applyTheme({ style } = {}) {
   const [theme, ] = await Promise.all([
     browser.theme.getCurrent(mTargetWindow),
     style && applyOwnTheme(style),
-    !style && configs.$loaded.then(() => applyOwnTheme()),
+    !style && configs.$loaded.then(applyOwnTheme.bind(null, undefined)),
     configs.$loaded
   ]);
   applyBrowserTheme(theme);

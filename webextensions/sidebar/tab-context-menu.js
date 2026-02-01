@@ -338,7 +338,7 @@ async function onCommand(item, event) {
     return;
 
   const contextTab = mContextTab;
-  wait(0).then(() => close()); // close the menu immediately!
+  wait(0).then(close); // close the menu immediately!
 
   const id = item.getAttribute('data-item-id');
   if (!id)

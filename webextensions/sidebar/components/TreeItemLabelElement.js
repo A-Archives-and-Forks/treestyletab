@@ -201,8 +201,8 @@ export class TreeItemLabelElement extends HTMLElement {
       this.__unwatch     = watchOverflowStateChange({
         target:      this,
         horizontal:  true,
-        onOverflow:  () => this._onOverflow(),
-        onUnderflow: () => this._onUnderflow(),
+        onOverflow:  this._onOverflow.bind(this),
+        onUnderflow: this._onUnderflow.bind(this),
       });
     });
   }

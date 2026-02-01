@@ -3948,7 +3948,7 @@ async function waitUntilTracked(tabId, options = {}) {
         resolve(null);
       }
     });
-  }).then(() => destroyWaitingTabTask(task));
+  }).then(destroyWaitingTabTask.bind(null, task));
 }
 
 Tab.broadcastTooltipText.enabled = false;
