@@ -86,14 +86,15 @@ function setSuccessor(tabId, successorTabId = -1) {
         break;
 
       const tab = await browser.tabs.get(tabId).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
-      if (tab.successorTabId == initialSuccessorTabId &&
+      if (tab &&
+          tab.successorTabId == initialSuccessorTabId &&
           tab.successorTabId != successorTabId) {
         await wait(200);
         continue;
       }
 
       mPromisedUpdatedSuccessorTabId.delete(tabId);
-      promisedUpdate.resolver(tab.successorTabId);
+      promisedUpdate.resolver(tab?.successorTabId);
     }
   }).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError, error => {
     // ignore error for already closed tab
