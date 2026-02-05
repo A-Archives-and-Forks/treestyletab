@@ -1331,6 +1331,7 @@ async function onBackgroundMessage(message) {
       await Tab.waitUntilTracked(message.tabId);
       if (message.maybeMoved)
         await SidebarItems.waitUntilNewTabIsMoved(message.tabId);
+      clearRenderableTreeItemsCache();
       const item = Tab.get(message.tabId);
       if (!item) // it can be closed while waiting
         break;
@@ -1389,8 +1390,13 @@ async function onBackgroundMessage(message) {
         reserveToScrollToItem(item);
     }; break;
 
+    case Constants.kCOMMAND_NOTIFY_TAB_PINNED:
+      clearRenderableTreeItemsCache();
+      break;
+
     case Constants.kCOMMAND_NOTIFY_TAB_UNPINNED:
       await Tab.waitUntilTracked(message.tabId);
+      clearRenderableTreeItemsCache();
       reserveToScrollToItem(Tab.get(message.tabId));
       break;
 
@@ -1427,6 +1433,7 @@ async function onBackgroundMessage(message) {
       const item = Tab.get(message.tabId);
       if (!item) // it can be closed while waiting
         break;
+      clearRenderableTreeItemsCache();
       if (!reReserveScrollingForItem(item) &&
           item.active)
         reserveToScrollToItem(item);
@@ -1500,8 +1507,10 @@ function onMessageExternal(message, _aSender) {
 CollapseExpand.onUpdating.addListener((item, options) => {
   if (!configs.scrollToExpandedTree)
     return;
-  if (!item.pinned)
+  if (!item.pinned) {
+    clearRenderableTreeItemsCache();
     reserveToRenderVirtualScrollViewport({ trigger: 'collapseExpand' });
+  }
   if (options.last)
     scrollToItem(item, {
       anchor:            options.anchor,
@@ -1512,8 +1521,10 @@ CollapseExpand.onUpdating.addListener((item, options) => {
 CollapseExpand.onUpdated.addListener((item, options) => {
   if (!configs.scrollToExpandedTree)
     return;
-  if (!item.pinned)
+  if (!item.pinned) {
+    clearRenderableTreeItemsCache();
     reserveToRenderVirtualScrollViewport({ trigger: 'collapseExpand' });
+  }
   if (options.last)
     scrollToItem(item, {
       anchor:            options.anchor,
