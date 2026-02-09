@@ -20,6 +20,7 @@ import {
   isFirefoxViewTab,
   configs,
   doProgressively,
+  overlaps,
 } from './common.js';
 
 import * as ApiTabs from '/common/api-tabs.js';
@@ -251,16 +252,7 @@ export class TreeItem {
     if (this.sticky)
       return true;
 
-    // Returns true if the two arrays share at least one element
-    const [smaller, larger] = this.states.size <= TreeItem.allAutoStickyStates.size
-      ? [this.states, TreeItem.allAutoStickyStates]
-      : [TreeItem.allAutoStickyStates, this.states];
-    for (const state of smaller) {
-      if (larger.has(state))
-        return true;
-    }
-
-    return false;
+    return overlaps(this.states, TreeItem.allAutoStickyStates);
   }
 
   get promisedPossibleOpenerBookmarks() {
