@@ -1325,12 +1325,12 @@ export async function getTargetTabs(message, sender) {
     let tabs = await getTabsByQueries([tabQuery], { windowId, queryOptions, sender });
     if (queryOptions.states)
       tabs = tabs.filter(tab => {
-        const unified = tab.$TST.states.union(queryOptions.states);
+        const unified = tab.$TST.states.union(new Set(queryOptions.states));
         return unified.size == tab.$TST.states.size;
       });
     if (queryOptions.statesNot)
       tabs = tabs.filter(tab => {
-        const unified = tab.$TST.states.union(queryOptions.statesNot);
+        const unified = tab.$TST.states.union(new Set(queryOptions.statesNot));
         return unified.size > tab.$TST.states.size;
       });
     return tabs;

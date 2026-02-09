@@ -698,8 +698,10 @@ export class TreeItem {
       statesToAdd = providerId;
       providerId = browser.runtime.id;
     }
-    if (!Array.isArray(statesToAdd))
+    if (typeof statesToAdd == 'string')
       statesToAdd = [statesToAdd];
+    if (typeof statesToAdd.size != 'number')
+      statesToAdd = new Set(statesToAdd);
     const states = (TreeItem.autoStickyStates.get(providerId) || new Set()).union(statesToAdd);
     if (states.size == 0)
       return;
@@ -728,8 +730,10 @@ export class TreeItem {
     const states = TreeItem.autoStickyStates.get(providerId);
     if (!states)
       return;
-    if (!Array.isArray(statesToRemove))
+    if (typeof statesToRemove == 'string')
       statesToRemove = [statesToRemove];
+    if (typeof statesToRemove.size != 'number')
+      statesToRemove = new Set(statesToRemove);
     const differencedStates = states.difference(statesToRemove);
     if (differencedStates.size > 0)
       TreeItem.autoStickyStates.set(providerId, differencedStates);

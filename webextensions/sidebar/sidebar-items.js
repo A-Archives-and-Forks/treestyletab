@@ -549,7 +549,7 @@ function setupPendingUpdate(update) {
   };
 
   if (update.removedAttributes.size > 0) {
-    pendingUpdate.removedAttributes = update.removedAttributes.union(pendingUpdate.removedAttributes || []);
+    pendingUpdate.removedAttributes = update.removedAttributes.union(pendingUpdate.removedAttributes || new Set());
     if (pendingUpdate.addedAttributes)
       for (const attribute of update.removedAttributes) {
         delete pendingUpdate.addedAttributes[attribute];
@@ -568,7 +568,7 @@ function setupPendingUpdate(update) {
   }
 
   if (update.removedStates.size > 0) {
-    pendingUpdate.removedStates = update.removedStates.union(pendingUpdate.removedStates || []);
+    pendingUpdate.removedStates = update.removedStates.union(pendingUpdate.removedStates || new Set());
     if (pendingUpdate.addedStates)
       for (const state of update.removedStates) {
         pendingUpdate.addedStates.delete(state);
@@ -576,7 +576,7 @@ function setupPendingUpdate(update) {
   }
 
   if (update.addedStates.size > 0) {
-    pendingUpdate.addedStates = update.addedStates.union(pendingUpdate.addedStates || []);
+    pendingUpdate.addedStates = update.addedStates.union(pendingUpdate.addedStates || new Set());
     if (pendingUpdate.removedStates)
       for (const state of update.addedStates) {
         pendingUpdate.removedStates.delete(state);
