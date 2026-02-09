@@ -20,7 +20,6 @@ import {
   isFirefoxViewTab,
   configs,
   doProgressively,
-  overlaps,
 } from './common.js';
 
 import * as ApiTabs from '/common/api-tabs.js';
@@ -252,7 +251,9 @@ export class TreeItem {
     if (this.sticky)
       return true;
 
-    return overlaps(this.states, TreeItem.allAutoStickyStates);
+    // Returns true if one or more elements are common in both sets, in minimum time.
+    // See also: https://github.com/piroor/treestyletab/pull/3831
+    return !this.states.isDisjointFrom(TreeItem.allAutoStickyStates);
   }
 
   get promisedPossibleOpenerBookmarks() {

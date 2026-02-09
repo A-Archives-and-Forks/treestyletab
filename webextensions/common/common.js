@@ -1013,17 +1013,6 @@ export function countMatched(values, matcher) {
   return count;
 }
 
-// Returns true if the two sets share at least one element.
-// This is faster than "a.intersection(b).size > 0".
-// https://github.com/piroor/treestyletab/pull/3831
-export function overlaps(a, b) {
-  const [smaller, larger] = a.size <= b.size ? [a, b] : [b, a];
-  for (const state of smaller) {
-    if (larger.has(state))
-      return true;
-  }
-}
-
 export function toLines(values, mapper, separator = '\n') {
   /* This function logically equals to:
   return values.reduce((output, value, index) => {
