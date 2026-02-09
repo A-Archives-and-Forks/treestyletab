@@ -266,10 +266,7 @@ async function fixupTabsRestoredFromCache(tabs, permanentStates, cachedTabs) {
 function fixupTabRestoredFromCache(tab, permanentStates, cachedTab, idMap) {
   tab.$TST.clear();
   const tabStates = new Set([...cachedTab.$TST.states, ...permanentStates]);
-  for (const state of Constants.kTAB_TEMPORARY_STATES) {
-    tabStates.delete(state);
-  }
-  tab.$TST.states = tabStates;
+  tab.$TST.states = tabStates.difference(Constants.kTAB_TEMPORARY_STATES);
   tab.$TST.attributes = cachedTab.$TST.attributes;
 
   log('fixupTabRestoredFromCache children: ', cachedTab.$TST.childIds);

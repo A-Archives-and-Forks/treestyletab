@@ -321,7 +321,7 @@ async function onHighlighted(highlightInfo) {
 
   // ignore internally highlighted tabs - they are already handled
   const win = TabsStore.windows.get(highlightInfo.windowId);
-  const unifiedHighlightedTabs = new Set([...win.highlightingTabs, ...highlightInfo.tabIds]);
+  const unifiedHighlightedTabs = win.highlightingTabs.union(highlightInfo.tabIds);
   if (unifiedHighlightedTabs.size == win.highlightingTabs.size) {
     log(`Internal highlighting is in progress: ${Math.ceil(highlightInfo.tabIds.length / win.highlightingTabs.size * 100)} %`);
     if (highlightInfo.tabIds.length == win.highlightingTabs.size) {

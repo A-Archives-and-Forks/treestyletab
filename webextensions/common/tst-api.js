@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2026
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -1325,12 +1325,12 @@ export async function getTargetTabs(message, sender) {
     let tabs = await getTabsByQueries([tabQuery], { windowId, queryOptions, sender });
     if (queryOptions.states)
       tabs = tabs.filter(tab => {
-        const unified = new Set([...tab.$TST.states, ...queryOptions.states]);
+        const unified = tab.$TST.states.union(queryOptions.states);
         return unified.size == tab.$TST.states.size;
       });
     if (queryOptions.statesNot)
       tabs = tabs.filter(tab => {
-        const unified = new Set([...tab.$TST.states, ...queryOptions.statesNot]);
+        const unified = tab.$TST.states.union(queryOptions.statesNot);
         return unified.size > tab.$TST.states.size;
       });
     return tabs;

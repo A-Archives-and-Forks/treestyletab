@@ -705,12 +705,9 @@ export class TreeItem {
       statesToAdd = providerId;
       providerId = browser.runtime.id;
     }
-    const states = TreeItem.autoStickyStates.get(providerId) || new Set();
     if (!Array.isArray(statesToAdd))
       statesToAdd = [statesToAdd];
-    for (const state of statesToAdd) {
-      states.add(state)
-    }
+    const states = (TreeItem.autoStickyStates.get(providerId) || new Set()).union(statesToAdd);
     if (states.size == 0)
       return;
 
@@ -740,11 +737,9 @@ export class TreeItem {
       return;
     if (!Array.isArray(statesToRemove))
       statesToRemove = [statesToRemove];
-    for (const state of statesToRemove) {
-      states.delete(state)
-    }
-    if (states.size > 0)
-      TreeItem.autoStickyStates.set(providerId, states);
+    const differencedStates = states.difference(statesToRemove);
+    if (differencedStates.size > 0)
+      TreeItem.autoStickyStates.set(providerId, differencedStates);
     else
       TreeItem.autoStickyStates.delete(providerId);
 
@@ -3556,7 +3551,7 @@ export class Tab extends TreeItem {
         }
       })();
     else
-      return TreeItem.sort(Array.from(new Set([...selectedTabs, ...Array.from(highlightedTabs.values())])));
+      return TreeItem.sort(Array.from(new Set([...selectedTabs, ...highlightedTabs.values()])));
   }
 
   static getNeedToBeSynchronizedTabs(windowId = null, options = {}) {

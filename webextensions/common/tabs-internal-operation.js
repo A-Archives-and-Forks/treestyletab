@@ -263,7 +263,7 @@ export async function highlightTabs(tabs, { inheritToCollapsedDescendants } = {}
     win.highlightingTabs.add(tab.id);
     return tab.id;
   });
-  const toBeHighlightedTabIds = new Set([...win.highlightingTabs]);
+  const toBeHighlightedTabIds = new Set(win.highlightingTabs);
 
   TabsUpdate.updateTabsHighlighted({
     windowId,
@@ -308,7 +308,7 @@ export async function highlightTabs(tabs, { inheritToCollapsedDescendants } = {}
       break;
     }
 
-    const unifiedHighlightTabIds = new Set([...toBeHighlightedTabIds, ...win.highlightingTabs]);
+    const unifiedHighlightTabIds = toBeHighlightedTabIds.union(win.highlightingTabs);
     if (unifiedHighlightTabIds.size != toBeHighlightedTabIds.size) {
       log('highlightTabs: someone tried multiselection again while in-progress ', toBeHighlightedTabIds.size, win.highlightingTabs.size);
       break;

@@ -279,7 +279,7 @@ renderVirtualScrollViewport.triggers = new Set();
 
 function renderVirtualScrollViewport(scrollPosition = undefined) {
   renderVirtualScrollViewport.invoked = false;
-  const triggers = new Set([...renderVirtualScrollViewport.triggers]);
+  const triggers = new Set(renderVirtualScrollViewport.triggers);
   renderVirtualScrollViewport.triggers.clear();
 
   const startAt = Date.now();

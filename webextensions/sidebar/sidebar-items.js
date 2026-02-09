@@ -549,7 +549,7 @@ function setupPendingUpdate(update) {
   };
 
   if (update.removedAttributes.size > 0) {
-    pendingUpdate.removedAttributes = new Set([...(pendingUpdate.removedAttributes || []), ...update.removedAttributes]);
+    pendingUpdate.removedAttributes = update.removedAttributes.union(pendingUpdate.removedAttributes || []);
     if (pendingUpdate.addedAttributes)
       for (const attribute of update.removedAttributes) {
         delete pendingUpdate.addedAttributes[attribute];
@@ -568,7 +568,7 @@ function setupPendingUpdate(update) {
   }
 
   if (update.removedStates.size > 0) {
-    pendingUpdate.removedStates = new Set([...(pendingUpdate.removedStates || []), ...update.removedStates]);
+    pendingUpdate.removedStates = update.removedStates.union(pendingUpdate.removedStates || []);
     if (pendingUpdate.addedStates)
       for (const state of update.removedStates) {
         pendingUpdate.addedStates.delete(state);
@@ -576,7 +576,7 @@ function setupPendingUpdate(update) {
   }
 
   if (update.addedStates.size > 0) {
-    pendingUpdate.addedStates = new Set([...(pendingUpdate.addedStates || []), ...update.addedStates]);
+    pendingUpdate.addedStates = update.addedStates.union(pendingUpdate.addedStates || []);
     if (pendingUpdate.removedStates)
       for (const state of update.addedStates) {
         pendingUpdate.removedStates.delete(state);
@@ -769,7 +769,7 @@ BackgroundConnection.onMessage.addListener(async message => {
           stickyStateChanged = true;
       }
       if (stickyStateChanged ||
-          [...TreeItem.autoStickyStates.values()].some(states => (new Set([...states, ...modified])).size < states.size + modified.size))
+          [...TreeItem.autoStickyStates.values()].some(states => states.intersection(modified).size > 0))
         onNormalTabsChanged.dispatch();
     }; break;
 
