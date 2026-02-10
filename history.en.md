@@ -2,7 +2,13 @@
 
  - master/HEAD
    * Show new tab action selectors on both side of the new tab button correctly, when both container selector and relation selector are active. ([by bb010g](https://github.com/piroor/treestyletab/pull/3826), thanks!)
+   * Fix handling of closed tree restoration: multiple tabs of a closed tree are now restored with single action correctly. ([by tkng](https://github.com/piroor/treestyletab/pull/3832), thanks!)
+   * Calculate progress of closed tree restoration correctly. ([by tkng](https://github.com/piroor/treestyletab/pull/3832), thanks!)
+   * Optimize with less calculation to detect a tab should be sticky or not. ([by tkng](https://github.com/piroor/treestyletab/pull/3831), thanks!)
    * Optimize with less needless reflowing.
+   * Optimize with less reparsing of JSON strings while dragging of tabs.
+   * Suppress errors from handling of successor tabs when a tab is closed before the successor information is updated.
+   * Cleanup dead conditioned codes. ([by tkng](https://github.com/piroor/treestyletab/pull/3832), thanks!)
  - 4.2.9 (2026.1.20)
    * Fix some possible memory leaks around closed windows, tabs, and removed elements.
  - 4.2.8 (2026.1.9)
