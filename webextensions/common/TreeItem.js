@@ -59,6 +59,63 @@ const mIncompletelyTrackedTabs = new Map();
 const mMovingTabs              = new Map();
 const mPromisedTrackedTabs     = new Map();
 
+// Global maps for per-tab media state children IDs.
+// These are lazily populated only when a tab actually has children with media state,
+// saving memory compared to allocating 12 Sets per tab.
+const mSoundPlayingChildrenIds         = new Map();
+const mMaybeSoundPlayingChildrenIds    = new Map();
+const mMutedChildrenIds                = new Map();
+const mMaybeMutedChildrenIds           = new Map();
+const mAutoplayBlockedChildrenIds      = new Map();
+const mMaybeAutoplayBlockedChildrenIds = new Map();
+const mSharingCameraChildrenIds        = new Map();
+const mMaybeSharingCameraChildrenIds   = new Map();
+const mSharingMicrophoneChildrenIds    = new Map();
+const mMaybeSharingMicrophoneChildrenIds = new Map();
+const mSharingScreenChildrenIds        = new Map();
+const mMaybeSharingScreenChildrenIds   = new Map();
+
+// [stateConstant, map] pairs grouped by sound/sharing for inherit callbacks
+const mSoundChildrenIdsMaps = [
+  [Constants.kTAB_STATE_SOUND_PLAYING,                 mSoundPlayingChildrenIds],
+  [Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER,      mMaybeSoundPlayingChildrenIds],
+  [Constants.kTAB_STATE_MUTED,                         mMutedChildrenIds],
+  [Constants.kTAB_STATE_HAS_MUTED_MEMBER,              mMaybeMutedChildrenIds],
+  [Constants.kTAB_STATE_AUTOPLAY_BLOCKED,              mAutoplayBlockedChildrenIds],
+  [Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER,   mMaybeAutoplayBlockedChildrenIds],
+];
+const mSharingChildrenIdsMaps = [
+  [Constants.kTAB_STATE_SHARING_CAMERA,                mSharingCameraChildrenIds],
+  [Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER,     mMaybeSharingCameraChildrenIds],
+  [Constants.kTAB_STATE_SHARING_MICROPHONE,            mSharingMicrophoneChildrenIds],
+  [Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER, mMaybeSharingMicrophoneChildrenIds],
+  [Constants.kTAB_STATE_SHARING_SCREEN,                mSharingScreenChildrenIds],
+  [Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER,     mMaybeSharingScreenChildrenIds],
+];
+const mAllChildrenIdsMaps = [...mSoundChildrenIdsMaps, ...mSharingChildrenIdsMaps];
+
+function addToChildrenIds(map, tabId, childId) {
+  let set = map.get(tabId);
+  if (!set) {
+    set = new Set();
+    map.set(tabId, set);
+  }
+  set.add(childId);
+}
+
+function deleteFromChildrenIds(map, tabId, childId) {
+  const set = map.get(tabId);
+  if (set) {
+    set.delete(childId);
+    if (set.size === 0)
+      map.delete(tabId);
+  }
+}
+
+function getChildrenIdsSize(map, tabId) {
+  return map.get(tabId)?.size ?? 0;
+}
+
 
 browser.windows.onRemoved.addListener(windowId => {
   mIncompletelyTrackedTabs.delete(windowId);
@@ -1161,24 +1218,12 @@ export class Tab extends TreeItem {
       muted:           0,
       autoplayBlocked: 0,
     };
-    this.soundPlayingChildrenIds = new Set();
-    this.maybeSoundPlayingChildrenIds = new Set();
-    this.mutedChildrenIds = new Set();
-    this.maybeMutedChildrenIds = new Set();
-    this.autoplayBlockedChildrenIds = new Set();
-    this.maybeAutoplayBlockedChildrenIds = new Set();
 
     this.lastSharingStateCounts = {
       sharingCamera:     0,
       sharingMicrophone: 0,
       sharingScreen:     0,
     };
-    this.sharingCameraChildrenIds = new Set();
-    this.maybeSharingCameraChildrenIds = new Set();
-    this.sharingMicrophoneChildrenIds = new Set();
-    this.maybeSharingMicrophoneChildrenIds = new Set();
-    this.sharingScreenChildrenIds = new Set();
-    this.maybeSharingScreenChildrenIds = new Set();
 
     this.opened = new Promise((resolve, reject) => {
       const resolvers = mOpenedResolvers.get(raw.id) || new Set();
@@ -1250,6 +1295,13 @@ export class Tab extends TreeItem {
 
   clear() {
     super.clear();
+
+    // Clean up media state children IDs from global maps
+    for (const [, map] of mAllChildrenIdsMaps) {
+      if (this.parentId)
+        deleteFromChildrenIds(map, this.parentId, this.id);
+      map.delete(this.id);
+    }
 
     this.parentId = null;
     this.childIds = [];
@@ -1857,32 +1909,16 @@ export class Tab extends TreeItem {
       this.setAttribute(Constants.kPARENT, parent.id);
       parent.$TST.invalidateCachedDescendants();
 
-      if (this.states.has(Constants.kTAB_STATE_SOUND_PLAYING))
-        parent.$TST.soundPlayingChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER))
-        parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_MUTED))
-        parent.$TST.mutedChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_MUTED_MEMBER))
-        parent.$TST.maybeMutedChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_AUTOPLAY_BLOCKED))
-        parent.$TST.autoplayBlockedChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER))
-        parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
+      for (const [state, map] of mSoundChildrenIdsMaps) {
+        if (this.states.has(state))
+          addToChildrenIds(map, parent.id, this.id);
+      }
       parent.$TST.inheritSoundStateFromChildren();
 
-      if (this.states.has(Constants.kTAB_STATE_SHARING_CAMERA))
-        parent.$TST.sharingCameraChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER))
-        parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_SHARING_MICROPHONE))
-        parent.$TST.sharingMicrophoneChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER))
-        parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_SHARING_SCREEN))
-        parent.$TST.sharingScreenChildrenIds.add(this.id);
-      if (this.states.has(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER))
-        parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
+      for (const [state, map] of mSharingChildrenIdsMaps) {
+        if (this.states.has(state))
+          addToChildrenIds(map, parent.id, this.id);
+      }
       parent.$TST.inheritSharingStateFromChildren();
 
       TabsStore.removeRootTab(this.raw);
@@ -1892,20 +1928,12 @@ export class Tab extends TreeItem {
       TabsStore.addRootTab(this.raw);
     }
     if (oldParent && oldParent.id != this.parentId) {
-      oldParent.$TST.soundPlayingChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
-      oldParent.$TST.mutedChildrenIds.delete(this.id);
-      oldParent.$TST.maybeMutedChildrenIds.delete(this.id);
-      oldParent.$TST.autoplayBlockedChildrenIds.delete(this.id);
-      oldParent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
+      for (const [, map] of mSoundChildrenIdsMaps)
+        deleteFromChildrenIds(map, oldParent.id, this.id);
       oldParent.$TST.inheritSoundStateFromChildren();
 
-      oldParent.$TST.sharingCameraChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
-      oldParent.$TST.sharingMicrophoneChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
-      oldParent.$TST.sharingScreenChildrenIds.delete(this.id);
-      oldParent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
+      for (const [, map] of mSharingChildrenIdsMaps)
+        deleteFromChildrenIds(map, oldParent.id, this.id);
       oldParent.$TST.inheritSharingStateFromChildren();
 
       oldParent.$TST.children = oldParent.$TST.childIds.filter(id => id != this.id);
@@ -2342,12 +2370,12 @@ export class Tab extends TreeItem {
       case Constants.kTAB_STATE_SOUND_PLAYING: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.soundPlayingChildrenIds.add(this.id);
+          addToChildrenIds(mSoundPlayingChildrenIds, parent.id, this.id);
       } break;
       case Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
+          addToChildrenIds(mMaybeSoundPlayingChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_AUDIBLE:
@@ -2358,27 +2386,27 @@ export class Tab extends TreeItem {
       case Constants.kTAB_STATE_MUTED: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.mutedChildrenIds.add(this.id);
+          addToChildrenIds(mMutedChildrenIds, parent.id, this.id);
         if (toTab)
           this.raw.mutedInfo.muted = true;
       } break;
       case Constants.kTAB_STATE_HAS_MUTED_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeMutedChildrenIds.add(this.id);
+          addToChildrenIds(mMaybeMutedChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_AUTOPLAY_BLOCKED: {
         const parent = this.parent;
         if (parent) {
-          parent.$TST.autoplayBlockedChildrenIds.add(this.id);
+          addToChildrenIds(mAutoplayBlockedChildrenIds, parent.id, this.id);
           parent.$TST.inheritSoundStateFromChildren();
         }
       } break;
       case Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER: {
         const parent = this.parent;
         if (parent) {
-          parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
+          addToChildrenIds(mMaybeAutoplayBlockedChildrenIds, parent.id, this.id);
           parent.$TST.inheritSoundStateFromChildren();
         }
       } break;
@@ -2386,40 +2414,40 @@ export class Tab extends TreeItem {
       case Constants.kTAB_STATE_SHARING_CAMERA: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.sharingCameraChildrenIds.add(this.id);
+          addToChildrenIds(mSharingCameraChildrenIds, parent.id, this.id);
         if (toTab && this.raw.sharingState)
           this.raw.sharingState.camera = true;
       } break;
       case Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
+          addToChildrenIds(mMaybeSharingCameraChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_SHARING_MICROPHONE: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.sharingMicrophoneChildrenIds.add(this.id);
+          addToChildrenIds(mSharingMicrophoneChildrenIds, parent.id, this.id);
         if (toTab && this.raw.sharingState)
           this.raw.sharingState.microphone = true;
       } break;
       case Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
+          addToChildrenIds(mMaybeSharingMicrophoneChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_SHARING_SCREEN: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.sharingScreenChildrenIds.add(this.id);
+          addToChildrenIds(mSharingScreenChildrenIds, parent.id, this.id);
         if (toTab && this.raw.sharingState)
           this.raw.sharingState.screen = 'Something';
       } break;
       case Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
+          addToChildrenIds(mMaybeSharingScreenChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_GROUP_TAB:
@@ -2535,12 +2563,12 @@ export class Tab extends TreeItem {
       case Constants.kTAB_STATE_SOUND_PLAYING: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.soundPlayingChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mSoundPlayingChildrenIds, parent.id, this.id);
       } break;
       case Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mMaybeSoundPlayingChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_AUDIBLE:
@@ -2551,27 +2579,27 @@ export class Tab extends TreeItem {
       case Constants.kTAB_STATE_MUTED: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.mutedChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mMutedChildrenIds, parent.id, this.id);
         if (toTab)
           this.raw.mutedInfo.muted = false;
       } break;
       case Constants.kTAB_STATE_HAS_MUTED_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeMutedChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mMaybeMutedChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_AUTOPLAY_BLOCKED: {
         const parent = this.parent;
         if (parent) {
-          parent.$TST.autoplayBlockedChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mAutoplayBlockedChildrenIds, parent.id, this.id);
           parent.$TST.inheritSoundStateFromChildren();
         }
       } break;
       case Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER: {
         const parent = this.parent;
         if (parent) {
-          parent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mMaybeAutoplayBlockedChildrenIds, parent.id, this.id);
           parent.$TST.inheritSoundStateFromChildren();
         }
       } break;
@@ -2579,40 +2607,40 @@ export class Tab extends TreeItem {
       case Constants.kTAB_STATE_SHARING_CAMERA: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.sharingCameraChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mSharingCameraChildrenIds, parent.id, this.id);
         if (toTab && this.raw.sharingState)
           this.raw.sharingState.camera = false;
       } break;
       case Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mMaybeSharingCameraChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_SHARING_MICROPHONE: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.sharingMicrophoneChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mSharingMicrophoneChildrenIds, parent.id, this.id);
         if (toTab && this.raw.sharingState)
           this.raw.sharingState.microphone = false;
       } break;
       case Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mMaybeSharingMicrophoneChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_SHARING_SCREEN: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.sharingScreenChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mSharingScreenChildrenIds, parent.id, this.id);
         if (toTab && this.raw.sharingState)
           this.raw.sharingState.screen = undefined;
       } break;
       case Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER: {
         const parent = this.parent;
         if (parent)
-          parent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
+          deleteFromChildrenIds(mMaybeSharingScreenChildrenIds, parent.id, this.id);
       } break;
 
       case Constants.kTAB_STATE_GROUP_TAB:
@@ -2686,41 +2714,41 @@ export class Tab extends TreeItem {
       const parent = this.parent;
       let modifiedCount = 0;
 
-      const soundPlayingCount = this.soundPlayingChildrenIds.size + this.maybeSoundPlayingChildrenIds.size;
+      const soundPlayingCount = getChildrenIdsSize(mSoundPlayingChildrenIds, this.id) + getChildrenIdsSize(mMaybeSoundPlayingChildrenIds, this.id);
       if (soundPlayingCount != this.lastSoundStateCounts.soundPlaying) {
         this.lastSoundStateCounts.soundPlaying = soundPlayingCount;
         this.toggleState(Constants.kTAB_STATE_HAS_SOUND_PLAYING_MEMBER, soundPlayingCount > 0);
         if (parent) {
           if (soundPlayingCount > 0)
-            parent.$TST.maybeSoundPlayingChildrenIds.add(this.id);
+            addToChildrenIds(mMaybeSoundPlayingChildrenIds, parent.id, this.id);
           else
-            parent.$TST.maybeSoundPlayingChildrenIds.delete(this.id);
+            deleteFromChildrenIds(mMaybeSoundPlayingChildrenIds, parent.id, this.id);
         }
         modifiedCount++;
       }
 
-      const mutedCount = this.mutedChildrenIds.size + this.maybeMutedChildrenIds.size;
+      const mutedCount = getChildrenIdsSize(mMutedChildrenIds, this.id) + getChildrenIdsSize(mMaybeMutedChildrenIds, this.id);
       if (mutedCount != this.lastSoundStateCounts.muted) {
         this.lastSoundStateCounts.muted = mutedCount;
         this.toggleState(Constants.kTAB_STATE_HAS_MUTED_MEMBER, mutedCount > 0);
         if (parent) {
           if (mutedCount > 0)
-            parent.$TST.maybeMutedChildrenIds.add(this.id);
+            addToChildrenIds(mMaybeMutedChildrenIds, parent.id, this.id);
           else
-            parent.$TST.maybeMutedChildrenIds.delete(this.id);
+            deleteFromChildrenIds(mMaybeMutedChildrenIds, parent.id, this.id);
         }
         modifiedCount++;
       }
 
-      const autoplayBlockedCount = this.autoplayBlockedChildrenIds.size + this.maybeAutoplayBlockedChildrenIds.size;
+      const autoplayBlockedCount = getChildrenIdsSize(mAutoplayBlockedChildrenIds, this.id) + getChildrenIdsSize(mMaybeAutoplayBlockedChildrenIds, this.id);
       if (autoplayBlockedCount != this.lastSoundStateCounts.autoplayBlocked) {
         this.lastSoundStateCounts.autoplayBlocked = autoplayBlockedCount;
         this.toggleState(Constants.kTAB_STATE_HAS_AUTOPLAY_BLOCKED_MEMBER, autoplayBlockedCount > 0);
         if (parent) {
           if (autoplayBlockedCount > 0)
-            parent.$TST.maybeAutoplayBlockedChildrenIds.add(this.id);
+            addToChildrenIds(mMaybeAutoplayBlockedChildrenIds, parent.id, this.id);
           else
-            parent.$TST.maybeAutoplayBlockedChildrenIds.delete(this.id);
+            deleteFromChildrenIds(mMaybeAutoplayBlockedChildrenIds, parent.id, this.id);
         }
         modifiedCount++;
       }
@@ -2758,41 +2786,41 @@ export class Tab extends TreeItem {
       const parent = this.parent;
       let modifiedCount = 0;
 
-      const sharingCameraCount = this.sharingCameraChildrenIds.size + this.maybeSharingCameraChildrenIds.size;
+      const sharingCameraCount = getChildrenIdsSize(mSharingCameraChildrenIds, this.id) + getChildrenIdsSize(mMaybeSharingCameraChildrenIds, this.id);
       if (sharingCameraCount != this.lastSharingStateCounts.sharingCamera) {
         this.lastSharingStateCounts.sharingCamera = sharingCameraCount;
         this.toggleState(Constants.kTAB_STATE_HAS_SHARING_CAMERA_MEMBER, sharingCameraCount > 0);
         if (parent) {
           if (sharingCameraCount > 0)
-            parent.$TST.maybeSharingCameraChildrenIds.add(this.id);
+            addToChildrenIds(mMaybeSharingCameraChildrenIds, parent.id, this.id);
           else
-            parent.$TST.maybeSharingCameraChildrenIds.delete(this.id);
+            deleteFromChildrenIds(mMaybeSharingCameraChildrenIds, parent.id, this.id);
         }
         modifiedCount++;
       }
 
-      const sharingMicrophoneCount = this.sharingMicrophoneChildrenIds.size + this.maybeSharingMicrophoneChildrenIds.size;
+      const sharingMicrophoneCount = getChildrenIdsSize(mSharingMicrophoneChildrenIds, this.id) + getChildrenIdsSize(mMaybeSharingMicrophoneChildrenIds, this.id);
       if (sharingMicrophoneCount != this.lastSharingStateCounts.sharingMicrophone) {
         this.lastSharingStateCounts.sharingMicrophone = sharingMicrophoneCount;
         this.toggleState(Constants.kTAB_STATE_HAS_SHARING_MICROPHONE_MEMBER, sharingMicrophoneCount > 0);
         if (parent) {
           if (sharingMicrophoneCount > 0)
-            parent.$TST.maybeSharingMicrophoneChildrenIds.add(this.id);
+            addToChildrenIds(mMaybeSharingMicrophoneChildrenIds, parent.id, this.id);
           else
-            parent.$TST.maybeSharingMicrophoneChildrenIds.delete(this.id);
+            deleteFromChildrenIds(mMaybeSharingMicrophoneChildrenIds, parent.id, this.id);
         }
         modifiedCount++;
       }
 
-      const sharingScreenCount = this.sharingScreenChildrenIds.size + this.maybeSharingScreenChildrenIds.size;
+      const sharingScreenCount = getChildrenIdsSize(mSharingScreenChildrenIds, this.id) + getChildrenIdsSize(mMaybeSharingScreenChildrenIds, this.id);
       if (sharingScreenCount != this.lastSharingStateCounts.sharingScreen) {
         this.lastSharingStateCounts.sharingScreen = sharingScreenCount;
         this.toggleState(Constants.kTAB_STATE_HAS_SHARING_SCREEN_MEMBER, sharingScreenCount > 0);
         if (parent) {
           if (sharingScreenCount > 0)
-            parent.$TST.maybeSharingScreenChildrenIds.add(this.id);
+            addToChildrenIds(mMaybeSharingScreenChildrenIds, parent.id, this.id);
           else
-            parent.$TST.maybeSharingScreenChildrenIds.delete(this.id);
+            deleteFromChildrenIds(mMaybeSharingScreenChildrenIds, parent.id, this.id);
         }
         modifiedCount++;
       }
