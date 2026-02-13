@@ -340,13 +340,27 @@ function applyAnimationState(active) {
 }
 
 async function applyTheme({ style } = {}) {
-  const [theme, ] = await Promise.all([
+  const [theme, syncLoaded] = await Promise.all([
     browser.theme.getCurrent(mTargetWindow),
+    Promise.race([
+      configs.$syncLoaded.then(() => {
+        return true;
+      }),
+      Promise.resolve(false),
+    ]),
     style && applyOwnTheme(style),
-    !style && configs.$loaded.then(applyOwnTheme.bind(null, undefined)),
-    configs.$loaded
+    !style && configs.$localLoaded.then(applyOwnTheme.bind(null, undefined)),
+    configs.$localLoaded,
   ]);
   applyBrowserTheme(theme);
+  applyThemePostProcess();
+
+  if (!syncLoaded) {
+    await configs.$syncLoaded;
+    applyThemePostProcess();
+  }
+}
+function applyThemePostProcess() {
   applyUserStyleRules();
   if (mReloadMaskImage)
     reloadAllMaskImages();
