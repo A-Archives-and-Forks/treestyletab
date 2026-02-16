@@ -1335,7 +1335,8 @@ async function onBackgroundMessage(message) {
       const item = Tab.get(message.tabId);
       if (!item) // it can be closed while waiting
         break;
-      if (!shouldApplyAnimation(true)) {
+      if (!shouldApplyAnimation(true) ||
+          !item.active) {
         reserveToScrollToNewTab(item);
       }
     }; break;
