@@ -22,6 +22,7 @@
  *                 Tetsuharu OHZEKI <https://github.com/saneyuki>
  *                 Xidorn Quan <https://github.com/upsuper> (Firefox 40+ support)
  *                 lv7777 (https://github.com/lv7777)
+ *                 tkng (https://github.com/tkng)
  *
  * ***** END LICENSE BLOCK ******/
 'use strict';

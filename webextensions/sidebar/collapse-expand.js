@@ -14,7 +14,7 @@
  * The Original Code is the Tree Style Tab.
  *
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2011-2024
+ * Portions created by the Initial Developer are Copyright (C) 2011-2026
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s): YUKI "Piro" Hiroshi <piro.outsider.reflex@gmail.com>
@@ -22,6 +22,7 @@
  *                 Tetsuharu OHZEKI <https://github.com/saneyuki>
  *                 Xidorn Quan <https://github.com/upsuper> (Firefox 40+ support)
  *                 lv7777 (https://github.com/lv7777)
+ *                 tkng (https://github.com/tkng)
  *
  * ***** END LICENSE BLOCK ******/
 'use strict';
