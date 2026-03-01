@@ -5,19 +5,26 @@
 */
 'use strict';
 
-(async function prepare(retryCount = 0) {
+import CrossContextMessaging from '/extlib/cross-context-messaging-contents.js';
+
+window.addEventListener('DOMContentLoaded', async function prepare(_event, retryCount = 0) {
   if (retryCount > 10)
     throw new Error('could not prepare group tab contents');
 
   if (!document.documentElement) {
-    setTimeout(prepare, 100, retryCount + 1);
+    setTimeout(prepare, 100, _event, retryCount + 1);
     return false;
   }
 
-  const [ CrossContextMessaging, l10n ] = await Promise.all([
-    import('/extlib/cross-context-messaging-contents.js').then(namespace => namespace.default),
-    import('/extlib/l10n.js').then(namespace => namespace.default),
-  ]);
+  // this need to be loaded dynamically - otherwise it will touches to the
+  // WebExtensions API and this tab will be closed after the addon is unloaded.
+  const { default: l10n } = await import('/extlib/l10n.js');
+
+  const pong = await CrossContextMessaging.sendMessage({ type: 'ping' });
+  if (pong != 'pong') {
+    setTimeout(prepare, 500, _event, retryCount + 1);
+    return false;
+  }
 
   if (window.prepared ||
       document.documentElement.classList.contains('initialized'))
@@ -34,11 +41,6 @@
 
   // Firefox sometimes clears the document title set at here, so we need to re-set it later.
   document.title = getTitle();
-  // Failsafe 1: This is effective on newly opened tabs,
-  // but won't effective on already opened and reinitialized tabs.
-  window.addEventListener('DOMContentLoaded', () => {
-    document.title = getTitle();
-  }, { once: true });
 
   function getTitle() {
     const url = new URL(window.location.href);
@@ -639,4 +641,4 @@
 
   init();
   return true;
-})();
+}, { once: true });
