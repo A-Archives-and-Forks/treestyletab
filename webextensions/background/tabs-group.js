@@ -581,9 +581,6 @@ CrossContextMessaging.onMessage((message, _sender) => {
       return response;
     }; break;
 
-    case 'ping':
-      return 'pong';
-
     default:
       break;
   }
