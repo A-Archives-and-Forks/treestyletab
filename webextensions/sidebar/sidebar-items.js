@@ -385,6 +385,7 @@ export function unrenderItem(item) {
   mUnrenderedItemIds.add(item.id);
 
   const itemElement = item.$TST.element;
+  itemElement.cleanup();
 
   if (item.type == TreeItem.TYPE_TAB) {
     item.$TST.removeState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);

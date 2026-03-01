@@ -77,11 +77,11 @@ export class TreeItemElement extends HTMLElement {
     this.__onMouseOver = null;
     this.__onMouseEnter = null;
     this.__onMouseLeave = null;
-    this.extraItemsContainerIndentRoot = null;
-    this.extraItemsContainerBehindRoot = null;
-    this.extraItemsContainerFrontRoot = null;
-    this.extraItemsContainerAboveRoot = null;
-    this.extraItemsContainerBelowRoot = null;
+    this._extraItemsContainerIndentRoot = null;
+    this._extraItemsContainerBehindRoot = null;
+    this._extraItemsContainerFrontRoot = null;
+    this._extraItemsContainerAboveRoot = null;
+    this._extraItemsContainerBelowRoot = null;
   }
 
   connectedCallback() {
@@ -178,11 +178,11 @@ export class TreeItemElement extends HTMLElement {
     this._endListening();
     this._raw = null;
     this._$TST = null;
-    this.extraItemsContainerIndentRoot = null;
-    this.extraItemsContainerBehindRoot = null;
-    this.extraItemsContainerFrontRoot = null;
-    this.extraItemsContainerAboveRoot = null;
-    this.extraItemsContainerBelowRoot = null;
+    this._extraItemsContainerIndentRoot = null;
+    this._extraItemsContainerBehindRoot = null;
+    this._extraItemsContainerFrontRoot = null;
+    this._extraItemsContainerAboveRoot = null;
+    this._extraItemsContainerBelowRoot = null;
   }
 
   get initialized() {
@@ -549,77 +549,112 @@ index = ${raw.index}
   }
 
   get safeExtraItemsContainerIndentRoot() {
-    if (!this.extraItemsContainerIndentRoot) {
-      let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.indent`);
-      if (!container) {
-        container = document.createElement('span');
-        container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} indent`;
-        this.insertBefore(container, this.substanceElement);
-      }
-      this.extraItemsContainerIndentRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
-      this.extraItemsContainerIndentRoot.itemById = new Map();
+    if (this._extraItemsContainerIndentRoot)
+      return this._extraItemsContainerIndentRoot;
+
+    let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.indent`);
+    if (!container) {
+      container = document.createElement('span');
+      container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} indent`;
+      this.insertBefore(container, this.substanceElement);
     }
-    return this.extraItemsContainerIndentRoot;
+    return this.unsafeExtraItemsContainerIndentRoot;
+  }
+  get unsafeExtraItemsContainerIndentRoot() {
+    const container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.indent`);
+    if (container && !this._extraItemsContainerIndentRoot) {
+      this._extraItemsContainerIndentRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
+      this._extraItemsContainerIndentRoot.itemById ||= new Map();
+    }
+    return this._extraItemsContainerIndentRoot;
   }
 
   get safeExtraItemsContainerBehindRoot() {
-    if (!this.extraItemsContainerBehindRoot) {
-      let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.behind`);
-      if (!container) {
-        container = document.createElement('span');
-        container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} behind`;
-        const ui = this.querySelector('.ui');
-        const below = ui.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.below`);
-        ui.insertBefore(container, below ? below.nextSibling : ui.querySelector('.caption').nextSibling);
-      }
-      this.extraItemsContainerBehindRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
-      this.extraItemsContainerBehindRoot.itemById = new Map();
+    if (this._extraItemsContainerBehindRoot)
+      return this._extraItemsContainerBehindRoot;
+
+    let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.behind`);
+    if (!container) {
+      container = document.createElement('span');
+      container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} behind`;
+      const ui = this.querySelector('.ui');
+      const below = ui.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.below`);
+      ui.insertBefore(container, below ? below.nextSibling : ui.querySelector('.caption').nextSibling);
     }
-    return this.extraItemsContainerBehindRoot;
+    return this.unsafeExtraItemsContainerBehindRoot;
+  }
+  get unsafeExtraItemsContainerBehindRoot() {
+    const container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.behind`);
+    if (container && !this._extraItemsContainerBehindRoot) {
+      this._extraItemsContainerBehindRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
+      this._extraItemsContainerBehindRoot.itemById ||= new Map();
+    }
+    return this._extraItemsContainerBehindRoot;
   }
 
   get safeExtraItemsContainerFrontRoot() {
-    if (!this.extraItemsContainerFrontRoot) {
-      let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.front`);
-      if (!container) {
-        container = document.createElement('span');
-        container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} front`;
-        this.querySelector('.ui').appendChild(container);
-      }
-      this.extraItemsContainerFrontRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
-      this.extraItemsContainerFrontRoot.itemById = new Map();
+    if (this._extraItemsContainerFrontRoot)
+      return this._extraItemsContainerFrontRoot;
+
+    let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.front`);
+    if (!container) {
+      container = document.createElement('span');
+      container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} front`;
+      this.querySelector('.ui').appendChild(container);
     }
-    return this.extraItemsContainerFrontRoot;
+    return this.unsafeExtraItemsContainerFrontRoot;
+  }
+  get unsafeExtraItemsContainerFrontRoot() {
+    const container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.front`);
+    if (container && !this._extraItemsContainerFrontRoot) {
+      this._extraItemsContainerFrontRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
+      this._extraItemsContainerFrontRoot.itemById ||= new Map();
+    }
+    return this._extraItemsContainerFrontRoot;
   }
 
   get safeExtraItemsContainerAboveRoot() {
-    if (!this.extraItemsContainerAboveRoot) {
-      let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.above`);
-      if (!container) {
-        container = document.createElement('span');
-        container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} above`;
-        const ui = this.querySelector('.ui');
-        ui.insertBefore(container, ui.querySelector('.caption'));
-      }
-      this.extraItemsContainerAboveRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
-      this.extraItemsContainerAboveRoot.itemById = new Map();
+    if (this._extraItemsContainerAboveRoot)
+      return this._extraItemsContainerAboveRoot;
+
+    let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.above`);
+    if (!container) {
+      container = document.createElement('span');
+      container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} above`;
+      const ui = this.querySelector('.ui');
+      ui.insertBefore(container, ui.querySelector('.caption'));
     }
-    return this.extraItemsContainerAboveRoot;
+    return this.unsafeExtraItemsContainerAboveRoot;
+  }
+  get unsafeExtraItemsContainerAboveRoot() {
+    const container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.above`);
+    if (container && !this._extraItemsContainerAboveRoot) {
+      this._extraItemsContainerAboveRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
+      this._extraItemsContainerAboveRoot.itemById ||= new Map();
+    }
+    return this._extraItemsContainerAboveRoot;
   }
 
   get safeExtraItemsContainerBelowRoot() {
-    if (!this.extraItemsContainerBelowRoot) {
-      let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.below`);
-      if (!container) {
-        container = document.createElement('span');
-        container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} below`;
-        const ui = this.querySelector('.ui');
-        ui.insertBefore(container, ui.querySelector('.caption').nextSibling);
-      }
-      this.extraItemsContainerBelowRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
-      this.extraItemsContainerBelowRoot.itemById = new Map();
+    if (this._extraItemsContainerBelowRoot)
+      return this._extraItemsContainerBelowRoot;
+
+    let container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.below`);
+    if (!container) {
+      container = document.createElement('span');
+      container.className = `${Constants.kEXTRA_ITEMS_CONTAINER} below`;
+      const ui = this.querySelector('.ui');
+      ui.insertBefore(container, ui.querySelector('.caption').nextSibling);
     }
-    return this.extraItemsContainerBelowRoot;
+    return this.unsafeExtraItemsContainerBelowRoot;
+  }
+  get unsafeExtraItemsContainerBelowRoot() {
+    const container = this.querySelector(`.${Constants.kEXTRA_ITEMS_CONTAINER}.below`);
+    if (container && !this._extraItemsContainerBelowRoot) {
+      this._extraItemsContainerBelowRoot = container.shadowRoot || container.attachShadow({ mode: 'open' });
+      this._extraItemsContainerBelowRoot.itemById ||= new Map();
+    }
+    return this._extraItemsContainerBelowRoot;
   }
 
   ensureBurster() {
@@ -945,6 +980,23 @@ index = ${raw.index}
       this._labelElement.invalidateOverflow();
       this._needToUpdateOverflow = true;
     }
+  }
+
+  cleanup() {
+    this._extraItemsContainerIndentRoot?.host.remove();
+    this._extraItemsContainerIndentRoot = null;
+    this._extraItemsContainerBehindRoot?.host.remove();
+    this._extraItemsContainerBehindRoot = null;
+    this._extraItemsContainerFrontRoot?.host.remove();
+    this._extraItemsContainerFrontRoot = null;
+    this._extraItemsContainerAboveRoot?.host.remove();
+    this._extraItemsContainerAboveRoot = null;
+    this._extraItemsContainerBelowRoot?.host.remove();
+    this._extraItemsContainerBelowRoot = null;
+
+    this.querySelector(`.${Constants.kBURSTER}`)?.remove();
+    this.querySelector(`.${Constants.kCONTEXTUAL_IDENTITY_MARKER}`)?.remove();
+    this.querySelector(`.native-tab-group-line`)?.remove();
   }
 }
 
