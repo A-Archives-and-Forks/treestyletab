@@ -236,7 +236,7 @@ export function getRenderableTreeItems(windowId = null) {
     windowId = TabsStore.getCurrentWindowId();
   }
   if (mCachedRenderableTreeItems) {
-    return mapAndFilter(mCachedRenderableTreeItems, id => TreeItem.get(id));
+    return mapAndFilter(mCachedRenderableTreeItems, item => TreeItem.get(item) || undefined);
   }
 
   if (TabsStore.nativelyGroupedTabsInWindow.get(windowId).size == 0) {
@@ -247,7 +247,7 @@ export function getRenderableTreeItems(windowId = null) {
       skipMatching: true,
       ordered:      true,
     });
-    mCachedRenderableTreeItems = items.map(item => item.id);
+    mCachedRenderableTreeItems = items.map(item => ({ id: item.id, type: item.type }));
     return items;
   }
 
@@ -273,7 +273,7 @@ export function getRenderableTreeItems(windowId = null) {
   ]);
   log('getRenderableTreeItems: mixedItems = ', mixedItems);
 
-  mCachedRenderableTreeItems = mixedItems.map(item => item.id);
+  mCachedRenderableTreeItems = mixedItems.map(item => ({ id: item.id, type: item.type }));
   return mixedItems;
 };
 

@@ -852,12 +852,26 @@ export class TreeItem {
 
   static compare(a, b) {
     const delta = a.index - b.index;
-    if (delta == 0) {
-      return (a.type == TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER) ? 1 :
-        (a.type == TreeItem.TYPE_GROUP || !!a.color) ? -1 :
-          1;
+    if (delta != 0)
+      return delta;
+
+    switch (a.type) {
+      case TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER:
+        if (b.type == TreeItem.TYPE_GROUP) // a is the counter of the previous group, b is the next group
+          return -1;
+        return 1;
+
+      case TreeItem.TYPE_GROUP:
+        if (b.type == TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER) // a is the next group, b is the counter of the previous group
+          return 1;
+        return -1;
+
+      default:
+        if (!!a.color)
+          return -1;
+
+        return 1;
     }
-    return delta;
   }
 
   static sort(tabs) {
