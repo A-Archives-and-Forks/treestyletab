@@ -5,7 +5,7 @@
 */
 'use strict';
 
-import HashMessaging from '/extlib/hash-messaging-contents.js';
+import CrossContextMessaging from '/extlib/cross-context-messaging-contents.js';
 
 window.addEventListener('DOMContentLoaded', async function prepare(_event, retryCount = 0) {
   if (retryCount > 10)
@@ -19,8 +19,8 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
   // The l10n library need to be loaded dynamically - otherwise it will touches to the
   // WebExtensions API and this tab will be closed after the addon is unloaded.
   const { default: l10n } = await import('/extlib/l10n.js');
-  if (!HashMessaging.initialized) {
-    HashMessaging.requestInit();
+  if (!CrossContextMessaging.initialized) {
+    CrossContextMessaging.requestInit();
     setTimeout(prepare, 500, _event, retryCount + 1);
     return false;
   }
@@ -210,7 +210,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
       const closebox = event.target.closest('li span.closebox');
       if (closebox) {
         const tabId = closebox.dataset.tabId;
-        HashMessaging.sendMessage({
+        CrossContextMessaging.sendMessage({
           type:             'treestyletab:remove-tabs-internally',
           tabIds:           [parseInt(tabId)],
           byMouseOperation: true,
@@ -226,7 +226,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
         event.preventDefault();
         if ((event.button == 0 && isAcceled(event)) ||
             (event.button == 1 && !hasModifier(event))) {
-          HashMessaging.sendMessage({
+          CrossContextMessaging.sendMessage({
             type:             'treestyletab:remove-tabs-internally',
             tabIds:           [parseInt(tabId)],
             byMouseOperation: true,
@@ -234,7 +234,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
           });
         }
         else {
-          HashMessaging.sendMessage({
+          CrossContextMessaging.sendMessage({
             type: 'treestyletab:api:focus',
             tab:  parseInt(tabId),
           });
@@ -279,13 +279,13 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
 
     const messageKeys = l10n.collectUsedKeys(document.documentElement);
     const [themeDeclarations, contextualIdentitiesColorInfo, configs, userStyleRules, messages] = await Promise.all([
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         type: 'treestyletab:get-theme-declarations'
       }),
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         type: 'treestyletab:get-contextual-identities-color-info'
       }),
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         type: 'treestyletab:get-config-value',
         keys: [
           'renderTreeInGroupTabs',
@@ -294,10 +294,10 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
           'rtl',
         ]
       }),
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         type: 'treestyletab:get-user-style-rules'
       }),
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         type: 'get-localized-messages',
         keys: messageKeys,
       }),
@@ -335,7 +335,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
       hint.firstChild.addEventListener('click', event => {
         if (event.button != 0)
           return;
-        HashMessaging.sendMessage({
+        CrossContextMessaging.sendMessage({
           type:   'treestyletab:open-tab',
           uri,
           active: true,
@@ -345,7 +345,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
         if (event.key != 'Enter' &&
             event.key != 'Space')
           return;
-        HashMessaging.sendMessage({
+        CrossContextMessaging.sendMessage({
           type:   'treestyletab:open-tab',
           uri,
           active: true,
@@ -357,7 +357,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
         if (event.button != 0)
           return;
         hint.style.display = 'none';
-        HashMessaging.sendMessage({
+        CrossContextMessaging.sendMessage({
           type:  'treestyletab:set-config-value',
           key:   optionKey,
           value: false
@@ -368,7 +368,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
             event.key != 'Space')
           return;
         hint.style.display = 'none';
-        HashMessaging.sendMessage({
+        CrossContextMessaging.sendMessage({
           type:  'treestyletab:set-config-value',
           key:   optionKey,
           value: false
@@ -376,7 +376,7 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
       });
     }
 
-    HashMessaging.onMessage((message, _sender) => {
+    CrossContextMessaging.onMessage((message, _sender) => {
       switch (message?.type) {
         case 'treestyletab:clear-temporary-state':
           gTemporaryCheck.checked = gTemporaryAggressiveCheck.checked = false;
@@ -435,15 +435,15 @@ window.addEventListener('DOMContentLoaded', async function prepare(_event, retry
     const [thisTab, openerTab, aliasTab] = await Promise.all([
       // We need to request them separately because
       // get-tree always compact the returned array (null tab will be removved).
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         ...baseRequest,
         tab: 'senderTab',
       }),
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         ...baseRequest,
         tab: getOpenerTabId(),
       }),
-      HashMessaging.sendMessage({
+      CrossContextMessaging.sendMessage({
         ...baseRequest,
         tab: getAliasTabId(),
       }),
