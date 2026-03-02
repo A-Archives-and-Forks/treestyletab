@@ -1334,7 +1334,6 @@ export class Tab extends TreeItem {
     this.parentId = null;
     this.childIds = [];
     this.cachedAncestorIds   = null;
-    this.cachedDescendantIds = null;
   }
 
   startMoving() {
@@ -1940,7 +1939,7 @@ export class Tab extends TreeItem {
     const parent = this.parent;
     if (parent) {
       this.setAttribute(Constants.kPARENT, parent.id);
-      parent.$TST.invalidateCachedDescendants();
+      parent.$TST.invalidateCacheUpward();
 
       for (const [state, map] of mSoundChildrenIdsMaps) {
         if (this.states.has(state))
@@ -2102,7 +2101,7 @@ export class Tab extends TreeItem {
     // Map. This is acceptable to repeat in order to avoid two array copies,
     // especially on larger tab sets.
     this.childIds.sort((a, b) => TreeItem.compare(Tab.get(a), Tab.get(b)));
-    this.invalidateCachedDescendants();
+    this.invalidateCacheUpward();
   }
 
   get hasChild() {
@@ -2110,27 +2109,25 @@ export class Tab extends TreeItem {
   }
 
   get descendants() {
-    if (!this.cachedDescendantIds)
-      return this.updateDescendants();
-    return mapAndFilter(this.cachedDescendantIds,
-                        id => TabsStore.ensureLivingItem(Tab.get(id)) || undefined);
+    const result = [];
+    this._collectDescendants(result);
+    return result;
   }
 
-  updateDescendants() {
-    const descendants = [];
-    this.cachedDescendantIds = [];
-    for (const child of this.children) {
-      descendants.push(child, ...child.$TST.descendants);
-      this.cachedDescendantIds.push(child.id, ...child.$TST.cachedDescendantIds);
+  _collectDescendants(result) {
+    for (const id of this.childIds) {
+      const child = TabsStore.ensureLivingItem(Tab.get(id));
+      if (!child)
+        continue;
+      result.push(child);
+      child.$TST._collectDescendants(result);
     }
-    return descendants;
   }
 
-  invalidateCachedDescendants() {
-    this.cachedDescendantIds = null;
+  invalidateCacheUpward() {
     const parent = this.parent;
     if (parent)
-      parent.$TST.invalidateCachedDescendants();
+      parent.$TST.invalidateCacheUpward();
     this.invalidateCache();
   }
 
