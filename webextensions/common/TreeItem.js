@@ -2110,17 +2110,17 @@ export class Tab extends TreeItem {
 
   get descendants() {
     const result = [];
-    this._collectDescendants(result);
+    this.collectDescendants(result);
     return result;
   }
 
-  _collectDescendants(result) {
+  collectDescendants(result) {
     for (const id of this.childIds) {
       const child = TabsStore.ensureLivingItem(Tab.get(id));
       if (!child)
         continue;
       result.push(child);
-      child.$TST._collectDescendants(result);
+      child.$TST.collectDescendants(result);
     }
   }
 
