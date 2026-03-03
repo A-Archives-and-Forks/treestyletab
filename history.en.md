@@ -1,6 +1,14 @@
 # History
 
  - master/HEAD
+   * Custom tabs for grouping (`ext+treestyletab:group`) are available again on Firefox 150+ which never supports injecting of scripts to addon-hosted contents due to the [bug 2011234](https://bugzilla.mozilla.org/show_bug.cgi?id=2011234). See [#2356 in Sidebery](https://github.com/mbnuqw/sidebery/issues/2356) for more details of affections of the bug.
+   * Fix wrong order of header and counter items for collapsed native tab groups after native groups are moved. (regression on 4.2.10)
+   * Stabilize tree restorations based on tree information stored to each tab ([by tkng](https://github.com/piroor/treestyletab/pull/3871), thanks!)
+   * Don't leave phantom group and collapsed members counter after a collapsed native group is closed.
+   * Keep tree structure on detaching all children on some situations (including [#3858 by tkng](https://github.com/piroor/treestyletab/pull/3858), thanks!)
+   * Many performance improvements with optimizations and fixed leaks ([#3854](https://github.com/piroor/treestyletab/pull/3854), [#3865](https://github.com/piroor/treestyletab/pull/3865) by [tkng](https://github.com/tkng), [#3857](https://github.com/piroor/treestyletab/pull/3857), [#3870](https://github.com/piroor/treestyletab/pull/3870), [#3872](https://github.com/piroor/treestyletab/pull/3872) and [#3876](https://github.com/piroor/treestyletab/pull/3876). Thanks!)
+   * Many cleanup of codes for future maintainability ([#3853](https://github.com/piroor/treestyletab/pull/3853), [#3855](https://github.com/piroor/treestyletab/pull/3855), [#3856](https://github.com/piroor/treestyletab/pull/3856), [#3859](https://github.com/piroor/treestyletab/pull/3859), [#3860](https://github.com/piroor/treestyletab/pull/3860), [#3862](https://github.com/piroor/treestyletab/pull/3862), [#3863](https://github.com/piroor/treestyletab/pull/3863), [#3864](https://github.com/piroor/treestyletab/pull/3864) and [#3866](https://github.com/piroor/treestyletab/pull/3866) by [tkng](https://github.com/tkng). Thanks!)
+   * Reduce dead codes around custom event handling and needless exports, for better maintainability.
  - 4.2.10 (2026.2.18)
    * Show new tab action selectors on both side of the new tab button correctly, when both container selector and relation selector are active. ([by bb010g](https://github.com/piroor/treestyletab/pull/3826), thanks!)
    * Restore tree of tabs certainly on crash recovery and/or manual restoration of the previous session. ([by tkng](https://github.com/piroor/treestyletab/pull/3846), thanks!)
@@ -9,7 +17,7 @@
    * Some performance improvements with optimizations around reduced reparsing of JSON strings while dragging and reduced reflowing.
    * Apply and update auto-sticky state of tabs correctly, even if they are specified by other addons. ([by tkng](https://github.com/piroor/treestyletab/pull/3840), thanks!)
    * Update custom tooltip text more correctly. ([by tkng](https://github.com/piroor/treestyletab/pull/3850), thanks!)
-   * Many cleanup of codes for future maintainability. ([#3832](https://github.com/piroor/treestyletab/pull/3832), [#3833](https://github.com/piroor/treestyletab/pull/3833), [#3835](https://github.com/piroor/treestyletab/pull/3835), [#3844](https://github.com/piroor/treestyletab/pull/3844), [#3849](https://github.com/piroor/treestyletab/pull/3849), [#3851](https://github.com/piroor/treestyletab/pull/3851) and [#3852](https://github.com/piroor/treestyletab/pull/3852) by [tkng](https://github.com/tkng). Thanks!)
+   * Many cleanup of codes for future maintainability ([#3832](https://github.com/piroor/treestyletab/pull/3832), [#3833](https://github.com/piroor/treestyletab/pull/3833), [#3835](https://github.com/piroor/treestyletab/pull/3835), [#3844](https://github.com/piroor/treestyletab/pull/3844), [#3849](https://github.com/piroor/treestyletab/pull/3849), [#3851](https://github.com/piroor/treestyletab/pull/3851) and [#3852](https://github.com/piroor/treestyletab/pull/3852) by [tkng](https://github.com/tkng). Thanks!)
    * Suppress errors from handling of successor tabs when a tab is closed before the successor information is updated.
  - 4.2.9 (2026.1.20)
    * Fix some possible memory leaks around closed windows, tabs, and removed elements.

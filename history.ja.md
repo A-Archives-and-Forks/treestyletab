@@ -1,6 +1,14 @@
 # 更新履歴
 
  - master/HEAD
+   * 独自のグループ化用のタブ（`ext+treestyletab:group`）がFirefox 150以降で[Bug 2011234](https://bugzilla.mozilla.org/show_bug.cgi?id=2011234)の影響で動作しなくなっていたのを修正（当該Bugの影響の詳細説明は[Sideberyプロジェクトの#2356](https://github.com/mbnuqw/sidebery/issues/2356)を参照してください）
+   * ネイティブのタブグループの移動後にヘッダー項目と折りたたまれた項目の数の表示順が壊れる問題を修正（4.2.10での後退バグ）
+   * 各タブに保存された情報に基づくツリーの復元処理をより安定して行えるようにした（[by tkng](https://github.com/piroor/treestyletab/pull/3871), thanks!）
+   * 折りたたまれたネイティブのグループごとタブを閉じたときにグループのヘッダー項目と折りたたまれた項目の数がタブバー上に残る問題を修正
+   * 親タブが閉じられたりした場面で残った子タブでツリーを再形成する際にツリーが壊れることがあったのを修正（[tkngさんによる#3858の修正](https://github.com/piroor/treestyletab/pull/3858)を含む）
+   * 様々な最適化とリーク修正によるパフォーマンス改善（([#3854](https://github.com/piroor/treestyletab/pull/3854), [#3865](https://github.com/piroor/treestyletab/pull/3865) by [tkng](https://github.com/tkng), [#3857](https://github.com/piroor/treestyletab/pull/3857), [#3870](https://github.com/piroor/treestyletab/pull/3870), [#3872](https://github.com/piroor/treestyletab/pull/3872) and [#3876](https://github.com/piroor/treestyletab/pull/3876). Thanks!）
+   * 無駄なコードの削減や設計の変更などにより保守性を向上（[#3853](https://github.com/piroor/treestyletab/pull/3853), [#3855](https://github.com/piroor/treestyletab/pull/3855), [#3856](https://github.com/piroor/treestyletab/pull/3856), [#3859](https://github.com/piroor/treestyletab/pull/3859), [#3860](https://github.com/piroor/treestyletab/pull/3860), [#3862](https://github.com/piroor/treestyletab/pull/3862), [#3863](https://github.com/piroor/treestyletab/pull/3863), [#3864](https://github.com/piroor/treestyletab/pull/3864) and [#3866](https://github.com/piroor/treestyletab/pull/3866) by [tkng](https://github.com/tkng). Thanks!）
+   * 保守性の向上のため、未使用のイベント処理や不要なexportを削減
  - 4.2.10 (2026.2.18)
    * コンテナー選択機能と新規タブの開き方の選択機能を両方とも有効にしたときに、新規タブの開き方を選択するためのドロップダウンメニューを「新しいタブ」ボタンの両サイドに正しく表示するように修正（[by bb010g](https://github.com/piroor/treestyletab/pull/3826), thanks!）
    * クラッシュからの復帰時や手動操作での前回セッションの復元時に、ツリー構造をより確実に復元するようにした（[by tkng](https://github.com/piroor/treestyletab/pull/3846), thanks!）
