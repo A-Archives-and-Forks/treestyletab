@@ -402,15 +402,15 @@ function getDropAction(event) {
 
     return true;
   });
-  info.defineGetter('canCreateGroup', () => {
+  info.canCreateGroup = event => {
     if (!configs.tabGroupsEnabled ||
         !targetItem ||
         targetItem.groupId != -1 ||
         [targetItem, ...info.draggedItems].some(item => item?.type != TreeItem.TYPE_TAB || item?.pinned || item.groupId != -1)) {
       return false;
     }
-    return info.dropPosition == kDROP_ON_SELF && info.inlineDropPosition == kDROP_HEAD;
-  });
+    return info.dropPosition == kDROP_ON_SELF && (info.inlineDropPosition == kDROP_HEAD || event.shiftKey);
+  };
   info.defineGetter('EventUtils.isCopyAction', () => EventUtils.isCopyAction(event));
   info.defineGetter('dropEffect', () => getDropEffectFromDropAction(info));
 
@@ -1261,7 +1261,7 @@ function onDragOver(event) {
     dropPositionTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
     dropPositionTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
     mDropPositionHolderItems.add(dropPositionTargetItem);
-    if (info.canCreateGroup) {
+    if (info.canCreateGroup(event)) {
       dropPositionTargetItem.$TST.setAttribute(kNEXT_GROUP_COLOR, dragData.nextGroupColor);
     }
     const substanceTargetItem = info.substanceTargetItem;
@@ -1519,7 +1519,7 @@ function onDrop(event) {
       destinationWindowId: TabsStore.getCurrentWindowId(),
       duplicate:           !fromOtherProfile && dt.dropEffect == 'copy',
       nextGroupColor:      dropActionInfo.dragData.nextGroupColor,
-      canCreateGroup:      dropActionInfo.canCreateGroup,
+      canCreateGroup:      dropActionInfo.canCreateGroup(event),
       shouldPin:           dropActionInfo.shouldPin,
       shouldUnpin:         dropActionInfo.shouldUnpin,
       import:              fromOtherProfile,
@@ -1590,7 +1590,7 @@ function onDrop(event) {
         destinationWindowId: TabsStore.getCurrentWindowId(),
         duplicate:           dt.dropEffect == 'copy',
         nextGroupColor:      dropActionInfo.dragData?.nextGroupColor,
-        canCreateGroup:      dropActionInfo.canCreateGroup,
+        canCreateGroup:      dropActionInfo.canCreateGroup(event),
         shouldPin:           dropActionInfo.shouldPin,
         shouldUnpin:         dropActionInfo.shouldUnpin,
         import:              false,
