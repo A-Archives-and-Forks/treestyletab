@@ -354,12 +354,13 @@ Tab.onCreating.addListener((tab, info = {}) => {
         log(' => clear successor');
         tryClearOwnerSuccessor(lastRelatedTab);
       }
-      opener.$TST.lastRelatedTab = tab;
+      if (opener?.$TST)
+        opener.$TST.lastRelatedTab = tab;
     });
   }
   else {
     const opener = Tab.get(tab.openerTabId);
-    if (opener)
+    if (opener?.$TST)
       opener.$TST.lastRelatedTab = tab;
   }
 });
