@@ -1198,6 +1198,12 @@ tab-item[type="group"] {
     display: none;
   }
 
+  :root:not(.rtl).right & .ui,
+  :root.rtl.left & .ui {
+    flex-direction: row-reverse;
+    margin-inline-start: auto;
+  }
+
   .caption {
     border: 1px solid var(--tab-border);
     height: calc(var(--tab-size) * 0.7);
