@@ -1,6 +1,7 @@
 # 更新履歴
 
  - master/HEAD
+ - 4.2.11 (2026.3.3)
    * 独自のグループ化用のタブ（`ext+treestyletab:group`）がFirefox 150以降で[Bug 2011234](https://bugzilla.mozilla.org/show_bug.cgi?id=2011234)の影響で動作しなくなっていたのを修正（当該Bugの影響の詳細説明は[Sideberyプロジェクトの#2356](https://github.com/mbnuqw/sidebery/issues/2356)を参照してください）
    * ネイティブのタブグループの移動後にヘッダー項目と折りたたまれた項目の数の表示順が壊れる問題を修正（4.2.10での後退バグ）
    * 各タブに保存された情報に基づくツリーの復元処理をより安定して行えるようにした（[by tkng](https://github.com/piroor/treestyletab/pull/3871), thanks!）

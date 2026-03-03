@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+ - 4.2.11 (2026.3.3)
    * Custom tabs for grouping (`ext+treestyletab:group`) are available again on Firefox 150+ which never supports injecting of scripts to addon-hosted contents due to the [bug 2011234](https://bugzilla.mozilla.org/show_bug.cgi?id=2011234). See [#2356 in Sidebery](https://github.com/mbnuqw/sidebery/issues/2356) for more details of affections of the bug.
    * Fix wrong order of header and counter items for collapsed native tab groups after native groups are moved. (regression on 4.2.10)
    * Stabilize tree restorations based on tree information stored to each tab ([by tkng](https://github.com/piroor/treestyletab/pull/3871), thanks!)
