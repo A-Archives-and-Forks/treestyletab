@@ -135,7 +135,7 @@ async function onTabSubstanceEnter(event) {
   }
 
   const hasPreview = (
-    event.target.tab.type != TreeItem.TYPE_TAB &&
+    event.target.tab?.type == TreeItem.TYPE_TAB &&
     !active &&
     !event.target.tab?.discarded &&
     CAPTURABLE_URLS_MATCHER.test(event.target.tab?.url) &&
