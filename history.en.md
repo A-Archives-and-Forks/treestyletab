@@ -1,6 +1,11 @@
 # History
 
  - master/HEAD
+   * Allow to create new native group by dropping tabs onto any areas of another tab simply, with pressing Shift key. (Without shift key, you need to drop tabs onto the head area of another tab to create new group.)
+   * Show tab previews in tab-hover tooltip again. (regression on 4.2.8)
+   * Fix wrong positioning of native group labels on right-side (in LTR, or left-side in RTL) mode.
+   * Suppress uncaught errors around successor tabs of already closed tabs.
+   * Fix links to MDN documents from changelogs. ([by theluckystrike](github.com/piroor/treestyletab/pull/3879), thanks!)
  - 4.2.11 (2026.3.3)
    * Custom tabs for grouping (`ext+treestyletab:group`) are available again on Firefox 150+ which never supports injecting of scripts to addon-hosted contents due to the [bug 2011234](https://bugzilla.mozilla.org/show_bug.cgi?id=2011234). See [#2356 in Sidebery](https://github.com/mbnuqw/sidebery/issues/2356) for more details of affections of the bug.
    * Fix wrong order of header and counter items for collapsed native tab groups after native groups are moved. (regression on 4.2.10)
