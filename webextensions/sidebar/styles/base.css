@@ -1287,6 +1287,11 @@ tab-item[type="group-collapsed-members-counter"] {
     --tab-border: transparent !important;
     --tab-text: light-dark(var(--tab-group-color), var(--tab-group-color-pale)) !important;
   }
+
+  :root:not(.rtl).right & tab-label,
+  :root.rtl.left & tab-label {
+    text-align: end;
+  }
 }
 
 
