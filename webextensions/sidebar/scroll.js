@@ -261,11 +261,13 @@ export function getRenderableTreeItems(windowId = null) {
       [...TabsStore.windows.get(windowId).tabGroups.values()],
       group => {
         group.$TST.reindex();
-        if (group.collapsed &&
-            group.$TST.members.some(tab => tab.active)) {
-          const counterItem = group.$TST.collapsedMembersCounterItem;
-          counterItem.$TST.update();
-          return [group, counterItem];
+        if (group.collapsed) {
+          const members = group.$TST.members;
+          if (members.length > 1 && members.some(tab => tab.active)) {
+            const counterItem = group.$TST.collapsedMembersCounterItem;
+            counterItem.$TST.update();
+            return [group, counterItem];
+          }
         }
         return group;
       }
