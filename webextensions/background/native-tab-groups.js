@@ -437,3 +437,13 @@ export async function startToMaintainTree() {
     reserveToMaintainTreeForGroup(tab.groupId);
   });
 }
+
+Tree.onSubtreeCollapsedStateChanged.addListener((tab, { collapsed }) => {
+  if (collapsed ||
+      !tab.groupId ||
+      tab.groupId == -1 ||
+      !configs.expandNativeTabGroupByMemberTreeExpansion)
+    return;
+
+  browser.tabGroups.update(tab.groupId, { collapsed: false });
+});

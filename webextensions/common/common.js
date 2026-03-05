@@ -465,6 +465,7 @@ export const configs = new Configs({
   progressievHighlightingInterval:                        100,
   generatedTreeItemElementsPoolLifetimeMsec:              5 * 1000,
   nativeTabGroupModificationDetectionTimeoutAfterTabMove: 500,
+  expandNativeTabGroupByMemberTreeExpansion:              true,
   undoMultipleTabsClose:                                  true,
   allowDragNewTabButton:                                  true,
   newTabButtonDragGestureModifiers:                       'shift',

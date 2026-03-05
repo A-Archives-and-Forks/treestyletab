@@ -1385,6 +1385,12 @@ const mItems = [
         expert: true
       },
       {
+        title:  browser.i18n.getMessage('config_expandNativeTabGroupByMemberTreeExpansion_label'),
+        key:    'expandNativeTabGroupByMemberTreeExpansion',
+        type:   'checkbox',
+        expert: true
+      },
+      {
         title:  browser.i18n.getMessage('config_autoDiscardTabForUnexpectedFocus_label'),
         key:    'autoDiscardTabForUnexpectedFocus',
         type:   'checkbox',
