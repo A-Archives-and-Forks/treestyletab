@@ -548,13 +548,13 @@ function getDropAction(event) {
           offsetWidth: substanceWidth
         };
       }
-      if (isRTL() == isRightside) {
-        const neck = substanceLeft + Size.getFavIconSize();
-        info.inlineDropPosition = event.clientX < neck ? kDROP_HEAD : kDROP_TAIL;
-      }
-      else {
+      if (isRightside) {
         const neck = substanceLeft + substanceWidth - Size.getFavIconSize();
         info.inlineDropPosition = event.clientX > neck ? kDROP_HEAD : kDROP_TAIL;
+      }
+      else {
+        const neck = substanceLeft + Size.getFavIconSize();
+        info.inlineDropPosition = event.clientX < neck ? kDROP_HEAD : kDROP_TAIL;
       }
       if (configs.debug)
         log(' calculated info: ', info);
