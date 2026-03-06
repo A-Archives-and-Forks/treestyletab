@@ -1535,11 +1535,11 @@ function onDrop(event) {
       if (!tabs.length && url.includes('#')) {
         log(`=> find again without the fragment part`);
         tabs = await browser.tabs.query({ url: url.replace(/#.*$/, ''), active: true });
-        if (!tabs.length) {
-          log('=> no such tabs, maybe dropped from other profile');
-          handleDroppedNonTreeItems(event, dropActionInfo);
-          return;
-        }
+      }
+      if (!tabs.length) {
+        log('=> no such tabs, maybe dropped from other profile');
+        handleDroppedNonTreeItems(event, dropActionInfo);
+        return;
       }
       log('=> possible dragged tabs: ', tabs);
       tabs = tabs.sort((a, b) => b.lastAccessed - a.lastAccessed);
