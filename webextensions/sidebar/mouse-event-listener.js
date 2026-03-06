@@ -727,7 +727,7 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
   if (lastMousedown.detail.button == 0 &&
       onRegularArea &&
       !wasMultiselectionAction) {
-    switch (tab.$TST.type) {
+    switch (tab?.$TST?.type) {
       case TreeItem.TYPE_TAB:
         log(' => activate');
         BackgroundConnection.sendMessage({
@@ -747,6 +747,10 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
         log(' => toggle owner group collapsed');
         await browser.tabGroups.update(tab.id, { collapsed: !tab.group.collapsed });
         break;
+
+      default:
+        log(' => already untracked tab, do nothing');
+        return false;
     }
   }
 
