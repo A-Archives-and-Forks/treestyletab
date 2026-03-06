@@ -218,9 +218,9 @@
           "REST": { "content": "$3", "example": "3" }
         }},
 
-    "sidebarPositionRighsideNotification_message":   { "message": "TST detected the sidebar position as \"Inverted Side\". Do you want the appearance to be switched to the one matching to the current position?" },
-    "sidebarPositionRighsideNotification_inverted": { "message": "套用反轉的外觀" },
-    "sidebarPositionRighsideNotification_regular":  { "message": "保留一般的外觀" },
+    "sidebarPositionInvertedNotification_message":   { "message": "TST detected the sidebar position as \"Inverted Side\". Do you want the appearance to be switched to the one matching to the current position?" },
+    "sidebarPositionInvertedNotification_inverted": { "message": "套用反轉的外觀" },
+    "sidebarPositionInvertedNotification_regular":  { "message": "保留一般的外觀" },
       
     "sidebarPositionOptionNotification_title":   { "message": "已儲存側邊欄位置的外觀選項" },
     "sidebarPositionOptionNotification_message": { "message": "Please see the \"Appearance\" section of the Tree Style Tab's options page if you need to change the option." },

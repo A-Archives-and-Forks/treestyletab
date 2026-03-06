@@ -234,9 +234,9 @@
       "REST": { "content": "$3", "example": "3" }
     }},
 
-  "sidebarPositionRighsideNotification_message":   { "message": "TST hat die Position der Seitenleiste als \"Invertierte Seite\" erkannt. Soll das Erscheinungsbild an die aktuelle Position angepasst werden?" },
-  "sidebarPositionRighsideNotification_inverted": { "message": "Erscheinungsbild an invertierte Seite anpassen" },
-  "sidebarPositionRighsideNotification_regular":  { "message": "Erscheinungsbild für reguläre Seite beibehalten" },
+  "sidebarPositionInvertedNotification_message":   { "message": "TST hat die Position der Seitenleiste als \"Invertierte Seite\" erkannt. Soll das Erscheinungsbild an die aktuelle Position angepasst werden?" },
+  "sidebarPositionInvertedNotification_inverted": { "message": "Erscheinungsbild an invertierte Seite anpassen" },
+  "sidebarPositionInvertedNotification_regular":  { "message": "Erscheinungsbild für reguläre Seite beibehalten" },
 
   "sidebarPositionOptionNotification_title":   { "message": "Anzeigeeinstellungen für die Seitenleiste wurden gespeichert" },
   "sidebarPositionOptionNotification_message": { "message": "Bitte den Abschnitt \"Erscheinungsbild\" der Optionen von Tree Style Tab zum Anpassen der Einstellungen beachten." },

@@ -646,15 +646,15 @@
     },
     "hash": "15adadb8434c4391c98fd1ce511e1ae0"
   },
-  "sidebarPositionRighsideNotification_message": {
+  "sidebarPositionInvertedNotification_message": {
     "message": "TST heeft ontdekt dat de zijbalk aan de omgekeerde zijde ingesteld staat. Wilt u de vormgeving aanpassen aan de huidige locatie?",
     "hash": "3b0fe740dd167107b40f0850099a232b"
   },
-  "sidebarPositionRighsideNotification_inverted": {
+  "sidebarPositionInvertedNotification_inverted": {
     "message": "Vormgeving voor omgekeerde zijde toepassen",
     "hash": "7230c212da38d9f9bc0c41045043b197"
   },
-  "sidebarPositionRighsideNotification_regular": {
+  "sidebarPositionInvertedNotification_regular": {
     "message": "Vormgeving voor normale zijde behouden",
     "hash": "6f5454ad5704808b784423d92970da2d"
   },

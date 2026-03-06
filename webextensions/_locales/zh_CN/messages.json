@@ -570,13 +570,13 @@
       }
     }
   },
-  "sidebarPositionRighsideNotification_message": {
+  "sidebarPositionInvertedNotification_message": {
     "message": "TST 检测到侧栏位置为 \"反转侧\" 。您是否希望切换外观以匹配当前侧栏位置？"
   },
-  "sidebarPositionRighsideNotification_inverted": {
+  "sidebarPositionInvertedNotification_inverted": {
     "message": "应用 反转侧 外观样式"
   },
-  "sidebarPositionRighsideNotification_regular": {
+  "sidebarPositionInvertedNotification_regular": {
     "message": "保持 常规侧 外观样式"
   },
   "sidebarPositionOptionNotification_title": {

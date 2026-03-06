@@ -1047,10 +1047,10 @@ async function isSidebarPositionInverted() {
     let result;
     do {
       result = await RichConfirm.show({
-        message: browser.i18n.getMessage('sidebarPositionRighsideNotification_message'),
+        message: browser.i18n.getMessage('sidebarPositionInvertedNotification_message'),
         buttons: [
-          browser.i18n.getMessage('sidebarPositionRighsideNotification_inverted'),
-          browser.i18n.getMessage('sidebarPositionRighsideNotification_regular'),
+          browser.i18n.getMessage('sidebarPositionInvertedNotification_inverted'),
+          browser.i18n.getMessage('sidebarPositionInvertedNotification_regular'),
         ],
       });
     } while (result.buttonIndex < 0);

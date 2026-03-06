@@ -245,9 +245,9 @@
       "REST": { "content": "$3", "example": "3" }
     }},
 
-  "sidebarPositionRighsideNotification_message":   { "message": "サイドバーが通常の反対側に置かれていることを検出しました。現在の位置に合わせて表示を切り替えますか？" },
-  "sidebarPositionRighsideNotification_inverted": { "message": "反対側用の表示に切り替える" },
-  "sidebarPositionRighsideNotification_regular":  { "message": "通常の表示を維持する" },
+  "sidebarPositionInvertedNotification_message":   { "message": "サイドバーが通常の反対側に置かれていることを検出しました。現在の位置に合わせて表示を切り替えますか？" },
+  "sidebarPositionInvertedNotification_inverted": { "message": "反対側用の表示に切り替える" },
+  "sidebarPositionInvertedNotification_regular":  { "message": "通常の表示を維持する" },
 
   "sidebarPositionOptionNotification_title":   { "message": "サイドバーの内容の表示設定を保存しました" },
   "sidebarPositionOptionNotification_message": { "message": "サイドバーの内容の表示を変更するには、Tree Style Tabの設定画面の「外観」を参照して下さい" },

@@ -245,9 +245,9 @@
       "REST": { "content": "$3", "example": "3" }
     }},
 
-  "sidebarPositionRighsideNotification_message":   { "message": "TST detected the sidebar position as \"Inverted Side\". Do you want the appearance to be switched to the one matching to the current position?" },
-  "sidebarPositionRighsideNotification_inverted": { "message": "Apply appearance for Inverted Side" },
-  "sidebarPositionRighsideNotification_regular":  { "message": "Keep appearance for Regular Side" },
+  "sidebarPositionInvertedNotification_message":   { "message": "TST detected the sidebar position as \"Inverted Side\". Do you want the appearance to be switched to the one matching to the current position?" },
+  "sidebarPositionInvertedNotification_inverted": { "message": "Apply appearance for Inverted Side" },
+  "sidebarPositionInvertedNotification_regular":  { "message": "Keep appearance for Regular Side" },
 
   "sidebarPositionOptionNotification_title":   { "message": "Saved the appearance option for the sidebar position" },
   "sidebarPositionOptionNotification_message": { "message": "Please see the \"Appearance\" section of the Tree Style Tab's options page if you need to change the option." },

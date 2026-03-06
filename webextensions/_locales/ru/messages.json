@@ -234,9 +234,9 @@
       "REST": { "content": "$3", "example": "3" }
     }},
 
-  "sidebarPositionRighsideNotification_message":   { "message": "TST определил положение панели как \"Инвертированное\". Хотите переключить вид панели для этого положения?" },
-  "sidebarPositionRighsideNotification_inverted": { "message": "Применить вид для Инвертированного положения" },
-  "sidebarPositionRighsideNotification_regular":  { "message": "Сохранить вид для Обычного положения" },
+  "sidebarPositionInvertedNotification_message":   { "message": "TST определил положение панели как \"Инвертированное\". Хотите переключить вид панели для этого положения?" },
+  "sidebarPositionInvertedNotification_inverted": { "message": "Применить вид для Инвертированного положения" },
+  "sidebarPositionInvertedNotification_regular":  { "message": "Сохранить вид для Обычного положения" },
 
   "sidebarPositionOptionNotification_title":   { "message": "Внешний вид для положения панели сохранен" },
   "sidebarPositionOptionNotification_message": { "message": "Это можно изменить в секцим настроек TST \"Внешний вид\"." },
