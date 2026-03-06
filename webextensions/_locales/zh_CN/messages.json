@@ -937,7 +937,7 @@
     "message": "在侧栏被显示时自动检测"
   },
   "config_sidebarPosition_description": {
-    "message": "* 此配置不会自动更改侧栏本身的位置。您需要单击侧栏标题处的切换器，然后手动点击 “移动侧栏到右侧” 。"
+    "message": "* 此配置不会改变侧栏本身的位置。您需要手动更改 Firefox 侧栏本身的“移动侧栏到右侧”选项。"
   },
   "config_style_caption": {
     "message": "主题"

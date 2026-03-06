@@ -387,7 +387,7 @@
   "config_sidebarPosition_regular": { "message": "Regulär (Links bei LTR, Rechts bei RTL)" },
   "config_sidebarPosition_inverted": { "message": "Invertiert (Rechts bei LTR, Links bei RTL)" },
   "config_sidebarPosition_auto": { "message": "Automatisch erkennen, wenn die Seitenleiste angezeigt wird" },
-  "config_sidebarPosition_description": { "message": "*Diese Einstellung ändert nicht die Position der Seitenleiste. Klicke dafür auf die Seitenleisten-Überschrift und dann auf \"Seitenleiste nach rechts (links) verschieben\"." },
+  "config_sidebarPosition_description": { "message": "*Diese Einstellung ändert nicht die Position der Seitenleiste. Du musst die Option \"Seitenleiste nach rechts (links) verschieben\" in der Firefox-Seitenleiste selbst manuell ändern." },
 
   "config_style_caption": { "message": "Design" },
   "config_style_proton": { "message": "Proton" },

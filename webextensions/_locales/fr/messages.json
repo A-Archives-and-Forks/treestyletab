@@ -615,7 +615,7 @@
     "hash": "e36652d0c5eff2ca4f3cd7805a979d3f"
   },
   "config_sidebarPosition_description": {
-    "message": "*Cette configuration ne changera pas la position du panneau latéral lui-même. Vous devez sur le bouton dans l'entête du panneau latéral et cliquer sur « déplacer le panneau latéral à droite » manuellement.",
+    "message": "*Cette configuration ne changera pas la position du panneau latéral lui-même. Vous devez modifier l'option « Déplacer le panneau latéral à droite » du panneau latéral de Firefox lui-même manuellement.",
     "hash": "adbea9fc2751f205418a7f6b10e68b5f"
   },
   "config_style_caption": {

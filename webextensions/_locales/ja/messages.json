@@ -394,7 +394,7 @@
   "config_sidebarPosition_regular": { "message": "通常（LTRでは左側、RTLでは右側）" },
   "config_sidebarPosition_inverted": { "message": "反転（LTRでは右側、RTLでは左側）" },
   "config_sidebarPosition_auto": { "message": "サイドバーが表示された時に自動で判定" },
-  "config_sidebarPosition_description": { "message": "※この設定はサイドバー自体の位置を変更しません。サイドバーをウィンドウの右側に移動するには、サイドバーのヘッダ上の切り替えメニューから「サイドバーを右側に移動」を選択して下さい。" },
+  "config_sidebarPosition_description": { "message": "※この設定はサイドバー自体の位置を変更しません。サイドバーをウィンドウの反対側に移動するには、Firefoxのサイドバー自体の設定項目「サイドバーを右側に移動」を変更して下さい。" },
 
   "config_style_caption": { "message": "テーマ" },
   "config_style_proton": { "message": "Proton" },

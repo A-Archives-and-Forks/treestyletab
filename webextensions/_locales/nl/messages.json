@@ -1117,7 +1117,7 @@
     "hash": "fdd61dc7452f4347137286682a21daf9"
   },
   "config_sidebarPosition_description": {
-    "message": "*Let op: deze instellingen passen niet de locatie aan. Klik op de zijkbalkkop en verplaats de zijbalk naar rechts om dit te bewerkstelligen.",
+    "message": "*Let op: deze instelling verandert de locatie van de zijbalk zelf niet. Je moet de optie \"Zijbalk naar rechts verplaatsen\" van de Firefox zijbalk zelf handmatig aanpassen.",
     "hash": "adbea9fc2751f205418a7f6b10e68b5f"
   },
   "config_style_caption": {
