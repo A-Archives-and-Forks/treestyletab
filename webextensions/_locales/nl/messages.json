@@ -1105,11 +1105,11 @@
     "hash": "4ebc8117a682499bbea58a0440275635"
   },
   "config_sidebarPosition_left": {
-    "message": "Linkerzijde",
+    "message": "Regulier (Links bij LTR, Rechts bij RTL)",
     "hash": "91c14ea7ce7e54653b43b424b06dc84c"
   },
   "config_sidebarPosition_right": {
-    "message": "Rechterzijde",
+    "message": "Omgekeerd (Rechts bij LTR, Links bij RTL)",
     "hash": "e36652d0c5eff2ca4f3cd7805a979d3f"
   },
   "config_sidebarPosition_auto": {

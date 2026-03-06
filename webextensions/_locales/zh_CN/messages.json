@@ -928,10 +928,10 @@
     "message": "有关于侧栏位置的内容样式："
   },
   "config_sidebarPosition_left": {
-    "message": "左侧"
+    "message": "常规 (LTR显示在左侧，RTL显示在右侧)"
   },
   "config_sidebarPosition_right": {
-    "message": "右侧"
+    "message": "反转 (LTR显示在右侧，RTL显示在左侧)"
   },
   "config_sidebarPosition_auto": {
     "message": "在侧栏被显示时自动检测"

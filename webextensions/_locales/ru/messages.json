@@ -383,8 +383,8 @@
   "config_appearance_caption": { "message": "Внешний вид" },
 
   "config_sidebarPosition_caption": { "message": "Позиция содержимого боковой панели:" },
-  "config_sidebarPosition_left": { "message": "Слева" },
-  "config_sidebarPosition_right": { "message": "Справа" },
+  "config_sidebarPosition_left": { "message": "Обычный (Слева при LTR, Справа при RTL)" },
+  "config_sidebarPosition_right": { "message": "Инвертированный (Справа при LTR, Слева при RTL)" },
   "config_sidebarPosition_auto": { "message": "Автоопределять когда показывать боковую панель" },
   "config_sidebarPosition_description": { "message": "* Эта настройка не меняет положение боковой панели. Если нужно переместить саму панель, то в меню заголовка боковой панели выберите \"Переместить боковую панель...\"." },
 
