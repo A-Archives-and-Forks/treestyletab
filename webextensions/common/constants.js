@@ -303,8 +303,8 @@ export const kCOUNTER_ROLE_ALL_TABS       = 1;
 export const kCOUNTER_ROLE_CONTAINED_TABS = 2;
 
 export const kTABBAR_POSITION_AUTO  = 0;
-export const kTABBAR_POSITION_LEFT  = 1;
-export const kTABBAR_POSITION_RIGHT = 2;
+export const kTABBAR_POSITION_REGULAR  = 1;
+export const kTABBAR_POSITION_INVERTED = 2;
 
 export const kACTION_MOVE   = 1 << 0;
 export const kACTION_ATTACH = 1 << 10;

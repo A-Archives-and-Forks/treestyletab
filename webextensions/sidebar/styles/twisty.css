@@ -76,11 +76,15 @@ tab-item:not(.collapsed) {
                 opacity 0.15s ease-out;
     transform: rotatez(0);
   }
-  :root.left
+  :root:not(.rtl).regular
+    &.subtree-collapsed tab-twisty::before,
+  :root.rtl.inverted
     &.subtree-collapsed tab-twisty::before {
     transform: rotatez(-90deg);
   }
-  :root.right
+  :root:not(.rtl).inverted
+    &.subtree-collapsed tab-twisty::before,
+  :root.rtl.regular
     &.subtree-collapsed tab-twisty::before {
     transform: rotatez(90deg);
   }

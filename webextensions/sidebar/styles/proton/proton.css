@@ -125,8 +125,10 @@ body,
   background-size: var(--browser-bg-size, auto);
   background-repeat: var(--browser-bg-repeat, none);
 }
-:root.right,
-:root.right #background {
+:root:not(.rtl).inverted,
+:root:not(.rtl).inverted #background,
+:root.rtl.regular,
+:root.rtl.regular #background {
   background-position: right;
 }
 
@@ -144,15 +146,19 @@ body,
     background-position: 0 0.3em;
     border-block-end: 0.05em solid rgba(255, 255, 255, 0.2);
   }
-  :root.left &.start,
-  :root.left &.end {
+  :root:not(.rtl).regular &.start,
+  :root:not(.rtl).regular &.end,
+  :root.rtl.inverted &.start,
+  :root.rtl.inverted &.end {
     background-image: radial-gradient(ellipse at right,
                                       rgba(0,0,0,0.1) 0%,
                                       rgba(0,0,0,0.1) 7.6%,
                                       rgba(0,0,0,0) 87.5%);
   }
-  :root.right &.start,
-  :root.right &.end {
+  :root:not(.rtl).inverted &.start,
+  :root:not(.rtl).inverted &.end,
+  :root.rtl.inverted &.start,
+  :root.rtl.inverted &.end {
     background-image: radial-gradient(ellipse at left,
                                       rgba(0,0,0,0.1) 0%,
                                       rgba(0,0,0,0.1) 7.6%,
@@ -240,8 +246,7 @@ tab-item-substance {
   z-index: 100;
 }
 
-:root.left:not(.rtl),
-:root.right.rtl {
+:root.regular {
   tab-item:not(.pinned) tab-item-substance,
   .after-tabs button:not([data-menu-ui]),
   .after-tabs [role="button"]:not([data-menu-ui]) {
@@ -249,8 +254,7 @@ tab-item-substance {
   }
 }
 
-:root.right:not(.rtl),
-:root.left.rtl {
+:root.inverted {
   tab-item:not(.pinned) tab-item-substance,
   .after-tabs button:not([data-menu-ui]),
   .after-tabs [role="button"]:not([data-menu-ui]) {
@@ -439,13 +443,11 @@ tab-item:not(.faviconized).subtree-collapsed.all-descendants-highlighted .highli
 /* contextual identity marker in tabs */
 
 tab-item:not(.faviconized) .contextual-identity-marker {
-  :root.left:not(.rtl) &,
-  :root.right.rtl & {
+  :root.regular & {
     inset-inline-end: calc(var(--tab-dropshadow-blur) - var(--tab-highlighter-size));
   }
 
-  :root.right:not(.rtl) &,
-  :root.left.rtl & {
+  :root.inverted & {
     inset-inline-start: calc(var(--tab-dropshadow-blur) - var(--tab-highlighter-size));
   }
 }

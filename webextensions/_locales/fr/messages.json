@@ -606,11 +606,11 @@
     "message": "Style du contenu relatif à la position du panneau :",
     "hash": "4ebc8117a682499bbea58a0440275635"
   },
-  "config_sidebarPosition_left": {
+  "config_sidebarPosition_regular": {
     "message": "Régulier (À gauche sur LTR, À droite sur RTL)",
     "hash": "91c14ea7ce7e54653b43b424b06dc84c"
   },
-  "config_sidebarPosition_right": {
+  "config_sidebarPosition_inverted": {
     "message": "Inversée (À droite sur LTR, À gauche sur RTL)",
     "hash": "e36652d0c5eff2ca4f3cd7805a979d3f"
   },

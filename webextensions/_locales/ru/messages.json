@@ -234,9 +234,9 @@
       "REST": { "content": "$3", "example": "3" }
     }},
 
-  "sidebarPositionRighsideNotification_message":   { "message": "TST определил положение панели как \"Справа\". Хотите переключить вид панели для этого положения?" },
-  "sidebarPositionRighsideNotification_rightside": { "message": "Применить вид для положения Справа" },
-  "sidebarPositionRighsideNotification_leftside":  { "message": "Сохранить вид для положения Слева" },
+  "sidebarPositionRighsideNotification_message":   { "message": "TST определил положение панели как \"Инвертированное\". Хотите переключить вид панели для этого положения?" },
+  "sidebarPositionRighsideNotification_inverted": { "message": "Применить вид для Инвертированного положения" },
+  "sidebarPositionRighsideNotification_regular":  { "message": "Сохранить вид для Обычного положения" },
 
   "sidebarPositionOptionNotification_title":   { "message": "Внешний вид для положения панели сохранен" },
   "sidebarPositionOptionNotification_message": { "message": "Это можно изменить в секцим настроек TST \"Внешний вид\"." },
@@ -383,8 +383,8 @@
   "config_appearance_caption": { "message": "Внешний вид" },
 
   "config_sidebarPosition_caption": { "message": "Позиция содержимого боковой панели:" },
-  "config_sidebarPosition_left": { "message": "Обычный (Слева при LTR, Справа при RTL)" },
-  "config_sidebarPosition_right": { "message": "Инвертированный (Справа при LTR, Слева при RTL)" },
+  "config_sidebarPosition_regular": { "message": "Обычный (Слева при LTR, Справа при RTL)" },
+  "config_sidebarPosition_inverted": { "message": "Инвертированный (Справа при LTR, Слева при RTL)" },
   "config_sidebarPosition_auto": { "message": "Автоопределять когда показывать боковую панель" },
   "config_sidebarPosition_description": { "message": "* Эта настройка не меняет положение боковой панели. Если нужно переместить саму панель, то в меню заголовка боковой панели выберите \"Переместить боковую панель...\"." },
 

@@ -32,15 +32,15 @@ const mItems = [
         title:    browser.i18n.getMessage('config_sidebarPosition_caption'),
         children: [
           {
-            title: browser.i18n.getMessage('config_sidebarPosition_left'),
+            title: browser.i18n.getMessage('config_sidebarPosition_regular'),
             key:   'sidebarPosition',
-            value: Constants.kTABBAR_POSITION_LEFT,
+            value: Constants.kTABBAR_POSITION_REGULAR,
             type:  'radio'
           },
           {
-            title: browser.i18n.getMessage('config_sidebarPosition_right'),
+            title: browser.i18n.getMessage('config_sidebarPosition_inverted'),
             key:   'sidebarPosition',
-            value: Constants.kTABBAR_POSITION_RIGHT,
+            value: Constants.kTABBAR_POSITION_INVERTED,
             type:  'radio'
           },
           {

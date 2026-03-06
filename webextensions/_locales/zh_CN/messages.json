@@ -571,13 +571,13 @@
     }
   },
   "sidebarPositionRighsideNotification_message": {
-    "message": "TST 检测到侧栏位置为 \"右侧\" 。您是否希望切换外观以匹配当前侧栏位置？"
+    "message": "TST 检测到侧栏位置为 \"反转侧\" 。您是否希望切换外观以匹配当前侧栏位置？"
   },
-  "sidebarPositionRighsideNotification_rightside": {
-    "message": "应用 右侧 外观样式"
+  "sidebarPositionRighsideNotification_inverted": {
+    "message": "应用 反转侧 外观样式"
   },
-  "sidebarPositionRighsideNotification_leftside": {
-    "message": "保持 左侧 外观样式"
+  "sidebarPositionRighsideNotification_regular": {
+    "message": "保持 常规侧 外观样式"
   },
   "sidebarPositionOptionNotification_title": {
     "message": "已保存有关于侧栏位置的外观选项"
@@ -927,10 +927,10 @@
   "config_sidebarPosition_caption": {
     "message": "有关于侧栏位置的内容样式："
   },
-  "config_sidebarPosition_left": {
+  "config_sidebarPosition_regular": {
     "message": "常规 (LTR显示在左侧，RTL显示在右侧)"
   },
-  "config_sidebarPosition_right": {
+  "config_sidebarPosition_inverted": {
     "message": "反转 (LTR显示在右侧，RTL显示在左侧)"
   },
   "config_sidebarPosition_auto": {

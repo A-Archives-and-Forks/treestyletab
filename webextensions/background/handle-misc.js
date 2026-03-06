@@ -346,7 +346,7 @@ async function onShortcutCommand(command) {
             silently: true,
           });
         }
-        else if (await isSidebarRightSide(activeTab.windowId)) {
+        else if (await isSidebarPositionInverted(activeTab.windowId)) {
           expandOrFocusToFirstChild(activeTab);
         }
         else {
@@ -371,7 +371,7 @@ async function onShortcutCommand(command) {
             silently: true,
           });
         }
-        else if (await isSidebarRightSide(activeTab.windowId)) {
+        else if (await isSidebarPositionInverted(activeTab.windowId)) {
           collapseOrFocusToParent(activeTab);
         }
         else {
@@ -499,12 +499,12 @@ function focusNextSilently(activeTab) {
   });
 }
 
-async function isSidebarRightSide(windowId) {
+async function isSidebarPositionInverted(windowId) {
   const position = await browser.runtime.sendMessage({
     type: Constants.kCOMMAND_GET_SIDEBAR_POSITION,
     windowId,
   });
-  return position == Constants.kTABBAR_POSITION_RIGHT;
+  return position == Constants.kTABBAR_POSITION_INVERTED;
 }
 
 function collapseOrFocusToParent(activeTab) {

@@ -961,9 +961,11 @@ async function onConfigChange(changedKey) {
     }; break;
 
     case 'sidebarPosition': {
-      const isRight = await isSidebarRightSide();
-      rootClasses.toggle('right', isRight);
-      rootClasses.toggle('left', !isRight);
+      const isInverted = await isSidebarPositionInverted();
+      rootClasses.toggle('regular', !isInverted);
+      rootClasses.toggle('inverted', isInverted);
+      rootClasses.toggle('left', !isInverted); // for backward compatibility
+      rootClasses.toggle('right', isInverted); // for backward compatibility
       Indent.update({ force: true });
     }; break;
 
@@ -1034,22 +1036,21 @@ async function onConfigChange(changedKey) {
   }
 }
 
-async function isSidebarRightSide() {
+async function isSidebarPositionInverted() {
   const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
   if (configs.sidebarPosition == Constants.kTABBAR_POSITION_AUTO &&
-      mayBeRight &&
-      !isRTL() &&
-      !configs.sidebarPositionRighsideNotificationShown) {
+      mayBeRight != isRTL() &&
+      !configs.sidebarPositionInvertedNotificationShown) {
     if (mTargetWindow != (await browser.windows.getLastFocused({})).id)
-      return;
+      return false;
 
     let result;
     do {
       result = await RichConfirm.show({
         message: browser.i18n.getMessage('sidebarPositionRighsideNotification_message'),
         buttons: [
-          browser.i18n.getMessage('sidebarPositionRighsideNotification_rightside'),
-          browser.i18n.getMessage('sidebarPositionRighsideNotification_leftside'),
+          browser.i18n.getMessage('sidebarPositionRighsideNotification_inverted'),
+          browser.i18n.getMessage('sidebarPositionRighsideNotification_regular'),
         ],
       });
     } while (result.buttonIndex < 0);
@@ -1060,7 +1061,7 @@ async function isSidebarRightSide() {
       url:     `moz-extension://${window.location.host}/options/options.html#section-appearance`,
       timeout: configs.sidebarPositionOptionNotificationTimeout,
     };
-    configs.sidebarPositionRighsideNotificationShown = true;
+    configs.sidebarPositionInvertedNotificationShown = true;
     switch (result.buttonIndex) {
       case 0:
         notify(notificationParams);
@@ -1068,14 +1069,14 @@ async function isSidebarRightSide() {
 
       case 1:
       default:
-        configs.sidebarPosition = Constants.kTABBAR_POSITION_LEFT;
+        configs.sidebarPosition = Constants.kTABBAR_POSITION_REGULAR;
         notify(notificationParams);
         return;
     }
   }
   return configs.sidebarPosition == Constants.kTABBAR_POSITION_AUTO ?
-    (mayBeRight || isRTL()) :
-    configs.sidebarPosition == Constants.kTABBAR_POSITION_RIGHT;
+    (mayBeRight != isRTL()) :
+    configs.sidebarPosition == Constants.kTABBAR_POSITION_INVERTED;
 }
 
 
@@ -1112,8 +1113,8 @@ function onMessage(message, _sender, _respond) {
 
     case Constants.kCOMMAND_GET_SIDEBAR_POSITION:
       return Promise.resolve(document.documentElement.classList.contains('right') ?
-        Constants.kTABBAR_POSITION_RIGHT :
-        Constants.kTABBAR_POSITION_LEFT);
+        Constants.kTABBAR_POSITION_INVERTED :
+        Constants.kTABBAR_POSITION_REGULAR);
 
     // for automated tests
     case Constants.kCOMMAND_GET_BOUNDING_CLIENT_RECT: {

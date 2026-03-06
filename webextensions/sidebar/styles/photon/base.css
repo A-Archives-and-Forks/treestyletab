@@ -70,21 +70,21 @@ tab-item.pinned tab-item-substance {
 }
 
 
-:root.left tab-item:not(.pinned) tab-item-substance,
-:root.left .after-tabs button:not([data-menu-ui]),
-:root.left .after-tabs [role="button"]:not([data-menu-ui]) {
+:root.regular tab-item:not(.pinned) tab-item-substance,
+:root.regular .after-tabs button:not([data-menu-ui]),
+:root.regular .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-end: 0.35em;
 }
-:root.left tab-item:not(.pinned)[data-parent-id] tab-item-substance {
+:root.regular tab-item:not(.pinned)[data-parent-id] tab-item-substance {
   border-inline-start-width: 1px;
 }
 
-:root.right tab-item:not(.pinned) tab-item-substance,
-:root.right .after-tabs button:not([data-menu-ui]),
-:root.right .after-tabs [role="button"]:not([data-menu-ui]) {
+:root.inverted tab-item:not(.pinned) tab-item-substance,
+:root.inverted .after-tabs button:not([data-menu-ui]),
+:root.inverted .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-start: 0.35em;
 }
-:root.right tab-item:not(.pinned)[data-parent-id] tab-item-substance {
+:root.inverted tab-item:not(.pinned)[data-parent-id] tab-item-substance {
   border-inline-end-width: 1px;
 }
 
@@ -110,15 +110,19 @@ tab-item.pinned tab-item-substance {
   background-position: 0 0.3em;
   border-block-end: 1px solid var(--tab-border);
 }
-:root.left .overflow-indicator.start,
-:root.left .overflow-indicator.end {
+:root:not(.rtl).regular .overflow-indicator.start,
+:root:not(.rtl).regular .overflow-indicator.end,
+:root.rtl.inverted .overflow-indicator.start,
+:root.rtl.inverted .overflow-indicator.end {
   background-image: radial-gradient(ellipse at right,
                                     rgba(0,0,0,0.2) 0%,
                                     rgba(0,0,0,0.2) 7.6%,
                                     rgba(0,0,0,0) 87.5%);
 }
-:root.right .overflow-indicator.start,
-:root.right .overflow-indicator.end {
+:root:not(.rtl).inverted .overflow-indicator.start,
+:root:not(.rtl).inverted .overflow-indicator.end,
+:root.rtl.regular .overflow-indicator.start,
+:root.rtl.regular .overflow-indicator.end {
   background-image: radial-gradient(ellipse at left,
                                     rgba(0,0,0,0.2) 0%,
                                     rgba(0,0,0,0.2) 7.6%,

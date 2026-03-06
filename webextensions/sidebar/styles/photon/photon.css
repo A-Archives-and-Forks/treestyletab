@@ -43,8 +43,8 @@ body,
   background-size: var(--browser-bg-size, auto);
   background-repeat: var(--browser-bg-repeat, none);
 }
-:root.right,
-:root.right #background {
+:root:not(.rtl).inverted,
+:root.rtl.regular #background {
   background-position: right;
 }
 
@@ -155,11 +155,13 @@ tab-item .burster {
   --shadow-blur: 0.2em;
 }
 
-:root.left tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance {
+:root:not(.rtl).regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance,
+:root.rtl.inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance {
   box-shadow: -0.3em 0.3em var(--shadow-blur) var(--shadow-color);
 }
 
-:root.right tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance {
+:root:not(.rtl).inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance,
+:root.rtl.regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance {
   box-shadow: 0.3em 0.3em var(--shadow-blur) var(--shadow-color);
 }
 
@@ -169,11 +171,13 @@ tab-item .burster {
 }
 
 
-:root.left #tabbar {
+:root:not(.rtl).regular #tabbar,
+:root.rtl.inverted #tabbar {
   box-shadow: inset -0.2em 0.2em var(--shadow-blur) var(--shadow-color);
 }
 
-:root.right #tabbar {
+:root:not(.rtl).inverted #tabbar,
+:root.rtl.regular #tabbar {
   box-shadow: inset 0.2em 0.2em var(--shadow-blur) var(--shadow-color);
 }
 

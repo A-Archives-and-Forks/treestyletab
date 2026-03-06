@@ -22,7 +22,7 @@ function log(...args) {
   internalLogger('background/migration', ...args);
 }
 
-const kCONFIGS_VERSION = 33;
+const kCONFIGS_VERSION = 34;
 const kFEATURES_VERSION = 9;
 
 export function migrateConfigs() {
@@ -323,6 +323,10 @@ export function migrateConfigs() {
     case 32:
       if (configs.tabPreviewTooltipOffsetTop !== null)
         configs.inContentUIOffsetTop = configs.tabPreviewTooltipOffsetTop;
+
+    case 33:
+      if (configs.sidebarPositionRighsideNotificationShown !== null)
+        configs.sidebarPositionInvertedNotificationShown = configs.sidebarPositionRighsideNotificationShown;
   }
   configs.configsVersion = kCONFIGS_VERSION;
 }

@@ -218,9 +218,9 @@
           "REST": { "content": "$3", "example": "3" }
         }},
 
-    "sidebarPositionRighsideNotification_message":   { "message": "TST detected the sidebar position as \"Right Side\". Do you want the appearance to be switched to the one matching to the current position?" },
-    "sidebarPositionRighsideNotification_rightside": { "message": "套用右側的外觀" },
-    "sidebarPositionRighsideNotification_leftside":  { "message": "保留左側的外觀" },
+    "sidebarPositionRighsideNotification_message":   { "message": "TST detected the sidebar position as \"Inverted Side\". Do you want the appearance to be switched to the one matching to the current position?" },
+    "sidebarPositionRighsideNotification_inverted": { "message": "套用反轉的外觀" },
+    "sidebarPositionRighsideNotification_regular":  { "message": "保留一般的外觀" },
       
     "sidebarPositionOptionNotification_title":   { "message": "已儲存側邊欄位置的外觀選項" },
     "sidebarPositionOptionNotification_message": { "message": "Please see the \"Appearance\" section of the Tree Style Tab's options page if you need to change the option." },
@@ -338,8 +338,8 @@
     "config_appearance_caption": { "message": "外觀" },
   
     "config_sidebarPosition_caption": { "message": "配合側邊欄位置的樣式：" },
-    "config_sidebarPosition_left": { "message": "一般 (LTR顯示於左側，RTL顯示於右側)" },
-    "config_sidebarPosition_right": { "message": "反轉 (LTR顯示於右側，RTL顯示於左側)" },
+    "config_sidebarPosition_regular": { "message": "一般 (LTR顯示於左側，RTL顯示於右側)" },
+    "config_sidebarPosition_inverted": { "message": "反轉 (LTR顯示於右側，RTL顯示於左側)" },
     "config_sidebarPosition_auto": { "message": "當側邊欄顯示時自動偵測" },
     "config_sidebarPosition_description": { "message": "※此設定不會改變側邊欄的位置，點擊側邊欄標題列並勾選「將側邊欄移至右方」以更改其位置。" },
   

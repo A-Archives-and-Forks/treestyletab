@@ -245,9 +245,9 @@
       "REST": { "content": "$3", "example": "3" }
     }},
 
-  "sidebarPositionRighsideNotification_message":   { "message": "TST detected the sidebar position as \"Right Side\". Do you want the appearance to be switched to the one matching to the current position?" },
-  "sidebarPositionRighsideNotification_rightside": { "message": "Apply appearance for Right Side" },
-  "sidebarPositionRighsideNotification_leftside":  { "message": "Keep appearance for Left Side" },
+  "sidebarPositionRighsideNotification_message":   { "message": "TST detected the sidebar position as \"Inverted Side\". Do you want the appearance to be switched to the one matching to the current position?" },
+  "sidebarPositionRighsideNotification_inverted": { "message": "Apply appearance for Inverted Side" },
+  "sidebarPositionRighsideNotification_regular":  { "message": "Keep appearance for Regular Side" },
 
   "sidebarPositionOptionNotification_title":   { "message": "Saved the appearance option for the sidebar position" },
   "sidebarPositionOptionNotification_message": { "message": "Please see the \"Appearance\" section of the Tree Style Tab's options page if you need to change the option." },
@@ -395,8 +395,8 @@
   "config_appearance_caption": { "message": "Appearance" },
 
   "config_sidebarPosition_caption": { "message": "Style of contents for the sidebar position:" },
-  "config_sidebarPosition_left": { "message": "Regular (Left on LTR, Right on RTL)" },
-  "config_sidebarPosition_right": { "message": "Inverted (Right on LTR, Left on RTL)" },
+  "config_sidebarPosition_regular": { "message": "Regular (Left on LTR, Right on RTL)" },
+  "config_sidebarPosition_inverted": { "message": "Inverted (Right on LTR, Left on RTL)" },
   "config_sidebarPosition_auto": { "message": "Auto detect when the sidebar become shown" },
   "config_sidebarPosition_description": { "message": "*This configuration won't change the position of the sidebar itself. You need to click the switcher in the sidebar header and click \"Move Sidebar to Right\" manually." },
 

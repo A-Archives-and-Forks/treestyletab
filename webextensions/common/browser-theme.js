@@ -56,7 +56,7 @@ export async function generateThemeDeclarations(theme) {
   let bgAlpha = 1;
   let hasImage = false;
   if (theme.images) {
-    const isRightside = configs.sidebarPosition == Constants.kTABBAR_POSITION_RIGHT;
+    const isRightside = configs.sidebarPosition == Constants.kTABBAR_POSITION_INVERTED;
     const images    = [];
     const frameImage = theme.images.theme_frame || theme.images.headerURL /* old name */;
     if (frameImage) {

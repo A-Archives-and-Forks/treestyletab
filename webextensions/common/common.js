@@ -166,7 +166,8 @@ export const configs = new Configs({
 
   // appearance
   sidebarPosition:                          Constants.kTABBAR_POSITION_AUTO,
-  sidebarPositionRighsideNotificationShown: false,
+  sidebarPositionInvertedNotificationShown: false,
+  sidebarPositionRighsideNotificationShown: null, // migrated to sidebarPositionInvertedNotificationShown
   sidebarPositionOptionNotificationTimeout: 20 * 1000,
   rtl:                                      isRTL(),
 

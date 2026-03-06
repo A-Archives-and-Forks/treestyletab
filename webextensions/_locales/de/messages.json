@@ -234,9 +234,9 @@
       "REST": { "content": "$3", "example": "3" }
     }},
 
-  "sidebarPositionRighsideNotification_message":   { "message": "TST hat die Position der Seitenleiste als \"Rechte Seite\" erkannt. Soll das Erscheinungsbild an die aktuelle Position angepasst werden?" },
-  "sidebarPositionRighsideNotification_rightside": { "message": "Erscheinungsbild an rechte Seite anpassen" },
-  "sidebarPositionRighsideNotification_leftside":  { "message": "Erscheinungsbild für linke Seite beibehalten" },
+  "sidebarPositionRighsideNotification_message":   { "message": "TST hat die Position der Seitenleiste als \"Invertierte Seite\" erkannt. Soll das Erscheinungsbild an die aktuelle Position angepasst werden?" },
+  "sidebarPositionRighsideNotification_inverted": { "message": "Erscheinungsbild an invertierte Seite anpassen" },
+  "sidebarPositionRighsideNotification_regular":  { "message": "Erscheinungsbild für reguläre Seite beibehalten" },
 
   "sidebarPositionOptionNotification_title":   { "message": "Anzeigeeinstellungen für die Seitenleiste wurden gespeichert" },
   "sidebarPositionOptionNotification_message": { "message": "Bitte den Abschnitt \"Erscheinungsbild\" der Optionen von Tree Style Tab zum Anpassen der Einstellungen beachten." },
@@ -384,8 +384,8 @@
   "config_appearance_caption": { "message": "Erscheinungsbild" },
 
   "config_sidebarPosition_caption": { "message": "Ausrichtung des Seitenleisten-Inhalts:" },
-  "config_sidebarPosition_left": { "message": "Regulär (Links bei LTR, Rechts bei RTL)" },
-  "config_sidebarPosition_right": { "message": "Invertiert (Rechts bei LTR, Links bei RTL)" },
+  "config_sidebarPosition_regular": { "message": "Regulär (Links bei LTR, Rechts bei RTL)" },
+  "config_sidebarPosition_inverted": { "message": "Invertiert (Rechts bei LTR, Links bei RTL)" },
   "config_sidebarPosition_auto": { "message": "Automatisch erkennen, wenn die Seitenleiste angezeigt wird" },
   "config_sidebarPosition_description": { "message": "*Diese Einstellung ändert nicht die Position der Seitenleiste. Klicke dafür auf die Seitenleisten-Überschrift und dann auf \"Seitenleiste nach rechts (links) verschieben\"." },
 

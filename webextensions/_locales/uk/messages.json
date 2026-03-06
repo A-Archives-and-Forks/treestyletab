@@ -619,11 +619,11 @@
     "message": "Розташування вмісту бокової панелі:",
     "hash": "4ebc8117a682499bbea58a0440275635"
   },
-  "config_sidebarPosition_left": {
+  "config_sidebarPosition_regular": {
     "message": "Звичайний (Ліворуч при LTR, Праворуч при RTL)",
     "hash": "91c14ea7ce7e54653b43b424b06dc84c"
   },
-  "config_sidebarPosition_right": {
+  "config_sidebarPosition_inverted": {
     "message": "Інвертований (Праворуч при LTR, Ліворуч при RTL)",
     "hash": "e36652d0c5eff2ca4f3cd7805a979d3f"
   },
