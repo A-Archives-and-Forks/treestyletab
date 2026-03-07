@@ -12,6 +12,7 @@ import {
   configs,
   isMacOS,
   sanitizeForHTMLText,
+  wait,
 } from '/common/common.js';
 
 import * as ApiTabs from './api-tabs.js';
@@ -52,14 +53,38 @@ export async function show(ownerWindow, dialogParams) {
       // opened as a new fullscreen window, thus we need to fallback to a workaround.
       log('showDialog: show in a temporary tab in ', ownerWindow.id);
       UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false, shade: true });
+      const url = (await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html';
       const tempTab = await browser.tabs.create({
         windowId: ownerWindow.id,
-        url:      ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'),
+        url,
         active:   true
       });
-      await Tab.waitUntilTracked(tempTab.id).then(() => {
-        Tab.get(tempTab.id).$TST.addState('hidden', { broadcast: true });
-      });
+      await Promise.all([
+        Tab.waitUntilTracked(tempTab.id).then(() => {
+          Tab.get(tempTab.id).$TST.addState('hidden', { broadcast: true });
+        }),
+        // We need to wait until the tab is completely loaded to avoid
+        // "Missing host permission" error.
+        url && url != 'about:blank' ?
+          (() => {
+            let onUpdated;
+            return Promise.race([
+              (new Promise((resolve, _reject) => {
+                onUpdated = (tabId, changes, tab) => {
+                  if (changes.status != 'complete' ||
+                      tab.url != url)
+                    return;
+                  resolve();
+                };
+                browser.tabs.onUpdated.addListener(onUpdated);
+              })).finally(() => {
+                browser.tabs.onUpdated.removeListener(onUpdated);
+              }),
+              wait(1000),
+            ]);
+          })() :
+          null,
+      ]);
       result = await RichConfirm.showInTab(tempTab.id, {
         ...dialogParams,
         onShown: [
