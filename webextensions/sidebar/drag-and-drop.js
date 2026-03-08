@@ -1651,8 +1651,10 @@ async function onDragEnd(event) {
   setTimeout(finishDrag, 0, 'onDragEnd');
 
   if (!dragData ||
-      !(dragData.behavior & Constants.kDRAG_BEHAVIOR_TEAR_OFF))
+      !(dragData.behavior & Constants.kDRAG_BEHAVIOR_TEAR_OFF)) {
+    log('do nothing by TST as configured');
     return;
+  }
 
   let handledBySomeone = event.dataTransfer?.dropEffect != 'none';
 
