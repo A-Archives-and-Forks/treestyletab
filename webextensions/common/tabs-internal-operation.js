@@ -128,7 +128,13 @@ export async function removeTabs(tabs, { keepDescendants, byMouseOperation, orig
   if (tabs.length == 0)
     return;
 
-  await onBeforeTabsRemove.dispatch(tabs);
+  try {
+    await onBeforeTabsRemove.dispatch(tabs);
+    log(' => onBeforeTabsRemove finished');
+  }
+  catch(error) {
+    console.error(error);
+  }
 
   const win = TabsStore.windows.get(tabs[0].windowId);
   const tabIds = [];
