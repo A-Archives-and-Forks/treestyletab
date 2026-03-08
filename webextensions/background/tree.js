@@ -1752,7 +1752,7 @@ export async function openNewWindowFromTabs(tabs, options = {}) {
       const movedTabIds = new Set(movedTabs.map(tab => tab.id));
       log('moved tabs: ', movedTabIds);
       if (movedTabIds.has(activeTab.id)) {
-        await TabsInternalOperation.setTabActive(activeTab);
+        await TabsInternalOperation.activateTab(activeTab);
       }
       const removeTabs = mapAndFilter(win.tabs, tab =>
         !movedTabIds.has(tab.id) && Tab.get(tab.id) || undefined
