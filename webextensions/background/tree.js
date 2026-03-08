@@ -1740,6 +1740,7 @@ export async function openNewWindowFromTabs(tabs, options = {}) {
     })
     .catch(ApiTabs.createErrorHandler());
   tabs = tabs.filter(TabsStore.ensureLivingItem);
+  const activeTab = tabs.find(tab => tab.active);
   const movedTabs = await moveTabs(tabs, {
     ...options,
     destinationPromisedNewWindow: promsiedNewWindow
@@ -1747,9 +1748,12 @@ export async function openNewWindowFromTabs(tabs, options = {}) {
 
   log('closing needless tabs');
   browser.windows.get(newWindow.id, { populate: true })
-    .then(win => {
+    .then(async win => {
       const movedTabIds = new Set(movedTabs.map(tab => tab.id));
       log('moved tabs: ', movedTabIds);
+      if (movedTabIds.has(activeTab.id)) {
+        await TabsInternalOperation.setTabActive(activeTab);
+      }
       const removeTabs = mapAndFilter(win.tabs, tab =>
         !movedTabIds.has(tab.id) && Tab.get(tab.id) || undefined
       );
