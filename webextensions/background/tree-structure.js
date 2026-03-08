@@ -72,8 +72,12 @@ async function saveTreeStructure(windowId) {
   if (!win)
     return;
 
+  const nativeWin = await browser.windows.get(windowId).catch(ApiTabs.createErrorSuppressor());
+  if (!nativeWin)
+    return;
+
   const structure = TreeBehavior.getTreeStructureFromTabs(Tab.getAllTabs(windowId));
-  browser.sessions.setWindowValue(
+  await browser.sessions.setWindowValue(
     windowId,
     Constants.kWINDOW_STATE_TREE_STRUCTURE,
     structure
