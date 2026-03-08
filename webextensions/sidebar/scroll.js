@@ -118,12 +118,15 @@ export function init(scrollPosition) {
   BackgroundConnection.onMessage.addListener(onBackgroundMessage);
   TSTAPI.onMessageExternal.addListener(onMessageExternal);
   SidebarItems.onNormalTabsChanged.addListener(_tab => {
+    clearItemRectCache();
     reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
   });
   Tab.onNativeGroupModified.addListener(_tab => {
+    clearItemRectCache();
     reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
   });
   Size.onUpdated.addListener(() => {
+    clearItemRectCache();
     mPinnedScrollBox.$scrollTopMax = mPinnedScrollBox.scrollTopMax;
     mPinnedScrollBox.$offsetHeight = mPinnedScrollBox.offsetHeight;
     mNormalScrollBox.$scrollTopMax = mNormalScrollBox.scrollTopMax;
