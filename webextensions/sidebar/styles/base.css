@@ -449,6 +449,7 @@ ul {
   bottom: 0;
   inset-inline-start: 0;
   inset-inline-end: 0;
+  opacity: 0;
   overflow-y: scroll;
   pointer-events: none;
   position: fixed;
