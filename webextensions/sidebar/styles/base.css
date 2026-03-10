@@ -309,7 +309,7 @@ body {
 :root.rtl tab-item-substance .caption {
   direction: rtl;
 
-  tab-label:not(.rtl) {
+  tab-label:not(.rtl).overflow {
     direction: ltr;
   }
 }
