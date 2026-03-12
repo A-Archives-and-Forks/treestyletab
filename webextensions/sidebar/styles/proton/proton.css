@@ -265,8 +265,8 @@ tab-item-substance {
 tab-item[type="group"] .caption {
   border-radius: var(--tab-border-radius-size);
   max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
-                  0.25em /* margin-inline of tab-label */ +
-                  var(--tab-border-radius-size) + var(--tab-border-radius-size) /* radius of tab-item-substance */);
+                  calc(0.25em * 2) /* margin-inline of tab-label (both side) */ +
+                  2px /* border */);
 }
 
 

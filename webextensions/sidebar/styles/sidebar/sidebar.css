@@ -155,9 +155,8 @@ tab-item[type="group"] {
     border-radius: 0.35em;
     height: 100%;
     max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
-                    2px + 3px /* padding-inline of tab-item-substance */ +
-                    0.25em /* margin-inline of tab-label */ +
-                    0.25em /* margin-inline of tab-label-content */);
+                    calc(0.25em * 2) /* margin-inline of tab-label-content (both side) */ +
+                    2px /* border */);
   }
 }
 
