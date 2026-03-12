@@ -225,6 +225,16 @@ const mRenderedItemIds = new Set();
 const mUnrenderedItemIds = new Set();
 let mItemElementsPool = [];
 
+// Controls animation effects of items.
+// Items should be animated only when it is in the viewport (intersectionRatio > 0).
+// We need to suppress animations of off-screen items, otherwise we'll see animation
+// effects again and again when they are land into the viewport.
+const mItemIntersectionObserver = new IntersectionObserver(entries => {
+  for (const entry of entries) {
+    entry.target.classList.toggle(Constants.kTAB_STATE_ANIMATION_READY, entry.intersectionRatio > 0);
+  }
+});
+
 export function renderItem(item, { containerElement, insertBefore } = {}) {
   if (!item) {
     console.log('WARNING: Null item has requested to be rendered! ', stack());
@@ -268,6 +278,7 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
       itemElement.favIconUrl = null;
       onReuseTreeItemElement.dispatch(itemElement);
     }
+    mItemIntersectionObserver.observe(itemElement);
     created = true;
   }
 
@@ -327,7 +338,10 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
       });
     }
     else {
-      itemElement.classList.add(Constants.kTAB_STATE_ANIMATION_READY);
+      // Suppress animation for off-screen rendered item.
+      // It will made animation-ready by the IntersectionObserver asynchronously
+      // when it lands into the viewport.
+      itemElement.classList.remove(Constants.kTAB_STATE_ANIMATION_READY);
     }
 
     mRenderedItemIds.add(item.id);
@@ -386,6 +400,9 @@ export function unrenderItem(item) {
 
   const itemElement = item.$TST.element;
   itemElement.cleanup();
+
+  itemElement.classList.remove(Constants.kTAB_STATE_ANIMATION_READY);
+  mItemIntersectionObserver.unobserve(itemElement);
 
   if (item.type == TreeItem.TYPE_TAB) {
     item.$TST.removeState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
