@@ -493,7 +493,7 @@ async function onNewTabTracked(tab, info) {
 
     if (!TabsStore.ensureLivingItem(tab)) { // it can be removed while waiting
       onCompleted(uniqueId);
-      tab.$TST.rejectOpened();
+      tab.$TST?.rejectOpened();
       Tab.untrack(tab.id);
       warnTabDestroyedWhileWaiting(tab.id, tab);
       metric.add('untracked');
