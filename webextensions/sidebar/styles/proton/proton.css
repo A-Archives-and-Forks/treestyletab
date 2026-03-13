@@ -9,7 +9,7 @@
 :root {
   --color-animation: 0s ease-out;
   --tab-vertical-padding: 0.45em; /* We should define this as a variable to reuse calculation of extra tab contents size. */
-  --tab-border-radius-size: 0.35em;
+  --tab-border-radius-size: 0.5em;
   --tab-dropshadow-blur: 0.4em;
   --tab-dropshadow-padding: 0.2em;
   --tab-dropshadow-size: var(--tab-dropshadow-padding); /* for backward compatibility */
