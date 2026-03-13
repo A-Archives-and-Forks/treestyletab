@@ -143,6 +143,14 @@ const mItemsById = {
     title:              browser.i18n.getMessage('tabContextMenu_unload_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_unload_label_multiselected'),
   },
+  'context_topLevel_unloadTree': {
+    title:              browser.i18n.getMessage('context_unloadTree_label'),
+    titleMultiselected: browser.i18n.getMessage('context_unloadTree_label_multiselected'),
+  },
+  'context_topLevel_unloadDescendants': {
+    title:              browser.i18n.getMessage('context_unloadDescendants_label'),
+    titleMultiselected: browser.i18n.getMessage('context_unloadDescendants_label_multiselected'),
+  },
   'context_duplicateTab': {
     title:              browser.i18n.getMessage('tabContextMenu_duplicate_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_duplicate_label_multiselected')
@@ -926,6 +934,16 @@ async function onShown(info, contextTab) {
       visible:       emulate && unloadableCount > 0,
       multiselected: unloadableCount > 1,
       count:         unloadableCount,
+    }) && modifiedItemsCount++;
+    const unloadableDescendantsCount = Commands.filterUnloadableTabs(contextTabs.map(tab => tab.$TST.descendants).flat()).length;
+    updateItem('context_topLevel_unloadTree', {
+      visible:       emulate && unloadableCount + unloadableDescendantsCount > 0 && configs.context_topLevel_unloadTree,
+      multiselected: multiselected && unloadableCount + unloadableDescendantsCount > 1,
+    }) && modifiedItemsCount++;
+    updateItem('context_topLevel_unloadDescendants', {
+      visible:       emulate && unloadableCount + unloadableDescendantsCount > 0 && configs.context_topLevel_unloadDescendants,
+      enabled:       hasChild && unloadableDescendantsCount > 0,
+      multiselected: multiselected && unloadableDescendantsCount > 1,
     }) && modifiedItemsCount++;
     updateItem('context_duplicateTab', {
       visible: emulate && !!contextTab,

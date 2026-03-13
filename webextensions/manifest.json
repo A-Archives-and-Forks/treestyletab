@@ -72,6 +72,12 @@
     "toggleMuteDescendants": {
       "description": "__MSG_context_toggleMuteDescendants_command__"
     },
+    "unloadTree": {
+      "description": "__MSG_context_unloadTree_command__"
+    },
+    "unloadDescendants": {
+      "description": "__MSG_context_unloadDescendants_command__"
+    },
     "closeTree": {
       "description": "__MSG_context_closeTree_command__"
     },

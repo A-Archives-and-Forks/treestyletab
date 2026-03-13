@@ -1200,7 +1200,7 @@ export async function moveAfter(tab, options = {}) {
 /* commands to simulate Firefox's native tab context menu */
 
 export async function unloadTabs(tabs) {
-  tabs = filterUnloadableTabs(tabs);
+  tabs = [...new Set(filterUnloadableTabs(tabs))];
   if (tabs.length == 0) {
     return;
   }

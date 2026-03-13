@@ -62,11 +62,12 @@ const kROOT_BOOKMARK_ITEM = 'treestyletab-bookmark';
 const mTabItemsById = {
   'reloadTree': {
     title:              browser.i18n.getMessage('context_reloadTree_label'),
-    titleMultiselected: browser.i18n.getMessage('context_reloadTree_label_multiselected')
+    titleMultiselected: browser.i18n.getMessage('context_reloadTree_label_multiselected'),
   },
   'reloadDescendants': {
     title:              browser.i18n.getMessage('context_reloadDescendants_label'),
-    titleMultiselected: browser.i18n.getMessage('context_reloadDescendants_label_multiselected')
+    titleMultiselected: browser.i18n.getMessage('context_reloadDescendants_label_multiselected'),
+    requireTree:        true,
   },
   // This item won't be handled by the onClicked handler, so you may need to handle it with something experiments API.
   'unblockAutoplayTree': {
@@ -84,13 +85,24 @@ const mTabItemsById = {
     titleMuteTree:                browser.i18n.getMessage('context_toggleMuteTree_label_mute'),
     titleMultiselectedMuteTree:   browser.i18n.getMessage('context_toggleMuteTree_label_multiselected_mute'),
     titleUnmuteTree:              browser.i18n.getMessage('context_toggleMuteTree_label_unmute'),
-    titleMultiselectedUnmuteTree: browser.i18n.getMessage('context_toggleMuteTree_label_multiselected_unmute')
+    titleMultiselectedUnmuteTree: browser.i18n.getMessage('context_toggleMuteTree_label_multiselected_unmute'),
   },
   'toggleMuteDescendants': {
     titleMuteDescendant:                browser.i18n.getMessage('context_toggleMuteDescendants_label_mute'),
     titleMultiselectedMuteDescendant:   browser.i18n.getMessage('context_toggleMuteDescendants_label_multiselected_mute'),
     titleUnmuteDescendant:              browser.i18n.getMessage('context_toggleMuteDescendants_label_unmute'),
-    titleMultiselectedUnmuteDescendant: browser.i18n.getMessage('context_toggleMuteDescendants_label_multiselected_unmute')
+    titleMultiselectedUnmuteDescendant: browser.i18n.getMessage('context_toggleMuteDescendants_label_multiselected_unmute'),
+    requireTree:                        true,
+  },
+  'unloadTree': {
+    title:               browser.i18n.getMessage('context_unloadTree_label'),
+    titleMultiselected:  browser.i18n.getMessage('context_unloadTree_label_multiselected'),
+    requreUnloadableTab: true,
+  },
+  'unloadDescendants': {
+    title:                       browser.i18n.getMessage('context_unloadDescendants_label'),
+    titleMultiselected:          browser.i18n.getMessage('context_unloadDescendants_label_multiselected'),
+    requireUnloadableDescendant: true,
   },
   'separatorAfterReload': {
     type: 'separator'
@@ -352,8 +364,8 @@ function updateItem(id, params) {
   }, browser.runtime);
 }
 
-function updateItemsVisibility(items, { forceVisible = null, multiselected = false, hasUnmutedTab = false, hasUnmutedDescendant = false, hasAutoplayBlockedTab = false, hasAutoplayBlockedDescendant = false, sticky = false, hidden = false } = {}) {
-  log('updateItemsVisibility ', items, { forceVisible, multiselected, hasUnmutedTab, hasUnmutedDescendant, hasAutoplayBlockedTab, hasAutoplayBlockedDescendant, sticky });
+function updateItemsVisibility(items, { forceVisible = null, multiselected = false, hasUnmutedTab = false, hasUnmutedDescendant = false, hasAutoplayBlockedTab = false, hasUnloadableTab = false, hasUnloadableDescendant = false, hasAutoplayBlockedDescendant = false, sticky = false, hidden = false } = {}) {
+  log('updateItemsVisibility ', items, { forceVisible, multiselected, hasUnmutedTab, hasUnmutedDescendant, hasAutoplayBlockedTab, hasAutoplayBlockedDescendant, hasUnloadableTab, hasUnloadableDescendant, sticky });
   let updated = false;
   let visibleItemsCount = 0;
   let visibleNormalItemsCount = 0;
@@ -418,10 +430,10 @@ function updateItemsVisibility(items, { forceVisible = null, multiselected = fal
   return { updated, visibleItemsCount };
 }
 
-async function updateItems({ multiselected, hasUnmutedTab, hasUnmutedDescendant, hasAutoplayBlockedTab, hasAutoplayBlockedDescendant, sticky, hidden } = {}) {
+async function updateItems({ multiselected, hasUnmutedTab, hasUnmutedDescendant, hasAutoplayBlockedTab, hasAutoplayBlockedDescendant, hasUnloadableTab, hasUnloadableDescendant, sticky, hidden } = {}) {
   let updated = false;
 
-  const groupedItems = updateItemsVisibility(mGroupedTabItems, { multiselected, hasUnmutedTab, hasUnmutedDescendant, hasAutoplayBlockedTab, hasAutoplayBlockedDescendant, sticky, hidden });
+  const groupedItems = updateItemsVisibility(mGroupedTabItems, { multiselected, hasUnmutedTab, hasUnmutedDescendant, hasUnloadableTab, hasUnloadableDescendant, hasAutoplayBlockedTab, hasAutoplayBlockedDescendant, sticky, hidden });
   if (groupedItems.updated)
     updated = true;
 
@@ -501,6 +513,19 @@ function onTabItemClick(info, tab) {
         Commands.toggleMuteTree(contextTabs);
       else
         Commands.toggleMuteDescendants(contextTabs);
+      break;
+
+    case 'unloadTree':
+      if (inverted)
+        Commands.unloadTabs(contextTabs.map(tab => tab.$TST.descendants).flat());
+      else
+        Commands.unloadTabs(contextTabs.concat(contextTabs.map(tab => tab.$TST.descendants).flat()));
+      break;
+    case 'unloadDescendants':
+      if (inverted)
+        Commands.unloadTabs(contextTabs.concat(contextTabs.map(tab => tab.$TST.descendants).flat()));
+      else
+        Commands.unloadTabs(contextTabs.map(tab => tab.$TST.descendants).flat());
       break;
 
     case 'closeTree':
@@ -616,6 +641,8 @@ async function onTabContextMenuShown(info, tab) {
   const grouped          = contextTabs.length > 0 && contextTabs.some(tab => tab.$TST.isGroupTab);
   const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
   const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
+  const hasUnloadableTab        = Commands.filterUnloadableTabs(contextTabs).length > 0;
+  const hasUnloadableDescendant = Commands.filterUnloadableTabs(contextTabs.map(tab => tab.$TST.descendants).flat()).length > 0;
 
   let updated = await updateItems({
     multiselected,
@@ -623,6 +650,8 @@ async function onTabContextMenuShown(info, tab) {
     hasUnmutedDescendant,
     hasAutoplayBlockedTab,
     hasAutoplayBlockedDescendant,
+    hasUnloadableTab,
+    hasUnloadableDescendant,
     sticky: tab?.$TST.sticky,
     hidden: !configs.showTreeCommandsInTabsContextMenuGlobally && info.viewType != 'sidebar',
   });
@@ -661,6 +690,12 @@ async function onTabContextMenuShown(info, tab) {
     }
     else if (item.requireNormal) {
       newEnabled = tab?.pinned;
+    }
+    else if (item.requreUnloadableTab) {
+      newEnabled = hasUnloadableTab;
+    }
+    else if (item.requireUnloadableDescendant) {
+      newEnabled = hasUnloadableDescendant;
     }
     else {
       continue;

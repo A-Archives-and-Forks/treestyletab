@@ -267,6 +267,18 @@ const mItems = [
         expert: true,
       },
       {
+        title:  indent() + browser.i18n.getMessage('context_unloadTree_command'),
+        key:    'context_topLevel_unloadTree',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
+        title:  indent() + browser.i18n.getMessage('context_unloadDescendants_command'),
+        key:    'context_topLevel_unloadDescendants',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
         title:  indent() + browser.i18n.getMessage('context_closeTree_command'),
         key:    'context_topLevel_closeTree',
         type:   'checkbox',
@@ -391,6 +403,18 @@ const mItems = [
       {
         title:  indent() + browser.i18n.getMessage('context_toggleMuteDescendants_command'),
         key:    'context_toggleMuteDescendants',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
+        title:  indent() + browser.i18n.getMessage('context_unloadTree_command'),
+        key:    'context_unloadTree',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
+        title:  indent() + browser.i18n.getMessage('context_unloadDescendants_command'),
+        key:    'context_unloadDescendants',
         type:   'checkbox',
         expert: true,
       },
