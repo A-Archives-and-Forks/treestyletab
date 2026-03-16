@@ -232,7 +232,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       if (BackgroundConnection.handleBufferedMessage(message, `${BUFFER_KEY_PREFIX}${message.tabId}`))
         return;
       if (!Tab.get(message.tabId)) {
-      await Tab.waitUntilTracked(message.tabId);
+        await Tab.waitUntilTracked(message.tabId);
       }
       const tab = Tab.get(message.tabId);
       const lastMessage = BackgroundConnection.fetchBufferedMessage(message.type, `${BUFFER_KEY_PREFIX}${message.tabId}`);
@@ -247,7 +247,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       if (BackgroundConnection.handleBufferedMessage(message, `${BUFFER_KEY_PREFIX}${message.tabId}`))
         return;
       if (!Tab.get(message.tabId)) {
-      await Tab.waitUntilTracked(message.tabId);
+        await Tab.waitUntilTracked(message.tabId);
       }
       const tab = Tab.get(message.tabId);
       const lastMessage = BackgroundConnection.fetchBufferedMessage(message.type, `${BUFFER_KEY_PREFIX}${message.tabId}`);
