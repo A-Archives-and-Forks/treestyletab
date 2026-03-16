@@ -1436,41 +1436,51 @@ BackgroundConnection.onMessage.addListener(async message => {
       });
     }; break;
 
-    case Constants.kCOMMAND_NOTIFY_CHILDREN_CHANGED: {
+    case Constants.kCOMMAND_APPLY_TREE_TRANSACTION: {
       if (mPromisedInitialized)
         return;
-      // We need to wait not only for added children but removed children also,
-      // to construct same number of promises for "attached but detached immediately"
-      // cases.
-      const relatedTabIds = [message.tabId].concat(message.addedChildIds, message.removedChildIds);
-      await Tab.waitUntilTracked(relatedTabIds);
-      const tab = Tab.get(message.tabId);
-      if (!tab)
-        return;
+      await Tab.waitUntilTracked(message.tabIds);
 
-      if (message.addedChildIds.length > 0) {
-        // set initial level for newly opened child, to avoid annoying jumping of new tab
-        const childLevel = parseInt(tab.$TST.getAttribute(Constants.kLEVEL) || 0) + 1;
-        for (const childId of message.addedChildIds) {
-          const child = Tab.get(childId);
-          if (!child || child.$TST.hasChild)
-            continue;
-          const currentLevel = child.$TST.getAttribute(Constants.kLEVEL) || 0;
-          if (currentLevel == 0)
-            child.$TST.setAttribute(Constants.kLEVEL, childLevel);
+      // Set parent-child relationships
+      for (const [parentIdStr, childIds] of Object.entries(message.children)) {
+        const parent = Tab.get(Number(parentIdStr));
+        if (!parent)
+          continue;
+        parent.$TST.children = childIds;  // setter auto-updates parent/child relationships
+        parent.$TST.invalidateElement(
+          TabInvalidationTarget.Twisty |
+          TabInvalidationTarget.CloseBox |
+          TabInvalidationTarget.Tooltip
+        );
+        for (const ancestor of [parent].concat(parent.$TST.ancestors)) {
+          ancestor.$TST.updateElement(
+            TabUpdateTarget.Counter | TabUpdateTarget.DescendantsHighlighted
+          );
         }
       }
 
-      tab.$TST.children = message.childIds;
+      // Handle detached tabs
+      for (const tabId of (message.detached || [])) {
+        const tab = Tab.get(tabId);
+        if (tab) tab.$TST.parent = null;
+      }
 
-      tab.$TST.invalidateElement(TabInvalidationTarget.Twisty | TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip);
-      if (message.newlyAttached || message.detached) {
-        const ancestors = [tab].concat(tab.$TST.ancestors);
-        for (const ancestor of ancestors) {
-          ancestor.$TST.updateElement(TabUpdateTarget.Counter | TabUpdateTarget.DescendantsHighlighted);
+      // Derive levels from tree depth
+      {
+        const visited = new Set();
+        for (const tabId of message.tabIds) {
+          const tab = Tab.get(tabId);
+          if (!tab || visited.has(tabId)) continue;
+          tab.$TST.setAttribute(Constants.kLEVEL, tab.$TST.ancestors.length);
+          visited.add(tabId);
+          for (const desc of tab.$TST.descendants) {
+            if (visited.has(desc.id)) continue;
+            desc.$TST.setAttribute(Constants.kLEVEL, desc.$TST.ancestors.length);
+            visited.add(desc.id);
+          }
         }
       }
-    }; break;
+    } break;
 
     case Constants.kCOMMAND_BROADCAST_TAB_AUTO_STICKY_STATE:
       if (message.add)

@@ -279,8 +279,7 @@ function moveBack(tab, moveInfo) {
   log('Move back tab from unexpected move: ', dumpTab(tab), moveInfo);
   const id  = tab.id;
   const win = TabsStore.windows.get(tab.windowId);
-  const index = moveInfo.fromIndex;
-  win.internalMovingTabs.set(id, index);
+  win.trackInternalMoving(id, moveInfo.fromIndex);
   logApiTabs(`handle-moved-tabs:moveBack: browser.tabs.move() `, tab.id, {
     windowId: moveInfo.windowId,
     index:    moveInfo.fromIndex
@@ -291,8 +290,7 @@ function moveBack(tab, moveInfo) {
     windowId: moveInfo.windowId,
     index:    moveInfo.fromIndex
   }).catch(ApiTabs.createErrorHandler(e => {
-    if (win.internalMovingTabs.get(id) == index)
-      win.internalMovingTabs.delete(id);
+    win.clearInternalMoving(id);
     ApiTabs.handleMissingTabError(e);
   }));
 }

@@ -39,8 +39,8 @@ export default class Window {
     this.containerClassList = null;
     this.pinnedContainerElement = null;
 
-    this.internalMovingTabs  = new Map();
-    this.alreadyMovedTabs    = new Map();
+    this.internalMovingTabs  = new Map(); // Map<tabId, expectedIndex[]>
+    this.alreadyMovedTabs    = new Map(); // Map<tabId, expectedIndex[]>
     this.internalClosingTabs = new Set();
     this.keepDescendantsTabs = new Set();
     this.highlightingTabs    = new Set();
@@ -282,6 +282,58 @@ export default class Window {
     }
     return tab;
   }
+
+  // increment: register a new internal move operation with expected index
+  trackInternalMoving(tabId, expectedIndex) {
+    const indices = this.internalMovingTabs.get(tabId);
+    if (indices)
+      indices.push(expectedIndex);
+    else
+      this.internalMovingTabs.set(tabId, [expectedIndex]);
+  }
+  trackAlreadyMoved(tabId, expectedIndex) {
+    const indices = this.alreadyMovedTabs.get(tabId);
+    if (indices)
+      indices.push(expectedIndex);
+    else
+      this.alreadyMovedTabs.set(tabId, [expectedIndex]);
+  }
+
+  // consume: find and remove a matching entry for the actual index
+  // Returns true if an internal operation matched, false otherwise.
+  // -1 is a wildcard that matches any actual index.
+  consumeInternalMoving(tabId, actualIndex) {
+    const indices = this.internalMovingTabs.get(tabId);
+    if (!indices || indices.length === 0)
+      return false;
+    const matchIndex = indices.findIndex(
+      expected => expected < 0 || expected == actualIndex
+    );
+    if (matchIndex < 0)
+      return false;
+    indices.splice(matchIndex, 1);
+    if (indices.length === 0)
+      this.internalMovingTabs.delete(tabId);
+    return true;
+  }
+  consumeAlreadyMoved(tabId, actualIndex) {
+    const indices = this.alreadyMovedTabs.get(tabId);
+    if (!indices || indices.length === 0)
+      return false;
+    const matchIndex = indices.findIndex(
+      expected => expected < 0 || expected == actualIndex
+    );
+    if (matchIndex < 0)
+      return false;
+    indices.splice(matchIndex, 1);
+    if (indices.length === 0)
+      this.alreadyMovedTabs.delete(tabId);
+    return true;
+  }
+
+  // force-delete: tab removal or pair cleanup
+  clearInternalMoving(tabId) { this.internalMovingTabs.delete(tabId); }
+  clearAlreadyMoved(tabId)   { this.alreadyMovedTabs.delete(tabId); }
 
   export(full) {
     const tabs = [];

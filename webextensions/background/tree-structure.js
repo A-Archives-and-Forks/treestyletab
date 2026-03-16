@@ -30,6 +30,7 @@ import * as Commands from './commands.js';
 import * as TabsMove from './tabs-move.js';
 import * as TabsOpen from './tabs-open.js';
 import * as Tree from './tree.js';
+import * as TreeTransaction from './tree-transaction.js';
 
 function log(...args) {
   internalLogger('background/tree-structure', ...args);
@@ -202,16 +203,20 @@ async function reserveToAttachTabFromRestoredInfo(tab, options = {}) {
       })
     ));
     // Phase 2: apply tree structure sequentially
+    // Wrap in TreeTransaction to batch all kCOMMAND_APPLY_TREE_TRANSACTION
+    // messages into a single sidebar message.
     const attachedResults = [];
-    for (const info of restoredInfos) {
-      try {
-        attachedResults.push(info ? await applyRestoredTabInfo(info) : false);
+    await TreeTransaction.run(async () => {
+      for (const info of restoredInfos) {
+        try {
+          attachedResults.push(info ? await applyRestoredTabInfo(info) : false);
+        }
+        catch(error) {
+          console.log(`TreeStructure.reserveToAttachTabFromRestoredInfo: Fatal error applying info, ${error}`, stack(error.stack));
+          attachedResults.push(false);
+        }
       }
-      catch(error) {
-        console.log(`TreeStructure.reserveToAttachTabFromRestoredInfo: Fatal error applying info, ${error}`, stack(error.stack));
-        attachedResults.push(false);
-      }
-    }
+    });
     if (typeof reserveToAttachTabFromRestoredInfo.onDone == 'function')
       reserveToAttachTabFromRestoredInfo.onDone(attachedResults.every(attached => !!attached));
     delete reserveToAttachTabFromRestoredInfo.onDone;
@@ -354,23 +359,25 @@ async function applyRestoredTabInfo(info) {
     });
   }
   if (processChildren) {
-    let firstInTree = tab.$TST.firstChild || tab;
-    let lastInTree  = tab.$TST.lastDescendant || tab;
-    for (const child of children) {
-      if (!child)
-        continue;
-      await Tree.attachTabTo(child, tab, {
-        dontExpand:  !child.active,
-        forceExpand: active,
-        insertAt:    Constants.kINSERT_NEAREST,
-        dontMove:    child.index >= firstInTree.index && child.index <= lastInTree.index + 1,
-        broadcast:   true
-      });
-      if (child.index < firstInTree.index)
-        firstInTree = child;
-      else if (child.index > lastInTree.index)
-        lastInTree = child;
-    }
+    await TreeTransaction.run(async () => {
+      let firstInTree = tab.$TST.firstChild || tab;
+      let lastInTree  = tab.$TST.lastDescendant || tab;
+      for (const child of children) {
+        if (!child)
+          continue;
+        await Tree.attachTabTo(child, tab, {
+          dontExpand:  !child.active,
+          forceExpand: active,
+          insertAt:    Constants.kINSERT_NEAREST,
+          dontMove:    child.index >= firstInTree.index && child.index <= lastInTree.index + 1,
+          broadcast:   true
+        });
+        if (child.index < firstInTree.index)
+          firstInTree = child;
+        else if (child.index > lastInTree.index)
+          lastInTree = child;
+      }
+    });
   }
 
   log('restore subtree collapsed state: ', tab.id, { current: tab.$TST.subtreeCollapsed, expected: subtreeCollapsed, canCollapse });
@@ -691,21 +698,23 @@ async function tryRestoreClosedSetFor(tab, countToBeRestored) {
 
   const rootTabs = restoredTabs.filter((tab, index) => lastRecentlyClosedTabsTreeStructure[index].parent == TreeBehavior.STRUCTURE_KEEP_PARENT || lastRecentlyClosedTabsTreeStructure[index].parent == TreeBehavior.STRUCTURE_NO_PARENT);
   log(`tryRestoreClosedSetFor: rootTabs, restoredTabs = `, rootTabs, restoredTabs);
-  for (const rootTab of rootTabs) {
-    const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(rootTab, {
-      context:      Constants.kINSERTION_CONTEXT_MOVED,
-      insertAfter:  rootTab.$TST.previousTab,
-      insertBefore: restoredTabs[restoredTabs.length - 1].$TST.nextTab
-    });
-    log(`tryRestoreClosedSetFor: referenceTabs for ${rootTab.id} => `, referenceTabs);
-    if (referenceTabs.parent)
-      await Tree.attachTabTo(rootTab, referenceTabs.parent, {
-        dontExpand:  true,
-        insertAfter: referenceTabs.insertAfter,
-        dontMove:    true,
-        broadcast:   true
+  await TreeTransaction.run(async () => {
+    for (const rootTab of rootTabs) {
+      const referenceTabs = TreeBehavior.calculateReferenceItemsFromInsertionPosition(rootTab, {
+        context:      Constants.kINSERTION_CONTEXT_MOVED,
+        insertAfter:  rootTab.$TST.previousTab,
+        insertBefore: restoredTabs[restoredTabs.length - 1].$TST.nextTab
       });
-  }
+      log(`tryRestoreClosedSetFor: referenceTabs for ${rootTab.id} => `, referenceTabs);
+      if (referenceTabs.parent)
+        await Tree.attachTabTo(rootTab, referenceTabs.parent, {
+          dontExpand:  true,
+          insertAfter: referenceTabs.insertAfter,
+          dontMove:    true,
+          broadcast:   true
+        });
+    }
+  });
 
   await Tree.applyTreeStructureToTabs(
     restoredTabs,

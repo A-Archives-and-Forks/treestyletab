@@ -34,6 +34,7 @@ import * as TabsGroup from './tabs-group.js';
 import * as TabsMove from './tabs-move.js';
 import * as TabsOpen from './tabs-open.js';
 import * as Tree from './tree.js';
+import * as TreeTransaction from './tree-transaction.js';
 
 function log(...args) {
   internalLogger('background/commands', ...args);
@@ -1076,31 +1077,44 @@ async function attachTabsWithStructure(tabs, parent, options = {}) {
     insertBefore: null,
     insertAfter:  null,
     dontMove:     true,
-    forceExpand:  options.draggedTabs.some(tab => tab.active)
+    forceExpand:  options.draggedTabs.some(tab => tab.active),
   };
-  return Promise.all(tabs.map(async tab => {
-    if (parent)
-      await Tree.attachTabTo(tab, parent, memberOptions);
-    else
-      await Tree.detachTab(tab, memberOptions);
-    // The tree can remain being collapsed by other addons like TST Lock Tree Collapsed.
-    const collapsed = parent?.$TST.subtreeCollapsed;
-    return Tree.collapseExpandTabAndSubtree(tab, {
-      ...memberOptions,
-      collapsed,
-    });
-  }));
+
+  const body = async () => {
+    for (const tab of tabs) {
+      if (parent) {
+        await Tree.attachTabTo(tab, parent, memberOptions);
+      }
+      else {
+        Tree.detachTab(tab, memberOptions);
+      }
+      // The tree can remain being collapsed by other addons like TST Lock Tree Collapsed.
+      const collapsed = parent?.$TST.subtreeCollapsed;
+      await Tree.collapseExpandTabAndSubtree(tab, {
+        ...memberOptions,
+        collapsed,
+      });
+    }
+  };
+
+  if (parent)
+    await TreeTransaction.run(body, { justNow: true });
+  else
+    await body();
 }
 
-function detachTabsWithStructure(tabs, options = {}) {
+async function detachTabsWithStructure(tabs, options = {}) {
   log('detachTabsWithStructure: start ', () => tabs.map(dumpTab));
-  for (const tab of tabs) {
-    Tree.detachTab(tab, options);
-    Tree.collapseExpandTabAndSubtree(tab, {
-      ...options,
-      collapsed: false
-    });
-  }
+
+  await TreeTransaction.run(async () => {
+    for (const tab of tabs) {
+      Tree.detachTab(tab, options);
+      await Tree.collapseExpandTabAndSubtree(tab, {
+        ...options,
+        collapsed: false,
+      });
+    }
+  }, { justNow: options.synchronously });
 }
 
 export async function moveUp(tab, options = {}) {

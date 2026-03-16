@@ -23,6 +23,8 @@ function log(...args) {
   internalLogger('sidebar/indent', ...args);
 }
 
+const BUFFER_KEY_PREFIX = 'indent-';
+
 let mPromisedInitializedResolver;
 let mPromisedInitialized = new Promise((resolve, _reject) => {
   mPromisedInitializedResolver = resolve;
@@ -227,10 +229,13 @@ CollapseExpand.onUpdated.addListener((tab, _options) => {
     tryUpdateVisualMaxTreeLevel();
 });
 
-const BUFFER_KEY_PREFIX = 'indent-';
-
 BackgroundConnection.onMessage.addListener(async message => {
   switch (message.type) {
+    case Constants.kCOMMAND_APPLY_TREE_TRANSACTION: {
+      reserveToUpdateIndent();
+      tryUpdateVisualMaxTreeLevel();
+    } break;
+
     case Constants.kCOMMAND_NOTIFY_TAB_CREATED:
     case Constants.kCOMMAND_NOTIFY_TAB_REMOVING:
       log('listen: ', message.type);
@@ -239,28 +244,10 @@ BackgroundConnection.onMessage.addListener(async message => {
 
     case Constants.kCOMMAND_NOTIFY_TAB_SHOWN:
     case Constants.kCOMMAND_NOTIFY_TAB_HIDDEN:
-    case Constants.kCOMMAND_NOTIFY_CHILDREN_CHANGED:
       log('listen: ', message.type);
       reserveToUpdateIndent();
       tryUpdateVisualMaxTreeLevel();
       break;
-
-    case Constants.kCOMMAND_NOTIFY_TAB_LEVEL_CHANGED: {
-      if (BackgroundConnection.handleBufferedMessage(message, `${BUFFER_KEY_PREFIX}${message.tabId}`))
-        return;
-      await Tab.waitUntilTracked(message.tabId);
-      const tab = Tab.get(message.tabId);
-      const lastMessage = BackgroundConnection.fetchBufferedMessage(message.type, `${BUFFER_KEY_PREFIX}${message.tabId}`);
-      log('listen: ', message.type, tab, lastMessage);
-      if (!tab ||
-          !lastMessage)
-        return;
-      if (tab.$TST.getAttribute(Constants.kLEVEL) != lastMessage.level) {
-        tab.$TST.setAttribute(Constants.kLEVEL, lastMessage.level);
-        tryUpdateVisualMaxTreeLevel();
-      }
-      reserveToUpdateIndent();
-    }; break;
 
     case Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGED:
       for (const id of message.visibilityChangedTabIds) {
