@@ -201,8 +201,8 @@ export async function attachTabTo(child, parent, options = {}) {
       if (TSTAPI.hasListenerForMessageType(TSTAPI.kNOTIFY_TREE_DETACHED)) {
         const cache = {};
         TSTAPI.broadcastMessage({
-          type:      TSTAPI.kNOTIFY_TREE_DETACHED,
-          tab:       child,
+          type: TSTAPI.kNOTIFY_TREE_DETACHED,
+          tab:  child,
           oldParent,
         }, { tabProperties: ['tab', 'oldParent'], cache }).catch(_error => {});
         TSTAPI.clearCache(cache);
@@ -763,8 +763,8 @@ export async function detachAllChildren(
     if (oldParent && TSTAPI.hasListenerForMessageType(TSTAPI.kNOTIFY_TREE_DETACHED)) {
       const cache = {};
       TSTAPI.broadcastMessage({
-        type:      TSTAPI.kNOTIFY_TREE_DETACHED,
-        tab:       child,
+        type: TSTAPI.kNOTIFY_TREE_DETACHED,
+        tab:  child,
         oldParent,
       }, { tabProperties: ['tab', 'oldParent'], cache }).catch(_error => {});
       TSTAPI.clearCache(cache);
@@ -801,10 +801,10 @@ export async function detachAllChildren(
             child.$TST.parent != attachedParent)
           return;
         SidebarConnection.sendMessage({
-          type:     Constants.kCOMMAND_NOTIFY_TAB_ATTACHED_COMPLETELY,
-          windowId: child.windowId,
-          childId:  child.id,
-          parentId: attachedParent.id,
+          type:          Constants.kCOMMAND_NOTIFY_TAB_ATTACHED_COMPLETELY,
+          windowId:      child.windowId,
+          childId:       child.id,
+          parentId:      attachedParent.id,
           newlyAttached: true
         });
       });

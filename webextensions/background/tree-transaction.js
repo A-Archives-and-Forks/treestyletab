@@ -178,11 +178,11 @@ function sendSidebarMessage(tabMap, snapshot, options) {
     return;
   const windowId = tabMap.values().next().value.windowId;
   SidebarConnection.sendMessage({
-    type:      Constants.kCOMMAND_APPLY_TREE_TRANSACTION,
+    type:     Constants.kCOMMAND_APPLY_TREE_TRANSACTION,
     windowId,
-    tabIds:    [...tabMap.keys()],
-    children:  snapshot.children ?? {},
-    detached:  snapshot.detached ?? [],
-    justNow:   !!options.justNow,
+    tabIds:   [...tabMap.keys()],
+    children: snapshot.children ?? {},
+    detached: snapshot.detached ?? [],
+    justNow:  !!options.justNow,
   });
 }
