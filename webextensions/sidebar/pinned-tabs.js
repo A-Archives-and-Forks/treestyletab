@@ -299,7 +299,9 @@ const BUFFER_KEY_PREFIX = 'pinned-tabs-';
 BackgroundConnection.onMessage.addListener(async message => {
   switch (message.type) {
     case Constants.kCOMMAND_NOTIFY_TAB_CREATED: {
+      if (!Tab.get(message.tabId)) {
       await Tab.waitUntilTracked(message.tabId);
+      }
       const tab = Tab.get(message.tabId);
       if (!tab)
         return;
@@ -332,7 +334,9 @@ BackgroundConnection.onMessage.addListener(async message => {
     case Constants.kCOMMAND_NOTIFY_TAB_UNPINNED: {
       if (BackgroundConnection.handleBufferedMessage({ type: 'pinned/unpinned', message }, `${BUFFER_KEY_PREFIX}${message.tabId}`))
         return;
+      if (!Tab.get(message.tabId)?.$TST?.element) {
       await Tab.waitUntilTracked(message.tabId, { element: true });
+      }
       const tab = Tab.get(message.tabId);
       const lastMessage = BackgroundConnection.fetchBufferedMessage('pinned/unpinned', `${BUFFER_KEY_PREFIX}${message.tabId}`);
       if (!tab ||
