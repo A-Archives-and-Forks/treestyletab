@@ -534,6 +534,7 @@ async function performTabsDragDrop(tabs, params) {
     destinationWindowId: params.destinationWindowId,
     action:              params.action,
     allowedActions:      params.allowedActions,
+    duplicate:           params.duplicate,
     shouldPin:           params.shouldPin,
     shouldUnpin:         params.shouldUnpin,
   }));
@@ -876,12 +877,14 @@ async function moveTabsWithStructure(tabs, params = {}) {
   const movedWholeTree = Tree.getWholeTree(movedRoots);
   log('=> movedTabs: ', () => ['moved', movedTabs.map(dumpTab).join(' / '), 'whole', movedWholeTree.map(dumpTab).join(' / ')]);
 
+  if (!params.duplicate) {
   const movedTabsSet = new Set(movedTabs);
   while (movedTabsSet.has(params.insertBefore)) {
     params.insertBefore = params.insertBefore?.$TST.nextTab;
   }
   while (movedTabsSet.has(params.insertAfter)) {
     params.insertAfter = params.insertAfter?.$TST.previousTab;
+  }
   }
 
   const windowId = params.windowId || tabs[0].windowId;
