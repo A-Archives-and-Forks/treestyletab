@@ -820,6 +820,8 @@ export async function detachAllChildren(
         browser.tabs.update(child.id, { openerTabId: newParentId })
           .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
         wait(200).then(() => {
+          if (!child.$TST)
+            return;
           const index = child.$TST.updatingOpenerTabIds.findIndex(id => id == newParentId);
           child.$TST.updatingOpenerTabIds.splice(index, 1);
         });
