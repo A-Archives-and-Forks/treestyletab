@@ -878,13 +878,13 @@ async function moveTabsWithStructure(tabs, params = {}) {
   log('=> movedTabs: ', () => ['moved', movedTabs.map(dumpTab).join(' / '), 'whole', movedWholeTree.map(dumpTab).join(' / ')]);
 
   if (!params.duplicate) {
-  const movedTabsSet = new Set(movedTabs);
-  while (movedTabsSet.has(params.insertBefore)) {
-    params.insertBefore = params.insertBefore?.$TST.nextTab;
-  }
-  while (movedTabsSet.has(params.insertAfter)) {
-    params.insertAfter = params.insertAfter?.$TST.previousTab;
-  }
+    const movedTabsSet = new Set(movedTabs);
+    while (movedTabsSet.has(params.insertBefore)) {
+      params.insertBefore = params.insertBefore?.$TST.nextTab;
+    }
+    while (movedTabsSet.has(params.insertAfter)) {
+      params.insertAfter = params.insertAfter?.$TST.previousTab;
+    }
   }
 
   const windowId = params.windowId || tabs[0].windowId;
