@@ -327,6 +327,9 @@ async function updateRelatedGroupTab(groupTab, changedInfo = []) {
     }
   }
 
+  if (!TabsStore.ensureLivingItem(groupTab))
+    return;
+
   const firstChild = groupTab.$TST.firstChild;
   if (!firstChild) // the tab can be closed while waiting...
     return;
