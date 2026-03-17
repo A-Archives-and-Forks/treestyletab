@@ -734,7 +734,7 @@ function updateTabbarLayout({ reason, reasons, timeout, justNow } = {}) {
   if (reason && !reasons)
     reasons = reason;
   if (reserveToUpdateTabbarLayout.reasons) {
-    reasons = (reasons || 0) & reserveToUpdateTabbarLayout.reasons;
+    reasons = (reasons || 0) | reserveToUpdateTabbarLayout.reasons;
     reserveToUpdateTabbarLayout.reasons = 0;
   }
   updateTabbarLayout.lastUpdateReasons = reasons;
