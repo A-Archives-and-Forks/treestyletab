@@ -1,6 +1,7 @@
 # 更新履歴
 
  - master/HEAD
+   * タブのスタイリングとテキストの配置を全体的に修正（[by tcbbd](https://github.com/piroor/treestyletab/pull/3888), thanks!）
  - 4.2.12 (2026.3.17)
    * ツリー構造を伴った複数タブの移動（特にウィンドウをまたぐ場合）の動作の安定性と速度を向上（[by tkng](https://github.com/piroor/treestyletab/pull/3880), thanks!）
    * Firefox本体の「タブを解放」に対応する機能として、「このツリーを解放」「子孫タブを解放」をコンテキストメニューに追加
