@@ -1,19 +1,25 @@
 # History
 
  - master/HEAD
+   * Stabilize and optimize moving of multiple tabs with tree structure, especially across windows. ([by tkng](https://github.com/piroor/treestyletab/pull/3880), thanks!)
+   * Add "Unload this Tree" and "Unload Descendants" context menu commands corresponding to the native "Unload Tab".
    * Allow to create new native group by dropping tabs onto any areas of another tab simply, with pressing Shift key. (Without shift key, you need to drop tabs onto the head area of another tab to create new group.)
    * Reconstruct option to set UI direction of the sidebar as Regular/Inverted instead of Left/Right. "Regular" always works similar to Firefox's native vertical tabs.
    * Show confirmation dialog correctly for closing multiple tabs in a fullscreen browser window on macOS.
    * Show tab previews in tab-hover tooltip again. (regression on 4.2.8)
    * Fix misdetection of drop position of tabs after tabs are rearranged. (regression on 4.2.7)
+   * Duplicate partially dragged tree at the dropped place correctly.
+   * Fix mis-ordering of multiselected tabs moved by drag and drop.
+   * Fix mis-sizing of tab bar boxes after extra contents are inserted via API.
    * Fix too narrow width of group labels in the Photon theme.
    * Don't show nonsense "+0" label for collapsed tab groups with no other member.
+   * Suppress needless animation effects when items are scrolled into the view.
    * Expand tab group automatically when a collapsed tree in the group is expanded. You can deactivate this new behavior with a new expert option under the "Tree Behavior" section.
    * Don't mistreat dropped URL as a native tab drop.
    * Hide UI elements internally used and should not be exposed to users, even if the background screen of the sidebar has transparent color.
    * Detect "head" area of the drop target tab correctly on RLT environment, to create new group by drag and drop.
    * Fix wrong alignment of tab group labels on inverted mode.
-   * Fix wrong text direction of tab labels with LTR title on RTL environment.
+   * Fix wrong text direction and alignment of tab labels with LTR title on RTL environment.
    * Suppress uncaught errors caused by already closed tabs or windows, around mouse operations, successor tab operations and caching of tree information.
    * Fix links to MDN documents from changelogs. ([by theluckystrike](github.com/piroor/treestyletab/pull/3879), thanks!)
  - 4.2.11 (2026.3.3)
