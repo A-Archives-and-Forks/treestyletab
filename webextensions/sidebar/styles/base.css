@@ -1048,10 +1048,11 @@ tab-item tab-label {
   }
 }
 
-
-/* This is for backward compatibility about custom user style rules like https://github.com/piroor/treestyletab/issues/1363 */
 tab-item .label-content {
+  /* This is for backward compatibility about custom user style rules like https://github.com/piroor/treestyletab/issues/1363 */
   color: inherit;
+
+  vertical-align: unset;
 }
 
 .counter {
@@ -1204,7 +1205,7 @@ tab-item[type="group"] {
   }
 
   tab-label {
-    font-weight: bold;
+    font-weight: 600;
   }
 
   .caption,
@@ -1276,7 +1277,12 @@ tab-item[type="group-collapsed-members-counter"] {
     --tab-text: light-dark(var(--tab-group-color), var(--tab-group-color-pale)) !important;
   }
 
+  :root.inverted & tab-item-substance {
+    flex-direction: row-reverse;
+  }
+
   :root.inverted & tab-label {
+    margin-inline: 0 0.25em;
     text-align: end;
   }
 }

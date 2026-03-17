@@ -32,6 +32,10 @@ tab-item[type="group"] {
     padding: 0 !important;
   }
 
+  tab-item-substance {
+    z-index: calc(var(--tab-base-z-index) + 10);
+  }
+
   .caption {
     height: 100%;
     max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
@@ -76,7 +80,8 @@ tab-item.pinned tab-item-substance {
 :root.regular .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-end: 0.35em;
 }
-:root.regular tab-item:not(.pinned)[data-parent-id] tab-item-substance {
+:root.regular tab-item:not(.pinned)[data-parent-id] tab-item-substance,
+:root.regular tab-item:not(.pinned)[data-group-id]:not([data-group-id="-1"]) tab-item-substance {
   border-inline-start-width: 1px;
 }
 
@@ -85,7 +90,8 @@ tab-item.pinned tab-item-substance {
 :root.inverted .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-start: 0.35em;
 }
-:root.inverted tab-item:not(.pinned)[data-parent-id] tab-item-substance {
+:root.inverted tab-item:not(.pinned)[data-parent-id] tab-item-substance,
+:root.inverted tab-item:not(.pinned)[data-group-id]:not([data-group-id="-1"]) tab-item-substance {
   border-inline-end-width: 1px;
 }
 
@@ -133,7 +139,7 @@ tab-item.pinned tab-item-substance {
 
 tab-item tab-label {
   margin-inline-start: 0.25em;
-  padding-block: 0 0.25em;
+  padding-block: 0.35em;
   padding-inline: 0;
 }
 

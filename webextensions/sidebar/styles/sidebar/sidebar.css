@@ -146,17 +146,20 @@ tab-item[type="group"] {
     background: transparent;
     height: 100%;
     max-width: 100%;
-    padding: 0 !important;
   }
 
   .caption {
     background: var(--tab-surface);
     border: 1px solid var(--tab-border);
-    border-radius: 0.35em;
+    border-radius: 0.5em;
     height: 100%;
     max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
                     calc(0.25em * 2) /* margin-inline of tab-label-content (both side) */ +
                     2px /* border */);
+  }
+
+  tab-label {
+    font-weight: 600;
   }
 }
 
@@ -245,7 +248,7 @@ tab-item tab-label .label-content {
   text-shadow: none;
   margin-block-end: 1px;
   margin-inline-start: 0.25em;
-  padding-block: 0 0.25em;
+  padding-block: 0.35em;
   padding-inline: 0;
 }
 
