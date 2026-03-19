@@ -1350,6 +1350,36 @@ export class Tab extends TreeItem {
     this.cachedAncestorIds   = null;
   }
 
+  detach() {
+    this.parent   = null;
+    this.children = [];
+  }
+
+  resetOpened() {
+    this.opened = new Promise((resolve, reject) => {
+      const resolvers = mOpenedResolvers.get(this.id) || new Set();
+      resolvers.add({ resolve, reject });
+      mOpenedResolvers.set(this.id, resolvers);
+    });
+  }
+
+  resolveOpened() {
+    if (!mOpenedResolvers.has(this.id))
+      return;
+    for (const resolver of mOpenedResolvers.get(this.id)) {
+      resolver.resolve();
+    }
+    mOpenedResolvers.delete(this.id);
+  }
+  rejectOpened() {
+    if (!mOpenedResolvers.has(this.id))
+      return;
+    for (const resolver of mOpenedResolvers.get(this.id)) {
+      resolver.reject();
+    }
+    mOpenedResolvers.delete(this.id);
+  }
+
   startMoving() {
     let onTabMoved;
     const promisedMoved = new Promise((resolve, _reject) => {
@@ -2347,11 +2377,6 @@ export class Tab extends TreeItem {
     return Tab.get(win.previousLastRelatedTabs.get(this.id)) || null;
   }
 
-  detach() {
-    this.parent   = null;
-    this.children = [];
-  }
-
 
   //===================================================================
   // State
@@ -2915,31 +2940,6 @@ export class Tab extends TreeItem {
     this.invalidateCache();
   }
 
-
-  resetOpened() {
-    this.opened = new Promise((resolve, reject) => {
-      const resolvers = mOpenedResolvers.get(this.id) || new Set();
-      resolvers.add({ resolve, reject });
-      mOpenedResolvers.set(this.id, resolvers);
-    });
-  }
-
-  resolveOpened() {
-    if (!mOpenedResolvers.has(this.id))
-      return;
-    for (const resolver of mOpenedResolvers.get(this.id)) {
-      resolver.resolve();
-    }
-    mOpenedResolvers.delete(this.id);
-  }
-  rejectOpened() {
-    if (!mOpenedResolvers.has(this.id))
-      return;
-    for (const resolver of mOpenedResolvers.get(this.id)) {
-      resolver.reject();
-    }
-    mOpenedResolvers.delete(this.id);
-  }
 
   apply(exported) { // not optimized and unsafe yet!
     if (!this.raw)
