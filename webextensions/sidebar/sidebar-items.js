@@ -260,16 +260,19 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
       case TreeItem.TYPE_GROUP:
         item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
         item.$TST.removeAttribute(Constants.kGROUP_ID);
+        item.$TST.removeAttribute(Constants.kSPLIT_VIEW_ID);
         break;
 
       case TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER:
         item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
         item.$TST.setAttribute(Constants.kGROUP_ID, item.id);
+        item.$TST.removeAttribute(Constants.kSPLIT_VIEW_ID);
         break;
 
       default:
         item.$TST.setAttribute(Constants.kAPI_TAB_ID, item.id || -1);
-        item.$TST.setAttribute(Constants.kGROUP_ID, item.groupId);
+        item.$TST.setAttribute(Constants.kGROUP_ID, item.groupId || -1);
+        item.$TST.setAttribute(Constants.kSPLIT_VIEW_ID, item.splitViewId || -1);
         item.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
         TabsStore.addUnsynchronizedTab(item);
         break;
@@ -622,6 +625,7 @@ function tryApplyUpdate(update) {
 
   if (update.updatedProperties) {
     const oldGroupId = tab.groupId;
+    const oldSplitViewId = tab.splitViewId;
     for (const [key, value] of Object.entries(update.updatedProperties)) {
       if (Tab.UNSYNCHRONIZABLE_PROPERTIES.has(key))
         continue;
@@ -632,6 +636,11 @@ function tryApplyUpdate(update) {
         update.updatedProperties.groupId != oldGroupId) {
       tab.$TST.onNativeGroupModified(oldGroupId);
       tab.$TST.updateElement(TabUpdateTarget.TabProperties);
+    }
+
+    if ('splitViewId' in update.updatedProperties &&
+        update.updatedProperties.splitViewId != oldSplitViewId) {
+      tab.$TST.onSplitViewModified(oldSplitViewId);
     }
   }
 

@@ -375,6 +375,12 @@ export function updateTab(tab, newState = {}, options = {}) {
     update.attributes.added[Constants.kGROUP_ID] = newState.groupId;
   }
 
+  if (options.forceApply ||
+      'splitViewId' in newState) {
+    tab.$TST.onSplitViewModified(oldState.splitViewId);
+    update.attributes.added[Constants.kSPLIT_VIEW_ID] = newState.splitViewId;
+  }
+
   update.soundStateChanged = update.soundStateChanged || soundStateChanged;
   update.sharingStateChanged = update.sharingStateChanged || sharingStateChanged;
   update.attributes.updated = {

@@ -1233,6 +1233,7 @@ export class Tab extends TreeItem {
   static onMultipleTabsRemoved  = new EventListenerManager();
   static onChangeMultipleTabsRestorability = new EventListenerManager();
   static onNativeGroupModified = new EventListenerManager();
+  static onSplitViewModified   = new EventListenerManager();
 
 
   constructor(raw) {
@@ -2377,6 +2378,20 @@ export class Tab extends TreeItem {
     return Tab.get(win.previousLastRelatedTabs.get(this.id)) || null;
   }
 
+  get pairedSplitViewTab() {
+    const splitViewId = this.raw?.splitViewId || -1;
+    if (splitViewId == -1)
+      return null;
+
+    return TabsStore.query({
+      windowId: this.raw.windowId,
+      tabs:     TabsStore.splitViewTabsInWindow.get(this.raw.windowId),
+      '!id':    this.raw.id,
+      splitViewId,
+      living:   true
+    });
+  }
+
 
   //===================================================================
   // State
@@ -2927,6 +2942,23 @@ export class Tab extends TreeItem {
     }
 
     Tab.onNativeGroupModified.dispatch(this.raw);
+  }
+
+  onSplitViewModified(oldSplitViewId) {
+    if (this.raw.splitViewId == -1) {
+      TabsStore.removeSplitViewTab(this.raw);
+    }
+    else {
+      TabsStore.addSplitViewTab(this.raw);
+    }
+
+    this.setAttribute(Constants.kSPLIT_VIEW_ID, this.raw.splitViewId);
+
+    if (oldSplitViewId && oldSplitViewId != -1) {
+      // do something?
+    }
+
+    Tab.onSplitViewModified.dispatch(this.raw);
   }
 
 

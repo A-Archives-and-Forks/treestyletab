@@ -64,6 +64,7 @@ isArticle
 isInReaderMode
 pinned
 sessionId
+splitViewId
 status
 successorId
 title
@@ -358,6 +359,7 @@ export const draggingTabsInWindow    = new Map();
 export const duplicatingTabsInWindow = new Map();
 export const toBeGroupedTabsInWindow = new Map();
 export const nativelyGroupedTabsInWindow = new Map();
+export const splitViewTabsInWindow   = new Map();
 export const loadingTabsInWindow     = new Map();
 export const unsynchronizedTabsInWindow = new Map();
 export const virtualScrollRenderableTabsInWindow  = new Map();
@@ -390,6 +392,7 @@ export function prepareIndexesForWindow(windowId) {
   duplicatingTabsInWindow.set(windowId, createMapWithName(`duplicating tabs in window ${windowId}`));
   toBeGroupedTabsInWindow.set(windowId, createMapWithName(`to-be-grouped tabs in window ${windowId}`));
   nativelyGroupedTabsInWindow.set(windowId, createMapWithName(`natively grouped tabs in window ${windowId}`));
+  splitViewTabsInWindow.set(windowId, createMapWithName(`split view tabs in window ${windowId}`));
   loadingTabsInWindow.set(windowId, createMapWithName(`loading tabs in window ${windowId}`));
   unsynchronizedTabsInWindow.set(windowId, createMapWithName(`unsynchronized tabs in window ${windowId}`));
   virtualScrollRenderableTabsInWindow.set(windowId, createMapWithName(`virtual scroll renderable tabs in window ${windowId}`));
@@ -416,6 +419,7 @@ export function unprepareIndexesForWindow(windowId) {
   subtreeCollapsableTabsInWindow.delete(windowId);
   toBeGroupedTabsInWindow.delete(windowId);
   nativelyGroupedTabsInWindow.delete(windowId);
+  splitViewTabsInWindow.delete(windowId);
   loadingTabsInWindow.delete(windowId);
   unsynchronizedTabsInWindow.delete(windowId);
   virtualScrollRenderableTabsInWindow.delete(windowId);
@@ -509,6 +513,11 @@ export function updateIndexesForTab(tab) {
   else
     removeNativelyGroupedTab(tab);
 
+  if (tab.splitViewId && tab.splitViewId != -1)
+    addSplitViewTab(tab);
+  else
+    removeSplitViewTab(tab);
+
   updateVirtualScrollRenderabilityIndexForTab(tab);
 
   if (tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE))
@@ -556,6 +565,7 @@ export function removeTabFromIndexes(tab) {
   removeDraggingTab(tab);
   removeToBeGroupedTab(tab);
   removeNativelyGroupedTab(tab);
+  removeSplitViewTab(tab);
   removeLoadingTab(tab);
   removeUnsynchronizedTab(tab);
   //removeVirtualScrollRenderableTab(tab);
@@ -705,6 +715,13 @@ export function addNativelyGroupedTab(tab, windowId = null) {
 }
 export function removeNativelyGroupedTab(tab, windowId = null) {
   removeTabFromIndex(tab, nativelyGroupedTabsInWindow, windowId);
+}
+
+export function addSplitViewTab(tab, windowId = null) {
+  addTabToIndex(tab, splitViewTabsInWindow, windowId);
+}
+export function removeSplitViewTab(tab, windowId = null) {
+  removeTabFromIndex(tab, splitViewTabsInWindow, windowId);
 }
 
 export function addLoadingTab(tab) {

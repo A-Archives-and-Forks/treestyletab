@@ -1138,6 +1138,10 @@ async function onAttached(tabId, attachInfo) {
       }
     }
 
+    if (tab.splitViewId != -1) {
+      TabsStore.addSplitViewTab(tab, attachInfo.newWindowId);
+    }
+
     TabsInternalOperation.clearOldActiveStateInWindow(attachInfo.newWindowId);
     const info = {
       ...attachInfo,
@@ -1220,6 +1224,10 @@ async function onDetached(tabId, detachInfo) {
           });
         }
       }
+    }
+
+    if (oldTab.splitViewId != -1) {
+      TabsStore.removeSplitViewTab(oldTab, detachInfo.oldWindowId);
     }
 
     if (!byInternalOperation) // we should process only tabs detached by others.
