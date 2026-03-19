@@ -119,10 +119,17 @@ export function init(scrollPosition) {
   TSTAPI.onMessageExternal.addListener(onMessageExternal);
   SidebarItems.onNormalTabsChanged.addListener(_tab => {
     clearItemRectCache();
+    clearRenderableTreeItemsCache();
     reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
   });
   Tab.onNativeGroupModified.addListener(_tab => {
     clearItemRectCache();
+    clearRenderableTreeItemsCache();
+    reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
+  });
+  Tab.onSplitViewModified.addListener(_tab => {
+    clearItemRectCache();
+    clearRenderableTreeItemsCache();
     reserveToRenderVirtualScrollViewport({ trigger: 'tabsChanged' });
   });
   Size.onUpdated.addListener(() => {

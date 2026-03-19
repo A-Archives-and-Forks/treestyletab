@@ -532,17 +532,30 @@ export function updateIndexesForTab(tab) {
 }
 
 export function updateVirtualScrollRenderabilityIndexForTab(tab) {
+  if (!tab)
+    return;
+
   if (tab.pinned ||
       (tab.hidden &&
        ((tab.url == 'about:firefoxview' &&
          tab.cookieStoreId == 'firefox-default') ||
         !configs.renderHiddenTabs)) ||
-      tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) ||
-      (tabGroups.get(tab.groupId)?.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) &&
-       !tab.active))
+      tab.$TST?.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) ||
+      (tabGroups.get(tab.groupId)?.$TST?.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) &&
+       !tab.active)) {
     removeVirtualScrollRenderableTab(tab);
-  else
-    addVirtualScrollRenderableTab(tab);
+    return;
+  }
+
+  // Hide split view tab if it is placed at "rightside"
+  const pairedTab = queryPairedSplitViewTab(tab);
+  if (pairedTab &&
+      pairedTab.index < tab.index) {
+    removeVirtualScrollRenderableTab(tab);
+    return;
+  }
+
+  addVirtualScrollRenderableTab(tab);
 }
 
 export function removeTabFromIndexes(tab) {
@@ -791,6 +804,20 @@ export function ensureLivingItem(tab) {
       (isNativeTabGroup && !windows.get(tab.windowId).tabGroups.has(tab.id)))
     return null;
   return tab;
+}
+
+export function queryPairedSplitViewTab(rawTab) {
+  const splitViewId = rawTab.splitViewId || -1;
+  if (splitViewId == -1)
+    return null;
+
+  return query({
+    windowId: rawTab.windowId,
+    tabs:     splitViewTabsInWindow.get(rawTab.windowId),
+    '!id':    rawTab.id,
+    splitViewId,
+    living:   true
+  });
 }
 
 

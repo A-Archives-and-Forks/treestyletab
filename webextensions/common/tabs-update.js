@@ -377,7 +377,7 @@ export function updateTab(tab, newState = {}, options = {}) {
 
   if (options.forceApply ||
       'splitViewId' in newState) {
-    tab.$TST.onSplitViewModified(oldState.splitViewId);
+    tab.$TST.onSplitViewModified();
     update.attributes.added[Constants.kSPLIT_VIEW_ID] = newState.splitViewId;
   }
 

@@ -1081,6 +1081,10 @@ BackgroundConnection.onMessage.addListener(async message => {
       }
       reserveToUpdateTabsIndex();
 
+      if (tab.splitViewId && tab.splitViewId != -1) {
+        tab.$TST.onSplitViewModified();
+      }
+
       if (tab.pinned) {
         renderItem(tab);
         //onPinnedTabsChanged.dispatch(tab);

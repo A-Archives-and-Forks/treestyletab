@@ -2379,17 +2379,23 @@ export class Tab extends TreeItem {
   }
 
   get pairedSplitViewTab() {
-    const splitViewId = this.raw?.splitViewId || -1;
-    if (splitViewId == -1)
+    return TabsStore.queryPairedSplitViewTab(this.raw);
+  }
+
+  get hasFollowingPairedSplitViewTab() {
+    const pairedTab = this.pairedSplitViewTab;
+    if (!pairedTab)
       return null;
 
-    return TabsStore.query({
-      windowId: this.raw.windowId,
-      tabs:     TabsStore.splitViewTabsInWindow.get(this.raw.windowId),
-      '!id':    this.raw.id,
-      splitViewId,
-      living:   true
-    });
+    return pairedTab.index > this.raw.index;
+  }
+
+  get hasPrecedingPairedSplitViewTab() {
+    const pairedTab = this.pairedSplitViewTab;
+    if (!pairedTab)
+      return null;
+
+    return pairedTab.index < this.raw.index;
   }
 
 
@@ -2944,7 +2950,7 @@ export class Tab extends TreeItem {
     Tab.onNativeGroupModified.dispatch(this.raw);
   }
 
-  onSplitViewModified(oldSplitViewId) {
+  onSplitViewModified() {
     if (this.raw.splitViewId == -1) {
       TabsStore.removeSplitViewTab(this.raw);
     }
@@ -2954,9 +2960,8 @@ export class Tab extends TreeItem {
 
     this.setAttribute(Constants.kSPLIT_VIEW_ID, this.raw.splitViewId);
 
-    if (oldSplitViewId && oldSplitViewId != -1) {
-      // do something?
-    }
+    TabsStore.updateVirtualScrollRenderabilityIndexForTab(this.raw);
+    TabsStore.updateVirtualScrollRenderabilityIndexForTab(this.pairedSplitViewTab);
 
     Tab.onSplitViewModified.dispatch(this.raw);
   }
