@@ -86,7 +86,6 @@ export class TreeItemSubstanceElement extends HTMLElement {
   constructor() {
     super();
     // We should initialize private properties with blank value for better performance with a fixed shape.
-    this._initialized = false;
     this.reservedUpdateTooltip = null;
     this.hasCustomTooltip = false;
     this.tooltipText = null;
@@ -103,11 +102,10 @@ export class TreeItemSubstanceElement extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this._initialized) {
+    if (this.initialized) {
       this._startListening();
       return;
     }
-    this._initialized = true;
 
     /* The DOM structure will be fulfilled as following with delayed creations of elements:
 
@@ -179,6 +177,10 @@ export class TreeItemSubstanceElement extends HTMLElement {
       this.reservedUpdateTooltip = null;
       this.updateTooltip();
     }
+  }
+
+  get initialized() {
+    this.querySelector('.ui');
   }
 
   get type() {
