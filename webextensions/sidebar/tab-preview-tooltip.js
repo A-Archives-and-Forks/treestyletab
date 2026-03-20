@@ -20,7 +20,7 @@ import TabPreviewPanel from '/resources/module/TabPreviewPanel.js'; // the IMPL
 import * as EventUtils from './event-utils.js';
 import * as Sidebar from './sidebar.js';
 
-import { kEVENT_TREE_ITEM_SUBSTANCE_ENTER, kEVENT_TREE_ITEM_SUBSTANCE_LEAVE } from './components/TreeItemElement.js';
+import { kEVENT_TREE_ITEM_SUBSTANCE_ENTER, kEVENT_TREE_ITEM_SUBSTANCE_LEAVE } from './components/TreeItemSubstanceElement.js';
 
 const CAPTURABLE_URLS_MATCHER         = /^(https?|data):/;
 const PREVIEW_WITH_HOST_URLS_MATCHER  = /^(https?|moz-extension):/;
@@ -111,34 +111,36 @@ async function onTabSubstanceEnter(event) {
 
   if (!configs.tabPreviewTooltip ||
       !(configs.tabPreviewTooltipRenderIn & Constants.kIN_CONTENT_PANEL_RENDER_IN_ANYWHERE)) {
-    ;
     mController.hideIn(activeTab.id);
     return;
   }
 
-  if (!event.target.tab ||
-      (event.target.tab.type != TreeItem.TYPE_TAB &&
-       event.target.tab.type != TreeItem.TYPE_GROUP) ||
+  const substance = event.target;
+  const raw       = substance?.raw;
+
+  if (!raw ||
+      (raw.type != TreeItem.TYPE_TAB &&
+       raw.type != TreeItem.TYPE_GROUP) ||
       document.documentElement.classList.contains(Constants.kTABBAR_STATE_TAB_DRAGGING)) {
     return;
   }
 
-  const active = event.target.tab?.id == activeTab.id;
-  const url = PREVIEW_WITH_HOST_URLS_MATCHER.test(event.target.tab?.url) ? new URL(event.target.tab?.url).host :
-    PREVIEW_WITH_TITLE_URLS_MATCHER.test(event.target.tab?.url) ? null :
-      event.target.tab?.url;
-  const hasCustomTooltip = !!event.target.hasCustomTooltip;
+  const active = raw?.id == activeTab.id;
+  const url = PREVIEW_WITH_HOST_URLS_MATCHER.test(raw?.url) ? new URL(raw?.url).host :
+    PREVIEW_WITH_TITLE_URLS_MATCHER.test(raw?.url) ? null :
+      raw?.url;
+  const hasCustomTooltip = !!substance.hasCustomTooltip;
 
-  if (event.target?.tab?.type == TreeItem.TYPE_GROUP &&
+  if (raw?.type == TreeItem.TYPE_GROUP &&
       !hasCustomTooltip) {
     return;
   }
 
   const hasPreview = (
-    event.target.tab?.type == TreeItem.TYPE_TAB &&
+    raw?.type == TreeItem.TYPE_TAB &&
     !active &&
-    !event.target.tab?.discarded &&
-    CAPTURABLE_URLS_MATCHER.test(event.target.tab?.url) &&
+    !raw?.discarded &&
+    CAPTURABLE_URLS_MATCHER.test(raw?.url) &&
     !hasCustomTooltip
   );
   const previewURL = (
@@ -147,7 +149,7 @@ async function onTabSubstanceEnter(event) {
     configs.tabPreviewTooltip &&
     (async () => { // We just define a getter function for now, because further operations may contain async operations and we can call this at there for more optimization.
       try {
-        return await browser.tabs.captureTab(event.target.tab?.id);
+        return await browser.tabs.captureTab(raw?.id);
       }
       catch(_error) {
       }
@@ -155,25 +157,25 @@ async function onTabSubstanceEnter(event) {
     })
   ) || null;
 
-  if (!event.target.tab)
+  if (!substance.raw)
     return;
 
-  log(`onTabSubstanceEnter(${event.target.tab.id}}) start `, { hasCustomTooltip }, timestamp);
+  log(`onTabSubstanceEnter(${raw.id}}) start `, { hasCustomTooltip }, timestamp);
 
-  hoveringItemIds.add(event.target.tab.id);
-  mLastHoverItemId = event.target.tab.id;
+  hoveringItemIds.add(raw.id);
+  mLastHoverItemId = raw.id;
 
   const succeeded = await mController.show({
-    anchorItem:    event.target.tab,
-    targetItem:    event.target.tab,
+    anchorItem:    raw,
+    targetItem:    raw,
     messageParams: {
       hasCustomTooltip,
       ...(hasCustomTooltip ?
         {
-          tooltipHtml: event.target.appliedTooltipHtml,
+          tooltipHtml: substance.appliedTooltipHtml,
         } :
         {
-          title: event.target.tab.title,
+          title: raw.title,
           url,
         }
       ),
@@ -202,28 +204,26 @@ async function onTabSubstanceEnter(event) {
     },
   });
 
-  if (!event.target.tab) // the tab may be destroyed while capturing tab preview
+  if (!substance.raw) // the tab may be destroyed while capturing tab preview
     return;
 
-  if (event.target.tab.$TST.element &&
+  if (raw.$TST.element &&
       succeeded)
-    event.target.tab.$TST.element.invalidateTooltip();
+    raw.$TST.element.invalidateTooltip();
 }
 onTabSubstanceEnter = EventUtils.wrapWithErrorHandler(onTabSubstanceEnter);
 
 let mDelayedHideOnTabSubstanceLeaveTimer = 0;
 async function onTabSubstanceLeave(event) {
   const timestamp = Date.now();
-  if (!event.target.tab)
+  const substance = event.target;
+  const raw       = substance?.raw;
+  if (!raw)
     return;
 
-  hoveringItemIds.delete(event.target.tab.id);
+  hoveringItemIds.delete(raw.id);
 
-  if (!event.target.tab) // the tab was closed while waiting
-    return;
-
-  const tabElement = event.target.tab.$TST?.element;
-  if (tabElement?.hasCustomTooltip) {
+  if (substance?.hasCustomTooltip) {
     if (mDelayedHideOnTabSubstanceLeaveTimer) {
       clearTimeout(mDelayedHideOnTabSubstanceLeaveTimer);
     }
@@ -231,12 +231,12 @@ async function onTabSubstanceLeave(event) {
       mLastHoverItemId = -1;
       mDelayedHideOnTabSubstanceLeaveTimer = 0;
       if (!document.querySelector('.in-content-panel-root.tab-preview-panel.extended .in-content-panel:hover')) {
-        mController.hide({ targetItem: event.target.tab, timestamp });
+        mController.hide({ targetItem: raw, timestamp });
       }
     }, configs.showCollapsedDescendantsMouseleaveMaxDelay);
   }
   else {
-    mController.hide({ targetItem: event.target.tab, timestamp });
+    mController.hide({ targetItem: raw, timestamp });
   }
 }
 onTabSubstanceLeave = EventUtils.wrapWithErrorHandler(onTabSubstanceLeave);
@@ -264,7 +264,7 @@ document.querySelector('#tabbar').addEventListener('mouseleave', () => {
   log('mouse is left from the tab bar ', timestamp);
   const item = TreeItem.get(mLastHoverItemId);
   const itemElement = item?.$TST?.element;
-  if (itemElement?.hasCustomTooltip) {
+  if (itemElement?.substanceElement?.hasCustomTooltip) {
     if (mDelayedHideOnTabbarLeaveTimer) {
       clearTimeout(mDelayedHideOnTabbarLeaveTimer);
     }

@@ -66,12 +66,12 @@ export class TabCloseBoxElement extends HTMLElement {
 
     this._reservedUpdate = () => {
       this._reservedUpdate = null;
-      this._updateTooltip();
+      this.updateTooltip();
     };
     this.addEventListener('mouseover', this._reservedUpdate, { once: true });
   }
 
-  _updateTooltip() {
+  updateTooltip() {
     const tab = this.owner;
     if (!tab || !tab.$TST)
       return;

@@ -30,9 +30,9 @@ import Window from '/common/Window.js';
 import * as BackgroundConnection from './background-connection.js';
 import * as CollapseExpand from './collapse-expand.js';
 
+import { kTREE_ITEM_SUBSTANCE_ELEMENT_NAME } from './components/TreeItemSubstanceElement.js';
 import {
   kTREE_ITEM_ELEMENT_NAME,
-  kTREE_ITEM_SUBSTANCE_ELEMENT_NAME,
   TabInvalidationTarget,
   TabUpdateTarget,
 } from './components/TreeItemElement.js';

@@ -64,16 +64,14 @@ export class TabTwistyElement extends HTMLElement {
 
     this._reservedUpdate = () => {
       this._reservedUpdate = null;
-      this._updateTooltip();
+      this.updateTooltip();
     };
     this.addEventListener('mouseover', this._reservedUpdate, { once: true });
   }
 
-  _updateTooltip() {
-    const tab = this.owner;
-
+  updateTooltip() {
     let key;
-    if (tab?.$TST.subtreeCollapsed)
+    if (this.owner?.$TST.subtreeCollapsed)
       key = COLLAPSED_TOOLTIP;
     else
       key = EXPANDED_TOOLTIP;
