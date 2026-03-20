@@ -33,6 +33,7 @@ const NATIVE_PROPERTIES = new Set([
 const IGNORE_CLASSES = new Set([
   'tab',
   Constants.kTAB_STATE_ANIMATION_READY,
+  Constants.kTAB_STATE_SPLIT_VIEW,
   Constants.kTAB_STATE_SUBTREE_COLLAPSED
 ]);
 
@@ -186,6 +187,10 @@ export class TreeItemElement extends HTMLElement {
 
   get substanceElement() {
     return this.querySelector(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
+  }
+
+  get pairedTabSubstanceElement() {
+    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}:nth-of-type(2)`);
   }
 
   get twisty() {
@@ -353,6 +358,13 @@ export class TreeItemElement extends HTMLElement {
       line.className = 'native-tab-group-line';
       this.insertBefore(line, this.firstChild);
     }
+  }
+
+  ensurePairedTabSubstanceElement() {
+    if (this.pairedTabSubstanceElement)
+      return;
+
+    this.insertAdjacentHTML('beforeend', `<${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>`);
   }
 
   _updateDescendantsHighlighted() {
@@ -538,5 +550,7 @@ export class TreeItemElement extends HTMLElement {
 
     this.querySelector(`.native-tab-group-line`)?.remove();
     this.substanceElement?.cleanup();
+
+    this.pairedTabSubstanceElement?.remove();
   }
 }

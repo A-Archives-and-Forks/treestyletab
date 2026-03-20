@@ -491,7 +491,7 @@ tab-item,
 .sticky-tab-spacer {
   align-items: stretch;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   flex-wrap: nowrap;
   justify-content: stretch;
   line-height: 1;
@@ -508,6 +508,7 @@ tab-item-substance {
   align-items: center;
   display: flex;
   flex-direction: row;
+  flex-grow: 1;
   flex-wrap: nowrap;
   justify-content: flex-start;
   line-height: 1;
@@ -561,6 +562,15 @@ tab-item-substance {
   tab-item.duplicating & {
     transition: none;
   }
+
+  tab-item.split-view & {
+    max-width: 50%;
+
+    + tab-item-substance {
+      margin-inline-start: 0;
+      --tab-group-member-indent: 0;
+    }
+  }
 }
 
 
@@ -584,6 +594,11 @@ tab-item-substance {
 :root.rtl.inverted tab-item:not(.pinned) {
   tab-item-substance {
     margin-inline-end: calc(var(--tab-margin-inline-end) + var(--tab-group-member-indent) + var(--tab-indent));
+  }
+
+  tab-item.split-view tab-item-substance + tab-item-substance {
+    margin-inline-end: 0;
+    --tab-group-member-indent: 0;
   }
 }
 

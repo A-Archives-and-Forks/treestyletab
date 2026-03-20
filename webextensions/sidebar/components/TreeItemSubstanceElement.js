@@ -54,6 +54,7 @@ const NATIVE_PROPERTIES = new Set([
 ]);
 const IGNORE_CLASSES = new Set([
   'tab',
+  Constants.kTAB_STATE_SPLIT_VIEW,
 ]);
 
 export class TreeItemSubstanceElement extends HTMLElement {
@@ -319,9 +320,6 @@ export class TreeItemSubstanceElement extends HTMLElement {
       return;
 
     const raw = this.$TST.raw;
-    const tabElement = raw?.$TST.element;
-    if (!tabElement)
-      return;
 
     // Priority of tooltip contents and methods
     // 1. Is the tab preview panel activated by the user? (option)
@@ -359,7 +357,7 @@ export class TreeItemSubstanceElement extends HTMLElement {
       debugTooltip = `
 ${raw.title}
 #${raw.id}
-(${tabElement.className})
+(${this.className})
 uniqueId = <${this.$TST.uniqueId.id}>
 duplicated = <${!!this.$TST.uniqueId.duplicated}> / <${this.$TST.uniqueId.originalTabId}> / <${this.$TST.uniqueId.originalId}>
 restored = <${!!this.$TST.uniqueId.restored}>

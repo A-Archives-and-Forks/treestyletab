@@ -76,9 +76,7 @@ export function getItemFromDOMNode(node, options = {}) {
     return null;
   if (!(node instanceof Element))
     node = node.parentNode;
-  const itemSubstance = node?.closest(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
-  const item = itemSubstance?.closest(kTREE_ITEM_ELEMENT_NAME);
-  const raw = item?.apiRaw;
+  const raw = node?.closest(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME)?.raw;
   if (options.force ||
       raw?.type == TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER) {
     return raw;
@@ -252,31 +250,7 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     const itemElement = reuseFromPool ?
       mItemElementsPool.pop() :
       document.createElement(kTREE_ITEM_ELEMENT_NAME);
-    item.$TST.bindElement(itemElement);
-    item.$TST.setAttribute('id', getItemElementId(item));
-    item.$TST.setAttribute('type', item.$TST.type);
-    item.$TST.setAttribute(Constants.kAPI_WINDOW_ID, item.windowId || -1);
-    switch (item.type) {
-      case TreeItem.TYPE_GROUP:
-        item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
-        item.$TST.removeAttribute(Constants.kGROUP_ID);
-        item.$TST.removeAttribute(Constants.kSPLIT_VIEW_ID);
-        break;
-
-      case TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER:
-        item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
-        item.$TST.setAttribute(Constants.kGROUP_ID, item.id);
-        item.$TST.removeAttribute(Constants.kSPLIT_VIEW_ID);
-        break;
-
-      default:
-        item.$TST.setAttribute(Constants.kAPI_TAB_ID, item.id || -1);
-        item.$TST.setAttribute(Constants.kGROUP_ID, item.groupId || -1);
-        item.$TST.setAttribute(Constants.kSPLIT_VIEW_ID, item.splitViewId || -1);
-        item.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
-        TabsStore.addUnsynchronizedTab(item);
-        break;
-    }
+    initalizeItemElement(item, itemElement);
     if (reuseFromPool) {
       itemElement.favIconUrl = null;
       onReuseTreeItemElement.dispatch(itemElement);
@@ -352,7 +326,50 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     reserveToNotifyItemsRendered();
   }
 
+  if (item.$TST.hasFollowingPairedSplitViewTab) {
+    itemElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
+    itemElement.ensurePairedTabSubstanceElement();
+    const pairedItem = item.$TST.pairedSplitViewTab;
+    initalizeItemElement(pairedItem, itemElement.pairedTabSubstanceElement)
+    pairedItem.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
+    pairedItem.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
+    pairedItem.$TST.applyStatesToElement();
+  }
+  else if (!item.$TST.hasPrecedingPairedSplitViewTab) {
+    item.$TST.pairedSplitViewTab?.unbindElement();
+    itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
+    itemElement.pairedTabSubstanceElement?.remove();
+  }
+
   return true;
+}
+
+function initalizeItemElement(item, itemElement) {
+  item.$TST.bindElement(itemElement);
+  item.$TST.setAttribute('id', getItemElementId(item));
+  item.$TST.setAttribute('type', item.$TST.type);
+  item.$TST.setAttribute(Constants.kAPI_WINDOW_ID, item.windowId || -1);
+  switch (item.type) {
+    case TreeItem.TYPE_GROUP:
+      item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
+      item.$TST.removeAttribute(Constants.kGROUP_ID);
+      item.$TST.removeAttribute(Constants.kSPLIT_VIEW_ID);
+      break;
+
+    case TreeItem.TYPE_GROUP_COLLAPSED_MEMBERS_COUNTER:
+      item.$TST.setAttribute(Constants.kAPI_NATIVE_TAB_GROUP_ID, item.id || -1);
+      item.$TST.setAttribute(Constants.kGROUP_ID, item.id);
+      item.$TST.removeAttribute(Constants.kSPLIT_VIEW_ID);
+      break;
+
+    default:
+      item.$TST.setAttribute(Constants.kAPI_TAB_ID, item.id || -1);
+      item.$TST.setAttribute(Constants.kGROUP_ID, item.groupId || -1);
+      item.$TST.setAttribute(Constants.kSPLIT_VIEW_ID, item.splitViewId || -1);
+      item.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
+      TabsStore.addUnsynchronizedTab(item);
+      break;
+  }
 }
 
 function reserveToNotifyItemsRendered() {
@@ -405,6 +422,7 @@ export function unrenderItem(item) {
   itemElement.cleanup();
 
   itemElement.classList.remove(Constants.kTAB_STATE_ANIMATION_READY);
+  itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
   mItemIntersectionObserver.unobserve(itemElement);
 
   if (item.type == TreeItem.TYPE_TAB) {

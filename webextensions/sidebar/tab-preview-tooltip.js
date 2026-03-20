@@ -207,9 +207,9 @@ async function onTabSubstanceEnter(event) {
   if (!substance.raw) // the tab may be destroyed while capturing tab preview
     return;
 
-  if (raw.$TST.element &&
+  if (substance.closest('tab-item')?.parentNode &&
       succeeded)
-    raw.$TST.element.invalidateTooltip();
+    substance.invalidateTooltip();
 }
 onTabSubstanceEnter = EventUtils.wrapWithErrorHandler(onTabSubstanceEnter);
 

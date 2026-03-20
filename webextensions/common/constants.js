@@ -214,6 +214,7 @@ export const kTAB_STATE_ALL_DESCENDANTS_HIGHLIGHTED  = 'all-descendants-highligh
 export const kTAB_STATE_ATTENTION                 = 'attention';
 export const kTAB_STATE_DISCARDED                 = 'discarded';
 export const kTAB_STATE_SELECTED                  = 'selected';
+export const kTAB_STATE_SPLIT_VIEW                = 'split-view';
 export const kTAB_STATE_DRAGGING                  = 'dragging';
 export const kTAB_STATE_DUPLICATING               = 'duplicating';
 export const kTAB_STATE_DUPLICATED                = 'duplicated';

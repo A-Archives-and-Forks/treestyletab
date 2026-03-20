@@ -29,6 +29,12 @@ tab-item tab-twisty {
   z-index: var(--tab-ui-z-index);
 }
 
+tab-item.split-view tab-item-substance + tab-item-substance tab-twisty {
+  min-width: 0.25em;
+  visibility: hidden;
+  width: 0.25em;
+}
+
 tab-item:not([data-child-ids]) tab-twisty,
 tab-item.pinned tab-twisty,
 tab-item.collapsed tab-twisty {
