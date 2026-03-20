@@ -241,6 +241,11 @@ let mLastRenderedVirtualScrollItemIds = [];
 const STICKY_SPACER_MATCHER = /^tab:(\d+):sticky$/;
 let mScrollPosition = 0;
 
+function splitViewHiddenTabFilter(tab) {
+  const pairedTab = tab.$TST.pairedSplitViewTab;
+  return (!pairedTab || pairedTab.index > tab.index);
+}
+
 export function getRenderableTreeItems(windowId = null) {
   if (!windowId) {
     windowId = TabsStore.getCurrentWindowId();
@@ -256,7 +261,7 @@ export function getRenderableTreeItems(windowId = null) {
       tabs:         TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
       skipMatching: true,
       ordered:      true,
-    });
+    }).filter(splitViewHiddenTabFilter);
     mCachedRenderableTreeItems = items.map(item => ({ id: item.id, type: item.type }));
     return items;
   }
@@ -266,7 +271,7 @@ export function getRenderableTreeItems(windowId = null) {
       windowId,
       tabs:         TabsStore.getTabsMap(TabsStore.virtualScrollRenderableTabsInWindow, windowId),
       skipMatching: true,
-    }),
+    }).filter(splitViewHiddenTabFilter),
     ...mapAndFilter(
       [...TabsStore.windows.get(windowId).tabGroups.values()],
       group => {

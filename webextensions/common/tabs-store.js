@@ -542,20 +542,10 @@ export function updateVirtualScrollRenderabilityIndexForTab(tab) {
         !configs.renderHiddenTabs)) ||
       tab.$TST?.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) ||
       (tabGroups.get(tab.groupId)?.$TST?.states.has(Constants.kTAB_STATE_COLLAPSED_DONE) &&
-       !tab.active)) {
+       !tab.active))
     removeVirtualScrollRenderableTab(tab);
-    return;
-  }
-
-  // Hide split view tab if it is placed at "rightside"
-  const pairedTab = queryPairedSplitViewTab(tab);
-  if (pairedTab &&
-      pairedTab.index < tab.index) {
-    removeVirtualScrollRenderableTab(tab);
-    return;
-  }
-
-  addVirtualScrollRenderableTab(tab);
+  else
+    addVirtualScrollRenderableTab(tab);
 }
 
 export function removeTabFromIndexes(tab) {
@@ -804,20 +794,6 @@ export function ensureLivingItem(tab) {
       (isNativeTabGroup && !windows.get(tab.windowId).tabGroups.has(tab.id)))
     return null;
   return tab;
-}
-
-export function queryPairedSplitViewTab(rawTab) {
-  const splitViewId = rawTab.splitViewId || -1;
-  if (splitViewId == -1)
-    return null;
-
-  return query({
-    windowId: rawTab.windowId,
-    tabs:     splitViewTabsInWindow.get(rawTab.windowId),
-    '!id':    rawTab.id,
-    splitViewId,
-    living:   true
-  });
 }
 
 
