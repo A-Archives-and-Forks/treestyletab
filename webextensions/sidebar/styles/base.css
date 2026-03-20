@@ -700,8 +700,8 @@ tab-item tab-closebox {
 
 tab-item .highlighter,
 tab-item .burster,
-tab-item.faviconized.unread tab-favicon::before,
-tab-item.attention tab-favicon::before,
+tab-item-substance.faviconized.unread tab-favicon::before,
+tab-item-substance.attention tab-favicon::before,
 tab-item .background,
 tab-item .native-tab-group-line {
   bottom: 0;
@@ -775,23 +775,23 @@ tab-item .native-tab-group-line {
     inset-inline-start: auto;
   }
 
-  tab-item &.front {
+  tab-item-substance &.front {
     inset-inline-start: var(--tab-label-start-offset);
     inset-inline-end: var(--tab-label-end-offset);
     justify-content: flex-end;
     pointer-events: auto;
     z-index: var(--tab-extra-contents-front-z-index);
   }
-  tab-item:not(.faviconized).sound-playing &.front,
-  tab-item:not(.faviconized).muted &.front {
+  tab-item-substance:not(.faviconized).sound-playing &.front,
+  tab-item-substance:not(.faviconized).muted &.front {
     inset-inline-start: calc(var(--tab-label-start-offset) + var(--svg-small-icon-size));
   }
-  tab-item.faviconized &.front {
+  tab-item-substance.faviconized &.front {
     inset-inline-start: var(--faviconized-tab-padding);
     inset-inline-end: var(--faviconized-tab-padding);
   }
 
-  tab-item &.behind {
+  tab-item-substance &.behind {
     z-index: var(--tab-extra-contents-behind-z-index);
   }
 
@@ -818,22 +818,22 @@ tab-item .native-tab-group-line {
 
 
 .burster {
-  tab-item & {
+  tab-item-substance & {
     z-index: var(--tab-burster-z-index);
   }
 
-  tab-item:not(.bursting) & {
+  tab-item-substance:not(.bursting) & {
     display: none;
   }
 }
 
-tab-item .highlighter {
+tab-item-substance .highlighter {
   z-index: var(--tab-highlighter-z-index);
 }
 
 
-tab-item.faviconized.unread tab-favicon::before,
-tab-item.attention tab-favicon::before {
+tab-item-substance.faviconized.unread tab-favicon::before,
+tab-item-substance.attention tab-favicon::before {
   bottom: auto;
   content: '';
   height: var(--tab-current-size);
@@ -844,7 +844,7 @@ tab-item.attention tab-favicon::before {
 }
 
 .background {
-  tab-item & {
+  tab-item-substance & {
     overflow: hidden; /* to crop burster*/
     z-index: var(--tab-background-z-index);
 
@@ -1008,8 +1008,8 @@ tab-item.faviconized {
 
 
 /* Keep label in faviconized tabs for voice operations. See also: https://github.com/piroor/treestyletab/issues/2864 */
-tab-item.faviconized tab-label,
-tab-item.faviconized tab-label * {
+tab-item-substance.faviconized tab-label,
+tab-item-substance.faviconized tab-label * {
   bottom: 0;
   display: flex;
   inset-inline-start: 0;
@@ -1020,21 +1020,21 @@ tab-item.faviconized tab-label * {
   top: 0;
 }
 
-tab-item.faviconized.unread:not(.active) tab-item-substance:not(:hover) tab-favicon::before,
-tab-item.attention tab-item-substance:not(:hover) tab-favicon::before {
+tab-item-substance.faviconized.unread:not(.active):not(:hover) tab-favicon::before,
+tab-item-substance.attention:not(:hover) tab-favicon::before {
   background-image: var(--attention-marker-gradient);
 }
 
-tab-item.faviconized.unread:not(.active) tab-item-substance:hover tab-favicon::before,
-tab-item.attention tab-item-substance:hover tab-favicon::before {
+tab-item-substance.faviconized.unread:not(.active):hover tab-favicon::before,
+tab-item-substance.attention:hover tab-favicon::before {
   background-image: var(--attention-marker-gradient-hover);
 }
 
-tab-item.attention tab-label {
+tab-item-substance.attention tab-label {
   font-weight: bold;
 }
 
-tab-item.faviconized.active:not([data-drop-position]) tab-item-substance {
+tab-item-substance.faviconized.active:not([data-drop-position]) {
   /* For high contrast mode */
   outline: 2px solid transparent;
   outline-offset: -2px;
@@ -1157,7 +1157,7 @@ tab-closebox {
   }
 
   /* hide closebox on non-active and non-hover tabs, like vertical tabs of Firefox itself */
-  tab-item:not(.active):not(#dummy-tab) tab-item-substance:not(:hover) & {
+  tab-item-substance:not(.active):not(#dummy-tab):not(:hover) & {
     /* but only on regular mode. On the inverted mode, auto-hiding closeboxes produces jumping
        of favicons and labels - it is too painful.
        See also: https://github.com/piroor/treestyletab/issues/3736 */
@@ -1175,7 +1175,7 @@ tab-closebox {
   position: absolute;
   z-index: var(--tab-ui-z-index);
 
-  tab-item:not(.faviconized) & {
+  tab-item-substance:not(.faviconized) & {
     --contextual-identity-marker-margin: min(calc((var(--tab-current-size) - var(--favicon-size)) / 2), calc(var(--tab-current-size) * 0.15));
     bottom: var(--contextual-identity-marker-margin);
     inset-inline-end: 0;
@@ -1183,7 +1183,7 @@ tab-closebox {
     width: var(--contextual-identity-marker-width);
   }
 
-  tab-item.faviconized & {
+  tab-item-substance.faviconized & {
     --contextual-identity-marker-margin: min(calc((var(--tab-current-size) - var(--favicon-size)) / 2), calc(var(--tab-current-size) * 0.33));
     bottom: 0;
     height: var(--contextual-identity-marker-width);

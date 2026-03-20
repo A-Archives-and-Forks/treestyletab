@@ -94,7 +94,7 @@
 
   /* we cannot know the GNOME3 "headerbar" color, so use inverted menu color instead. */
   :root[color-scheme="system-color"][data-user-agent*="Linux"]
-    tab-item:not(.active):not(.bundled-active):not(.highlighted),
+    tab-item-substance:not(.active):not(.bundled-active):not(.highlighted),
   :root[color-scheme="system-color"][data-user-agent*="Linux"]
     .after-tabs button,
   :root[color-scheme="system-color"][data-user-agent*="Linux"]
@@ -189,7 +189,7 @@ tab-item-substance,
   position: relative;
 }
 
-tab-item,
+tab-item-substance,
 .after-tabs button,
 .after-tabs [role="button"],
 #subpanel-container,
@@ -209,12 +209,12 @@ tab-item-substance,
   text-shadow: var(--tab-text-shadow);
 }
 
-tab-item.active,
-tab-item.active:hover,
-tab-item.bundled-active,
-tab-item.bundled-active:hover,
-.mutiple-highlighted > tab-item.highlighted,
-.mutiple-highlighted > tab-item.highlighted:hover {
+tab-item-substance.active,
+tab-item-substance.active:hover,
+tab-item-substance.bundled-active,
+tab-item-substance.bundled-active:hover,
+.mutiple-highlighted > tab-item-substance.highlighted,
+.mutiple-highlighted > tab-item-substance.highlighted:hover {
   --tab-surface: var(--tab-surface-active);
   --tab-surface-bgimage: var(--tab-surface-active-bgimage);
   --throbber-color: var(--throbber-color-active);
@@ -222,7 +222,7 @@ tab-item.bundled-active:hover,
   --tab-text-inverted: var(--tab-text-active-inverted);
 }
 
-tab-item:not(.active):not(.bundled-active):not(.highlighted):hover,
+tab-item-substance:not(.active):not(.bundled-active):not(.highlighted):hover,
 .after-tabs button:hover,
 .after-tabs [role="button"]:hover,
 #subpanel-selector-anchor:hover {
@@ -280,7 +280,7 @@ tab-item[type="group"] .caption {
   position: absolute;
 }
 
-tab-item .background,
+tab-item-substance .background,
 .after-tabs button:hover::before,
 .after-tabs [role="button"]:hover::before,
 #subpanel-selector-anchor:hover::before {
@@ -289,7 +289,7 @@ tab-item .background,
   border-radius: var(--tab-border-radius-size);
 }
 
-tab-item .background,
+tab-item-substance .background,
 .after-tabs button:hover::before,
 .after-tabs [role="button"]:hover::before {
   bottom: var(--tab-dropshadow-padding);
@@ -298,7 +298,7 @@ tab-item .background,
   top: var(--tab-dropshadow-padding);
 }
 
-tab-item.faviconized .background {
+tab-item-substance.faviconized .background {
   --tab-dropshadow-padding: 0.13em;
 }
 
@@ -319,48 +319,48 @@ tab-item[data-next-group-color] {
   top: 0;
 }
 
-tab-item.active,
-tab-item.bundled-active,
-:root.mutiple-highlighted tab-item.highlighted {
+tab-item-substance.active,
+tab-item-substance.bundled-active,
+:root.mutiple-highlighted tab-item-substance.highlighted {
   .background:not(.base),
-  tab-item-substance:hover .background:not(.base) {
+  &:hover .background:not(.base) {
     box-shadow: 0 0 var(--tab-dropshadow-blur) rgba(0, 0, 0, 0.4);
     outline: 1px solid var(--browser-tab-highlighter, var(--tab-active-border, currentcolor));
     outline-offset: -1px;
   }
 }
-.sticky-tabs-container tab-item:not(.active):not(.bundled-active) .background.base {
+.sticky-tabs-container tab-item-substance:not(.active):not(.bundled-active) .background.base {
   box-shadow: 0 0 var(--tab-dropshadow-blur) rgba(0, 0, 0, 0.2);
 }
 
-tab-item:not(.active):not(.bundled-active):not(.highlighted) tab-item-substance:hover .background:not(.base),
+tab-item-substance:not(.active):not(.bundled-active):not(.highlighted):hover .background:not(.base),
 .after-tabs button:hover::before,
 .after-tabs [role="button"]:hover::before,
 #subpanel-selector-anchor:hover::before {
   opacity: 0.11;
 }
-tab-item:not(.active):not(.bundled-active):not(.highlighted)[type="group"]:not(.subtree-collapsed) tab-item-substance:hover .background:not(.base) {
+tab-item-substance:not(.active):not(.bundled-active):not(.highlighted)[type="group"]:not(.subtree-collapsed):hover .background:not(.base) {
   opacity: 0;
 }
 
 /* extra focus ring for multiselected tabs https://bugzilla.mozilla.org/show_bug.cgi?id=1751807 */
-:root.mutiple-highlighted tab-item.highlighted {
+:root.mutiple-highlighted tab-item-substance.highlighted {
   .background:not(.base),
-  tab-item-substance:hover .background:not(.base) {
+  &:hover .background:not(.base) {
     outline: 1px solid var(--focus-outline-color);
     outline-offset: -1px;
   }
 }
-:root.mutiple-highlighted tab-item.highlighted.active {
+:root.mutiple-highlighted tab-item-substance.highlighted.active {
   .background:not(.base),
-  tab-item-substance:hover .background:not(.base) {
+  &:hover .background:not(.base) {
     outline-width: 2px;
     outline-offset: -2px;
   }
 }
 
 
-.sticky-tabs-container tab-item:not(.active):not(.bundled-active) .background.base {
+.sticky-tabs-container tab-item-substance:not(.active):not(.bundled-active) .background.base {
   background-color: var(--browser-background, var(--tabbar-bg, var(--bg-color, ButtonFace)));
   background-image: var(--browser-bg-images, none);
   background-position: var(--browser-bg-position, left);
@@ -424,7 +424,7 @@ tab-item {
     }
   }
 
-  &.active tab-closebox:hover::before {
+  tab-item-substance.active tab-closebox:hover::before {
     background: var(--tab-text);
   }
 
