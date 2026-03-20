@@ -68,6 +68,12 @@ export class TreeItemElement extends HTMLElement {
         !this.substanceElement)
       return;
 
+    // we must not inherit the "tab" class because it is used for backward compatibility of tab-item
+    if (name == 'class' &&
+        typeof newValue == 'string') {
+      newValue = newValue.replace(/^tab\s|\stab\s|\stab$/, ' ');
+    }
+
     if (newValue !== null) {
       this.substanceElement.setAttribute(name, newValue);
     }
@@ -116,9 +122,15 @@ export class TreeItemElement extends HTMLElement {
     this.insertAdjacentHTML('beforeend', `<${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>`);
 
     for (const name of TreeItemElement.observedAttributes) {
-      if (this.hasAttribute(name)) {
-        this.substanceElement.setAttribute(name, this.getAttribute(name));
+      if (!this.hasAttribute(name))
+        continue;
+
+      // we must not inherit the "tab" class because it is used for backward compatibility of tab-item
+      let value = this.getAttribute(name);
+      if (name == 'class') {
+        value = value.replace(/^tab\s|\stab\s|\stab$/, ' ');
       }
+      this.substanceElement.setAttribute(name, value);
     }
 
     this.removeAttribute('draggable');
