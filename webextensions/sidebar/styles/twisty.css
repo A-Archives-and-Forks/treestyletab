@@ -6,40 +6,46 @@
 */
 
 :root {
-  --tab-twisty-offset: calc((var(--tab-ui-size) - var(--favicon-size)) / 2);
-  --tab-twisty-negative-offset: calc((var(--favicon-size) - var(--tab-ui-size)) / 2);
+  --twisty-size: var(--favicon-size);
+  --tab-twisty-offset: calc((var(--tab-ui-size) - var(--twisty-size)) / 2);
+  --tab-twisty-negative-offset: calc((var(--twisty-size) - var(--tab-ui-size)) / 2);
 }
 
 tab-item tab-twisty {
   display: inline-flex;
-  font-size: var(--favicon-size);
-  /*height: var(--favicon-size);*/
+  font-size: var(--twisty-size);
+  /*height: var(--twisty-size);*/
   margin-block: var(--tab-twisty-negative-offset);
   margin-inline: 0;
-  /*max-height: var(--favicon-size);*/
-  max-width: var(--favicon-size);
-  min-height: var(--favicon-size);
-  min-width: var(--favicon-size);
+  /*max-height: var(--twisty-size);*/
+  max-width: var(--twisty-size);
+  min-height: var(--twisty-size);
+  min-width: var(--twisty-size);
   padding-block: var(--tab-twisty-offset);
   padding-inline: 0;
   position: relative;
   transform-origin: 50% 50%;
   white-space: pre;
-  width: var(--favicon-size);
+  width: var(--twisty-size);
   z-index: var(--tab-ui-z-index);
 }
 
-tab-item.split-view tab-item-substance + tab-item-substance tab-twisty {
-  min-width: 0.25em;
-  visibility: hidden;
-  width: 0.25em;
+tab-item.split-view tab-item-substance:nth-of-type(2) {
+  --twisty-size: 0.75em;
+
+  tab-twisty {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
 }
 
-tab-item:not([data-child-ids]) tab-twisty,
-tab-item.pinned tab-twisty,
-tab-item.collapsed tab-twisty {
-  visibility: hidden !important;
-  pointer-events: none !important;
+tab-item:not([data-child-ids]),
+tab-item.pinned,
+tab-item.collapsed {
+  tab-twisty {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
 }
 
 tab-item:not(.collapsed) {
@@ -67,9 +73,9 @@ tab-item:not(.collapsed) {
     fill: var(--tab-text);
     height: var(--svg-small-icon-size);
     line-height: 1;
-    margin-block-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-    max-height: var(--favicon-size);
-    max-width: var(--favicon-size);
+    margin-block-start: calc((var(--twisty-size) - var(--svg-small-icon-size)) / 2);
+    max-height: var(--twisty-size);
+    max-width: var(--twisty-size);
     width: var(--svg-small-icon-size);
   }
   :root.simulate-svg-context-fill & tab-twisty::before {
