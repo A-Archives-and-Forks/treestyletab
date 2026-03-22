@@ -330,6 +330,10 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     itemElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
     itemElement.ensurePairedTabSubstanceElement();
     const pairedItem = item.$TST.pairedSplitViewTab;
+    if (!pairedItem.active && pairedItem.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
+      console.log('WARNING: Inactive paired item has invalid "active" state! ', pairedItem.id)
+      pairedItem.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
+    }
     initalizeItemElement(pairedItem, itemElement.pairedTabSubstanceElement)
     pairedItem.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
     pairedItem.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
