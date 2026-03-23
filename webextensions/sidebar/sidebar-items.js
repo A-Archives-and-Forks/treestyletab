@@ -234,13 +234,14 @@ const mItemIntersectionObserver = new IntersectionObserver(entries => {
 });
 
 export function renderItem(item, { containerElement, insertBefore } = {}) {
+  let modified = false;
   if (!item) {
     console.log('WARNING: Null item has requested to be rendered! ', stack());
-    return false;
+    return modified;
   }
   if (!item.$TST) {
     console.log('WARNING: Already destroyed item has requested to be rendered! ', item.id, stack());
-    return false;
+    return modified;
   }
 
   let created = false;
@@ -286,11 +287,11 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
       null;
   }
 
-  if (itemElement.parentNode == containerElement &&
-      itemElement.nextSibling == nextElement)
-    return false;
-
-  containerElement.insertBefore(itemElement, nextElement);
+  if (itemElement.parentNode != containerElement ||
+      itemElement.nextSibling != nextElement) {
+    containerElement.insertBefore(itemElement, nextElement);
+    modified = true;
+  }
 
   if (created) {
     if (!item.active && item.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
@@ -326,32 +327,9 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     reserveToNotifyItemsRendered();
   }
 
-  const mainTab = item.$TST.mainSplitViewTab;
-  const subTab  = (mainTab || item).$TST.subSplitViewTab;
-  if (mainTab || subTab) {
-    const mainElement = (mainTab || item).$TST.element;
-    if (mainElement) {
-      mainElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
-      mainElement.ensureSplit();
-      if (!subTab.active && subTab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
-        console.log('WARNING: Inactive paired item has invalid "active" state! ', subTab.id)
-        subTab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
-      }
-      initalizeItemElement(subTab, mainElement.subSplitViewSubstanceElement)
-      subTab.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
-      subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
-      subTab.$TST.applyStatesToElement();
-    }
-  }
-  else {
-    item.$TST.pairedSplitViewTab?.unbindElement();
-    if (itemElement.localName == kTREE_ITEM_ELEMENT_NAME) {
-      itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
-      itemElement.clearSplit();
-    }
-  }
+  updateSplitView(item);
 
-  return true;
+  return modified;
 }
 
 function initalizeItemElement(item, itemElement) {
@@ -379,6 +357,39 @@ function initalizeItemElement(item, itemElement) {
       item.$TST.addState(Constants.kTAB_STATE_THROBBER_UNSYNCHRONIZED);
       TabsStore.addUnsynchronizedTab(item);
       break;
+  }
+}
+
+function updateSplitView(item) {
+  const mainTab = item.$TST.mainSplitViewTab;
+  const subTab  = (mainTab || item).$TST.subSplitViewTab;
+  if (mainTab || subTab) {
+    const mainElement = (mainTab || item).$TST.element;
+    if (mainElement) {
+      mainElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
+      mainElement.ensureSplit();
+      unrenderItem(subTab);
+      if (!subTab.active && subTab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
+        console.log('WARNING: Inactive sub split view item has invalid "active" state! ', subTab.id)
+        subTab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
+      }
+      initalizeItemElement(subTab, mainElement.subSplitViewSubstanceElement);
+      subTab.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
+      subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
+      subTab.$TST.applyStatesToElement();
+
+      mRenderedItemIds.add(subTab.id);
+      mUnrenderedItemIds.delete(subTab.id);
+      reserveToNotifyItemsRendered();
+    }
+  }
+  else {
+    unrenderItem(item.$TST.pairedSplitViewTab);
+    const itemElement = item.$TST.element;
+    if (itemElement?.localName == kTREE_ITEM_ELEMENT_NAME) {
+      itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
+      itemElement.clearSplit();
+    }
   }
 }
 
@@ -476,9 +487,10 @@ export function unrenderItem(item) {
       !itemElement.parentNode)
     return false;
 
-  itemElement.parentNode.removeChild(itemElement);
+  itemElement.remove();
   item.$TST.unbindElement();
 
+  if (itemElement.localName == kTREE_ITEM_ELEMENT_NAME) {
   // We reuse already generated elements for better performance.
   // See also: https://github.com/piroor/treestyletab/issues/3477
   mItemElementsPool.push(itemElement);
@@ -487,6 +499,7 @@ export function unrenderItem(item) {
   mClearPoolTimer = setTimeout(() => {
     mItemElementsPool = [];
   }, configs.generatedTreeItemElementsPoolLifetimeMsec);
+  }
 
   return true;
 }
@@ -786,6 +799,12 @@ Tab.onNativeGroupModified.addListener(async tab => {
     collapsed: await tab.$TST.promisedCollapsedByParent,
   });
   tab.$TST.updateElement(TabUpdateTarget.TabProperties);
+});
+
+Tab.onSplitViewModified.addListener(tab => {
+  if (tab.$TST.element) {
+    updateSplitView(tab);
+  }
 });
 
 

@@ -246,7 +246,7 @@ export class TreeItem {
         this.element.removeAttribute(name);
       }
       this.element.$TST = null;
-      this.element.apiRaw = null;
+      this.element.raw = null;
     }
     this.element = null;
     this.classList = null;
