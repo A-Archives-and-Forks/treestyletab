@@ -2392,20 +2392,20 @@ export class Tab extends TreeItem {
     });
   }
 
-  get hasFollowingPairedSplitViewTab() {
+  get followingPairedSplitViewTab() {
     const pairedTab = this.pairedSplitViewTab;
     if (!pairedTab)
       return null;
 
-    return pairedTab.index > this.raw.index;
+    return pairedTab.index > this.raw.index ? pairedTab : null;
   }
 
-  get hasPrecedingPairedSplitViewTab() {
+  get precedingPairedSplitViewTab() {
     const pairedTab = this.pairedSplitViewTab;
     if (!pairedTab)
       return null;
 
-    return pairedTab.index < this.raw.index;
+    return pairedTab.index < this.raw.index ? pairedTab : null;
   }
 
 
@@ -3737,6 +3737,15 @@ export class Tab extends TreeItem {
       living:     true,
       states:     [Constants.kTAB_STATE_RESTORED, false],
       attributes: [Constants.kCURRENT_URI, new RegExp(`^(|${userNewTabUrls}|about:newtab|about:blank|about:privatebrowsing)$`)],
+      ...options
+    });
+  }
+
+  static getSplitViewTabs(windowId = null, options = {}) {
+    return TabsStore.queryAll({
+      windowId,
+      tabs:   TabsStore.getTabsMap(TabsStore.splitViewTabsInWindow, windowId),
+      living: true,
       ...options
     });
   }
