@@ -31,7 +31,7 @@ tab-item tab-twisty {
 }
 
 tab-item.split-view {
-  tab-item-substance.secondary {
+  tab-item-substance.split-view-sub {
   --twisty-size: 0.75em;
 
   tab-twisty {

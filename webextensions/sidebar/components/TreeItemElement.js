@@ -32,8 +32,8 @@ const NATIVE_PROPERTIES = new Set([
 ]);
 const IGNORE_CLASSES = new Set([
   'tab',
-  'primary',
-  'secondary',
+  'split-view-main',
+  'split-view-sub',
   'split-substances-container',
   Constants.kTAB_STATE_ANIMATION_READY,
   Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE,
@@ -82,7 +82,7 @@ export class TreeItemElement extends HTMLElement {
     // we must not inherit the "tab" class because it is used for backward compatibility of tab-item
     if (name == 'class' &&
         typeof newValue == 'string') {
-      newValue = newValue.replace(this.IGNORE_CLASSES_MATCHER, ' ') + ' primary';
+      newValue = newValue.replace(this.IGNORE_CLASSES_MATCHER, ' ') + ' split-view-main';
     }
 
     if (newValue !== null) {
@@ -130,7 +130,7 @@ export class TreeItemElement extends HTMLElement {
       <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
     */
 
-    this.insertAdjacentHTML('beforeend', `<${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="primary" draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>`);
+    this.insertAdjacentHTML('beforeend', `<${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="split-view-main" draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>`);
 
     for (const name of TreeItemElement.observedAttributes) {
       if (!this.hasAttribute(name))
@@ -139,7 +139,7 @@ export class TreeItemElement extends HTMLElement {
       // we must not inherit the "tab" class because it is used for backward compatibility of tab-item
       let value = this.getAttribute(name);
       if (name == 'class') {
-        value = value.replace(this.IGNORE_CLASSES_MATCHER, ' ') + ' primary';
+        value = value.replace(this.IGNORE_CLASSES_MATCHER, ' ') + ' split-view-main';
       }
       this.substanceElement?.setAttribute(name, value);
     }
@@ -200,11 +200,11 @@ export class TreeItemElement extends HTMLElement {
   }
 
   get substanceElement() {
-    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.primary`);
+    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.split-view-main`);
   }
 
-  get secondarySubstanceElement() {
-    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.secondary`);
+  get subSplitViewSubstanceElement() {
+    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.split-view-sub`);
   }
 
   get twisty() {
@@ -375,24 +375,24 @@ export class TreeItemElement extends HTMLElement {
   }
 
   ensureSplit() {
-    if (this.secondarySubstanceElement)
+    if (this.subSplitViewSubstanceElement)
       return;
 
     this.insertAdjacentHTML('beforeend', `
       <span class="split-tab-separator"></span>
-      <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="secondary" draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
+      <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="split-view-sub" draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
       <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="split-substances-container"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
     `);
   }
 
   clearSplit() {
-    const secondarySubstance = this.secondarySubstanceElement;
-    if (!secondarySubstance)
+    const substance = this.subSplitViewSubstanceElement;
+    if (!substance)
       return;
 
-    secondarySubstance.previousElementSibling?.remove();
-    secondarySubstance.nextElementSibling?.remove();
-    secondarySubstance.remove();
+    substance.previousElementSibling?.remove();
+    substance.nextElementSibling?.remove();
+    substance.remove();
   }
 
   _updateDescendantsHighlighted() {

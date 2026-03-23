@@ -54,8 +54,8 @@ const NATIVE_PROPERTIES = new Set([
 ]);
 const IGNORE_CLASSES = new Set([
   'tab',
-  'primary',
-  'secondary',
+  'split-view-main',
+  'split-view-sub',
   'split-substances-container',
   Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE,
   Constants.kTAB_STATE_SPLIT_VIEW,

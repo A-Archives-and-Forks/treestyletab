@@ -578,8 +578,8 @@ tab-item-substance {
   }
 
   tab-item.split-view & {
-    &.primary,
-    &.secondary {
+    &.split-view-main,
+    &.split-view-sub {
       max-width: calc(( 100% - var(--tab-visual-indent) ) / 2);
     }
 
@@ -597,11 +597,11 @@ tab-item-substance {
   }
 
   :root.regular tab-item.split-view & {
-    &.primary {
+    &.split-view-main {
       margin-inline-end: 0px;
     }
 
-    &.secondary {
+    &.split-view-sub {
       margin-inline-start: 0px;
     }
   }
@@ -634,11 +634,11 @@ tab-item-substance {
   }
 
   &.split-view {
-    tab-item-substance.primary {
+    tab-item-substance.split-view-main {
       margin-inline-start: 0px;
     }
 
-    tab-item-substance.secondary {
+    tab-item-substance.split-view-sub {
       margin-inline-end: 0px;
     }
   }

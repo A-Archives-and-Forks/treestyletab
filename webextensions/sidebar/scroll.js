@@ -242,8 +242,7 @@ const STICKY_SPACER_MATCHER = /^tab:(\d+):sticky$/;
 let mScrollPosition = 0;
 
 function splitViewHiddenTabFilter(tab) {
-  const pairedTab = tab.$TST.pairedSplitViewTab;
-  return (!pairedTab || pairedTab.index > tab.index);
+  return !!tab.$TST.mainSplitViewTab;
 }
 
 export function getRenderableTreeItems(windowId = null) {
@@ -636,9 +635,9 @@ function getScrollBoxFor(item, { allowFallback } = {}) {
 }
 
 export function getItemRect(item, { afterAnimation } = {}) {
-  const pairedTab = item?.$TST.precedingPairedSplitViewTab;
-  if (pairedTab)
-    return getItemRect(pairedTab, { afterAnimation });
+  const mainTab = item?.$TST.mainSplitViewTab;
+  if (mainTab)
+    return getItemRect(mainTab, { afterAnimation });
 
   if (item.pinned)
     return item.$TST.element.getBoundingClientRect();

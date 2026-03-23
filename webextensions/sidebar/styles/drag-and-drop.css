@@ -69,7 +69,7 @@ tab-item-substance[data-drop-position="self"] {
 }
 
 tab-item[data-drop-position]:not([data-drop-position="self"]) {
-  &:not(.split-view) tab-item-substance.primary::before,
+  &:not(.split-view) tab-item-substance.split-view-main::before,
   &.split-view tab-item-substance.split-substances-container::before {
   content: "";
   display: block;
@@ -83,7 +83,7 @@ tab-item[data-drop-position]:not([data-drop-position="self"]) {
   }
 }
 tab-item[data-drop-position]:not([data-drop-position="self"]).faviconized {
-  &:not(.split-view) tab-item-substance.primary::before,
+  &:not(.split-view) tab-item-substance.split-view-main::before,
   &.split-view tab-item-substance.split-substances-container::before {
   max-height: none;
   max-width: var(--tab-dropmarker-size);
@@ -93,7 +93,7 @@ tab-item[data-drop-position]:not([data-drop-position="self"]).faviconized {
 }
 
 tab-item:not(.faviconized)[data-drop-position="before"] {
-  &:not(.split-view) tab-item-substance.primary::before,
+  &:not(.split-view) tab-item-substance.split-view-main::before,
   &.split-view tab-item-substance.split-substances-container::before {
   inset-inline-start: 0;
   inset-inline-end: 0;
@@ -102,7 +102,7 @@ tab-item:not(.faviconized)[data-drop-position="before"] {
 }
 
 tab-item:not(.faviconized)[data-drop-position="after"] {
-  &:not(.split-view) tab-item-substance.primary::before,
+  &:not(.split-view) tab-item-substance.split-view-main::before,
   &.split-view tab-item-substance.split-substances-container::before {
   bottom: 0;
   inset-inline-start: 0;
@@ -111,7 +111,7 @@ tab-item:not(.faviconized)[data-drop-position="after"] {
 }
 
 tab-item.faviconized[data-drop-position="before"] {
-  &:not(.split-view) tab-item-substance.primary::before,
+  &:not(.split-view) tab-item-substance.split-view-main::before,
   &.split-view tab-item-substance.split-substances-container::before {
   bottom: 0;
   inset-inline-start: 0;
@@ -120,7 +120,7 @@ tab-item.faviconized[data-drop-position="before"] {
 }
 
 tab-item.faviconized[data-drop-position="after"] {
-  &:not(.split-view) tab-item-substance.primary::before,
+  &:not(.split-view) tab-item-substance.split-view-main::before,
   &.split-view tab-item-substance.split-substances-container::before {
   bottom: 0;
   inset-inline-end: 0;

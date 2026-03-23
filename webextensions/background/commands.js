@@ -346,7 +346,7 @@ export async function openNewTabAs(options = {}) {
       }).catch(ApiTabs.createErrorHandler());
   }
   const activeTab = options.baseTab || Tab.get(activeTabs[0].id);
-  const baseTab   = activeTab?.$TST.precedingPairedSplitViewTab || activeTab;
+  const baseTab   = activeTab?.$TST.mainSplitViewTab || activeTab;
   log('activeTab ', activeTab);
   log('baseTab ', baseTab);
 

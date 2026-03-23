@@ -436,10 +436,10 @@ export function getReferenceTabsForNewChild(child, parent, { insertAt, ignoreTab
   if (typeof insertAt !== 'number')
     insertAt = configs.insertNewChildAt;
   log('  insertAt = ', insertAt);
-  const pairedTab = parent?.$TST.precedingPairedSplitViewTab;
-  if (pairedTab) {
-    log('  the specified parent is a split tab: redirect parent ', parent.id, ' => ', pairedTab.id);
-    parent = pairedTab;
+  const mainTab = parent?.$TST.mainSplitViewTab;
+  if (mainTab) {
+    log('  the specified parent is a sub split view tab: redirect parent ', parent.id, ' => ', mainTab.id);
+    parent = mainTab;
   }
   if (parent && !descendants)
     descendants = parent.$TST.descendants;
@@ -515,9 +515,9 @@ export function getReferenceTabsForNewChild(child, parent, { insertAt, ignoreTab
   else {
     insertAfter = parent;
     log(`  insert ${child?.id} after parent`);
-    const pairedTab = parent?.$TST?.followingPairedSplitViewTab;
-    if (pairedTab) {
-      insertAfter = pairedTab;
+    const mainTab = parent?.$TST?.subSplitViewTab;
+    if (mainTab) {
+      insertAfter = mainTab;
       log(`  => the parent is split tab, put ${child?.id} after the split pair`);
     }
   }
@@ -540,9 +540,9 @@ export function getReferenceTabsForNewChild(child, parent, { insertAt, ignoreTab
     //TODO: we need to reject more cases...
   }
   if (insertAfter) {
-    let allTabsInTree = [...descendants.map(descendant => [descendant, descendant.$TST.followingPairedSplitViewTab])];
+    let allTabsInTree = [...descendants.map(descendant => [descendant, descendant.$TST.subSplitViewTab])];
     if (parent)
-      allTabsInTree.unshift(parent, parent.$TST?.followingPairedSplitViewTab);
+      allTabsInTree.unshift(parent, parent.$TST?.subSplitViewTab);
     allTabsInTree = allTabsInTree.flat().filter(tab => !!tab);
     const lastMember    = allTabsInTree[allTabsInTree.length - 1];
     if (lastMember != insertAfter &&

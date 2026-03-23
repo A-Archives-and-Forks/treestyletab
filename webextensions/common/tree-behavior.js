@@ -141,8 +141,8 @@ export function calculateReferenceItemsFromInsertionPosition(
   let lastItem  = (Array.isArray(item) ? item[item.length - 1] : item) || item;
   firstItem = firstItem?.type == TreeItem.TYPE_GROUP && firstItem.$TST?.nativeTabGroup || firstItem;
   lastItem = lastItem?.type == TreeItem.TYPE_GROUP && lastItem?.$TST?.nativeTabGroup?.collapsed && lastItem?.$TST?.nativeTabGroup || lastItem;
-  insertBefore = insertBefore?.$TST.precedingPairedSplitViewTab || insertBefore;
-  insertAfter  = insertAfter?.$TST.followingPairedSplitViewTab || insertAfter;
+  insertBefore = insertBefore?.$TST.mainSplitViewTab || insertBefore;
+  insertAfter  = insertAfter?.$TST.subSplitViewTab || insertAfter;
   log('calculateReferenceItemsFromInsertionPosition ', {
     firstItem:    firstItem?.id,
     lastItem:     lastItem?.id,
@@ -350,14 +350,14 @@ export function calculateReferenceItemsFromInsertionPosition(
 }
 
 export function sanitizeReferenceTabsForSplitView({ parent, insertBefore, insertAfter }) {
-  parent       = parent?.$TST.precedingPairedSplitViewTab || parent;
-  insertBefore = insertBefore?.$TST.precedingPairedSplitViewTab || insertBefore;
-  insertAfter  = insertAfter?.$TST.followingPairedSplitViewTab || insertAfter;
+  parent       = parent?.$TST.mainSplitViewTab || parent;
+  insertBefore = insertBefore?.$TST.mainSplitViewTab || insertBefore;
+  insertAfter  = insertAfter?.$TST.subSplitViewTab || insertAfter;
   if (insertAfter &&
       ((parent &&
         insertBefore == parent) ||
        (insertBefore &&
-        insertBefore == insertAfter?.$TST.precedingPairedSplitViewTab)))
+        insertBefore == insertAfter?.$TST.mainSplitViewTab)))
     insertBefore = parent?.$TST.firstChild;
   return { parent, insertBefore, insertAfter };
 }

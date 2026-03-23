@@ -91,7 +91,7 @@ Tab.onMoving.addListener((tab, moveInfo) => {
 });
 
 async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
-  if (tab.$TST.precedingPairedSplitViewTab) {
+  if (tab.$TST.mainSplitViewTab) {
     log('tryFixupTreeForInsertedTab: ignore split view tab: ', tab);
     return;
   }

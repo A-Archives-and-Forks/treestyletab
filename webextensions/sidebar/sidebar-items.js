@@ -326,7 +326,7 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     reserveToNotifyItemsRendered();
   }
 
-  const pairedItem = item.$TST.followingPairedSplitViewTab;
+  const pairedItem = item.$TST.subSplitViewTab;
   if (pairedItem) {
     itemElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
     itemElement.ensureSplit();
@@ -334,12 +334,12 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
       console.log('WARNING: Inactive paired item has invalid "active" state! ', pairedItem.id)
       pairedItem.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
     }
-    initalizeItemElement(pairedItem, itemElement.secondarySubstanceElement)
+    initalizeItemElement(pairedItem, itemElement.subSplitViewSubstanceElement)
     pairedItem.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
     pairedItem.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
     pairedItem.$TST.applyStatesToElement();
   }
-  else if (!item.$TST.precedingPairedSplitViewTab) {
+  else if (!item.$TST.mainSplitViewTab) {
     item.$TST.pairedSplitViewTab?.unbindElement();
     itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
     itemElement.clearSplit();

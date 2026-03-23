@@ -201,7 +201,7 @@ Tab.onCreating.addListener((tab, info = {}) => {
         info.duplicated ?
           configs.autoAttachOnDuplicated :
           configs.autoAttachOnOpenedWithOwner;
-      const baseTab = opener.$TST.precedingPairedSplitViewTab || opener;
+      const baseTab = opener.$TST.mainSplitViewTab || opener;
       return Tree.behaveAutoAttachedTab(tab, {
         baseTab,
         behavior,

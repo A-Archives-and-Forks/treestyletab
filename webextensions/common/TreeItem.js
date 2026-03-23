@@ -2163,12 +2163,12 @@ export class Tab extends TreeItem {
     for (const id of this.childIds) {
       const child = TabsStore.ensureLivingItem(Tab.get(id));
       if (!child ||
-          child.$TST.precedingPairedSplitViewTab)
+          child.$TST.mainSplitViewTab)
         continue;
       result.push(child);
-      const followingPairedTab = child.$TST.followingPairedSplitViewTab
-      if (followingPairedTab)
-        result.push(followingPairedTab);
+      const subTab = child.$TST.subSplitViewTab
+      if (subTab)
+        result.push(subTab);
       child.$TST.collectDescendants(result);
     }
   }
@@ -2396,20 +2396,20 @@ export class Tab extends TreeItem {
     });
   }
 
-  get followingPairedSplitViewTab() {
-    const pairedTab = this.pairedSplitViewTab;
-    if (!pairedTab)
-      return null;
-
-    return pairedTab.index > this.raw.index ? pairedTab : null;
-  }
-
-  get precedingPairedSplitViewTab() {
+  get mainSplitViewTab() {
     const pairedTab = this.pairedSplitViewTab;
     if (!pairedTab)
       return null;
 
     return pairedTab.index < this.raw.index ? pairedTab : null;
+  }
+
+  get subSplitViewTab() {
+    const pairedTab = this.pairedSplitViewTab;
+    if (!pairedTab)
+      return null;
+
+    return pairedTab.index > this.raw.index ? pairedTab : null;
   }
 
 
