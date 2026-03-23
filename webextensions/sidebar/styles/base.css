@@ -122,7 +122,7 @@
     }
 
     /* Show internal tab id in the debug mode */
-    tab-item::after {
+    tab-item-substance::after {
       bottom: 0;
       inset-inline-end: 0;
       opacity: 0.65;
@@ -133,10 +133,10 @@
       z-index: var(--tab-favicon-z-index);
     }
     /* override definition for the highlighting marker */
-    tab-item[data-tab-id]::after {
+    tab-item-substance[data-tab-id]::after {
       content: attr(data-tab-id) !important;
     }
-    tab-item[data-native-tab-group-id]::after {
+    tab-item-substance[data-native-tab-group-id]::after {
       content: attr(data-native-tab-group-id) !important;
     }
   }
@@ -737,7 +737,7 @@ tab-item tab-closebox {
 
 tab-item .highlighter,
 tab-item .burster,
-tab-item-substance.faviconized.unread tab-favicon::before,
+tab-item.faviconized tab-item-substance.unread tab-favicon::before,
 tab-item-substance.attention tab-favicon::before,
 tab-item .background,
 tab-item .native-tab-group-line {
@@ -819,11 +819,11 @@ tab-item .native-tab-group-line {
     pointer-events: auto;
     z-index: var(--tab-extra-contents-front-z-index);
   }
-  tab-item-substance:not(.faviconized).sound-playing &.front,
-  tab-item-substance:not(.faviconized).muted &.front {
+  tab-item:not(.faviconized) tab-item-substance.sound-playing &.front,
+  tab-item:not(.faviconized) tab-item-substance.muted &.front {
     inset-inline-start: calc(var(--tab-label-start-offset) + var(--svg-small-icon-size));
   }
-  tab-item-substance.faviconized &.front {
+  tab-item.faviconized tab-item-substance &.front {
     inset-inline-start: var(--faviconized-tab-padding);
     inset-inline-end: var(--faviconized-tab-padding);
   }
@@ -869,7 +869,7 @@ tab-item-substance .highlighter {
 }
 
 
-tab-item-substance.faviconized.unread tab-favicon::before,
+tab-item.faviconized tab-item-substance.unread tab-favicon::before,
 tab-item-substance.attention tab-favicon::before {
   bottom: auto;
   content: '';
@@ -1053,8 +1053,8 @@ tab-item.faviconized {
 
 
 /* Keep label in faviconized tabs for voice operations. See also: https://github.com/piroor/treestyletab/issues/2864 */
-tab-item-substance.faviconized tab-label,
-tab-item-substance.faviconized tab-label * {
+tab-item.faviconized tab-label,
+tab-item.faviconized tab-label * {
   bottom: 0;
   display: flex;
   inset-inline-start: 0;
@@ -1065,12 +1065,12 @@ tab-item-substance.faviconized tab-label * {
   top: 0;
 }
 
-tab-item-substance.faviconized.unread:not(.active):not(:hover) tab-favicon::before,
+tab-item.faviconized tab-item-substance.unread:not(.active):not(:hover) tab-favicon::before,
 tab-item-substance.attention:not(:hover) tab-favicon::before {
   background-image: var(--attention-marker-gradient);
 }
 
-tab-item-substance.faviconized.unread:not(.active):hover tab-favicon::before,
+tab-item.faviconized tab-item-substance.unread:not(.active):hover tab-favicon::before,
 tab-item-substance.attention:hover tab-favicon::before {
   background-image: var(--attention-marker-gradient-hover);
 }
@@ -1079,7 +1079,7 @@ tab-item-substance.attention tab-label {
   font-weight: bold;
 }
 
-tab-item-substance.faviconized.active:not([data-drop-position]) {
+tab-item.faviconized tab-item-substance.active:not([data-drop-position]) {
   /* For high contrast mode */
   outline: 2px solid transparent;
   outline-offset: -2px;
@@ -1116,7 +1116,7 @@ tab-item .label-content {
 }
 
 .counter {
-  tab-item:not([data-child-ids]) &,
+  tab-item-substance:not([data-child-ids]) &,
   tab-item:not(.subtree-collapsed) & {
     display: none;
   }
@@ -1220,7 +1220,7 @@ tab-closebox {
   position: absolute;
   z-index: var(--tab-ui-z-index);
 
-  tab-item-substance:not(.faviconized) & {
+  tab-item:not(.faviconized) & {
     --contextual-identity-marker-margin: min(calc((var(--tab-current-size) - var(--favicon-size)) / 2), calc(var(--tab-current-size) * 0.15));
     bottom: var(--contextual-identity-marker-margin);
     inset-inline-end: 0;
@@ -1228,7 +1228,7 @@ tab-closebox {
     width: var(--contextual-identity-marker-width);
   }
 
-  tab-item-substance.faviconized & {
+  tab-item.faviconized & {
     --contextual-identity-marker-margin: min(calc((var(--tab-current-size) - var(--favicon-size)) / 2), calc(var(--tab-current-size) * 0.33));
     bottom: 0;
     height: var(--contextual-identity-marker-width);

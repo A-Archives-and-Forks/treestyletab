@@ -474,7 +474,7 @@ async function applyBrowserTheme(theme) {
 function updateContextualIdentitiesStyle() {
   const colorInfo = ContextualIdentities.getColorInfo();
   const definitions = Object.keys(colorInfo.colors).map(id =>
-    `.tab.contextual-identity-${id} .contextual-identity-marker {
+    `tab-item-substance.contextual-identity-${id} .contextual-identity-marker {
        background-color: ${colorInfo.colors[id]};
      }`);
 

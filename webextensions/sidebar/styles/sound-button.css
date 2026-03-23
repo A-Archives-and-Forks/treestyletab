@@ -76,7 +76,7 @@ tab-sound-button {
   }
 }
 
-tab-item:not(.collapsed) {
+tab-item:not(.collapsed) tab-item-substance {
   tab-sound-button:hover {
     opacity: var(--button-hover-opacity);
   }

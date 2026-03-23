@@ -443,8 +443,8 @@ tab-item {
 
 /* hide active tab marker and highlighter for collapsed tree */
 .highlighter::before,
-tab-item:not(.faviconized).subtree-collapsed.some-descendants-highlighted .highlighter::after,
-tab-item:not(.faviconized).subtree-collapsed.all-descendants-highlighted .highlighter::after {
+tab-item:not(.faviconized).subtree-collapsed tab-item-substance.some-descendants-highlighted .highlighter::after,
+tab-item:not(.faviconized).subtree-collapsed tab-item-substance.all-descendants-highlighted .highlighter::after {
   display: none;
 }
 

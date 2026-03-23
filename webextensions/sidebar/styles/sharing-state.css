@@ -43,32 +43,32 @@
   position: absolute;
   top: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
 
-  tab-item.active &,
-  tab-item.loading &,
+  tab-item-substance.active &,
+  tab-item-substance.loading &,
   tab-item:not(.sharing-camera):not(.sharing-microphone):not(.sharing-screen) & {
     display: none;
   }
 
   /* The priority is: screen > camera > microphone
      See also https://searchfox.org/mozilla-central/rev/85d6bf1b521040c79ed72f3966274a25a2f987c7/browser/modules/webrtcUI.sys.mjs#316-331 */
-  tab-item.sharing-microphone &::before {
+  tab-item-substance.sharing-microphone &::before {
     background-image: url("./icons/microphone.svg")
   }
-  :root.simulate-svg-context-fill tab-item.sharing-microphone &::before {
+  :root.simulate-svg-context-fill tab-item-substance.sharing-microphone &::before {
     mask-image: url("./icons/microphone.svg");
   }
 
-  tab-item.sharing-camera &::before {
+  tab-item-substance.sharing-camera &::before {
     background-image: url("./icons/camera.svg")
   }
-  :root.simulate-svg-context-fill tab-item.sharing-camera &::before {
+  :root.simulate-svg-context-fill tab-item-substance.sharing-camera &::before {
     mask-image: url("./icons/camera.svg");
   }
 
-  tab-item.sharing-screen &::before {
+  tab-item-substance.sharing-screen &::before {
     background-image: url("./icons/screen.svg")
   }
-  :root.simulate-svg-context-fill tab-item.sharing-screen &::before {
+  :root.simulate-svg-context-fill tab-item-substance.sharing-screen &::before {
     mask-image: url("./icons/screen.svg");
   }
 
@@ -76,13 +76,13 @@
     fill: var(--sharing-state-color);
     animation: var(--tab-sharing-icon-animation);
   }
-  :root.simulate-svg-context-fill tab-item &::before {
+  :root.simulate-svg-context-fill tab-item-substance &::before {
     /* put this here to override background-image specivied rules above! */
     background: var(--sharing-state-color);
   }
 }
 
-tab-item:not(.active):not(.loading) {
+tab-item-substance:not(.active):not(.loading) {
   &.sharing-camera,
   &.sharing-microphone,
   &.sharing-screen {
