@@ -67,7 +67,7 @@ tab-item:not(.collapsed) tab-item-substance:hover,
   /*mix-blend-mode: multiply;*/
 }
 
-tab-item.active {
+tab-item-substance.active {
   --throbber-color: HighlightText;
   --tab-border: Highlight;
   --tab-surface: var(--tab-surface-active);
@@ -75,7 +75,7 @@ tab-item.active {
   --tab-text-inverted: var(--tab-surface-active);
 }
 
-tab-item:not(.active) {
+tab-item-substance:not(.active) {
   --throbber-color: Highlight;
 }
 
@@ -100,11 +100,11 @@ tab-item[type="group"] {
 
 /* tab-closebox */
 
-tab-item tab-closebox:hover {
+tab-item-substance tab-closebox:hover {
   --tab-text: HighlightText;
   opacity: 0.75;
 }
-tab-item tab-closebox:hover::before {
+tab-item-substance tab-closebox:hover::before {
   --tab-text: Highlight;
   border-radius: 0;
   height: calc(var(--svg-small-icon-size) + 0.3em);
@@ -114,26 +114,26 @@ tab-item tab-closebox:hover::before {
   width: calc(var(--svg-small-icon-size) + 0.3em);
 }
 
-tab-item.active tab-closebox:hover {
+tab-item-substance.active tab-closebox:hover {
   --tab-text: Highlight;
   opacity: 0.5;
 }
-tab-item.active tab-closebox:hover::before {
+tab-item-substance.active tab-closebox:hover::before {
   --tab-text: HighlightText;
 }
 
 
 /* hide regular active tab marker */
-tab-item:not(.bundled-active) .highlighter::before {
+tab-item-substance:not(.bundled-active) .highlighter::before {
   display: none !important;
 }
 
-tab-item.bundled-active:not(.highlighted) .highlighter::before {
+tab-item-substance.bundled-active:not(.highlighted) .highlighter::before {
   opacity: 1;
 }
 
 
-tab-item.active tab-label {
+tab-item-substance.active tab-label {
   text-decoration: underline;
   text-decoration-color: transparent;
   text-underline-offset: 0.25em;

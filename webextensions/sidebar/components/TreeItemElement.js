@@ -378,7 +378,7 @@ export class TreeItemElement extends HTMLElement {
       return;
 
     this.insertAdjacentHTML('beforeend', `
-      <span class="separator"></span>
+      <span class="split-tab-separator"></span>
       <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="secondary" draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
       <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="split-substances-container"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
     `);

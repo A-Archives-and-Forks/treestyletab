@@ -473,7 +473,7 @@ tab-item.faviconized .contextual-identity-marker {
 }
 
 /* split view separator */
-tab-item.split-view:not(.has-active-substance) .separator {
+tab-item.split-view:not(.has-active-substance) .split-tab-separator {
   border-left: 1px solid var(--tab-text);
   height: calc(100% - (var(--tab-vertical-padding) * 2));
   margin-block-start: var(--tab-vertical-padding);

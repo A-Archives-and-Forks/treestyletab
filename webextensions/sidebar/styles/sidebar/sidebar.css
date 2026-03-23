@@ -63,7 +63,7 @@
     --tab-vertical-padding: 0.075em; /* We should define this as a variable to reuse calculation of extra tab contents size. */
   }
 
-  tab-item:not(.active) {
+  tab-item-substance:not(.active) {
     --throbber-color: var(--dropmarker-border-color);
     --throbber-shadow-color: white;
   }
@@ -163,35 +163,29 @@ tab-item[type="group"] {
   }
 }
 
-tab-item.active {
+tab-item-substance.active {
   --tab-surface: var(--tab-surface-active-gradient);
-}
-tab-item.active tab-item-substance {
   background: var(--tab-surface);
   border-block-start: 1px solid var(--tab-surface-active-color);
 }
 
-tab-item.bundled-active {
+tab-item-substance.bundled-active {
   --tab-surface: var(--tab-surface-active-gradient-pale);
-}
-tab-item.bundled-active tab-item-substance {
   background: var(--tab-surface);
   border-block-start: 1px solid var(--tab-surface-active-color-pale);
 }
 
-:root:not(.active) tab-item.active {
+:root:not(.active) tab-item-substance.active {
   --tab-surface: var(--tab-surface-active-gradient-inactive);
-}
-:root:not(.active) tab-item.active tab-item-substance {
   background: var(--tab-surface);
   border-block-start: 1px solid var(--tab-surface-active-color-inactive);
 }
 
-.sticky-tabs-container tab-item:not(.active):not(.bundled-active) .background.base {
+.sticky-tabs-container tab-item-substance:not(.active):not(.bundled-active) .background.base {
   background: var(--tabbar-bg, var(--bg-color, ButtonFace));
   box-shadow: 0 0 0.4em rgba(0, 0, 0, 0.2);
 }
-:root:not(.active) .sticky-tabs-container tab-item:not(.active):not(.bundled-active) .background.base {
+:root:not(.active) .sticky-tabs-container tab-item-substance:not(.active):not(.bundled-active) .background.base {
   background: var(--tabbar-bg, var(--bg-color-inactive, ButtonFace));
 }
 
@@ -207,7 +201,7 @@ tab-item[data-next-group-color] {
 }
 
 
-tab-item:not(.faviconized).active tab-sound-button::after {
+tab-item:not(.faviconized) tab-item-substance.active tab-sound-button::after {
   --tab-text: white;
 }
 
@@ -230,7 +224,7 @@ tab-closebox:active {
   opacity: 0.46;  /* turn black into #8a8a8a */
 }
 
-tab-item.active tab-closebox {
+tab-item-substance.active tab-closebox {
   background-image: url("closetab-white.png");
   opacity: 1;
 }
@@ -240,7 +234,7 @@ tab-item.active tab-closebox {
    We need to apply text-shadow for .label-content instead of tab-label
    because transparent underline for the high contrast mode should not
    have text-shadow. */
-tab-item tab-label .label-content {
+tab-item-substance tab-label .label-content {
   font-weight: normal;
   line-height: 1.4;
   color: var(--tab-text);
@@ -252,13 +246,13 @@ tab-item tab-label .label-content {
   padding-inline: 0;
 }
 
-tab-item.active tab-label .label-content {
+tab-item-substance.active tab-label .label-content {
   font-weight: bold;
   color: var(--tab-text-active);
   text-shadow: var(--tab-text-shadow);
 }
 
-tab-item.active tab-twisty {
+tab-item-substance.active tab-twisty {
   color: white;
 }
 
@@ -283,7 +277,7 @@ tab-item.active tab-twisty {
   text-align: center;
 }
 
-tab-item.active .counter {
+tab-item-substance.active .counter {
   background-color: var(--tab-text-active);
   color: var(--badge-bg-color);
 }
@@ -291,7 +285,7 @@ tab-item.active .counter {
 :root:not(.active) .counter {
   background-color: var(--badge-bg-color-inactive);
 }
-:root:not(.active) tab-item.active .counter {
+:root:not(.active) tab-item-substance.active .counter {
   background-color: var(--tab-text-active);
   color: var(--badge-color-inactive);
 }
@@ -301,7 +295,7 @@ tab-item.active .counter {
 /* Drag'n'drop styling */
 
 /* Round blue rectangle around tabs that are dropping targets. */
-tab-item[data-drop-position="self"]:not([data-next-group-color]) tab-item-substance {
+tab-item[data-drop-position="self"]:not([data-next-group-color]) tab-item-substance.primary {
   background: var(--dropmarker-bg-color);
   border: 2px solid var(--dropmarker-border-color); /* not OSX's colour but Firefox's */
   border-radius: 0.3em;
@@ -311,7 +305,7 @@ tab-item[data-drop-position="self"]:not([data-next-group-color]) tab-item-substa
 }
 
 /* White-blue-white separator for drop indicator. */
-tab-item[data-drop-position]:not([data-drop-position="self"]) tab-item-substance::before {
+tab-item[data-drop-position]:not([data-drop-position="self"]) tab-item-substance.primary::before {
   background: transparent !important;
   max-height: 6px;
   min-height: 6px;
@@ -319,12 +313,12 @@ tab-item[data-drop-position]:not([data-drop-position="self"]) tab-item-substance
   border-image-outset: 6px 0 0 0;
 }
 
-tab-item:not(.faviconized)[data-drop-position="before"] tab-item-substance::before {
+tab-item:not(.faviconized)[data-drop-position="before"] tab-item-substance.primary::before {
   top: 6px;
 }
 
 
-:root.mutiple-highlighted tab-item:not(.highlighted) tab-item-substance {
+:root.mutiple-highlighted tab-item-substance:not(.highlighted) {
   opacity: 0.5;
 }
 
@@ -349,7 +343,7 @@ tab-item:not(.faviconized)[data-drop-position="before"] tab-item-substance::befo
 
 
 /* for Multiple Tab Handler */
-tab-item:not(.active)[multipletab-ready-to-close="true"] tab-item-substance:not(:hover) tab-closebox {
+tab-item[multipletab-ready-to-close="true"] tab-item-substance:not(.active):not(:hover) tab-closebox {
   visibility: visible;
 }
 
@@ -363,7 +357,7 @@ tab-item:not(.active)[multipletab-ready-to-close="true"] tab-item-substance:not(
 
 /* multiselection of tabs */
 
-:root.mutiple-highlighted tab-item.highlighted tab-item-substance::after {
+:root.mutiple-highlighted tab-item-substance.highlighted::after {
   background: var(--multiselected-color);
   bottom: 0;
   content: " ";
@@ -375,4 +369,15 @@ tab-item:not(.active)[multipletab-ready-to-close="true"] tab-item-substance:not(
   position: absolute;
   top: 0;
   z-index: 10;
+}
+
+
+/* split view separator */
+tab-item.split-view:not(.has-active-substance) .split-tab-separator {
+  border-left: 1px solid var(--tab-text);
+  height: calc(100% - (var(--tab-vertical-padding) * 2));
+  margin-block-start: var(--tab-vertical-padding);
+  margin-inline-end: -1px;
+  opacity: 0.5;
+  width: 0px;
 }

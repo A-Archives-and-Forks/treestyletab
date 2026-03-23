@@ -80,8 +80,8 @@ tab-item.pinned tab-item-substance {
 :root.regular .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-end: 0.35em;
 }
-:root.regular tab-item:not(.pinned)[data-parent-id] tab-item-substance,
-:root.regular tab-item:not(.pinned)[data-group-id]:not([data-group-id="-1"]) tab-item-substance {
+:root.regular tab-item:not(.pinned) tab-item-substance[data-parent-id],
+:root.regular tab-item:not(.pinned) tab-item-substance[data-group-id]:not([data-group-id="-1"]) {
   border-inline-start-width: 1px;
 }
 
@@ -90,8 +90,8 @@ tab-item.pinned tab-item-substance {
 :root.inverted .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-start: 0.35em;
 }
-:root.inverted tab-item:not(.pinned)[data-parent-id] tab-item-substance,
-:root.inverted tab-item:not(.pinned)[data-group-id]:not([data-group-id="-1"]) tab-item-substance {
+:root.inverted tab-item:not(.pinned) tab-item-substance[data-parent-id],
+:root.inverted tab-item:not(.pinned) tab-item-substance[data-group-id]:not([data-group-id="-1"]) {
   border-inline-end-width: 1px;
 }
 
@@ -187,7 +187,7 @@ tab-item {
 
 
 
-tab-item.active tab-closebox:hover::before {
+tab-item-substance.active tab-closebox:hover::before {
   background: var(--tab-text);
 }
 
@@ -211,7 +211,7 @@ tab-item.active tab-closebox:hover::before {
   --multiselected-color: Highlight;
 }
 
-:root.mutiple-highlighted tab-item.highlighted tab-item-substance::after {
+:root.mutiple-highlighted tab-item tab-item-substance.highlighted::after {
   background: var(--multiselected-color);
   bottom: 0;
   content: " ";
@@ -232,6 +232,16 @@ tab-item:not(.faviconized) .highlighter::after {
    top: calc(var(--tab-highlighter-size) * 2);
 }
 
-tab-item[data-child-ids].subtree-collapsed.highlighted.some-descendants-highlighted .highlighter::after {
+tab-item[data-child-ids].subtree-collapsed tab-item-substance.highlighted.some-descendants-highlighted .highlighter::after {
   width: calc(var(--tab-highlighter-size) * 2);
+}
+
+
+/* split view separator */
+tab-item.split-view .split-tab-separator {
+  border-left: 1px solid var(--tab-border);
+  height: 100%;
+  margin-inline-end: -1px;
+  width: 0px;
+  z-index: calc(var(--tab-base-z-index) + 10);
 }

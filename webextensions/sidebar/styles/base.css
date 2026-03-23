@@ -607,6 +607,10 @@ tab-item-substance {
   }
 }
 
+.split-tab-separator {
+  pointer-events: none;
+}
+
 
 /* auto-hidden scrollbar placeholder workaround */
 :root.regular.shift-tabs-for-scrollbar-only-on-hover.on-scrollbar-area:hover,
