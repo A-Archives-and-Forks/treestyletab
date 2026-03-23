@@ -25,6 +25,7 @@ import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabsGroup from './tabs-group.js';
 import * as Tree from './tree.js';
 import * as TreeStructure from './tree-structure.js';
+import * as TreeTransaction from './tree-transaction.js';
 
 function log(...args) {
   internalLogger('background/handle-moved-tabs', ...args);
@@ -91,10 +92,28 @@ Tab.onMoving.addListener((tab, moveInfo) => {
 });
 
 async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
+  if (moveInfo.splitViewReversed) {
+    log('tryFixupTreeForInsertedTab: re-attach children: ', moveInfo.newSubSplitViewTab.id, ' => ', moveInfo.newMainSplitViewTab.id);
+    await TreeTransaction.run(async () => {
+      const children = moveInfo.newSubSplitViewTab.$TST.children;
+      await Tree.detachAllChildren(moveInfo.newSubSplitViewTab, {
+        behavior: Constants.kPARENT_TAB_OPERATION_BEHAVIOR_PROMOTE_ALL_CHILDREN,
+      });
+      for (const child of children) {
+        await Tree.attachTabTo(child, moveInfo.newMainSplitViewTab, {
+          dontMove: true,
+          justNow:  true,
+        });
+      }
+    }, { justNow: true });
+    return;
+  }
+
   if (tab.$TST.mainSplitViewTab) {
     log('tryFixupTreeForInsertedTab: ignore split view tab: ', tab);
     return;
   }
+
   const internalGroupMoveCount = NativeTabGroups.internallyMovingNativeTabGroups.get(tab.groupId);
   if (internalGroupMoveCount) {
     log('tryFixupTreeForInsertedTab: ignore internal move of tab groups ', internalGroupMoveCount);

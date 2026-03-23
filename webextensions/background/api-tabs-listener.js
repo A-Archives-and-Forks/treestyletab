@@ -997,6 +997,14 @@ async function onMoved(tabId, moveInfo) {
 
     const alreadyMoved = win.consumeAlreadyMoved(tabId, moveInfo.toIndex);
 
+    const pairedTab = movedTab.$TST.pairedSplitViewTab;
+    const splitViewReversed = pairedTab && pairedTab.index == moveInfo.toIndex;
+    const newMainSplitViewTab = !splitViewReversed ? null :
+      moveInfo.fromIndex > moveInfo.toIndex ? movedTab :
+        pairedTab;
+    const newSubSplitViewTab = !splitViewReversed ? null :
+      moveInfo.fromIndex < moveInfo.toIndex ? movedTab :
+        pairedTab;
     const extendedMoveInfo = {
       ...moveInfo,
       byInternalOperation: maybeInternalOperation,
@@ -1007,6 +1015,9 @@ async function onMoved(tabId, moveInfo) {
       // in the horizontal tab bar, or addons like
       // https://addons.mozilla.org/firefox/addon/move-tab-hotkeys/
       movedInBulk:         !maybeInternalOperation && (movedTab.$TST.multiselected || movedTab.$TST.movedInBulk),
+      splitViewReversed,
+      newMainSplitViewTab,
+      newSubSplitViewTab,
     };
     log('tabs.onMoved: ', movedTab, extendedMoveInfo);
 
