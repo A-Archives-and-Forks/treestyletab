@@ -214,6 +214,7 @@ export function setTabActive(tab) {
   tab.$TST.removeState(Constants.kTAB_STATE_NOT_ACTIVATED_SINCE_LOAD);
   tab.$TST.removeState(Constants.kTAB_STATE_UNREAD, { permanently: true });
   tab.$TST.removeState(Constants.kTAB_STATE_PENDING, { broadcast: Constants.IS_BACKGROUND });
+  tab.$TST.element?.itemElement?.classList.add(Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE);
   TabsStore.activeTabsInWindow.get(tab.windowId).add(tab);
   TabsStore.activeTabInWindow.set(tab.windowId, tab);
   Tab.onActivated.dispatch(tab);
@@ -226,6 +227,7 @@ export function clearOldActiveStateInWindow(windowId, exception) {
     if (oldTab.id == exception?.id)
       continue;
     oldTab.$TST?.removeState(Constants.kTAB_STATE_ACTIVE);
+    oldTab.$TST?.element?.closest(`.${Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE}`)?.classList.remove(Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE);
     oldTab.active = false;
     oldTabs.delete(oldTab);
     Tab.onUnactivated.dispatch(oldTab);

@@ -213,8 +213,10 @@ tab-item-substance.active,
 tab-item-substance.active:hover,
 tab-item-substance.bundled-active,
 tab-item-substance.bundled-active:hover,
-.mutiple-highlighted > tab-item-substance.highlighted,
-.mutiple-highlighted > tab-item-substance.highlighted:hover {
+:root.mutiple-highlighted tab-item-substance.highlighted,
+:root.mutiple-highlighted tab-item-substance.highlighted:hover,
+tab-item.split-view.has-active-substance tab-item-substance.split-substances-container,
+tab-item.split-view:hover tab-item-substance.split-substances-container {
   --tab-surface: var(--tab-surface-active);
   --tab-surface-bgimage: var(--tab-surface-active-bgimage);
   --throbber-color: var(--throbber-color-active);
@@ -223,6 +225,8 @@ tab-item-substance.bundled-active:hover,
 }
 
 tab-item-substance:not(.active):not(.bundled-active):not(.highlighted):hover,
+tab-item.split-view.has-active-substance tab-item-substance.split-substances-container,
+tab-item.split-view:hover tab-item-substance.split-substances-container,
 .after-tabs button:hover,
 .after-tabs [role="button"]:hover,
 #subpanel-selector-anchor:hover {
@@ -233,9 +237,6 @@ tab-item-substance:not(.active):not(.bundled-active):not(.highlighted):hover,
 tab-item-substance {
   padding-block: var(--tab-vertical-padding);
   padding-inline: 0.25em;
-  /* Transparent tabs are shown above solid tabs.
-     We have to set z-index to show all tabs in the same layer. */
-  z-index: auto;
 }
 
 .after-tabs button,
@@ -243,7 +244,6 @@ tab-item-substance {
   --tab-like-button-padding: 0.2em;
   padding-block: calc(var(--tab-dropshadow-blur) + var(--tab-like-button-padding));
   padding-inline: 0;
-  z-index: 100;
 }
 
 :root.regular {
@@ -312,7 +312,8 @@ tab-item[data-next-group-color] {
   }
 }
 
-#subpanel-selector-anchor:hover::before {
+#subpanel-selector-anchor:hover::before,
+tab-item-substance.split-substances-container .background {
   bottom: 0;
   inset-inline-start: 0;
   inset-inline-end: 0;
@@ -329,17 +330,23 @@ tab-item-substance.bundled-active,
     outline-offset: -1px;
   }
 }
-.sticky-tabs-container tab-item-substance:not(.active):not(.bundled-active) .background.base {
+.sticky-tabs-container tab-item:not(.split-view) tab-item-substance:not(.active):not(.bundled-active) .background.base,
+.sticky-tabs-container tab-item.split-view tab-item-substance.split-substances-container .background.base {
   box-shadow: 0 0 var(--tab-dropshadow-blur) rgba(0, 0, 0, 0.2);
 }
 
-tab-item-substance:not(.active):not(.bundled-active):not(.highlighted):hover .background:not(.base),
+tab-item:not(.split-view) tab-item-substance:not(.active):not(.bundled-active):not(.highlighted):hover .background:not(.base),
+tab-item.split-view.has-active-substance tab-item-substance:not(.active):not(.bundled-active):not(.highlighted):hover .background:not(.base),
+tab-item.split-view.has-active-substance tab-item-substance.split-substances-container .background:not(.base),
+tab-item.split-view:hover tab-item-substance.split-substances-container .background:not(.base),
 .after-tabs button:hover::before,
 .after-tabs [role="button"]:hover::before,
 #subpanel-selector-anchor:hover::before {
   opacity: 0.11;
 }
-tab-item-substance:not(.active):not(.bundled-active):not(.highlighted)[type="group"]:not(.subtree-collapsed):hover .background:not(.base) {
+tab-item:not(.split-view) tab-item-substance:not(.active):not(.bundled-active):not(.highlighted)[type="group"]:not(.subtree-collapsed):hover .background:not(.base),
+tab-item.split-view.has-active-substance tab-item-substance:not(.active):not(.bundled-active):not(.highlighted)[type="group"]:not(.subtree-collapsed):hover .background:not(.base),
+tab-item.split-view:hover tab-item-substance:not(.active):not(.highlighted):not(.split-substances-container) .background:not(.base) {
   opacity: 0;
 }
 
@@ -360,7 +367,8 @@ tab-item-substance:not(.active):not(.bundled-active):not(.highlighted)[type="gro
 }
 
 
-.sticky-tabs-container tab-item-substance:not(.active):not(.bundled-active) .background.base {
+.sticky-tabs-container tab-item:not(.split-view) tab-item-substance:not(.active):not(.bundled-active) .background.base,
+.sticky-tabs-container tab-item.split-view tab-item-substance.split-substances-container .background.base {
   background-color: var(--browser-background, var(--tabbar-bg, var(--bg-color, ButtonFace)));
   background-image: var(--browser-bg-images, none);
   background-position: var(--browser-bg-position, left);
@@ -462,4 +470,13 @@ tab-item.faviconized .contextual-identity-marker {
   button.contextual-identities-selector-anchor::after {
     margin-block-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2 + var(--tab-dropshadow-blur) + var(--tab-like-button-padding));
   }
+}
+
+/* split view separator */
+tab-item.split-view:not(.has-active-substance) .separator {
+  border-left: 1px solid var(--tab-text);
+  height: calc(100% - (var(--tab-vertical-padding) * 2));
+  margin-block-start: var(--tab-vertical-padding);
+  margin-inline-end: -1px;
+  width: 0px;
 }

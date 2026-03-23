@@ -30,12 +30,18 @@ tab-item tab-twisty {
   z-index: var(--tab-ui-z-index);
 }
 
-tab-item.split-view tab-item-substance:nth-of-type(2) {
+tab-item.split-view {
+  tab-item-substance.secondary {
   --twisty-size: 0.75em;
 
   tab-twisty {
     visibility: hidden !important;
     pointer-events: none !important;
+  }
+  }
+
+  tab-item-substance.split-substances-container tab-twisty {
+    display: none;
   }
 }
 

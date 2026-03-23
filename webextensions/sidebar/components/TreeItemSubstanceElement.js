@@ -54,6 +54,10 @@ const NATIVE_PROPERTIES = new Set([
 ]);
 const IGNORE_CLASSES = new Set([
   'tab',
+  'primary',
+  'secondary',
+  'split-substances-container',
+  Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE,
   Constants.kTAB_STATE_SPLIT_VIEW,
 ]);
 
@@ -216,6 +220,10 @@ export class TreeItemSubstanceElement extends HTMLElement {
   }
   set $TST(value) {
     return this._$TST = value;
+  }
+
+  get itemElement() {
+    return this.parentNode;
   }
 
   get substanceElement() {
@@ -487,7 +495,7 @@ index = ${raw.index}
       const tabElement = updateTab.$TST.element;
       if (!tabElement)
         continue;
-      tabElement.substanceElement.invalidateTooltip();
+      tabElement.substanceElement?.invalidateTooltip();
       // on the "fade" mode, overflow style was already updated,
       // so we don't need to update the status here.
       if (configs.labelOverflowStyle != 'fade')

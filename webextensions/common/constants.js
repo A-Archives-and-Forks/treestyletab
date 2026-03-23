@@ -215,6 +215,7 @@ export const kTAB_STATE_ATTENTION                 = 'attention';
 export const kTAB_STATE_DISCARDED                 = 'discarded';
 export const kTAB_STATE_SELECTED                  = 'selected';
 export const kTAB_STATE_SPLIT_VIEW                = 'split-view';
+export const kTAB_STATE_HAS_ACTIVE_SUBSTANCE      = 'has-active-substance';
 export const kTAB_STATE_DRAGGING                  = 'dragging';
 export const kTAB_STATE_DUPLICATING               = 'duplicating';
 export const kTAB_STATE_DUPLICATED                = 'duplicated';

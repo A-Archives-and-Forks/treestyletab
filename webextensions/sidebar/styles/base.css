@@ -559,8 +559,11 @@ tab-item-substance {
     position: static;
   }
 
-  :root.regular tab-item:not(.pinned) & {
+  tab-item:not(.pinned) & {
     max-width: calc(100% - var(--tab-visual-indent));
+  }
+
+  :root.regular tab-item:not(.pinned) & {
     margin-inline-start: var(--tab-visual-indent);
   }
 
@@ -574,14 +577,31 @@ tab-item-substance {
     transition: none;
   }
 
-  :root.regular tab-item.split-view & {
-    max-width: calc(( 100% - var(--tab-visual-indent) ) / 2);
+  tab-item.split-view & {
+    &.primary,
+    &.secondary {
+      max-width: calc(( 100% - var(--tab-visual-indent) ) / 2);
+    }
 
-    &:nth-of-type(1) {
+    &.split-substances-container {
+      margin-inline-start: calc(0px - ( 100% - var(--tab-visual-indent) )) !important;
+      pointer-events: none;
+      z-index: calc(var(--tab-base-z-index) - 1);
+
+      .ui,
+      .highlighter,
+      .contextual-identity-marker {
+        visibility: hidden;
+      }
+    }
+  }
+
+  :root.regular tab-item.split-view & {
+    &.primary {
       margin-inline-end: 0px;
     }
 
-    &:nth-of-type(2) {
+    &.secondary {
       margin-inline-start: 0px;
     }
   }
@@ -610,11 +630,11 @@ tab-item-substance {
   }
 
   &.split-view {
-    tab-item-substance:nth-of-type(1) {
+    tab-item-substance.primary {
       margin-inline-start: 0px;
     }
 
-    tab-item-substance:nth-of-type(2) {
+    tab-item-substance.secondary {
       margin-inline-end: 0px;
     }
   }
@@ -868,7 +888,15 @@ tab-item-substance.attention tab-favicon::before {
     &.base {
       display: none;
 
-      .sticky-tabs-container & {
+      .sticky-tabs-container tab-item:not(.split-view) & {
+        display: inline-block;
+      }
+    }
+  }
+
+  tab-item-substance.split-substances-container & {
+    &.base {
+      .sticky-tabs-container tab-item.split-view & {
         display: inline-block;
       }
     }

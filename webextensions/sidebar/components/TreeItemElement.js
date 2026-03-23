@@ -32,7 +32,11 @@ const NATIVE_PROPERTIES = new Set([
 ]);
 const IGNORE_CLASSES = new Set([
   'tab',
+  'primary',
+  'secondary',
+  'split-substances-container',
   Constants.kTAB_STATE_ANIMATION_READY,
+  Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE,
   Constants.kTAB_STATE_SPLIT_VIEW,
   Constants.kTAB_STATE_SUBTREE_COLLAPSED
 ]);
@@ -47,6 +51,7 @@ export class TreeItemElement extends HTMLElement {
 
     // We should initialize private properties with blank value for better performance with a fixed shape.
     this._extraItemsContainerIndentRoot = null;
+    this._IGNORE_CLASSES_MATCHER = null;
   }
 
   static get observedAttributes() {
@@ -64,6 +69,10 @@ export class TreeItemElement extends HTMLElement {
     ];
   }
 
+  get IGNORE_CLASSES_MATCHER() {
+    return this._IGNORE_CLASSES_MATCHER ||= new RegExp(`(^|\s)(tab|${Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE}|${Constants.kTAB_STATE_SPLIT_VIEW})($|\s)`, 'g');
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue ||
         !this.substanceElement)
@@ -72,14 +81,14 @@ export class TreeItemElement extends HTMLElement {
     // we must not inherit the "tab" class because it is used for backward compatibility of tab-item
     if (name == 'class' &&
         typeof newValue == 'string') {
-      newValue = newValue.replace(/^tab\s|\stab\s|\stab$/, ' ');
+      newValue = newValue.replace(this.IGNORE_CLASSES_MATCHER, ' ') + ' primary';
     }
 
     if (newValue !== null) {
-      this.substanceElement.setAttribute(name, newValue);
+      this.substanceElement?.setAttribute(name, newValue);
     }
     else {
-      this.substanceElement.removeAttribute(name);
+      this.substanceElement?.removeAttribute(name);
     }
   }
 
@@ -120,7 +129,7 @@ export class TreeItemElement extends HTMLElement {
       <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
     */
 
-    this.insertAdjacentHTML('beforeend', `<${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>`);
+    this.insertAdjacentHTML('beforeend', `<${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="primary" draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>`);
 
     for (const name of TreeItemElement.observedAttributes) {
       if (!this.hasAttribute(name))
@@ -129,9 +138,9 @@ export class TreeItemElement extends HTMLElement {
       // we must not inherit the "tab" class because it is used for backward compatibility of tab-item
       let value = this.getAttribute(name);
       if (name == 'class') {
-        value = value.replace(/^tab\s|\stab\s|\stab$/, ' ');
+        value = value.replace(this.IGNORE_CLASSES_MATCHER, ' ') + ' primary';
       }
-      this.substanceElement.setAttribute(name, value);
+      this.substanceElement?.setAttribute(name, value);
     }
 
     this.removeAttribute('draggable');
@@ -185,12 +194,16 @@ export class TreeItemElement extends HTMLElement {
       this.substanceElement.$TST = value;
   }
 
-  get substanceElement() {
-    return this.querySelector(kTREE_ITEM_SUBSTANCE_ELEMENT_NAME);
+  get itemElement() {
+    return this;
   }
 
-  get pairedTabSubstanceElement() {
-    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}:nth-of-type(2)`);
+  get substanceElement() {
+    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.primary`);
+  }
+
+  get secondarySubstanceElement() {
+    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.secondary`);
   }
 
   get twisty() {
@@ -360,11 +373,25 @@ export class TreeItemElement extends HTMLElement {
     }
   }
 
-  ensurePairedTabSubstanceElement() {
-    if (this.pairedTabSubstanceElement)
+  ensureSplit() {
+    if (this.secondarySubstanceElement)
       return;
 
-    this.insertAdjacentHTML('beforeend', `<${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>`);
+    this.insertAdjacentHTML('beforeend', `
+      <span class="separator"></span>
+      <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="secondary" draggable="true"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
+      <${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME} class="split-substances-container"></${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}>
+    `);
+  }
+
+  clearSplit() {
+    const secondarySubstance = this.secondarySubstanceElement;
+    if (!secondarySubstance)
+      return;
+
+    secondarySubstance.previousElementSibling?.remove();
+    secondarySubstance.nextElementSibling?.remove();
+    secondarySubstance.remove();
   }
 
   _updateDescendantsHighlighted() {
@@ -551,6 +578,6 @@ export class TreeItemElement extends HTMLElement {
     this.querySelector(`.native-tab-group-line`)?.remove();
     this.substanceElement?.cleanup();
 
-    this.pairedTabSubstanceElement?.remove();
+    this.clearSplit();
   }
 }
