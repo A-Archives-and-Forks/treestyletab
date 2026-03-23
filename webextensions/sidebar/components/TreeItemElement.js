@@ -388,13 +388,10 @@ export class TreeItemElement extends HTMLElement {
   }
 
   clearSplit() {
-    const substance = this.subSplitViewSubstanceElement;
-    if (!substance)
-      return;
-
-    substance.previousElementSibling?.remove();
-    substance.nextElementSibling?.remove();
-    substance.remove();
+    this.subSplitViewSubstanceElement?.remove();
+    for (const element of this.querySelectorAll(`.split-substances-container, .split-tab-separator`)) {
+      element.remove();
+    }
   }
 
   _updateDescendantsHighlighted() {

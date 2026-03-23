@@ -246,6 +246,7 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
 
   if (item.$TST.element &&
       item.$TST.element.localName != kTREE_ITEM_ELEMENT_NAME) {
+    item.$TST.mainSplitViewTab?.$TST.element.clearSplit();
     unrenderItem(item);
   }
 
@@ -371,7 +372,8 @@ function updateSplitView(item) {
   if (mainTab || subTab) {
     const mainElement = (mainTab || item).$TST.element;
     if (mainElement) {
-      unrenderItem(subTab);
+      if (subTab.$TST?.element?.localName == kTREE_ITEM_ELEMENT_NAME)
+        unrenderItem(subTab);
       mainElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
       mainElement.ensureSplit();
       if (!subTab.active && subTab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
@@ -488,11 +490,12 @@ export function unrenderItem(item) {
     mUnrenderedItemIds.clear();
   }
 
-  if (!itemElement ||
-      !itemElement.parentNode)
+  if (!itemElement)
     return false;
 
-  itemElement.remove();
+  if (itemElement.parentNode)
+    itemElement.remove();
+
   item.$TST.unbindElement();
 
   if (itemElement.localName == kTREE_ITEM_ELEMENT_NAME) {
