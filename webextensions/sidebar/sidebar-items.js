@@ -244,6 +244,11 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     return modified;
   }
 
+  if (item.$TST.element &&
+      item.$TST.element.localName != kTREE_ITEM_ELEMENT_NAME) {
+    unrenderItem(item);
+  }
+
   let created = false;
   if (!item.$TST.element ||
       !item.$TST.element.parentNode) {
@@ -802,9 +807,16 @@ Tab.onNativeGroupModified.addListener(async tab => {
 });
 
 Tab.onSplitViewModified.addListener(tab => {
-  if (tab.$TST.element) {
-    updateSplitView(tab);
+  if (!tab.$TST.element) {
+    return;
   }
+
+  if (tab.$TST.element.localName != kTREE_ITEM_ELEMENT_NAME &&
+      tab.$TST.subSplitViewTab) {
+    unrenderItem(tab);
+  }
+
+  updateSplitView(tab);
 });
 
 
