@@ -169,9 +169,9 @@ function getDragDataFromOneItem(item, options = {}) {
   const tab  = item.$TST.tab;
   const tabs = items.filter(item => item.type == TreeItem.TYPE_TAB);
   return {
-    item,
+    item:           item?.$TST.mainSplitViewTab || item,
     items,
-    tab,
+    tab:            tab?.$TST.mainSplitViewTab || tab,
     tabs,
     structure:      TreeBehavior.getTreeStructureFromTabs(tabs),
     nextGroupColor: TabGroup.getNextUnusedColor(),
@@ -188,10 +188,15 @@ function getDraggedItemsFromOneItem(item, { asTree } = {}) {
   if (item.$TST.multiselected) {
     return Tab.getSelectedTabs(item.windowId);
   }
+  const mainTab = item.$TST.mainSplitViewTab;
+  const subTab  = item.$TST.subSplitViewTab;
+  const tabs    = mainTab ? [mainTab, item] :
+    subTab ? [item, subTab] :
+      [item];
   if (asTree) {
-    return [item].concat(item.$TST.descendants);
+    return tabs.concat(item.$TST.descendants);
   }
-  return [item];
+  return tabs;
 }
 
 function sanitizeDragData(dragData) {
@@ -822,6 +827,8 @@ function onDragStart(event, options = {}) {
     configs.workaroundForBug1548949DroppedItems = '';
 
   let draggedItem = options.item || EventUtils.getTreeItemFromEvent(event);
+  draggedItem = draggedItem?.$TST.mainSplitViewTab || draggedItem;
+  log('onDragStart: draggedItem = ', draggedItem);
   let behavior = 'behavior' in options ? options.behavior :
     event.shiftKey ? configs.tabDragBehaviorShift :
       configs.tabDragBehavior;
