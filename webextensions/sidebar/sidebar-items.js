@@ -326,20 +326,24 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     reserveToNotifyItemsRendered();
   }
 
-  const subTab = item.$TST.subSplitViewTab;
-  if (subTab) {
-    itemElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
-    itemElement.ensureSplit();
-    if (!subTab.active && subTab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
-      console.log('WARNING: Inactive paired item has invalid "active" state! ', subTab.id)
-      subTab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
+  const mainTab = item.$TST.mainSplitViewTab;
+  const subTab  = (mainTab || item).$TST.subSplitViewTab;
+  if (mainTab || subTab) {
+    const mainElement = (mainTab || item).$TST.element;
+    if (mainElement) {
+      mainElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
+      mainElement.ensureSplit();
+      if (!subTab.active && subTab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
+        console.log('WARNING: Inactive paired item has invalid "active" state! ', subTab.id)
+        subTab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
+      }
+      initalizeItemElement(subTab, mainElement.subSplitViewSubstanceElement)
+      subTab.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
+      subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
+      subTab.$TST.applyStatesToElement();
     }
-    initalizeItemElement(subTab, itemElement.subSplitViewSubstanceElement)
-    subTab.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
-    subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
-    subTab.$TST.applyStatesToElement();
   }
-  else if (!item.$TST.mainSplitViewTab) {
+  else {
     item.$TST.pairedSplitViewTab?.unbindElement();
     if (itemElement.localName == kTREE_ITEM_ELEMENT_NAME) {
       itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
