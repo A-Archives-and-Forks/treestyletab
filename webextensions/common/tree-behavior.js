@@ -141,6 +141,8 @@ export function calculateReferenceItemsFromInsertionPosition(
   let lastItem  = (Array.isArray(item) ? item[item.length - 1] : item) || item;
   firstItem = firstItem?.type == TreeItem.TYPE_GROUP && firstItem.$TST?.nativeTabGroup || firstItem;
   lastItem = lastItem?.type == TreeItem.TYPE_GROUP && lastItem?.$TST?.nativeTabGroup?.collapsed && lastItem?.$TST?.nativeTabGroup || lastItem;
+  insertBefore = insertBefore?.$TST.precedingPairedSplitViewTab || insertBefore;
+  insertAfter  = insertAfter?.$TST.followingPairedSplitViewTab || insertAfter;
   log('calculateReferenceItemsFromInsertionPosition ', {
     firstItem:    firstItem?.id,
     lastItem:     lastItem?.id,
@@ -186,9 +188,9 @@ export function calculateReferenceItemsFromInsertionPosition(
     */
     if (insertBefore.type == TreeItem.TYPE_GROUP) {
       log('calculateReferenceItemsFromInsertionPosition: from insertBefore, special case for a group item');
-      return {
+      return sanitizeReferenceTabsForSplitView({
         insertBefore,
-      };
+      });
     }
     let prevItem = insertBefore &&
       (configs.fixupTreeOnTabVisibilityChanged ?
@@ -201,9 +203,9 @@ export function calculateReferenceItemsFromInsertionPosition(
           firstItem?.$TST.unsafeNearestExpandedPrecedingTab;
     if (!prevItem) {
       log('calculateReferenceItemsFromInsertionPosition: from insertBefore, CASE 1/5');
-      return {
+      return sanitizeReferenceTabsForSplitView({
         insertBefore,
-      };
+      });
     }
     else {
       const prevLevel   = Number(prevItem?.$TST?.getAttribute(Constants.kLEVEL) || 0);
@@ -233,11 +235,11 @@ export function calculateReferenceItemsFromInsertionPosition(
           }
         }
       }
-      const result = {
+      const result = sanitizeReferenceTabsForSplitView({
         parent,
         insertAfter: prevItem,
         insertBefore
-      };
+      });
       log(' => ', result);
       return result;
     }
@@ -296,19 +298,19 @@ export function calculateReferenceItemsFromInsertionPosition(
       let result;
       if (context == Constants.kINSERTION_CONTEXT_MOVED) {
         log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 1');
-        result = {
+        result = sanitizeReferenceTabsForSplitView({
           parent:       insertAfter?.$TST?.parent,
           insertBefore: unsafeNextItem,
           insertAfter
-        };
+        });
       }
       else {
         log('calculateReferenceItemsFromInsertionPosition: from insertAfter, CASE 5');
-        result = {
+        result = sanitizeReferenceTabsForSplitView({
           parent:       firstItem?.$TST?.parent && insertAfter?.$TST?.parent,
           insertBefore: unsafeNextItem,
           insertAfter
-        };
+        });
       }
       log(' => ', result);
       return result;
@@ -335,16 +337,29 @@ export function calculateReferenceItemsFromInsertionPosition(
           }
         }
       }
-      const result = {
+      const result = sanitizeReferenceTabsForSplitView({
         parent,
         insertBefore: unsafeNextItem || nextItem,
         insertAfter
-      };
+      });
       log(' => ', result);
       return result;
     }
   }
   throw new Error('calculateReferenceItemsFromInsertionPosition requires one of insertBefore or insertAfter parameter!');
+}
+
+export function sanitizeReferenceTabsForSplitView({ parent, insertBefore, insertAfter }) {
+  parent       = parent?.$TST.precedingPairedSplitViewTab || parent;
+  insertBefore = insertBefore?.$TST.precedingPairedSplitViewTab || insertBefore;
+  insertAfter  = insertAfter?.$TST.followingPairedSplitViewTab || insertAfter;
+  if (insertAfter &&
+      ((parent &&
+        insertBefore == parent) ||
+       (insertBefore &&
+        insertBefore == insertAfter?.$TST.precedingPairedSplitViewTab)))
+    insertBefore = parent?.$TST.firstChild;
+  return { parent, insertBefore, insertAfter };
 }
 
 

@@ -14,9 +14,8 @@ tab-item.dragging {
   opacity: 0.5 !important;
 }
 
-tab-item[data-drop-position="self"] {
-  &:not([data-next-group-color]):not(.split-view) tab-item-substance.primary,
-  &:not([data-next-group-color]).split-view tab-item-substance.split-substances-container {
+tab-item-substance[data-drop-position="self"] {
+  tab-item:not([data-next-group-color]) & {
     outline: var(--tab-dropmarker-size) solid var(--tab-dropmarker) !important;
     outline-offset: calc(0px - var(--tab-dropmarker-size));
     -moz-outline-radius: calc(var(--tab-dropmarker-size) * 2);

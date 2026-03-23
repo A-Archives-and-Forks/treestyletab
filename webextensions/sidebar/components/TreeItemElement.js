@@ -66,6 +66,7 @@ export class TreeItemElement extends HTMLElement {
       Constants.kCURRENT_URI,
       Constants.kCURRENT_FAVICON_URI,
       Constants.kCONTEXTUAL_IDENTITY_NAME,
+      Constants.kDROP_POSITION,
     ];
   }
 

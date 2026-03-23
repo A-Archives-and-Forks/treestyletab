@@ -143,6 +143,9 @@ export const kCURRENT_FAVICON_URI = 'data-current-favicon-uri';
 export const kCONTEXTUAL_IDENTITY_NAME = 'data-contextual-identity-name';
 export const kMAX_TREE_LEVEL = 'data-max-tree-level';
 export const kLABEL_OVERFLOW = 'data-label-overflow';
+export const kDROP_POSITION        = 'data-drop-position';
+export const kINLINE_DROP_POSITION = 'data-inline-drop-position';
+export const kNEXT_GROUP_COLOR     = 'data-next-group-color';
 
 export const kPERSISTENT_ID            = 'data-persistent-id';
 export const kPERSISTENT_ANCESTORS     = 'ancestors';

@@ -636,6 +636,10 @@ function getScrollBoxFor(item, { allowFallback } = {}) {
 }
 
 export function getItemRect(item, { afterAnimation } = {}) {
+  const pairedTab = item?.$TST.precedingPairedSplitViewTab;
+  if (pairedTab)
+    return getItemRect(pairedTab, { afterAnimation });
+
   if (item.pinned)
     return item.$TST.element.getBoundingClientRect();
 

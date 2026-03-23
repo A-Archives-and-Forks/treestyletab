@@ -71,10 +71,6 @@ const kDROP_HEAD    = 'head';
 const kDROP_TAIL    = 'tail';
 const kDROP_IMPOSSIBLE = 'impossible';
 
-const kDROP_POSITION = 'data-drop-position';
-const kINLINE_DROP_POSITION = 'data-inline-drop-position';
-const kNEXT_GROUP_COLOR = 'data-next-group-color';
-
 let mLongHoverExpandedTabs = [];
 let mLongHoverTimer;
 let mLongHoverTimerNext;
@@ -556,6 +552,10 @@ function getDropAction(event) {
         const neck = substanceLeft + Size.getFavIconSize();
         info.inlineDropPosition = event.clientX < neck ? kDROP_HEAD : kDROP_TAIL;
       }
+      const sanitized = TreeBehavior.sanitizeReferenceTabsForSplitView(info);
+      info.parent       = sanitized.parent;
+      info.insertBefore = sanitized.insertBefore;
+      info.insertAfter  = sanitized.insertAfter;
       if (configs.debug)
         log(' calculated info: ', info);
     }; break;
@@ -567,12 +567,9 @@ function getDropAction(event) {
         insertBefore: targetItem.$TST.firstMember || targetItem,
       });
       log('referenceItems ', referenceItems);
-      if (referenceItems.parent)
-        info.parent = referenceItems.parent;
-      if (referenceItems.insertBefore)
-        info.insertBefore = referenceItems.insertBefore;
-      if (referenceItems.insertAfter)
-        info.insertAfter = referenceItems.insertAfter;
+      info.parent       = referenceItems.parent;
+      info.insertBefore = referenceItems.insertBefore;
+      info.insertAfter  = referenceItems.insertAfter;
       info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH);
       //if (info.insertBefore)
       //  log('insertBefore = ', dumpTab(info.insertBefore));
@@ -601,12 +598,9 @@ function getDropAction(event) {
         insertAfter: targetItem.$TST.lastMember || (targetItem.$TST.subtreeCollapsed && targetItem.$TST.lastDescendant || targetItem),
       });
       log('referenceItems ', referenceItems);
-      if (referenceItems.parent)
-        info.parent = referenceItems.parent;
-      if (referenceItems.insertBefore)
-        info.insertBefore = referenceItems.insertBefore;
-      if (referenceItems.insertAfter)
-        info.insertAfter = referenceItems.insertAfter;
+      info.parent       = referenceItems.parent;
+      info.insertBefore = referenceItems.insertBefore;
+      info.insertAfter  = referenceItems.insertAfter;
       info.action = Constants.kACTION_MOVE | (info.parent ? Constants.kACTION_ATTACH : Constants.kACTION_DETACH);
       if (info.insertBefore) {
         /* strategy
@@ -691,9 +685,9 @@ const mDropPositionHolderItems = new Set();
 
 function clearDropPosition() {
   for (const tab of mDropPositionHolderItems) {
-    tab.$TST.removeAttribute(kDROP_POSITION);
-    tab.$TST.removeAttribute(kINLINE_DROP_POSITION);
-    tab.$TST.removeAttribute(kNEXT_GROUP_COLOR);
+    tab.$TST.removeAttribute(Constants.kDROP_POSITION);
+    tab.$TST.removeAttribute(Constants.kINLINE_DROP_POSITION);
+    tab.$TST.removeAttribute(Constants.kNEXT_GROUP_COLOR);
   }
   mDropPositionHolderItems.clear();
   configs.lastDragOverSidebarOwnerWindowId = null;
@@ -1258,17 +1252,17 @@ function onDragOver(event) {
       return;
     }
     clearDropPosition();
-    dropPositionTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
-    dropPositionTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
+    dropPositionTargetItem.$TST.setAttribute(Constants.kDROP_POSITION, info.dropPosition);
+    dropPositionTargetItem.$TST.setAttribute(Constants.kINLINE_DROP_POSITION, info.inlineDropPosition);
     mDropPositionHolderItems.add(dropPositionTargetItem);
     if (info.canCreateGroup(event)) {
-      dropPositionTargetItem.$TST.setAttribute(kNEXT_GROUP_COLOR, dragData.nextGroupColor);
+      dropPositionTargetItem.$TST.setAttribute(Constants.kNEXT_GROUP_COLOR, dragData.nextGroupColor);
     }
     const substanceTargetItem = info.substanceTargetItem;
     if (substanceTargetItem &&
         info.dropPosition == kDROP_ON_SELF) {
-      substanceTargetItem.$TST.setAttribute(kDROP_POSITION, info.dropPosition);
-      substanceTargetItem.$TST.setAttribute(kINLINE_DROP_POSITION, info.inlineDropPosition);
+      substanceTargetItem.$TST.setAttribute(Constants.kDROP_POSITION, info.dropPosition);
+      substanceTargetItem.$TST.setAttribute(Constants.kINLINE_DROP_POSITION, info.inlineDropPosition);
       mDropPositionHolderItems.add(substanceTargetItem);
     }
     mLastDropPosition = dropPosition;
@@ -1350,7 +1344,7 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }
 
       const dragOverItem = Tab.get(dragOverItemId);
       if (!dragOverItem ||
-          dragOverItem.$TST.getAttribute(kDROP_POSITION) != 'self')
+          dragOverItem.$TST.getAttribute(Constants.kDROP_POSITION) != 'self')
         return;
 
       // auto-switch for staying on tabs
