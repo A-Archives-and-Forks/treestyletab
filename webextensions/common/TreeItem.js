@@ -215,6 +215,9 @@ export class TreeItem {
   set possibleOpenerBookmarks(value) { mPossibleOpenerBookmarks.set(this.id, value); }
 
   bindElement(element) {
+    if (!element)
+      return;
+
     element.$TST   = this;
     element.apiRaw = this.raw;
     this.element = element;

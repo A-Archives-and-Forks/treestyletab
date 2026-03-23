@@ -371,9 +371,9 @@ function updateSplitView(item) {
   if (mainTab || subTab) {
     const mainElement = (mainTab || item).$TST.element;
     if (mainElement) {
+      unrenderItem(subTab);
       mainElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
       mainElement.ensureSplit();
-      unrenderItem(subTab);
       if (!subTab.active && subTab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
         console.log('WARNING: Inactive sub split view item has invalid "active" state! ', subTab.id)
         subTab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);

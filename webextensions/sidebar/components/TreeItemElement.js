@@ -200,11 +200,13 @@ export class TreeItemElement extends HTMLElement {
   }
 
   get substanceElement() {
-    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.split-view-main`);
+    // The "split-view-main" class may be missing while updagin, so fallback to the position-based selector.
+    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.split-view-main, ${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}:nth-of-type(1)`);
   }
 
   get subSplitViewSubstanceElement() {
-    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.split-view-sub`);
+    // The "split-view-sub" class may be missing while updagin, so fallback to the position-based selector.
+    return this.querySelector(`${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}.split-view-sub, ${kTREE_ITEM_SUBSTANCE_ELEMENT_NAME}:nth-of-type(2)`);
   }
 
   get twisty() {
