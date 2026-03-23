@@ -491,14 +491,14 @@ export function unrenderItem(item) {
   item.$TST.unbindElement();
 
   if (itemElement.localName == kTREE_ITEM_ELEMENT_NAME) {
-  // We reuse already generated elements for better performance.
-  // See also: https://github.com/piroor/treestyletab/issues/3477
-  mItemElementsPool.push(itemElement);
-  if (mClearPoolTimer)
-    clearTimeout(mClearPoolTimer);
-  mClearPoolTimer = setTimeout(() => {
-    mItemElementsPool = [];
-  }, configs.generatedTreeItemElementsPoolLifetimeMsec);
+    // We reuse already generated elements for better performance.
+    // See also: https://github.com/piroor/treestyletab/issues/3477
+    mItemElementsPool.push(itemElement);
+    if (mClearPoolTimer)
+      clearTimeout(mClearPoolTimer);
+    mClearPoolTimer = setTimeout(() => {
+      mItemElementsPool = [];
+    }, configs.generatedTreeItemElementsPoolLifetimeMsec);
   }
 
   return true;
