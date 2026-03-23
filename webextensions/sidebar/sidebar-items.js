@@ -326,23 +326,25 @@ export function renderItem(item, { containerElement, insertBefore } = {}) {
     reserveToNotifyItemsRendered();
   }
 
-  const pairedItem = item.$TST.subSplitViewTab;
-  if (pairedItem) {
+  const subTab = item.$TST.subSplitViewTab;
+  if (subTab) {
     itemElement.classList.add(Constants.kTAB_STATE_SPLIT_VIEW);
     itemElement.ensureSplit();
-    if (!pairedItem.active && pairedItem.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
-      console.log('WARNING: Inactive paired item has invalid "active" state! ', pairedItem.id)
-      pairedItem.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
+    if (!subTab.active && subTab.$TST.states.has(Constants.kTAB_STATE_ACTIVE)) {
+      console.log('WARNING: Inactive paired item has invalid "active" state! ', subTab.id)
+      subTab.$TST.removeState(Constants.kTAB_STATE_ACTIVE);
     }
-    initalizeItemElement(pairedItem, itemElement.subSplitViewSubstanceElement)
-    pairedItem.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
-    pairedItem.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
-    pairedItem.$TST.applyStatesToElement();
+    initalizeItemElement(subTab, itemElement.subSplitViewSubstanceElement)
+    subTab.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
+    subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
+    subTab.$TST.applyStatesToElement();
   }
   else if (!item.$TST.mainSplitViewTab) {
     item.$TST.pairedSplitViewTab?.unbindElement();
-    itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
-    itemElement.clearSplit();
+    if (itemElement.localName == kTREE_ITEM_ELEMENT_NAME) {
+      itemElement.classList.remove(Constants.kTAB_STATE_SPLIT_VIEW);
+      itemElement.clearSplit();
+    }
   }
 
   return true;
