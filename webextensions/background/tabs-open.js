@@ -117,6 +117,8 @@ export async function openURIsInTabs(uris, { windowId, insertBefore, insertAfter
   if (!windowId)
     throw new Error('missing loading target window\n' + stack());
 
+  parent = parent?.$TST.precedingPairedSplitViewTab || parent;
+
   const tabs = [];
   // Don't return the result of Tab.doAndGetNewTabs because their order can
   // be inverted due to browser.tabs.insertAfterCurrent=true

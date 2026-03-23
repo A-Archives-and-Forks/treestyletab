@@ -91,9 +91,13 @@ Tab.onMoving.addListener((tab, moveInfo) => {
 });
 
 async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
+  if (tab.$TST.precedingPairedSplitViewTab) {
+    log('tryFixupTreeForInsertedTab: ignore split view tab: ', tab);
+    return;
+  }
   const internalGroupMoveCount = NativeTabGroups.internallyMovingNativeTabGroups.get(tab.groupId);
   if (internalGroupMoveCount) {
-    log('ignore internal move of tab groups ', internalGroupMoveCount);
+    log('tryFixupTreeForInsertedTab: ignore internal move of tab groups ', internalGroupMoveCount);
     return;
   }
   const parentTabOperationBehavior = TreeBehavior.getParentTabOperationBehavior(tab, {

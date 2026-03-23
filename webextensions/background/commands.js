@@ -346,7 +346,10 @@ export async function openNewTabAs(options = {}) {
       }).catch(ApiTabs.createErrorHandler());
   }
   const activeTab = options.baseTab || Tab.get(activeTabs[0].id);
+  const baseTab   = activeTab?.$TST.precedingPairedSplitViewTab || activeTab;
   log('activeTab ', activeTab);
+  log('baseTab ', baseTab);
+
 
   let parent, insertBefore, insertAfter;
   let isOrphan = false;
@@ -357,13 +360,13 @@ export async function openNewTabAs(options = {}) {
 
     case Constants.kNEWTAB_OPEN_AS_ORPHAN:
       isOrphan    = true;
-      insertAfter = Tab.getLastTab(activeTab.windowId);
+      insertAfter = Tab.getLastTab(baseTab.windowId);
       break;
 
     case Constants.kNEWTAB_OPEN_AS_CHILD:
     case Constants.kNEWTAB_OPEN_AS_CHILD_TOP:
     case Constants.kNEWTAB_OPEN_AS_CHILD_END: {
-      parent = activeTab;
+      parent = baseTab;
       const insertAt = options.as == Constants.kNEWTAB_OPEN_AS_CHILD_TOP ?
         Constants.kINSERT_TOP :
         options.as == Constants.kNEWTAB_OPEN_AS_CHILD_END ?
@@ -377,15 +380,15 @@ export async function openNewTabAs(options = {}) {
     }; break;
 
     case Constants.kNEWTAB_OPEN_AS_SIBLING:
-      parent      = activeTab.$TST.parent;
+      parent      = baseTab.$TST.parent;
       insertAfter = parent?.$TST.lastDescendant;
       break;
 
     case Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING_WITH_INHERITED_CONTAINER:
-      options.cookieStoreId = activeTab.cookieStoreId;
+      options.cookieStoreId = baseTab.cookieStoreId;
     case Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING: {
-      parent       = activeTab.$TST.parent;
-      const refTabs = Tree.getReferenceTabsForNewNextSibling(activeTab);
+      parent       = baseTab.$TST.parent;
+      const refTabs = Tree.getReferenceTabsForNewNextSibling(baseTab);
       insertBefore = refTabs.insertBefore;
       insertAfter  = refTabs.insertAfter;
     }; break;
@@ -402,7 +405,7 @@ export async function openNewTabAs(options = {}) {
         break;
 
       case Constants.kCONTEXTUAL_IDENTITY_FROM_LAST_ACTIVE:
-        options.cookieStoreId = activeTab.cookieStoreId;
+        options.cookieStoreId = baseTab.cookieStoreId;
         log(' => inherit from active tab: ', options.cookieStoreId);
         break;
 
@@ -414,7 +417,7 @@ export async function openNewTabAs(options = {}) {
   TabsOpen.openNewTab({
     parent, insertBefore, insertAfter,
     isOrphan,
-    windowId:      activeTab.windowId,
+    windowId:      baseTab.windowId,
     inBackground:  !!options.inBackground,
     cookieStoreId: options.cookieStoreId,
     url:           options.url,
