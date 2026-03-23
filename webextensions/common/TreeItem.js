@@ -2162,9 +2162,13 @@ export class Tab extends TreeItem {
   collectDescendants(result) {
     for (const id of this.childIds) {
       const child = TabsStore.ensureLivingItem(Tab.get(id));
-      if (!child)
+      if (!child ||
+          child.$TST.precedingPairedSplitViewTab)
         continue;
       result.push(child);
+      const followingPairedTab = child.$TST.followingPairedSplitViewTab
+      if (followingPairedTab)
+        result.push(followingPairedTab);
       child.$TST.collectDescendants(result);
     }
   }
