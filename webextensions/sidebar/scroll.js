@@ -242,7 +242,7 @@ const STICKY_SPACER_MATCHER = /^tab:(\d+):sticky$/;
 let mScrollPosition = 0;
 
 function splitViewHiddenTabFilter(tab) {
-  return !!tab.$TST.mainSplitViewTab;
+  return !tab?.$TST.mainSplitViewTab;
 }
 
 export function getRenderableTreeItems(windowId = null) {
