@@ -179,6 +179,9 @@ export class TreeItem {
     this.lastPreviousTabId = null;
     this.lastNextTabId     = null;
     this.label             = null;
+    this.favIconUrl        = null;
+    this.childIds          = [];
+    this.opening           = false;
 
     this.states = new Set();
     this.clear();
