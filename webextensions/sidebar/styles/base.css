@@ -510,7 +510,7 @@ tab-item,
 
   :root:not(.rtl).inverted &:not(.pinned),
   :root.rtl.inverted &:not(.pinned) {
-    --tab-visuabl-indent: calc(var(--tab-margin-inline-end) + var(--tab-group-member-indent) + var(--tab-indent));
+    --tab-visual-indent: calc(var(--tab-margin-inline-end) + var(--tab-group-member-indent) + var(--tab-indent));
   }
 }
 
@@ -563,8 +563,12 @@ tab-item-substance {
     max-width: calc(100% - var(--tab-visual-indent));
   }
 
-  :root.regular tab-item:not(.pinned) & {
+  :root.regular tab-item:not(.pinned) &.split-view-main {
     margin-inline-start: var(--tab-visual-indent);
+  }
+  :root.inverted tab-item:not(.pinned):not(.split-view) &.split-view-main,
+  :root.inverted tab-item:not(.pinned).split-view &.split-substances-container {
+    margin-inline-end: var(--tab-visual-indent);
   }
 
   tab-item.removing &,
@@ -583,8 +587,19 @@ tab-item-substance {
       max-width: calc(( 100% - var(--tab-visual-indent) ) / 2);
     }
 
+    &.split-view-main {
+      margin-inline-end: 0px;
+    }
+
+    &.split-view-sub {
+      margin-inline-start: 0px;
+    }
+
     &.split-substances-container {
-      margin-inline-start: calc(0px - ( 100% - var(--tab-visual-indent) )) !important;
+      & {
+        margin-inline-start: calc(0px - ( 100% - var(--tab-visual-indent) )) !important;
+      }
+
       pointer-events: none;
       z-index: calc(var(--tab-base-z-index) - 1);
 
@@ -593,16 +608,6 @@ tab-item-substance {
       .contextual-identity-marker {
         visibility: hidden;
       }
-    }
-  }
-
-  :root.regular tab-item.split-view & {
-    &.split-view-main {
-      margin-inline-end: 0px;
-    }
-
-    &.split-view-sub {
-      margin-inline-start: 0px;
     }
   }
 }
@@ -627,30 +632,13 @@ tab-item-substance {
   }
 }
 
-:root:not(.rtl).inverted tab-item:not(.pinned),
-:root.rtl.inverted tab-item:not(.pinned) {
-  tab-item-substance {
-    margin-inline-end: var(--tab-visuabl-indent);
-  }
-
-  &.split-view {
-    tab-item-substance.split-view-main {
-      margin-inline-start: 0px;
-    }
-
-    tab-item-substance.split-view-sub {
-      margin-inline-end: 0px;
-    }
-  }
-}
-
 /* auto-hidden scrollbar placeholder workaround */
 :root.inverted.shift-tabs-for-scrollbar-only-on-hover.on-scrollbar-area:hover,
 :root.inverted:not(.shift-tabs-for-scrollbar-only-on-hover) {
   #tabbar.scrollbar-autohide
     #normal-tabs-container.overflow
     tab-item:not(.pinned) {
-    --tab-visuabl-indent: calc(var(--tab-margin-inline-end) + var(--tab-group-member-indent) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
+    --tab-visual-indent: calc(var(--tab-margin-inline-end) + var(--tab-group-member-indent) + var(--tab-indent) + var(--shift-tabs-for-scrollbar-distance));
   }
 
   #normal-tabs-container.overflow

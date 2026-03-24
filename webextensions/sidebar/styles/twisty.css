@@ -32,12 +32,12 @@ tab-item tab-twisty {
 
 tab-item.split-view {
   tab-item-substance.split-view-sub {
-  --twisty-size: 0.75em;
+    --twisty-size: 0.75em;
 
-  tab-twisty {
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
+    tab-twisty {
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
   }
 
   tab-item-substance.split-substances-container tab-twisty {
