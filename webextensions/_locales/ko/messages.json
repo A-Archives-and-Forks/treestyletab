@@ -2423,6 +2423,12 @@
         "message": "선택한 탭 북마크(&T)",
         "hash": "0e8ef863c0adf4a4bad85202c69c8915"
     },
+    "tabContextMenu_copyLinks_label": {
+      "message": "링크 복사(&L)"
+    },
+    "tabContextMenu_copyLinks_label_multiselected": {
+      "message": "링크 %S개 복사(&L)"
+    },
     "tabContextMenu_close_label_multiselected": {
         "message": "탭 %S개 닫기(&C)",
         "hash": "4b390c9abd8ac915b722d04f8555ce30"

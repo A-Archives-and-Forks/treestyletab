@@ -185,6 +185,10 @@ const mItemsById = {
   'context_shareTabURL': {
     title: browser.i18n.getMessage('tabContextMenu_shareTabURL_label'),
   },
+  'context_copyLinks': {
+    title:              browser.i18n.getMessage('tabContextMenu_copyLinks_label'),
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_copyLinks_label_multiselected')
+  },
   'context_sendTabsToDevice': {
     title:              browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label_multiselected')
@@ -979,7 +983,14 @@ async function onShown(info, contextTab) {
 
     // Not implemented yet as a built-in. See also: https://github.com/piroor/treestyletab/issues/3423
     updateItem('context_shareTabURL', {
-      visible: emulate && !!contextTab && mSharingService && Sync.isSendableTab(contextTab),
+      visible: emulate && !!contextTab && mSharingService && Sync.isSendableTab(contextTab) && !multiselected,
+    }) && modifiedItemsCount++;
+
+    const canWriteToClipboard = typeof navigator.clipboard.write == 'function' || typeof navigator.clipboard.writeText == 'function';
+    updateItem('context_copyLinks', {
+      visible: emulate && !!contextTab && (!mSharingService || multiselected) && canWriteToClipboard,
+      multiselected,
+      count:   contextTabs.length
     }) && modifiedItemsCount++;
 
     updateItem('context_sendTabsToDevice', {
@@ -1402,6 +1413,9 @@ async function onClick(info, contextTab) {
     case 'context_shareTabURL:more':
       if (mSharingService)
         mSharingService.openPreferences();
+      break;
+    case 'context_copyLinks':
+      Commands.copyLinks(multiselectedTabs);
       break;
     case 'context_sendTabsToDevice:all':
       Sync.sendTabsToAllDevices(multiselectedTabs || [contextTab]);

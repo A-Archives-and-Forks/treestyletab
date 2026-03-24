@@ -942,6 +942,7 @@
   "tabContextMenu_manageSyncDevices_label": { "message": "端末を管理..." },
   "tabContextMenu_shareTabURL_label":   { "message": "共有(&H)" },
   "tabContextMenu_shareTabURL_more_label":   { "message": "その他..." },
+  "tabContextMenu_copyLinks_label": { "message": "リンクをコピー(&L)" },
 
   "tabContextMenu_closeDuplicatedTabs_label": { "message": "重複タブを閉じる(&U)" },
   "tabContextMenu_closeMultipleTabs_label":  { "message": "複数のタブを閉じる(&M)" },
@@ -975,6 +976,7 @@
   "tabContextMenu_bookmarkSelected_label":       { "message": "選択したタブをブックマーク...(&T)" },
   "tabContextMenu_bookmarkSelected_label_multiselected": { "message": "選択したタブをブックマーク...(&T)" },
 
+  "tabContextMenu_copyLinks_label_multiselected":   { "message": "%S 個のリンクをコピー(&L)" },
   "tabContextMenu_close_label_multiselected":       { "message": "%S 個のタブを閉じる(&C)" },
 
   "tabGroupMenu_tab-group-editor-title-create":                 { "message": "タブグループを作成" },

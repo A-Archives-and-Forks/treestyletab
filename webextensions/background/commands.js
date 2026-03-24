@@ -16,6 +16,7 @@ import {
   getWindowParamsFromSource,
   tryRevokeObjectURL,
   mapAndFilter,
+  sanitizeForHTMLText,
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
 import * as Bookmark from '/common/bookmark.js';
@@ -1428,6 +1429,41 @@ export async function reopenInContainer(sourceTabOrTabs, cookieStoreId, options 
     broadcast: true
   });
   return tabs;
+}
+
+
+export async function copyLinks(tabs) {
+  if (tabs.length == 0)
+    return;
+
+  const plainText = tabs.map(tab => tab.url).join('\n');
+
+  if (typeof navigator.clipboard.write == 'function') {
+    log('trying to write data to clipboard via Clipboard API');
+    //const mozUrl   = tabs.map(tab => `${tab.url}\n${tab.title}`).join('\n');
+    const richText = tabs.map(tab => `<a href="${sanitizeForHTMLText(tab.url)}">${sanitizeForHTMLText(tab.title)}</a>`).join('<br>\n');
+    try {
+      const clipboardItem = new ClipboardItem({
+        //['text/x-moz-url']: mozUrl,
+        ['text/html']:  richText,
+        ['text/plain']: plainText,
+      });
+      await navigator.clipboard.write([clipboardItem]);
+      return;
+    }
+    catch(error) {
+      console.error(error);
+    }
+    return;
+  }
+
+  try {
+    navigator.clipboard.writeText(plainText);
+    return;
+  }
+  catch(error) {
+    console.error(error);
+  }
 }
 
 

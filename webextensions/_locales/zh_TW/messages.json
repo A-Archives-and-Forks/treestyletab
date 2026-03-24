@@ -796,6 +796,7 @@
     "tabContextMenu_sendTabsToAllDevices_label": { "message": "傳送至所有裝置" },
     "tabContextMenu_manageSyncDevices_label": { "message": "管理裝置..." },
     "tabContextMenu_shareTabURL_label":   { "message": "分享 (&H)" },
+    "tabContextMenu_copyLinks_label_multiselected":   { "message": "複製鏈結" },
 
 
     "tabContextMenu_closeDuplicatedTabs_label": { "message": "關閉重複的分頁(&U)" },
@@ -825,6 +826,7 @@
     "tabContextMenu_bookmark_label_multiselected": { "message": "將分頁加入書籤(&B)…" },
     "tabContextMenu_bookmarkSelected_label":       { "message": "將分頁加入書籤(&T)…" },
   
+    "tabContextMenu_copyLinks_label_multiselected":   { "message": "複製 %S 個鏈結(&L)" },
     "tabContextMenu_close_label_multiselected":       { "message": "關閉 %S 個分頁(&C)" },
 
     "tabGroupMenu_tab-group-editor-title-create":                 { "message": "建立分頁群組" },

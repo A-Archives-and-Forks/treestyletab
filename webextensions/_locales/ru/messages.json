@@ -906,6 +906,7 @@
   "tabContextMenu_manageSyncDevices_label": { "message": "Управление устройствами…" },
   "tabContextMenu_shareTabURL_label":   { "message": "Поделиться" },
   "tabContextMenu_shareTabURL_more_label":   { "message": "Далее…" },
+  "tabContextMenu_copyLinks_label": { "message": "Копировать ссылку(&Д)" },
 
 
   "tabContextMenu_closeDuplicatedTabs_label": { "message": "дублирующиеся вкладки(&г)" },
@@ -940,6 +941,7 @@
   "tabContextMenu_bookmarkSelected_label":               { "message": "Добавить выб&ранную в закладки…" },
   "tabContextMenu_bookmarkSelected_label_multiselected": { "message": "Добавить выб&ранные в закладки…" },
 
+  "tabContextMenu_copyLinks_label_multiselected":   { "message": "Копировать %S ссылок(&Д)" },
   "tabContextMenu_close_label_multiselected":       { "message": "Закр&ыть %S вкладок" },
 
   "tabGroupMenu_tab-group-editor-title-create":                 { "message": "Создать группу вкладок" },

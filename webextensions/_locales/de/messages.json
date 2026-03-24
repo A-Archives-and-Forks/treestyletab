@@ -907,6 +907,7 @@
   "tabContextMenu_manageSyncDevices_label": { "message": "Geräte verwalten…" },
   "tabContextMenu_shareTabURL_label":   { "message": "&Teilen" },
   "tabContextMenu_shareTabURL_more_label":   { "message": "Mehr…" },
+  "tabContextMenu_copyLinks_label": { "message": "&Link kopieren" },
 
 
   "tabContextMenu_closeDuplicatedTabs_label": { "message": "&Doppelte Tabs schließen" },
@@ -941,6 +942,7 @@
   "tabContextMenu_bookmarkSelected_label":               { "message": "&Lesezeichen für ausgewählten Tab hinzufügen…" },
   "tabContextMenu_bookmarkSelected_label_multiselected": { "message": "&Lesezeichen für ausgewählte Tabs hinzufügen…" },
 
+  "tabContextMenu_copyLinks_label_multiselected":   { "message": "%S &Links kopieren" },
   "tabContextMenu_close_label_multiselected":       { "message": "%S Tabs s&chließen" },
 
   "tabGroupMenu_tab-group-editor-title-create":                 { "message": "Tab-Gruppe erstellen" },

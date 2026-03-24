@@ -1187,7 +1187,8 @@ export function sanitizeForHTMLText(text) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 export function sanitizeForRegExpSource(source) { // https://stackoverflow.com/questions/6300183/sanitize-string-of-regex-characters-before-regexp-build
