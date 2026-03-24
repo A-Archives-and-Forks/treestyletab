@@ -479,4 +479,8 @@ tab-item.split-view:not(.has-active-substance) .split-tab-separator {
   margin-block-start: var(--tab-vertical-padding);
   margin-inline-end: -1px;
   width: 0px;
+
+  .sticky-tabs-container & {
+    z-index: calc(var(--tab-base-z-index) + 1);
+  }
 }
