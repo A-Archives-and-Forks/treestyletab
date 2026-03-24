@@ -350,16 +350,29 @@ export function calculateReferenceItemsFromInsertionPosition(
 }
 
 export function sanitizeReferenceTabsForSplitView({ parent, insertBefore, insertAfter }) {
-  parent       = parent?.$TST.mainSplitViewTab || parent;
-  insertBefore = insertBefore?.$TST.mainSplitViewTab || insertBefore;
-  insertAfter  = insertAfter?.$TST.subSplitViewTab || insertAfter;
+  parent = parent === undefined ? undefined :
+    (parent?.$TST.mainSplitViewTab || parent);
+  insertBefore = insertBefore === undefined ? undefined :
+    (insertBefore?.$TST.mainSplitViewTab || insertBefore);
+  insertAfter = insertAfter === undefined ? undefined :
+    (insertAfter?.$TST.subSplitViewTab || insertAfter);
+
   if (insertAfter &&
       ((parent &&
         insertBefore == parent) ||
        (insertBefore &&
         insertBefore == insertAfter?.$TST.mainSplitViewTab)))
     insertBefore = parent?.$TST.firstChild;
-  return { parent, insertBefore, insertAfter };
+
+  const sanitized = {};
+  if (parent !== undefined)
+    sanitized.parent = parent;
+  if (insertBefore !== undefined)
+    sanitized.insertBefore = insertBefore;
+  if (insertAfter !== undefined)
+    sanitized.insertAfter = insertAfter;
+
+  return sanitized;
 }
 
 

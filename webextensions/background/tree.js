@@ -559,7 +559,7 @@ export function getReferenceTabsForNewNextSibling(base) {
   log('getReferenceTabsForNewNextSibling ', base);
   const insertBefore = base.$TST.nextSiblingTab;
   const insertAfter  = base.$TST.lastDescendant || base;
-  return { insertBefore, insertAfter };
+  return TreeBehavior.sanitizeReferenceTabsForSplitView({ insertBefore, insertAfter });
 }
 
 export function detachTab(child, options = {}) {
@@ -912,8 +912,12 @@ export async function behaveAutoAttachedTab(
           delayedMove: true,
           broadcast:   true
         });
-        return attachTabTo(tab, baseTab, {
+        const { parent, insertAfter } = TreeBehavior.sanitizeReferenceTabsForSplitView({
+          parent:      baseTab,
           insertAfter: lastRelatedTab,
+        });
+        return attachTabTo(tab, parent, {
+          insertAfter,
           lastRelatedTab,
           forceExpand: true,
           delayedMove: true,
@@ -921,38 +925,52 @@ export async function behaveAutoAttachedTab(
         });
       }
       log(` no lastRelatedTab: fallback to kNEWTAB_OPEN_AS_CHILD`);
-    case Constants.kNEWTAB_OPEN_AS_CHILD:
+    case Constants.kNEWTAB_OPEN_AS_CHILD: {
       log(' => kNEWTAB_OPEN_AS_CHILD');
-      return attachTabTo(tab, baseTab, {
+      const { parent } = TreeBehavior.sanitizeReferenceTabsForSplitView({
+        parent: baseTab,
+      });
+      return attachTabTo(tab, parent, {
         dontMove:    dontMove || configs.insertNewChildAt == Constants.kINSERT_NO_CONTROL,
         forceExpand: true,
         delayedMove: true,
         broadcast
       });
+    };
 
-    case Constants.kNEWTAB_OPEN_AS_CHILD_TOP:
+    case Constants.kNEWTAB_OPEN_AS_CHILD_TOP: {
       log(' => kNEWTAB_OPEN_AS_CHILD_TOP');
-      return attachTabTo(tab, baseTab, {
+      const { parent } = TreeBehavior.sanitizeReferenceTabsForSplitView({
+        parent: baseTab,
+      });
+      return attachTabTo(tab, parent, {
         dontMove,
         forceExpand: true,
         delayedMove: true,
         insertAt:    Constants.kINSERT_TOP,
         broadcast
       });
+    };
 
-    case Constants.kNEWTAB_OPEN_AS_CHILD_END:
+    case Constants.kNEWTAB_OPEN_AS_CHILD_END: {
       log(' => kNEWTAB_OPEN_AS_CHILD_END');
-      return attachTabTo(tab, baseTab, {
+      const { parent } = TreeBehavior.sanitizeReferenceTabsForSplitView({
+        parent: baseTab,
+      });
+      return attachTabTo(tab, parent, {
         dontMove,
         forceExpand: true,
         delayedMove: true,
         insertAt:    Constants.kINSERT_END,
         broadcast
       });
+    };
 
     case Constants.kNEWTAB_OPEN_AS_SIBLING: {
       log(' => kNEWTAB_OPEN_AS_SIBLING');
-      const parent = baseTab.$TST.parent;
+      const { parent } = TreeBehavior.sanitizeReferenceTabsForSplitView({
+        parent: baseTab.$TST.parent,
+      });
       if (parent) {
         await attachTabTo(tab, parent, {
           delayedMove: true,
@@ -976,12 +994,16 @@ export async function behaveAutoAttachedTab(
       let nextSibling = baseTab.$TST.nextSiblingTab;
       if (nextSibling == tab)
         nextSibling = null;
-      const parent = baseTab.$TST.parent;
+      const { parent, insertBefore, insertAfter } = TreeBehavior.sanitizeReferenceTabsForSplitView({
+        parent:       baseTab.$TST.parent,
+        insertBefore: nextSibling,
+        insertAfter:  baseTab.$TST.lastDescendant || baseTab,
+      });
       if (parent) {
         return attachTabTo(tab, parent, {
-          insertBefore: nextSibling,
-          insertAfter:  baseTab.$TST.lastDescendant || baseTab,
-          delayedMove:  true,
+          insertBefore,
+          insertAfter,
+          delayedMove: true,
           broadcast
         });
       }
@@ -989,13 +1011,13 @@ export async function behaveAutoAttachedTab(
         detachTab(tab, {
           broadcast
         });
-        if (nextSibling)
-          return TabsMove.moveTabBefore(tab, nextSibling, {
+        if (insertBefore)
+          return TabsMove.moveTabBefore(tab, insertBefore, {
             delayedMove: true,
             broadcast
           });
-        else
-          return TabsMove.moveTabAfter(tab, baseTab.$TST.lastDescendant, {
+        else if (insertAfter)
+          return TabsMove.moveTabAfter(tab, insertAfter, {
             delayedMove: true,
             broadcast
           });
