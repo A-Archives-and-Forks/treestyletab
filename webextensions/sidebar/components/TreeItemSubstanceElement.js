@@ -108,6 +108,7 @@ export class TreeItemSubstanceElement extends HTMLElement {
 
   connectedCallback() {
     if (this.initialized) {
+      this.initializeContents();
       this._startListening();
       return;
     }
@@ -154,6 +155,7 @@ export class TreeItemSubstanceElement extends HTMLElement {
         <span class="${Constants.kHIGHLIGHTER}"></span>
     `.trim().replace(/>\s+</g, '><'));
 
+    this.initializeContents();
     this._startListening();
   }
 

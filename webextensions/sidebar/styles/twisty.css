@@ -31,7 +31,9 @@ tab-item tab-twisty {
 }
 
 tab-item.split-view {
-  tab-item-substance.split-view-sub {
+  :root.regular & tab-item-substance.split-view-sub,
+  /* We use the sub split view tab as the alias to the main split view, in the inverted mode. */
+  :root.inverted & tab-item-substance.split-view-main {
     --twisty-size: 0.75em;
 
     tab-twisty {

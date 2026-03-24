@@ -1108,8 +1108,8 @@ tab-item .label-content {
 }
 
 .counter {
-  tab-item-substance:not([data-child-ids]) &,
-  tab-item:not(.subtree-collapsed) & {
+  :root.regular tab-item-substance.split-view-sub &,
+  :root.inverted tab-item-substance.split-view-main & {
     display: none;
   }
 
@@ -1119,6 +1119,17 @@ tab-item .label-content {
 
   &::after {
     content: ")";
+  }
+}
+
+tab-item:not([data-child-ids]),
+tab-item:not(.subtree-collapsed) {
+  :root.regular & tab-item-substance.split-view-main,
+  /* We use the sub split view tab as the alias to the main split view, in the inverted mode. */
+  :root.inverted & tab-item-substance.split-view-sub {
+    .counter {
+      display: none;
+    }
   }
 }
 

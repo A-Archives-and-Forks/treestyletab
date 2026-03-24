@@ -85,7 +85,9 @@ export function getElementOriginalTarget(eventOrTarget) {
 
 export function isEventFiredOnTwisty(event) {
   const tab = getTreeItemFromEvent(event);
-  if (!tab || !tab.$TST.hasChild)
+  if (!tab ||
+      // We use the sub split view tab as the alias to the main split view, in the inverted mode.
+      !(tab.$TST.mainSplitViewTab || tab).$TST.hasChild)
     return false;
 
   const target = getElementTarget(event);

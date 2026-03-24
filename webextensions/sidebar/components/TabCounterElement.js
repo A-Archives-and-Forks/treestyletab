@@ -55,10 +55,13 @@ export class TabCounterElement extends HTMLElement {
     if (!tab || !tab.$TST)
       return;
 
-    const descendants = tab.$TST.descendants;
+    // We use the sub split view tab as the alias to the main split view, in the inverted mode.
+    const descendants = (tab.$TST.mainSplitViewTab || tab).$TST.descendants;
     let count = descendants.length;
     if (configs.counterRole == Constants.kCOUNTER_ROLE_ALL_TABS)
       count += 1;
     this.textContent = count;
+
+    tab.$TST.subSplitViewTab?.$TST.element?.substanceElement?.counterElement?.update();
   }
 }

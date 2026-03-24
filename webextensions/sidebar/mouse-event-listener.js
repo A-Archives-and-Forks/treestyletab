@@ -787,18 +787,21 @@ async function handleDefaultMouseUpOnTab({ lastMousedown, tab, event } = {}) {
   else if (lastMousedown.detail.twisty &&
            EventUtils.isEventFiredOnTwisty(event)) {
     log(`clicked on twisty of the tab ${tab.id}`);
-    if (tab.$TST.hasChild) {
-      if (!tab.$TST.subtreeCollapsed) // going to collapse
+    // We use the sub split view tab as the alias to the main split view, in the inverted mode.
+    const parent = tab.$TST.mainSplitViewTab || tab;
+    log(`trying to collapse expand ${parent.id}`);
+    if (parent.$TST.hasChild) {
+      if (!parent.$TST.subtreeCollapsed) // going to collapse
         await Scroll.tryLockPosition(
-          tab.$TST.descendants.filter(tab => !tab.$TST.collapsed).map(tab => tab.id),
+          parent.$TST.descendants.filter(tab => !tab.$TST.collapsed).map(tab => tab.id),
           Scroll.LOCK_REASON_COLLAPSE
         );
       else // going to expand
-        Scroll.tryUnlockPosition(tab.$TST.descendants.map(tab => tab.id));
+        Scroll.tryUnlockPosition(parent.$TST.descendants.map(tab => tab.id));
       BackgroundConnection.sendMessage({
         type:            Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
-        tabId:           tab.id,
-        collapsed:       !tab.$TST.subtreeCollapsed,
+        tabId:           parent.id,
+        collapsed:       !parent.$TST.subtreeCollapsed,
         manualOperation: true,
         stack:           stack(),
       });

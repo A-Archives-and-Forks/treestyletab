@@ -382,7 +382,7 @@ function updateSplitView(item) {
       }
       initalizeItemElement(subTab, mainElement.subSplitViewSubstanceElement);
       subTab.$TST.invalidateElement(TabInvalidationTarget.CloseBox | TabInvalidationTarget.Tooltip | TabInvalidationTarget.Overflow);
-      subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
+      subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.Counter | TabUpdateTarget.TabProperties);
       subTab.$TST.applyStatesToElement();
 
       if (item.active || mainTab?.active || subTab.active)
