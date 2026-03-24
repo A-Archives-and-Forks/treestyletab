@@ -22,10 +22,10 @@ import { Tab } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
 import * as NativeTabGroups from './native-tab-groups.js';
+import * as SplitView from './split-view.js';
 import * as TabsGroup from './tabs-group.js';
 import * as Tree from './tree.js';
 import * as TreeStructure from './tree-structure.js';
-import * as TreeTransaction from './tree-transaction.js';
 
 function log(...args) {
   internalLogger('background/handle-moved-tabs', ...args);
@@ -94,7 +94,7 @@ Tab.onMoving.addListener((tab, moveInfo) => {
 async function tryFixupTreeForInsertedTab(tab, moveInfo = {}) {
   if (moveInfo.splitViewReversed) {
     log('tryFixupTreeForInsertedTab: re-attach children: ', moveInfo.newSubSplitViewTab.id, ' => ', moveInfo.newMainSplitViewTab.id);
-    await Tree.swapSplitViewTabsInTree({
+    await SplitView.swapTreeParent({
       from: moveInfo.newSubSplitViewTab,
       to:   moveInfo.newMainSplitViewTab,
     });
@@ -250,32 +250,6 @@ Tab.onMoved.addListener((tab, moveInfo = {}) => {
     });
   }
   reserveToEnsureRootTabVisible(tab);
-});
-
-Tab.onSplitViewModified.addListener(async tab => {
-  const newSubSplitViewTab = tab.$TST.subSplitViewTab || (tab.$TST.mainSplitViewTab ? tab : null);
-  if (!newSubSplitViewTab)
-    return;
-
-  log('onSplitViewModified: ', tab, ', new sub split view tab = ', newSubSplitViewTab);
-
-  let closeParentBehavior = TreeBehavior.getParentTabOperationBehavior(newSubSplitViewTab, {
-    context: Constants.kPARENT_TAB_OPERATION_CONTEXT_MOVE,
-  });
-  if (closeParentBehavior == Constants.kPARENT_TAB_OPERATION_BEHAVIOR_ENTIRE_TREE)
-    closeParentBehavior = Constants.kPARENT_TAB_OPERATION_BEHAVIOR_PROMOTE_FIRST_CHILD;
-
-  await TreeTransaction.run(async () => {
-    await Tree.detachAllChildren(newSubSplitViewTab, {
-      behavior:  closeParentBehavior,
-      broadcast: true
-    });
-    //reserveCloseRelatedTabs(toBeClosedTabs);
-    Tree.detachTab(newSubSplitViewTab, {
-      dontUpdateIndent: true,
-      broadcast:        true
-    });
-  });
 });
 
 function onMessage(message, _sender) {

@@ -1042,26 +1042,6 @@ export async function behaveAutoAttachedTabs(tabs, options = {}) {
   }
 }
 
-export async function swapSplitViewTabsInTree({ to, from }) {
-  from = Tab.get(from.id);
-  to   = Tab.get(to.id);
-  if (!from || !to)
-    return;
-  log('swapSplitViewTabs: re-attach children ', from.id, ' => ', to.id);
-  await TreeTransaction.run(async () => {
-    const children = from.$TST.children;
-    await detachAllChildren(from, {
-      behavior: Constants.kPARENT_TAB_OPERATION_BEHAVIOR_PROMOTE_ALL_CHILDREN,
-    });
-    for (const child of children) {
-      await attachTabTo(child, to, {
-        dontMove: true,
-        justNow:  true,
-      });
-    }
-  }, { justNow: true });
-}
-
 // collapse/expand tabs
 
 // returns an array of tab ids which are changed their visibility

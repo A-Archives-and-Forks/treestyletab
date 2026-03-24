@@ -20,6 +20,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 import { Tab } from '/common/TreeItem.js';
 
 import * as Background from './background.js';
+import * as SplitView from './split-view.js';
 import * as TabsGroup from './tabs-group.js';
 import * as Tree from './tree.js';
 import * as TreeTransaction from './tree-transaction.js';
@@ -119,7 +120,7 @@ async function handleRemovingPostProcess({ closeParentBehavior, windowId, parent
   if (subTab &&
       !subTab.$TST.removing &&
       !Tab.get(removedTab.id)?.$TST.subtreeCollapsed) {
-    await Tree.swapSplitViewTabsInTree({
+    await SplitView.swapTreeParent({
       from: removedTab,
       to:   subTab,
     });

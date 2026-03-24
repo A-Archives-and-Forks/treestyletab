@@ -590,6 +590,7 @@ export const configs = new Configs({
     'background/handle-tree-changes':    false,
     'background/migration':              false,
     'background/native-tab-groups':      false,
+    'background/split-view':             false,
     'background/successor-tab':          false,
     'background/tab-context-menu':       false,
     'background/tabs-group':             false,

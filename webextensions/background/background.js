@@ -43,6 +43,7 @@ import * as Tree from './tree.js';
 import * as TreeStructure from './tree-structure.js';
 import './browser-action-menu.js';
 import './duplicated-tab-detection.js';
+import './split-view.js';
 import './successor-tab.js';
 
 function log(...args) {
