@@ -1782,7 +1782,13 @@ export async function openNewWindowFromTabs(tabs, options = {}) {
         await TabsInternalOperation.activateTab(activeTab);
       }
       const removeTabs = mapAndFilter(win.tabs, tab =>
-        !movedTabIds.has(tab.id) && Tab.get(tab.id) || undefined
+        (
+          !movedTabIds.has(tab.id) &&
+          /* split view tabs may be moved automatically, so we need keep them! */
+          (!tab.splitViewId ||
+           tab.splitViewId == -1) &&
+          Tab.get(tab.id)
+        ) || undefined
       );
       log('removing tabs: ', removeTabs);
       TabsInternalOperation.removeTabs(removeTabs);
