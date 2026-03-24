@@ -326,7 +326,8 @@ export class TreeItem {
         this.states.has(Constants.kTAB_STATE_COLLAPSING))
       return false;
 
-    if (this.sticky)
+    if (this.sticky ||
+        this.subSplitViewTab?.$TST.canBecomeSticky)
       return true;
 
     // Returns true if one or more elements are common in both sets, in minimum time.
