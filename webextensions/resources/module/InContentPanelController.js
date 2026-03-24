@@ -503,9 +503,12 @@ export default class InContentPanelController {
     }
 
     const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-    const playgroundTabId = Permissions.canInjectScriptToTabSync(activeTab) ?
-      activeTab.id :
-      null;
+    const playgroundTab = activeTab?.$TST.mainSplitViewTab || activeTab;
+    const playgroundTabId = Permissions.canInjectScriptToTabSync(playgroundTab) ?
+      playgroundTab.id :
+      Permissions.canInjectScriptToTabSync(activeTab) ?
+        activeTab.id :
+        null;
 
     const anchorTabRawRect = anchorItem?.$TST.element?.substanceElement?.getBoundingClientRect();
     const anchorTabRect = {
