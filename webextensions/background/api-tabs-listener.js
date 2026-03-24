@@ -1149,8 +1149,8 @@ async function onAttached(tabId, attachInfo) {
       }
     }
 
-    if (tab.splitViewId != -1) {
-      TabsStore.addSplitViewTab(tab, attachInfo.newWindowId);
+    if (tab.splitViewId && tab.splitViewId != -1) {
+      tab.$TST.onSplitViewModified();
     }
 
     TabsInternalOperation.clearOldActiveStateInWindow(attachInfo.newWindowId);
@@ -1237,7 +1237,7 @@ async function onDetached(tabId, detachInfo) {
       }
     }
 
-    if (oldTab.splitViewId != -1) {
+    if (oldTab.splitViewId && oldTab.splitViewId != -1) {
       TabsStore.removeSplitViewTab(oldTab, detachInfo.oldWindowId);
     }
 

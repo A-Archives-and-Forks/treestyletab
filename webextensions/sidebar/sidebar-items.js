@@ -385,6 +385,9 @@ function updateSplitView(item) {
       subTab.$TST.updateElement(TabUpdateTarget.Overflow | TabUpdateTarget.TabProperties);
       subTab.$TST.applyStatesToElement();
 
+      if (item.active || mainTab?.active || subTab.active)
+        mainElement.classList.add(Constants.kTAB_STATE_HAS_ACTIVE_SUBSTANCE);
+
       mRenderedItemIds.add(subTab.id);
       mUnrenderedItemIds.delete(subTab.id);
       reserveToNotifyItemsRendered();
@@ -1508,6 +1511,8 @@ BackgroundConnection.onMessage.addListener(async message => {
       tab.$TST.invalidateCache();
       if (tab.active)
         TabsInternalOperation.setTabActive(tab); // to clear "active" state of other tabs
+      if (tab.$TST.pairedSplitViewTab)
+        tab.$TST.onSplitViewModified();
     }; break;
 
     case Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW: {
