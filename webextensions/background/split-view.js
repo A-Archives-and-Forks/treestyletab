@@ -20,7 +20,6 @@ function log(...args) {
   internalLogger('background/split-view', ...args);
 }
 
-/*
 export function populateTabs(tabs) {
   const populatedTabs = new Set();
   for (const tab of tabs) {
@@ -34,7 +33,6 @@ export function populateTabs(tabs) {
   }
   return [...populatedTabs];
 }
-*/
 
 export async function swapTreeParent({ to, from }) {
   from = Tab.get(from.id);

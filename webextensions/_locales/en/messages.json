@@ -378,6 +378,12 @@
   "context_sendTreeToDevice_label": { "message": "Sen&d this Tree to Device" },
   "context_sendTreeToDevice_label_multiselected": { "message": "Sen&d Selected Trees to Device" },
   "context_sendTreeToDevice_command": { "message": "Send this Tree to Device" },
+  "context_copyTreeLinks_label":               { "message": "Copy this Tree as &Links" },
+  "context_copyTreeLinks_label_multiselected": { "message": "Copy Selected Trees as &Links" },
+  "context_copyTreeLinks_command":             { "message": "Copy this Tree as Links" },
+  "context_copyDescendantsLinks_label":               { "message": "Copy Descendants as &Links" },
+  "context_copyDescendantsLinks_label_multiselected": { "message": "Copy Descendants of Selected Tabs as &Links" },
+  "context_copyDescendantsLinks_command":             { "message": "Copy Descendants as Links" },
   "context_topLevel_prefix": { "message": "Top level item: " },
 
   "context_collapsed_label": { "message": "Collapsed (for testing of a checkbox type menu)" },

@@ -31,6 +31,7 @@ import * as UserOperationBlocker from '/common/user-operation-blocker.js';
 import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
 import * as NativeTabGroups from './native-tab-groups.js';
+import * as SplitView from './split-view.js';
 import * as TabsGroup from './tabs-group.js';
 import * as TabsMove from './tabs-move.js';
 import * as TabsOpen from './tabs-open.js';
@@ -1432,20 +1433,17 @@ export async function reopenInContainer(sourceTabOrTabs, cookieStoreId, options 
 }
 
 
-export async function copyLinks(tabs) {
+export async function copyLinks(tabs, { indent, recursively } = {}) {
   if (tabs.length == 0)
     return;
 
-  const plainText = tabs.map(tab => tab.url).join('\n');
+  const { plainText, richText } = collectLinks(tabs, { indent, recursively });
 
   if (typeof navigator.clipboard.write == 'function') {
     log('trying to write data to clipboard via Clipboard API');
-    //const mozUrl   = tabs.map(tab => `${tab.url}\n${tab.title}`).join('\n');
-    const richText = tabs.map(tab => `<a href="${sanitizeForHTMLText(tab.url)}">${sanitizeForHTMLText(tab.title)}</a>`).join('<br>\n');
     try {
       const clipboardItem = new ClipboardItem({
-        //['text/x-moz-url']: mozUrl,
-        ['text/html']:  richText,
+        ['text/html']:  recursively ? `<ul>\n${richText}\n</ul>` : richText,
         ['text/plain']: plainText,
       });
       await navigator.clipboard.write([clipboardItem]);
@@ -1464,6 +1462,35 @@ export async function copyLinks(tabs) {
   catch(error) {
     console.error(error);
   }
+}
+function collectLinks(tabs, { recursively } = {}) {
+  if (!recursively) {
+    const plainText = tabs.map(tab => tab.url).join('\n');
+    const richText  = tabs.map(toRichTextLink).join('<br>\n');
+    return { plainText, richText };
+  }
+
+  const plainText = [];
+  const richText  = [];
+  for (const tab of tabs) {
+    for (const t of SplitView.populateTabs([tab])) {
+      plainText.push(`* ${t.url}`);
+      richText.push(toRichTextLink(t));
+    }
+    if (!tab.$TST.hasChild)
+      continue;
+    const { plainText: childrenPlainText, richText: childrenRichText } = collectLinks(tab.$TST.children, { recursively })
+    plainText[plainText.length - 1] += `\n${childrenPlainText.replace(/^/gm, '  ')}`;
+    richText[richText.length - 1] += `\n<ul>\n${childrenRichText}\n</ul>`;
+  }
+
+  return {
+    plainText: plainText.join('\n'),
+    richText:  richText.map(item => `<li>${item}</li>`).join('\n'),
+  };
+}
+function toRichTextLink(tab) {
+  return `<a href="${sanitizeForHTMLText(tab.url)}">${sanitizeForHTMLText(tab.title)}</a>`;
 }
 
 

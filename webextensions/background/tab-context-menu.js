@@ -189,6 +189,14 @@ const mItemsById = {
     title:              browser.i18n.getMessage('tabContextMenu_copyLinks_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_copyLinks_label_multiselected')
   },
+  'context_topLevel_copyTreeLinks': {
+    title:              browser.i18n.getMessage('context_copyTreeLinks_label'),
+    titleMultiselected: browser.i18n.getMessage('context_copyTreeLinks_label_multiselected')
+  },
+  'context_topLevel_copyDescendantsLinks': {
+    title:              browser.i18n.getMessage('context_copyDescendantsLinks_label'),
+    titleMultiselected: browser.i18n.getMessage('context_copyDescendantsLinks_label_multiselected')
+  },
   'context_sendTabsToDevice': {
     title:              browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label_multiselected')
@@ -992,6 +1000,16 @@ async function onShown(info, contextTab) {
       multiselected,
       count:   contextTabs.length
     }) && modifiedItemsCount++;
+    updateItem('context_topLevel_copyTreeLinks', {
+      visible: emulate && !!contextTab && canWriteToClipboard && configs.context_topLevel_copyTreeLinks && hasChild,
+      enabled: hasChild,
+      multiselected
+    }) && modifiedItemsCount++;
+    updateItem('context_topLevel_copyDescendantsLinks', {
+      visible: emulate && !!contextTab && canWriteToClipboard && configs.context_topLevel_copyDescendantsLinks && hasChild,
+      enabled: hasChild,
+      multiselected
+    }) && modifiedItemsCount++;
 
     updateItem('context_sendTabsToDevice', {
       visible: emulate && !!contextTab && contextTabs.filter(Sync.isSendableTab).length > 0,
@@ -1415,7 +1433,7 @@ async function onClick(info, contextTab) {
         mSharingService.openPreferences();
       break;
     case 'context_copyLinks':
-      Commands.copyLinks(multiselectedTabs);
+      Commands.copyLinks(multiselectedTabs || [contextTab]);
       break;
     case 'context_sendTabsToDevice:all':
       Sync.sendTabsToAllDevices(multiselectedTabs || [contextTab]);

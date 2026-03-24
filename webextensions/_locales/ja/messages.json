@@ -377,6 +377,12 @@
   "context_sendTreeToDevice_label": { "message": "このツリーを端末に送信(&D)" },
   "context_sendTreeToDevice_label_multiselected": { "message": "選択したツリーを端末に送信(&D)" },
   "context_sendTreeToDevice_command": { "message": "このツリーを端末に送信" },
+  "context_copyTreeLinks_label":               { "message": "このツリーのリンクをコピー(&L)" },
+  "context_copyTreeLinks_label_multiselected": { "message": "選択したツリーのリンクをコピー(&L)" },
+  "context_copyTreeLinks_command":             { "message": "このツリーのリンクをコピー" },
+  "context_copyDescendantsLinks_label":               { "message": "このタブの配下のタブのリンクをコピー(&L)" },
+  "context_copyDescendantsLinks_label_multiselected": { "message": "選択したタブの配下のタブのリンクをコピー(&L)" },
+  "context_copyDescendantsLinks_command":             { "message": "このタブの配下のタブのリンクをコピー" },
   "context_topLevel_prefix": { "message": "トップレベルの項目: " },
 
   "context_openAllBookmarksWithStructure_label": { "message": "ツリーとしてすべて開く(&A)" },

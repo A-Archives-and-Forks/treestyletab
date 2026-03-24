@@ -344,6 +344,18 @@ const mItems = [
         type:   'checkbox',
         expert: true,
       },
+      {
+        title:  indent() + browser.i18n.getMessage('context_copyTreeLinks_command'),
+        key:    'context_topLevel_copyTreeLinks',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
+        title:  indent() + browser.i18n.getMessage('context_copyDescendantsLinks_command'),
+        key:    'context_topLevel_copyDescendantsLinks',
+        type:   'checkbox',
+        expert: true,
+      },
       { type:   'separator',
         expert: true, },
       {
@@ -481,6 +493,18 @@ const mItems = [
       {
         title:  indent() + browser.i18n.getMessage('context_sendTreeToDevice_command'),
         key:    'context_sendTreeToDevice',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
+        title:  indent() + browser.i18n.getMessage('context_copyTreeLinks_command'),
+        key:    'context_copyTreeLinks',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
+        title:  indent() + browser.i18n.getMessage('context_copyDescendantsLinks_command'),
+        key:    'context_copyDescendantsLinks',
         type:   'checkbox',
         expert: true,
       },

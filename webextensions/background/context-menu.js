@@ -172,6 +172,15 @@ const mTabItemsById = {
     title:              browser.i18n.getMessage('context_sendTreeToDevice_label'),
     titleMultiselected: browser.i18n.getMessage('context_sendTreeToDevice_label_multiselected')
   },
+  'copyTreeLinks': {
+    title:              browser.i18n.getMessage('context_copyTreeLinks_label'),
+    titleMultiselected: browser.i18n.getMessage('context_copyTreeLinks_label_multiselected')
+  },
+  'copyDescendantsLinks': {
+    title:              browser.i18n.getMessage('context_copyDescendantsLinks_label'),
+    titleMultiselected: browser.i18n.getMessage('context_copyDescendantsLinks_label_multiselected'),
+    requireTree:        true,
+  },
   'separatorAfterBookmark': {
     type: 'separator'
   },
@@ -573,6 +582,19 @@ function onTabItemClick(info, tab) {
 
     case 'sendTreeToDevice:all':
       Sync.sendTabsToAllDevices(contextTabs, { recursively: true });
+      break;
+
+    case 'copyTreeLinks':
+      if (inverted)
+        Commands.copyLinks(contextTabs.map(tab => tab.$TST.children).flat(), { recursively: true });
+      else
+        Commands.copyLinks(contextTabs, { recursively: true });
+      break;
+    case 'copyDescendantsLinks':
+      if (inverted)
+        Commands.copyLinks(contextTabs, { recursively: true });
+      else
+        Commands.copyLinks(contextTabs.map(tab => tab.$TST.children).flat(), { recursively: true });
       break;
 
     case 'collapsed':

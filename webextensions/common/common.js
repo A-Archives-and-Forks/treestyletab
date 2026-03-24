@@ -251,6 +251,8 @@ export const configs = new Configs({
   context_expandAll:                  true,
   context_bookmarkTree:               true,
   context_sendTreeToDevice:           false,
+  context_copyTreeLinks:              true,
+  context_copyDescendantsLinks:       false,
 
   context_topLevel_reloadTree:                 false,
   context_topLevel_reloadDescendants:          false,
@@ -272,6 +274,8 @@ export const configs = new Configs({
   context_topLevel_expandAll:                  false,
   context_topLevel_bookmarkTree:               false,
   context_topLevel_sendTreeToDevice:           true,
+  context_topLevel_copyTreeLinks:              false,
+  context_topLevel_copyDescendantsLinks:       false,
 
   context_collapsed:   false,
   context_pinnedTab:   false,
