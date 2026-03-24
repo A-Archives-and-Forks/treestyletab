@@ -20,6 +20,22 @@ function log(...args) {
   internalLogger('background/split-view', ...args);
 }
 
+/*
+export function populateTabs(tabs) {
+  const populatedTabs = new Set();
+  for (const tab of tabs) {
+    const mainTab = tab.$TST.mainSplitViewTab;
+    if (mainTab)
+      populatedTabs.add(mainTab);
+    populatedTabs.add(tab);
+    const subTab = tab.$TST.subSplitViewTab;
+    if (subTab)
+      populatedTabs.add(subTab);
+  }
+  return [...populatedTabs];
+}
+*/
+
 export async function swapTreeParent({ to, from }) {
   from = Tab.get(from.id);
   to   = Tab.get(to.id);

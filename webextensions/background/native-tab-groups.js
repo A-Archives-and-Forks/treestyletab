@@ -17,6 +17,7 @@ import * as TreeBehavior from '/common/tree-behavior.js';
 
 import { Tab, TabGroup, TreeItem } from '/common/TreeItem.js';
 
+//import * as SplitView from './split-view.js';
 import * as Tree from './tree.js';
 
 function log(...args) {
@@ -33,6 +34,7 @@ export async function addTabsToGroup(tabs, groupIdOrProperties) {
 }
 async function addTabsToGroupInternal(tabs, groupIdOrProperties) {
   let groupId = typeof groupIdOrProperties == 'number' ? groupIdOrProperties : null;
+  //tabs = SplitView.populateTabs(tabs);
   const tabsToGrouped = tabs.filter(tab => tab.groupId != groupId);
   if (tabsToGrouped.length == 0) {
     return groupId;
