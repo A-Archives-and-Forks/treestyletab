@@ -238,6 +238,11 @@ async function tryInitGroupTab(tab) {
       !tab.$TST.hasGroupTabURL)
     return;
 
+  if (tab.discarded) {
+    log('tryInitGroupTab: skip discarded tab ', tab);
+    return;
+  }
+
   log('tryInitGroupTab ', tab);
   CrossContextMessaging.init(tab.id);
 
@@ -304,7 +309,8 @@ function reserveToUpdateRelatedGroupTabs(tab, changedInfo) {
 }
 
 async function updateRelatedGroupTab(groupTab, changedInfo = []) {
-  if (!TabsStore.ensureLivingItem(groupTab))
+  if (!TabsStore.ensureLivingItem(groupTab) ||
+      groupTab.discarded)
     return;
 
   await tryInitGroupTab(groupTab);
