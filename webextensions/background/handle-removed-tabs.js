@@ -114,6 +114,17 @@ Tab.onRemoving.addListener(async (tab, removeInfo = {}) => {
 });
 async function handleRemovingPostProcess({ closeParentBehavior, windowId, parent, newParent, insertBefore, nearestFollowingRootTab, children, descendants, removedTab, structure } = {}) {
   log('handleRemovingPostProcess ', { closeParentBehavior, windowId, parent, newParent, insertBefore, nearestFollowingRootTab, children, descendants, removedTab, structure });
+
+  const subTab = Tab.get(removedTab.id)?.$TST.subSplitViewTab;
+  if (subTab &&
+      !Tab.get(removedTab.id)?.$TST.subtreeCollapsed) {
+    await Tree.swapSplitViewTabsInTree({
+      from: removedTab,
+      to:   subTab,
+    });
+    return;
+  }
+
   if (closeParentBehavior == Constants.kPARENT_TAB_OPERATION_BEHAVIOR_ENTIRE_TREE)
     await closeChildTabs(descendants, {
       triggerTab:        removedTab,
