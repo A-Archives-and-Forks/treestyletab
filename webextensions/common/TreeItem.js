@@ -1740,7 +1740,8 @@ export class Tab extends TreeItem {
     if (this.raw.groupId == -1) {
       return !!this.topmostSubtreeCollapsedAncestor;
     }
-    if (this.raw.active) {
+    if (this.raw.active ||
+        this.subSplitViewTab?.active) {
       // simulate "visible active tab in collapsed tab group" behavior of Firefox itself
       return false;
     }
