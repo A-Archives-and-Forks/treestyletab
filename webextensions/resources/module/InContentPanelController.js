@@ -503,8 +503,9 @@ export default class InContentPanelController {
     }
 
     const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
+    const mayBeInverted = isRTL() != mayBeRight;
     const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-    const playgroundTab = (mayBeRight ? activeTab?.$TST.subSplitViewTab : activeTab?.$TST.mainSplitViewTab) || activeTab;
+    const playgroundTab = (mayBeInverted ? activeTab?.$TST.subSplitViewTab : activeTab?.$TST.mainSplitViewTab) || activeTab;
     const playgroundTabId = Permissions.canInjectScriptToTabSync(playgroundTab) ?
       playgroundTab.id :
       Permissions.canInjectScriptToTabSync(activeTab) ?
