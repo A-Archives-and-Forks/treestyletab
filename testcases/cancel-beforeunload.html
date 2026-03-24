@@ -48,6 +48,11 @@
                onclick="openTabs(this.dataset.url, this.dataset.count)"
                onkeypress="if (event.key == 'Enter') openTabs(this.dataset.url, this.dataset.count);"
                >Prepare 100 child tabs, with blank page</button></p>
+    <p><button data-count="1000"
+               data-url="about:blank"
+               onclick="openTabs(this.dataset.url, this.dataset.count)"
+               onkeypress="if (event.key == 'Enter') openTabs(this.dataset.url, this.dataset.count);"
+               >Prepare 1000 child tabs, with blank page</button></p>
     <hr>
     <p><button data-count="5"
                data-url="#"
@@ -69,5 +74,10 @@
                onclick="openTabs(this.dataset.url, this.dataset.count)"
                onkeypress="if (event.key == 'Enter') openTabs(this.dataset.url, this.dataset.count);"
                >Prepare 100 child tabs, with canceling beforeunload</button></p>
+    <p><button data-count="1000"
+               data-url="#"
+               onclick="openTabs(this.dataset.url, this.dataset.count)"
+               onkeypress="if (event.key == 'Enter') openTabs(this.dataset.url, this.dataset.count);"
+               >Prepare 1000 child tabs, with canceling beforeunload</button></p>
   </body>
 </html>
