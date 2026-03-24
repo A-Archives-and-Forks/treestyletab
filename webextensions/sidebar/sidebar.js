@@ -17,6 +17,7 @@ import {
   loadUserStyleRules,
   isMacOS,
   isRTL,
+  isRightside,
   notify,
   waitUntilStartupOperationsUnblocked,
 } from '/common/common.js';
@@ -1039,7 +1040,7 @@ async function onConfigChange(changedKey) {
 }
 
 async function isSidebarPositionInverted() {
-  const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
+  const mayBeRight = isRightside();
   if (configs.sidebarPosition == Constants.kTABBAR_POSITION_AUTO &&
       mayBeRight != isRTL() &&
       !configs.sidebarPositionInvertedNotificationShown) {

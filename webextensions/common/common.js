@@ -150,6 +150,10 @@ export function isRTL() {
   return RTL_LANGUAGES.has(lang);
 }
 
+export function isRightside() {
+  return window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
+}
+
 
 export const configs = new Configs({
   optionsExpandedSections: [

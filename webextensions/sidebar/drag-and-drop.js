@@ -37,6 +37,7 @@ import {
   isMacOS,
   isLinux,
   isRTL,
+  isRightside,
   dumpTab,
   stack,
 } from '/common/common.js';
@@ -532,7 +533,6 @@ function getDropAction(event) {
           info.draggedItem.$TST.unsafeNextTab :
           (info.draggedItem.$TST.nextSiblingTab ||
            info.draggedItem.$TST.unsafeNearestFollowingForeignerTab);
-      const isRightside = document.documentElement.classList.contains('right');
       const substanceElement = targetItem?.$TST?.element?.substanceElement;
       let substanceLeft, substanceWidth;
       if (mCachedDragTargetDimensions &&
@@ -549,7 +549,7 @@ function getDropAction(event) {
           offsetWidth: substanceWidth
         };
       }
-      if (isRightside) {
+      if (isRightside()) {
         const neck = substanceLeft + substanceWidth - Size.getFavIconSize();
         info.inlineDropPosition = event.clientX > neck ? kDROP_HEAD : kDROP_TAIL;
       }

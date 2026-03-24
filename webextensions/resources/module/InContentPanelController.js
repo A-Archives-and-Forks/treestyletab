@@ -54,6 +54,7 @@ import {
   configs,
   shouldApplyAnimation,
   isRTL,
+  isRightside,
 } from '/common/common.js';
 import * as Constants from '/common/constants.js';
 import * as Permissions from '/common/permissions.js';
@@ -502,7 +503,7 @@ export default class InContentPanelController {
       timestamp = Date.now();
     }
 
-    const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
+    const mayBeRight = isRightside();
     const mayBeInverted = isRTL() != mayBeRight;
     const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
     const playgroundTab = (mayBeInverted ? activeTab?.$TST.subSplitViewTab : activeTab?.$TST.mainSplitViewTab) || activeTab;
