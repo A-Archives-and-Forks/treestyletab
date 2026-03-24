@@ -117,6 +117,7 @@ async function handleRemovingPostProcess({ closeParentBehavior, windowId, parent
 
   const subTab = Tab.get(removedTab.id)?.$TST.subSplitViewTab;
   if (subTab &&
+      !subTab.$TST.removing &&
       !Tab.get(removedTab.id)?.$TST.subtreeCollapsed) {
     await Tree.swapSplitViewTabsInTree({
       from: removedTab,
