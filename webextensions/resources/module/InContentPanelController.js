@@ -502,8 +502,9 @@ export default class InContentPanelController {
       timestamp = Date.now();
     }
 
+    const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
     const activeTab = Tab.getActiveTab(TabsStore.getCurrentWindowId());
-    const playgroundTab = activeTab?.$TST.mainSplitViewTab || activeTab;
+    const playgroundTab = (mayBeRight ? activeTab?.$TST.subSplitViewTab : activeTab?.$TST.mainSplitViewTab) || activeTab;
     const playgroundTabId = Permissions.canInjectScriptToTabSync(playgroundTab) ?
       playgroundTab.id :
       Permissions.canInjectScriptToTabSync(activeTab) ?
@@ -529,8 +530,6 @@ export default class InContentPanelController {
       anchorTabRect.top = (prevItemRect?.bottom || 0) + 1;
       anchorTabRect.bottom = anchorTabRect.top + anchorTabRect.height;
     }
-
-    const mayBeRight = window.mozInnerScreenX - window.screenX > (window.outerWidth - window.innerWidth) / 2;
 
     this.log(`show (${this.type}, ${targetItem.id}}) [${Date.now() - timestamp}msec from start]: show in ${playgroundTabId || 'sidebar'} `, messageParams);
     const succeeded = await this.sendMessage(
