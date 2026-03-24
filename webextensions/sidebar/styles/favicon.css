@@ -71,7 +71,7 @@ tab-favicon {
   max-width: var(--favicon-size);
   width: var(--svg-small-icon-size);
 }
-:root.simulate-svg-context-fill tab-item {
+:root.simulate-svg-context-fill {
   .favicon-builtin::before,
   .favicon-sharing-state::before,
   .favicon-sticky-state::after {
@@ -272,17 +272,20 @@ tab-item-substance.loading .favicon-builtin::before {
     top: 10%;
     transform: scale(1.3, 1.3);
     width: var(--svg-small-icon-size);
+    z-index: 1;
   }
 
-  tab-item:not(.sticky) &,
+  tab-item-substance:not(.sticky) &,
   tab-item.pinned & {
     display: none;
   }
 
-  tab-item.sticky &::after {
-    background-image: url("./icons/pin-12.svg")
+  tab-item-substance.sticky &::after {
+    background-image: url("./icons/pin-12.svg");
+    position: relative;
+    z-index: 2;
   }
-  :root.simulate-svg-context-fill tab-item.sticky &::after {
+  :root.simulate-svg-context-fill tab-item-substance.sticky &::after {
     mask-image: url("./icons/pin-12.svg");
   }
 }
