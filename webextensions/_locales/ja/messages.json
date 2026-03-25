@@ -760,6 +760,8 @@
   "config_tabDragBehavior_doNothing":                    { "message": "何もしない" },
   "config_tabDragBehavior_noteForDragstartOutsideSidebar": { "message": "ブラウザー自身のタブバー上で親タブをドラッグ開始した時の動作は、「ツリーの挙動」→「親タブを閉じたり移動したりした時の挙動」での指定に準じます" },
   "config_showTabDragBehaviorNotification_label": { "message": "タブのドラッグ中、サイドバー外にドロップした時の操作説明を表示する" },
+  "config_enlargeDropAreaToCreateNewGroupWithShiftKey_label": { "message": "Shiftキーを押しながらタブをドラッグ＆ドロップしたとき、ドロップ先タブの子タブにする代わりに新しいタブグループを作成する" },
+  "config_enlargeDropAreaToCreateNewGroupWithShiftKey_description": { "message": "（※この設定を無効にしている場合でも、タブの水平方向の頭側にタブをドロップすると新しいタブグループを作成できます）" },
 
   "config_dropLinksOnTabBehavior_caption": { "message": "タブにリンクやURL文字列をドロップしたとき" },
   "config_dropLinksOnTabBehavior_ask":     { "message": "どうするか常に訊ねる" },

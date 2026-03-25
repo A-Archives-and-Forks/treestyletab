@@ -325,6 +325,8 @@ export const configs = new Configs({
   guessDraggedNativeTabs:              true,
   ignoreTabDropNearSidebarArea:        true,
   moveSoloTabOnDropParentToDescendant: true,
+  enlargeDropAreaToCreateNewGroupWithShiftKey:
+     true,
   pinInteractionCueDelayMS:
      500 /* `browser.tabs.dragDrop.pinInteractionCue.delayMS` */
      + 240 /* `browser.tabs.dragDrop.createGroup.delayMS` */,

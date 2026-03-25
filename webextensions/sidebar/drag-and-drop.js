@@ -411,7 +411,7 @@ function getDropAction(event) {
         [targetItem, ...info.draggedItems].some(item => item?.type != TreeItem.TYPE_TAB || item?.pinned || item.groupId != -1)) {
       return false;
     }
-    return info.dropPosition == kDROP_ON_SELF && (info.inlineDropPosition == kDROP_HEAD || event.shiftKey);
+    return info.dropPosition == kDROP_ON_SELF && (info.inlineDropPosition == kDROP_HEAD || (configs.enlargeDropAreaToCreateNewGroupWithShiftKey && event.shiftKey));
   };
   info.defineGetter('EventUtils.isCopyAction', () => EventUtils.isCopyAction(event));
   info.defineGetter('dropEffect', () => getDropEffectFromDropAction(info));

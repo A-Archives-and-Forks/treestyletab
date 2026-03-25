@@ -764,6 +764,8 @@
   "config_tabDragBehavior_doNothing":                    { "message": "Do nothing" },
   "config_tabDragBehavior_noteForDragstartOutsideSidebar": { "message": "When a parent tabs is dragged from the browser's native tab bar, it will behave according to the section \"Tree Behavior\" => \"When a parent tab is Closed or Moved\"." },
   "config_showTabDragBehaviorNotification_label": { "message": "Show notification about what will happen on tabs dropped outside the sidebar, while tab dragging." },
+  "config_enlargeDropAreaToCreateNewGroupWithShiftKey_label":       { "message": "Create New Tab Group instead of attaching, by Shift-dragging/dropping tabs onto another tab" },
+  "config_enlargeDropAreaToCreateNewGroupWithShiftKey_description": { "message": "(*You still can create New Tab Group by dragging with disabled this option, with dropping tabs onto horizontal head area of another tab.)" },
 
   "config_dropLinksOnTabBehavior_caption": { "message": "When a link or URL string is dropped on a tab" },
   "config_dropLinksOnTabBehavior_ask":     { "message": "Always ask me how to treat it" },

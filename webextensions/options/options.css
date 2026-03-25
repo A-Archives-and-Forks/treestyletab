@@ -69,6 +69,11 @@ div.sub {
   padding-inline-start: 2em;
 }
 
+label + label.sub {
+  display: block;
+  padding-inline-start: 2em;
+}
+
 ul p.sub,
 ul div.sub p {
   margin-block: 0;

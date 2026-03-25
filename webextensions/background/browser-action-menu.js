@@ -2137,6 +2137,11 @@ const mItems = [
         type:   'checkbox',
         expert: true,
       },
+      {
+        title: indent(2) + browser.i18n.getMessage('config_enlargeDropAreaToCreateNewGroupWithShiftKey_label'),
+        key:   'enlargeDropAreaToCreateNewGroupWithShiftKey',
+        type:  'checkbox',
+      },
       //{ type: 'separator' },
       {
         title:   indent() + browser.i18n.getMessage('config_dropLinksOnTabBehavior_caption'),
