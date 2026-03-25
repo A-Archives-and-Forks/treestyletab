@@ -1,7 +1,7 @@
 # 更新履歴
 
  - master/HEAD
-   * Firefox 149以降のタブの分割表示に対応（WebExtensions APIの制約により、管理機能はまだ利用できません）
+   * Firefox 149以降のタブの分割表示に対応（WebExtensions APIの制約により、「左右のタブを入れ替える」以外の管理機能はまだ利用できません）
    * Firefox 150以降のタブのコンテキストメニューの「リンクをコピー」機能を再現するようにした
    * Firefoxの「リンクをコピー」に対応するコンテキストメニューの機能として「ツリーのリンクをコピ-」「配下のタブのリンクをコピー」を追加
    * タブのスタイリングとテキストの配置を全体的に修正（[by tcbbd](https://github.com/piroor/treestyletab/pull/3888), thanks!）
