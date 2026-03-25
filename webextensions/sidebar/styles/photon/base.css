@@ -22,6 +22,10 @@ tab-item,
   margin-block-end: -1px;
 }
 
+tab-item-substance.split-substances-container {
+  display: none;
+}
+
 tab-item[type="group"] {
   tab-item-substance,
   .ui {
