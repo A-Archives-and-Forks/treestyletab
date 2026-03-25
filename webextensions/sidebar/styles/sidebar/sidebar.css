@@ -14,7 +14,7 @@
  * The Original Code is the SidebarStyleTab.
  * 
  * The Initial Developer of the Original Code is YUKI "Piro" Hiroshi.
- * Portions created by the Initial Developer are Copyright (C) 2010-2025
+ * Portions created by the Initial Developer are Copyright (C) 2010-2026
  * the Initial Developer. All Rights Reserved.
  * 
  * Contributor(s): Philipp von Weitershausen <philipp@weitershausen.de>
@@ -153,7 +153,7 @@ tab-item[type="group"] {
     border: 1px solid var(--tab-border);
     border-radius: 0.5em;
     height: 100%;
-    max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size) / 2)) +
+    max-width: calc(max(var(--tab-label-width), calc(var(--favicon-size))) +
                     calc(0.25em * 2) /* margin-inline of tab-label-content (both side) */ +
                     2px /* border */);
   }
