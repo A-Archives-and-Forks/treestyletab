@@ -23,7 +23,7 @@ tab-item,
 }
 
 tab-item-substance.split-substances-container {
-  display: none;
+  background: transparent;
 }
 
 tab-item[type="group"] {
@@ -84,8 +84,10 @@ tab-item.pinned tab-item-substance {
 :root.regular .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-end: 0.35em;
 }
-:root.regular tab-item:not(.pinned) tab-item-substance[data-parent-id],
-:root.regular tab-item:not(.pinned) tab-item-substance[data-group-id]:not([data-group-id="-1"]) {
+:root.regular tab-item:not(.pinned):not(.split-view) tab-item-substance[data-parent-id],
+:root.regular tab-item:not(.pinned):not(.split-view) tab-item-substance[data-group-id]:not([data-group-id="-1"]),
+:root.regular tab-item:not(.pinned) tab-item-substance.split-view-main[data-parent-id],
+:root.regular tab-item:not(.pinned) tab-item-substance.split-view-main[data-group-id]:not([data-group-id="-1"]) {
   border-inline-start-width: 1px;
 }
 
@@ -94,8 +96,10 @@ tab-item.pinned tab-item-substance {
 :root.inverted .after-tabs [role="button"]:not([data-menu-ui]) {
   padding-inline-start: 0.35em;
 }
-:root.inverted tab-item:not(.pinned) tab-item-substance[data-parent-id],
-:root.inverted tab-item:not(.pinned) tab-item-substance[data-group-id]:not([data-group-id="-1"]) {
+:root.inverted tab-item:not(.pinned):not(.split-view) tab-item-substance[data-parent-id],
+:root.inverted tab-item:not(.pinned):not(.split-view) tab-item-substance[data-group-id]:not([data-group-id="-1"]),
+:root.inverted tab-item:not(.pinned) tab-item-substance.split-view-sub[data-parent-id],
+:root.inverted tab-item:not(.pinned) tab-item-substance.split-view-sub[data-group-id]:not([data-group-id="-1"]) {
   border-inline-end-width: 1px;
 }
 
@@ -204,7 +208,8 @@ tab-item-substance.active tab-closebox:hover::before {
 
 
 
-.sticky-tabs-container tab-item .background:not(.base) {
+.sticky-tabs-container tab-item:not(.split-view) tab-item-substance.split-view-main .background:not(.base),
+.sticky-tabs-container tab-item tab-item-substance.split-substances-container .background:not(.base) {
   box-shadow: 0 0 0.4em rgba(0, 0, 0, 0.2);
 }
 

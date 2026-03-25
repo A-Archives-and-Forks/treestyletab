@@ -155,13 +155,17 @@ tab-item .burster {
   --shadow-blur: 0.2em;
 }
 
-:root:not(.rtl).regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance,
-:root.rtl.inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance {
+:root:not(.rtl).regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab):not(.split-view) tab-item-substance.split-view-main,
+:root:not(.rtl).regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance.split-substances-container,
+:root.rtl.inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab):not(.split-view) tab-item-substance.split-view-main,
+:root.rtl.inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance.split-substances-container {
   box-shadow: -0.3em 0.3em var(--shadow-blur) var(--shadow-color);
 }
 
-:root:not(.rtl).inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance,
-:root.rtl.regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance {
+:root:not(.rtl).inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab):not(.split-view) tab-item-substance.split-view-main,
+:root:not(.rtl).inverted tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance.split-substances-container,
+:root.rtl.regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab):not(.split-view) tab-item-substance.split-view-main,
+:root.rtl.regular tab-item:not(.pinned):not(collapsed):not(#dummy-tab) tab-item-substance.split-substances-container {
   box-shadow: 0.3em 0.3em var(--shadow-blur) var(--shadow-color);
 }
 
