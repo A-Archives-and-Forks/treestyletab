@@ -35,6 +35,14 @@ export default class TabPreviewPanel extends InContentPanel {
           }
         }
 
+        /* When TST is unloaded/reloaded while the root element is there,
+           the root element will be left there and it block user operations
+           unexpectedly. This is a workaround to avoid such a fatal situation. */
+        &.extended:hover:not(:has(.in-content-panel.open)):not(:has(.in-content-panel:hover)) {
+          height: 0 !important;
+          pointer-events: none !important;
+        }
+
         .in-content-panel {
           cursor: default;
           overflow: hidden; /* clip the preview with the rounded edges */
