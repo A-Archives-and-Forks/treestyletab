@@ -835,7 +835,7 @@ index = ${raw.index}
   }
 
   _onMouseOver(_event) {
-    this._updateTabAndAncestorsTooltip(this.$TST.raw);
+    this._updateTabAndAncestorsTooltip(this.$TST?.raw);
   }
 
   _onMouseEnter(event) {
