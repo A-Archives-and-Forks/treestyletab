@@ -1443,6 +1443,7 @@
   "tabContextMenu_addToGroup_unnamed_label":       { "message": "Groupe sans nom" },
   "tabContextMenu_removeFromGroup_label":               { "message": "&Retirer du groupe" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "&Retirer des groupes" },
+  "tabContextMenu_swapSplitView_label": { "message": "&Inverser les onglets" },
   "tabContextMenu_reload_label": {
     "message": "&Actualiser l'onglet",
     "hash": "b47f1ba4fa9f6689bd27124978684636"

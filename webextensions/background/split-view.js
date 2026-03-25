@@ -34,6 +34,15 @@ export function populateTabs(tabs) {
   return [...populatedTabs];
 }
 
+export async function swap(tab) {
+  const subTab  = tab.$TST.subSplitViewTab || tab;
+  const mainTab = subTab.$TST.mainSplitViewTab;
+  if (!mainTab || !subTab)
+    return;
+
+  return browser.tabs.move(subTab.id, { index: mainTab.index });
+}
+
 export async function swapTreeParent({ to, from }) {
   from = Tab.get(from.id);
   to   = Tab.get(to.id);

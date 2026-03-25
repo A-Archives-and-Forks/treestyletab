@@ -27,6 +27,7 @@ import { Tab, TreeItem } from '/common/TreeItem.js';
 
 import * as Commands from './commands.js';
 import * as NativeTabGroups from './native-tab-groups.js';
+import * as SplitView from './split-view.js';
 import * as TabsOpen from './tabs-open.js';
 
 function log(...args) {
@@ -76,6 +77,9 @@ const mItemsById = {
   'context_removeFromGroup': {
     title:              browser.i18n.getMessage('tabContextMenu_removeFromGroup_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_removeFromGroup_label_multiselected')
+  },
+  'context_swapSplitView': {
+    title: browser.i18n.getMessage('tabContextMenu_swapSplitView_label'),
   },
   'context_separator:afterNewTab': {
     type: 'separator'
@@ -862,6 +866,10 @@ async function onShown(info, contextTab) {
       multiselected
     }) && modifiedItemsCount++;
 
+    updateItem('context_swapSplitView', {
+      visible: emulate && !!contextTab?.$TST?.pairedSplitViewTab,
+    }) && modifiedItemsCount++;
+
     updateItem('context_separator:afterNewTab', {
       visible: emulate,
     }) && modifiedItemsCount++;
@@ -1351,6 +1359,10 @@ async function onClick(info, contextTab) {
 
     case 'context_removeFromGroup':
       NativeTabGroups.removeTabsFromGroup(multiselectedTabs || [contextTab]);
+      break;
+
+    case 'context_swapSplitView':
+      SplitView.swap(contextTab);
       break;
 
     case 'context_reloadTab':

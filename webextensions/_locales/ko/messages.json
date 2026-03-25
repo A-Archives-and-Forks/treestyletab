@@ -2280,6 +2280,7 @@
     "tabContextMenu_addToGroup_unnamed_label":       { "message": "익명 그룹" },
     "tabContextMenu_removeFromGroup_label":               { "message": "그룹에서 제거(&R)" },
     "tabContextMenu_removeFromGroup_label_multiselected": { "message": "그룹에서 제거(&R)" },
+    "tabContextMenu_swapSplitView_label": { "message": "탭 역순(&R)" },
     "tabContextMenu_reload_label": {
         "message": "탭 새로 고침(&R)",
         "hash": "b47f1ba4fa9f6689bd27124978684636"

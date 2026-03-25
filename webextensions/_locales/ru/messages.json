@@ -883,6 +883,7 @@
   "tabContextMenu_addToGroup_unnamed_label":       { "message": "Безымянная группа" },
   "tabContextMenu_removeFromGroup_label":               { "message": "Удалить из группы(&к)" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "Удалить из групп(&к)" },
+  "tabContextMenu_swapSplitView_label": { "message": "Переставить вкладки(&r)" },
 
   "tabContextMenu_reload_label":      { "message": "&Обновить вкладку" },
   "tabContextMenu_unblockAutoplay_label": { "message": "П&роигрывать вкладку" },

@@ -884,6 +884,7 @@
   "tabContextMenu_addToGroup_unnamed_label":       { "message": "Unbenannte Gruppe" },
   "tabContextMenu_removeFromGroup_label":               { "message": "Aus Grupp&e entfernen" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "Aus Grupp&en entfernen" },
+  "tabContextMenu_swapSplitView_label": { "message": "Tabs umkeh&ren" },
 
   "tabContextMenu_reload_label":      { "message": "Tab neu la&den" },
   "tabContextMenu_unblockAutoplay_label": { "message": "Tab wiede&rgeben" },

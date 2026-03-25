@@ -2748,6 +2748,7 @@
   "tabContextMenu_addToGroup_unnamed_label":       { "message": "Naamloze groep" },
   "tabContextMenu_removeFromGroup_label":               { "message": "&Verwijderen uit groep" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "&Verwijderen uit groepen" },
+  "tabContextMenu_swapSplitView_label": { "message": "Tabbladen &omkeren" },
   "tabContextMenu_reload_label": {
     "message": "Tabblad he&rladen",
     "hash": "b47f1ba4fa9f6689bd27124978684636"

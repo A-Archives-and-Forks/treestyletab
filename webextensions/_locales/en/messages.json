@@ -929,6 +929,7 @@
   "tabContextMenu_addToGroup_unnamed_label":       { "message": "Unnamed group" },
   "tabContextMenu_removeFromGroup_label":               { "message": "&Remove from Group" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "&Remove from Groups" },
+  "tabContextMenu_swapSplitView_label": { "message": "Reve&rse Tabs" },
 
 
   "tabContextMenu_reload_label":      { "message": "&Reload Tab" },

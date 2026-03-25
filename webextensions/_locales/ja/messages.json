@@ -925,6 +925,7 @@
   "tabContextMenu_addToGroup_unnamed_label":       { "message": "無名のグループ" },
   "tabContextMenu_removeFromGroup_label":               { "message": "このタブをグループから除外(&R)" },
   "tabContextMenu_removeFromGroup_label_multiselected": { "message": "選択したタブを各グループから除外(&R)" },
+  "tabContextMenu_swapSplitView_label": { "message": "左右のタブを入れ替える(&R)" },
 
   "tabContextMenu_reload_label":      { "message": "タブを再読み込み(&R)" },
   "tabContextMenu_unblockAutoplay_label": { "message": "タブのメディアを再生(&L)" },
