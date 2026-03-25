@@ -61,6 +61,8 @@ export class TreeItemElement extends HTMLElement {
       Constants.kAPI_NATIVE_TAB_GROUP_ID,
       Constants.kAPI_TAB_ID,
       Constants.kAPI_WINDOW_ID,
+      Constants.kGROUP_ID,
+      Constants.kSPLIT_VIEW_ID,
       Constants.kPARENT,
       Constants.kCHILDREN,
       Constants.kCURRENT_URI,
