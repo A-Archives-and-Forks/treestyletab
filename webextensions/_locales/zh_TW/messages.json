@@ -797,7 +797,7 @@
     "tabContextMenu_sendTabsToAllDevices_label": { "message": "傳送至所有裝置" },
     "tabContextMenu_manageSyncDevices_label": { "message": "管理裝置..." },
     "tabContextMenu_shareTabURL_label":   { "message": "分享 (&H)" },
-    "tabContextMenu_copyLinks_label_multiselected":   { "message": "複製鏈結" },
+    "tabContextMenu_copyLinks_label":   { "message": "複製鏈結" },
 
 
     "tabContextMenu_closeDuplicatedTabs_label": { "message": "關閉重複的分頁(&U)" },
