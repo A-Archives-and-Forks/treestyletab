@@ -42,6 +42,7 @@ import * as TabsStore from '/common/tabs-store.js';
 
 import { Tab } from '/common/TreeItem.js';
 
+import * as NativeTabGroups from './native-tab-groups.js';
 import * as TabsMove from './tabs-move.js';
 import * as Tree from './tree.js';
 
@@ -112,8 +113,8 @@ export async function openURIInTab(uri, options = {}) {
 const FORBIDDEN_URL_MATCHER = /^(about|chrome|resource|file):/;
 const ALLOWED_URL_MATCHER = /^about:blank(\?|$)/;
 
-export async function openURIsInTabs(uris, { windowId, insertBefore, insertAfter, cookieStoreId, isOrphan, active, inBackground, discarded, opener, parent, fixPositions } = {}) {
-  log('openURIsInTabs: ', { uris, windowId, insertBefore, insertAfter, cookieStoreId, isOrphan, active, inBackground, discarded, opener, parent, fixPositions });
+export async function openURIsInTabs(uris, { windowId, insertBefore, insertAfter, cookieStoreId, isOrphan, active, inBackground, discarded, groupId, opener, parent, fixPositions } = {}) {
+  log('openURIsInTabs: ', { uris, windowId, insertBefore, insertAfter, cookieStoreId, isOrphan, active, inBackground, discarded, groupId, opener, parent, fixPositions });
   if (!windowId)
     throw new Error('missing loading target window\n' + stack());
 
@@ -141,6 +142,7 @@ export async function openURIsInTabs(uris, { windowId, insertBefore, insertAfter
         windowId,
         active: index == 0 && (active || (inBackground === false)),
       };
+      let groupIdForTab = groupId;
       if (uri && typeof uri == 'object') { // tabs.create() compatible
         if ('active' in uri)
           params.active = uri.active;
@@ -148,6 +150,8 @@ export async function openURIsInTabs(uris, { windowId, insertBefore, insertAfter
           params.cookieStoreId = uri.cookieStoreId;
         if ('discarded' in uri)
           params.discarded = uri.discarded;
+        if ('groupId' in uri)
+          groupIdForTab = uri.groupId;
         if ('index' in uri)
           params.index = uri.index;
         if ('openerTabId' in uri)
@@ -237,6 +241,8 @@ export async function openURIsInTabs(uris, { windowId, insertBefore, insertAfter
         await TabsMove.moveTabInternallyAfter(tab, insertAfter, {
           broadcast: true
         });
+      if (groupIdForTab && groupIdForTab != -1)
+        NativeTabGroups.addTabsToGroup([tab], groupIdForTab);
       log('tab is opened.');
       await tab.$TST.opened;
       tabs.push(tab);
@@ -326,6 +332,7 @@ function onMessage(message, openerTab) {
           insertAfter:  Tab.get(message.insertAfterId),
           active:       message.active,
           discarded:    message.discarded,
+          groupId:      message.groupId,
         });
       });
       break;

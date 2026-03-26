@@ -72,7 +72,7 @@ const kDROP_HEAD    = 'head';
 const kDROP_TAIL    = 'tail';
 const kDROP_IMPOSSIBLE = 'impossible';
 
-let mLongHoverExpandedItems = [];
+const mLongHoverExpandedItems = new Map();
 let mLongHoverTimer;
 let mLongHoverTimerNext;
 
@@ -726,18 +726,18 @@ function isDraggingAllActiveTabs(tab) {
 }
 
 function collapseAutoExpandedItemsWhileDragging() {
-  if (mLongHoverExpandedItems.length > 0 &&
+  if (mLongHoverExpandedItems.size > 0 &&
       configs.autoExpandOnLongHoverRestoreIniitalState) {
-    for (const item of mLongHoverExpandedItems) {
-      switch (item.$TST.type) {
+    for (const [id, type] of mLongHoverExpandedItems.entries()) {
+      switch (type) {
         case TreeItem.TYPE_GROUP:
-          browser.tabGroups.update(item.id, { collapsed: true });
+          browser.tabGroups.update(id, { collapsed: true });
           break;
 
         case TreeItem.TYPE_TAB:
           BackgroundConnection.sendMessage({
             type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
-            tabId:     item.id,
+            tabId:     id,
             collapsed: false,
             justNow:   true,
             stack:     stack(),
@@ -746,7 +746,7 @@ function collapseAutoExpandedItemsWhileDragging() {
       }
     }
   }
-  mLongHoverExpandedItems = [];
+  mLongHoverExpandedItems.clear();
 }
 
 async function handleDroppedNonTreeItems(event, dropActionInfo) {
@@ -760,10 +760,13 @@ async function handleDroppedNonTreeItems(event, dropActionInfo) {
   log('handleDroppedNonTreeItems: ', uris);
 
   const dragOverItem = dropActionInfo.dragOverItem;
+  const groupId = dragOverItem.groupId || dragOverItem.id || undefined;
   if (dragOverItem &&
       dropActionInfo.dropPosition == kDROP_ON_SELF &&
       !dragOverItem.pinned) {
-    const behavior = await getDroppedLinksOnTabBehavior();
+    const behavior = dragOverItem.$TST.type == TreeItem.TYPE_GROUP ?
+      Constants.kDROPLINK_NEWTAB :
+      await getDroppedLinksOnTabBehavior();
     if (behavior <= Constants.kDROPLINK_ASK)
       return;
     if (behavior & Constants.kDROPLINK_LOAD) {
@@ -789,6 +792,7 @@ async function handleDroppedNonTreeItems(event, dropActionInfo) {
     insertAfterId:  dropActionInfo.insertAfter?.id,
     active,
     discarded:      !active && configs.tabsLoadInBackgroundDiscarded,
+    groupId,
   });
 }
 
@@ -1382,32 +1386,32 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }
       if (configs.autoExpandIntelligently) {
         switch (dragOverItem.$TST.type) {
           case TreeItem.TYPE_GROUP:
-            if (!mLongHoverExpandedItems.includes(dragOverItemId))
-              mLongHoverExpandedItems.push(dragOverItemId);
-            browser.tabGroups.update(dragOverItem.id, { collapsed: false });
+            if (!mLongHoverExpandedItems.has(dragOverItemId))
+              mLongHoverExpandedItems.set(dragOverItemId, dragOverItem.$TST.type);
+            browser.tabGroups.update(dragOverItemId, { collapsed: false });
             break;
 
           case TreeItem.TYPE_TAB:
             BackgroundConnection.sendMessage({
               type:  Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE_INTELLIGENTLY_FOR,
-              tabId: dragOverItem.id
+              tabId: dragOverItemId,
             });
             break;
         }
       }
       else {
-        if (!mLongHoverExpandedItems.includes(dragOverItemId))
-          mLongHoverExpandedItems.push(dragOverItemId);
+        if (!mLongHoverExpandedItems.has(dragOverItemId))
+          mLongHoverExpandedItems.set(dragOverItemId, dragOverItem.$TST.type);
 
         switch (dragOverItem.$TST.type) {
           case TreeItem.TYPE_GROUP:
-            browser.tabGroups.update(dragOverItem.id, { collapsed: false });
+            browser.tabGroups.update(dragOverItemId, { collapsed: false });
             break;
 
           case TreeItem.TYPE_TAB:
             BackgroundConnection.sendMessage({
               type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
-              tabId:     dragOverItem.id,
+              tabId:     dragOverItemId,
               collapsed: false,
               stack:     stack(),
             });
