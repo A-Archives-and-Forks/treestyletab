@@ -4,7 +4,10 @@
    * Support presentation of split view on Firefox 149 and later. (Management commands except "Reverse Tabs" are not available yet due to restrictions of WebExtensions API.)
    * Simulate "Copy Link(s)" context menu command of Firefox 150 and later.
    * Add "Copy Tree as Links" and "Copy Descendant of Tree as Links" context menu commands corresponding to Firefox's "Copy Link(s)".
+   * Optimize tree restorations triggered by "Undo Close Tab" operations. ([by tkng](https://github.com/piroor/treestyletab/pull/3893), thanks!)
    * Avoid unclickable Web contents problem after TST is unloaded.
+   * Open dropped link in new tab with tab group if it is dropped onto a grouped tab or a group header.
+   * Collapsed tab groups are now automatically expanded while dragging.
    * Brush up styling and text alignment in tabs and tab groups globally. ([by tcbbd](https://github.com/piroor/treestyletab/pull/3888), thanks!)
    * DOM structure of tabs is changed to support split view - now a `tab-item` may contain multiple `tab-item-substance` elements. CSS customizations may need to be updated for the [new DOM structure](https://github.com/piroor/treestyletab/wiki/Code-snippets-for-custom-style-rules#for-tsts-options-page-version-20-and-later). See also a [migration guide](https://github.com/piroor/treestyletab/issues/3806#issuecomment-4119832486).
  - 4.2.12 (2026.3.17)
