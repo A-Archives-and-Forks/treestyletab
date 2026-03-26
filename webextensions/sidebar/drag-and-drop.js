@@ -272,11 +272,11 @@ function getDropAction(event) {
     return info.draggedItems.map(item => item.id);
   });
   info.defineGetter('firstTargetableItem', () => {
-    const items = Scroll.getRenderableTreeItems();
+    const items = Scroll.getLastRenderableTreeItems();
     return items.length > 0 ? items[0] : Tab.getFirstTab(TabsStore.getCurrentWindowId());
   });
   info.defineGetter('lastTargetableItem', () => {
-    const items = Scroll.getRenderableTreeItems();
+    const items = Scroll.getLastRenderableTreeItems();
     return items.length > 0 ? items[items.length - 1] : Tab.getLastTab(TabsStore.getCurrentWindowId());
   });
   info.defineGetter('sanitizedDropOnTargetItem', () => { // the drop target we are trying to drop on itself

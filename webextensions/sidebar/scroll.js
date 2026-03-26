@@ -245,7 +245,7 @@ function splitViewHiddenTabFilter(tab) {
   return !tab?.$TST.mainSplitViewTab;
 }
 
-export function getRenderableTreeItems(windowId = null) {
+function getRenderableTreeItems(windowId = null) {
   if (!windowId) {
     windowId = TabsStore.getCurrentWindowId();
   }
@@ -292,6 +292,10 @@ export function getRenderableTreeItems(windowId = null) {
   mCachedRenderableTreeItems = mixedItems.map(item => ({ id: item.id, type: item.type }));
   return mixedItems;
 };
+
+export function getLastRenderableTreeItems() {
+  return mLastRenderableItems ||= getRenderableTreeItems();
+}
 
 renderVirtualScrollViewport.triggers = new Set();
 
