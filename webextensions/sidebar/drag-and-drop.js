@@ -735,13 +735,13 @@ function collapseAutoExpandedItemsWhileDragging() {
           break;
 
         case TreeItem.TYPE_TAB:
-      BackgroundConnection.sendMessage({
-        type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
-        tabId:     item.id,
-        collapsed: false,
-        justNow:   true,
-        stack:     stack(),
-      });
+          BackgroundConnection.sendMessage({
+            type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
+            tabId:     item.id,
+            collapsed: false,
+            justNow:   true,
+            stack:     stack(),
+          });
           break;
       }
     }
@@ -1388,10 +1388,10 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }
             break;
 
           case TreeItem.TYPE_TAB:
-        BackgroundConnection.sendMessage({
-          type:  Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE_INTELLIGENTLY_FOR,
-          tabId: dragOverItem.id
-        });
+            BackgroundConnection.sendMessage({
+              type:  Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE_INTELLIGENTLY_FOR,
+              tabId: dragOverItem.id
+            });
             break;
         }
       }
@@ -1405,12 +1405,12 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }
             break;
 
           case TreeItem.TYPE_TAB:
-        BackgroundConnection.sendMessage({
-          type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
-          tabId:     dragOverItem.id,
-          collapsed: false,
-          stack:     stack(),
-        });
+            BackgroundConnection.sendMessage({
+              type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
+              tabId:     dragOverItem.id,
+              collapsed: false,
+              stack:     stack(),
+            });
             break;
         }
       }
