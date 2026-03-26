@@ -994,6 +994,10 @@ export class TabGroup extends TreeItem {
     return this.raw;
   }
 
+  get subtreeCollapsed() {
+    return this.raw.collapsed;
+  }
+
   get nearestVisibleAncestorOrSelf() {
     return this.raw;
   }

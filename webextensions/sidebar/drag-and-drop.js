@@ -72,7 +72,7 @@ const kDROP_HEAD    = 'head';
 const kDROP_TAIL    = 'tail';
 const kDROP_IMPOSSIBLE = 'impossible';
 
-let mLongHoverExpandedTabs = [];
+let mLongHoverExpandedItems = [];
 let mLongHoverTimer;
 let mLongHoverTimerNext;
 
@@ -726,19 +726,27 @@ function isDraggingAllActiveTabs(tab) {
 }
 
 function collapseAutoExpandedItemsWhileDragging() {
-  if (mLongHoverExpandedTabs.length > 0 &&
+  if (mLongHoverExpandedItems.length > 0 &&
       configs.autoExpandOnLongHoverRestoreIniitalState) {
-    for (const tab of mLongHoverExpandedTabs) {
+    for (const item of mLongHoverExpandedItems) {
+      switch (item.$TST.type) {
+        case TreeItem.TYPE_GROUP:
+          browser.tabGroups.update(item.id, { collapsed: true });
+          break;
+
+        case TreeItem.TYPE_TAB:
       BackgroundConnection.sendMessage({
         type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
-        tabId:     tab.id,
+        tabId:     item.id,
         collapsed: false,
         justNow:   true,
         stack:     stack(),
       });
+          break;
+      }
     }
   }
-  mLongHoverExpandedTabs = [];
+  mLongHoverExpandedItems = [];
 }
 
 async function handleDroppedNonTreeItems(event, dropActionInfo) {
@@ -1349,14 +1357,15 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }
       mLongHoverTimer = null;
       log('reservedProcessLongHover: ', { dragOverItemId, draggedItemId, dropEffect });
 
-      const dragOverItem = Tab.get(dragOverItemId);
+      const dragOverItem = Tab.get(dragOverItemId) || TabGroup.get(dragOverItemId);
       if (!dragOverItem ||
           dragOverItem.$TST.getAttribute(Constants.kDROP_POSITION) != 'self')
         return;
 
       // auto-switch for staying on tabs
       if (!dragOverItem.active &&
-          dropEffect == 'link') {
+          dropEffect == 'link' &&
+          dragOverItem.type == TreeItem.TYPE_TAB) {
         BackgroundConnection.sendMessage({
           type:             Constants.kCOMMAND_ACTIVATE_TAB,
           tabId:            dragOverItem.id,
@@ -1371,20 +1380,39 @@ function reserveToProcessLongHover({ dragOverItemId, draggedItemId, dropEffect }
 
       // auto-expand for staying on a parent
       if (configs.autoExpandIntelligently) {
+        switch (dragOverItem.$TST.type) {
+          case TreeItem.TYPE_GROUP:
+            if (!mLongHoverExpandedItems.includes(dragOverItemId))
+              mLongHoverExpandedItems.push(dragOverItemId);
+            browser.tabGroups.update(dragOverItem.id, { collapsed: false });
+            break;
+
+          case TreeItem.TYPE_TAB:
         BackgroundConnection.sendMessage({
           type:  Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE_INTELLIGENTLY_FOR,
           tabId: dragOverItem.id
         });
+            break;
+        }
       }
       else {
-        if (!mLongHoverExpandedTabs.includes(dragOverItemId))
-          mLongHoverExpandedTabs.push(dragOverItemId);
+        if (!mLongHoverExpandedItems.includes(dragOverItemId))
+          mLongHoverExpandedItems.push(dragOverItemId);
+
+        switch (dragOverItem.$TST.type) {
+          case TreeItem.TYPE_GROUP:
+            browser.tabGroups.update(dragOverItem.id, { collapsed: false });
+            break;
+
+          case TreeItem.TYPE_TAB:
         BackgroundConnection.sendMessage({
           type:      Constants.kCOMMAND_SET_SUBTREE_COLLAPSED_STATE,
           tabId:     dragOverItem.id,
           collapsed: false,
           stack:     stack(),
         });
+            break;
+        }
       }
     }, configs.autoExpandOnLongHoverDelay);
   }, 0);
