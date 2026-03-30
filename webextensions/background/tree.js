@@ -1682,6 +1682,13 @@ export async function moveTabs(tabs, { duplicate, ...options } = {}) {
           broadcast: true
         });
         if (duplicate) {
+          // The "duplicating" state is added with delay if the source tab is discarded.
+          // We need to wait until it is correctly applied.
+          // See also: https://github.com/piroor/treestyletab/issues/3899
+          while (newTabs.some(tab => !tab.$TST.states.has(Constants.kTAB_STATE_DUPLICATING)) &&
+                 Date.now() - startTime < maxDelay) {
+            await wait(100);
+          }
           for (const tab of newTabs) {
             tab.$TST.removeState(Constants.kTAB_STATE_DUPLICATING, { broadcast: true });
             TabsStore.removeDuplicatingTab(tab);
