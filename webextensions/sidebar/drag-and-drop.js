@@ -695,6 +695,7 @@ function clearDropPosition() {
     tab.$TST.removeAttribute(Constants.kNEXT_GROUP_COLOR);
   }
   mDropPositionHolderItems.clear();
+  if (configs.lastDragOverSidebarOwnerWindowId)
   configs.lastDragOverSidebarOwnerWindowId = null;
   mCachedDragTargetDimensions = null;
 }
