@@ -696,7 +696,7 @@ function clearDropPosition() {
   }
   mDropPositionHolderItems.clear();
   if (configs.lastDragOverSidebarOwnerWindowId)
-  configs.lastDragOverSidebarOwnerWindowId = null;
+    configs.lastDragOverSidebarOwnerWindowId = null;
   mCachedDragTargetDimensions = null;
 }
 
