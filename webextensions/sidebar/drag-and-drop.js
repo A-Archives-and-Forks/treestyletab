@@ -695,9 +695,21 @@ function clearDropPosition() {
     tab.$TST.removeAttribute(Constants.kNEXT_GROUP_COLOR);
   }
   mDropPositionHolderItems.clear();
-  if (configs.lastDragOverSidebarOwnerWindowId)
-    configs.lastDragOverSidebarOwnerWindowId = null;
+  throttledSetLastDragOverWindowId(null);
   mCachedDragTargetDimensions = null;
+}
+
+function throttledSetLastDragOverWindowId(windowId = null) {
+  if (throttledSetLastDragOverWindowId.timeout)
+    clearTimeout(throttledSetLastDragOverWindowId.timeout);
+  if (configs.lastDragOverSidebarOwnerWindowId != windowId)
+    throttledSetLastDragOverWindowId.timeout = setTimeout(setLastDragOverWindowId, 100, windowId);
+}
+throttledSetLastDragOverWindowId.timeout = null;
+function setLastDragOverWindowId(windowId) {
+  if (configs.lastDragOverSidebarOwnerWindowId != windowId)
+    configs.lastDragOverSidebarOwnerWindowId = windowId;
+  throttledSetLastDragOverWindowId.timeout = null;
 }
 
 export function clearDraggingItemsState() {
@@ -1303,7 +1315,8 @@ function isEventFiredOnItemDropBlocker(event) {
 }
 
 function onDragEnter(event) {
-  configs.lastDragOverSidebarOwnerWindowId = TabsStore.getCurrentWindowId();
+  const windowId = TabsStore.getCurrentWindowId();
+  throttledSetLastDragOverWindowId(windowId);
 
   mDraggingOnSelfWindow = true;
 
@@ -1317,7 +1330,7 @@ function onDragEnter(event) {
         info.dragData.tabs.some(tab => tab.id == enteredItem.id)
       );
     }
-    const win = TabsStore.windows.get(TabsStore.getCurrentWindowId());
+    const win = TabsStore.windows.get(windowId);
     win.containerClassList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
     win.pinnedContainerClassList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
     document.documentElement.classList.add(Constants.kTABBAR_STATE_TAB_DRAGGING);
@@ -1434,8 +1447,7 @@ reserveToProcessLongHover.cancel = function() {
 };
 
 function onDragLeave(event) {
-  if (configs.lastDragOverSidebarOwnerWindowId == TabsStore.getCurrentWindowId())
-    configs.lastDragOverSidebarOwnerWindowId = null;
+  throttledSetLastDragOverWindowId(null);
 
   let leftFromTabBar = false;
   try {
