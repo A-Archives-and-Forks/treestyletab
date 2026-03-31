@@ -53,7 +53,7 @@ export async function show(ownerWindow, dialogParams) {
       // opened as a new fullscreen window, thus we need to fallback to a workaround.
       log('showDialog: show in a temporary tab in ', ownerWindow.id);
       UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false, shade: true });
-      const url = (await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html';
+      const url = (await Permissions.isGranted(Permissions.ALL_URLS)) ? null : browser.runtime.getURL('/resources/blank.html');
       const tempTab = await browser.tabs.create({
         windowId: ownerWindow.id,
         url,
