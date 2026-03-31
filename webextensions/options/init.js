@@ -31,6 +31,8 @@ import * as Sync from '/common/sync.js';
 
 log.context = 'Options';
 
+RichConfirm.init(browser.runtime.getURL('/extlib/RichConfirmDialog.html'));
+
 const options = new Options(configs, {
   steps: {
     faviconizedTabScale: '0.01'
