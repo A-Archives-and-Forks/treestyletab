@@ -35,6 +35,7 @@ export const DEVICE_SPECIFIC_CONFIG_KEYS = mapAndFilter(`
   syncEnabled
   syncLastMessageTimestamp
   syncOtherDevicesDetected
+  workaroundForBug1548949DroppedItems
 `.trim().split('\n'), key => {
   key = key.trim();
   return key && !key.startsWith('//') && key;
