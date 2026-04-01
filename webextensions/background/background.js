@@ -11,7 +11,6 @@ import {
   log as internalLogger,
   wait,
   configs,
-  sanitizeForHTMLText,
   waitUntilStartupOperationsUnblocked,
   stack,
 } from '/common/common.js';
@@ -45,6 +44,8 @@ import './browser-action-menu.js';
 import './duplicated-tab-detection.js';
 import './split-view.js';
 import './successor-tab.js';
+
+import ConfirmToCloseTabs from '/resources/dialog/ConfirmToCloseTabs.js';
 
 function log(...args) {
   internalLogger('background/background', ...args);
@@ -601,54 +602,15 @@ export async function confirmToCloseTabs(tabs, {
     return true;
   }
 
-  const displayCount = configs.warnOnCloseTabsWithListing ? count : count + closingCount;
-
   const win = await browser.windows.get(windowId);
-  const listing = configs.warnOnCloseTabsWithListing ?
-    Dialog.tabsToHTMLList(tabs, {
-      maxHeight: Math.round(win.height * 0.8),
-      maxWidth:  Math.round(win.width * 0.75)
-    }) :
-    '';
-
-  const effectiveMessageKey = configs.warnOnCloseTabsWithListing ?
-    (messageKey || 'warnOnCloseTabs_message') :
-    'warnOnCloseTabs_message_short';
-  const effectiveTitleKey = configs.warnOnCloseTabsWithListing ?
-    (titleKey || 'warnOnCloseTabs_title') :
-    'warnOnCloseTabs_title';
-  const effectiveCheckMessage = configs.warnOnCloseTabsWithListing ?
-    'warnOnCloseTabs_warnAgain' :
-    'warnOnCloseTabs_warnAgain_short';
-
   const result = await Dialog.show(win, {
-    content: `
-      <div>${sanitizeForHTMLText(browser.i18n.getMessage(effectiveMessageKey, [displayCount]))}</div>${listing}
-    `.trim(),
-    buttons: [
-      browser.i18n.getMessage('warnOnCloseTabs_close'),
-      browser.i18n.getMessage('warnOnCloseTabs_cancel')
-    ],
-    checkMessage: browser.i18n.getMessage(effectiveCheckMessage),
-    checked:      true,
-    modal:        !configs.debug, // for popup
-    type:         'common-dialog', // for popup
-    url:          ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'), // for popup
-    title:        browser.i18n.getMessage(effectiveTitleKey), // for popup
-    onShownInPopup(container) {
-      setTimeout(() => { // because window.requestAnimationFrame is decelerated for an invisible document.
-        // this need to be done on the next tick, to use the height of
-        // the box for calculation of dialog size
-        const ul = container.querySelector('ul');
-        if (!ul)
-          return;
-        const style = ul.style;
-        style.height = '0px'; // this makes the box shrinkable
-        style.maxHeight = 'none';
-        style.minHeight = '0px';
-      }, 0);
-    }
-  });
+    tabIds:         Tab.sort(tabs).map(tab => tab.id),
+    displayCount:   configs.warnOnCloseTabsWithListing ? count : count + closingCount,
+    targetWindowId: windowId,
+    configKey,
+    messageKey,
+    titleKey,
+  }, ConfirmToCloseTabs);
 
   log('confirmToCloseTabs: result = ', result);
   switch (result.buttonIndex) {

@@ -685,6 +685,7 @@ export async function confirmToCloseTabs(tabs, { configKey } = {}) {
       configKey,
       tabs
     });
+    log('confirmToCloseTabs granted: ', granted);
     if (granted) {
       configs.lastConfirmedToCloseTabs = Date.now();
       configs.grantedRemovingTabIds = Array.from(new Set((configs.grantedRemovingTabIds   || []).concat(tabIds)));

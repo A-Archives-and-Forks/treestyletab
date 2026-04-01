@@ -27,7 +27,7 @@ function log(...args) {
   internalLogger('common/dialog', ...args);
 }
 
-export async function show(ownerWindow, dialogParams) {
+export async function show(ownerWindow, dialogParams, DialogClass = RichConfirm) {
   let result;
   let unblocked = false;
   try {
@@ -85,7 +85,7 @@ export async function show(ownerWindow, dialogParams) {
           })() :
           null,
       ]);
-      result = await RichConfirm.showInTab(tempTab.id, {
+      result = await DialogClass.showInTab(tempTab.id, {
         ...dialogParams,
         onShown: [
           container => {
@@ -95,31 +95,21 @@ export async function show(ownerWindow, dialogParams) {
           },
           dialogParams.onShownInTab || dialogParams.onShown
         ],
-        onHidden(...params) {
-          UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
-          unblocked = true;
-          if (typeof dialogParams.onHidden == 'function')
-            dialogParams.onHidden(...params);
-        },
       });
+      UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
+      unblocked = true;
       browser.tabs.remove(tempTab.id);
     }
     else {
       log('showDialog: show in a popup window on ', ownerWindow.id);
       UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false });
-      result = await RichConfirm.showInPopup(ownerWindow.id, {
-        ...dialogParams,
-        onShown: dialogParams.onShownInPopup || dialogParams.onShown,
-        onHidden(...params) {
-          UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
-          unblocked = true;
-          if (typeof dialogParams.onHidden == 'function')
-            dialogParams.onHidden(...params);
-        },
-      });
+      result = await DialogClass.showInPopup(ownerWindow.id, dialogParams);
+      UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
+      unblocked = true;
     }
   }
-  catch(_error) {
+  catch(error) {
+    console.error(error);
     result = { buttonIndex: -1 };
   }
   finally {
@@ -130,7 +120,7 @@ export async function show(ownerWindow, dialogParams) {
 }
 
 export function tabsToHTMLList(tabs, { maxHeight, maxWidth }) {
-  const rootLevelOffset = tabs.map(tab => parseInt(tab.$TST.getAttribute(Constants.kLEVEL) || 0)).sort()[0];
+  const rootLevelOffset = tabs.map(tab => parseInt(tab.$TST?.getAttribute(Constants.kLEVEL) || tab.indent || 0)).sort()[0];
   return (
     `<ul style="border: 1px inset;
                 display: flex;
@@ -148,7 +138,7 @@ export function tabsToHTMLList(tabs, { maxHeight, maxWidth }) {
       tabs.map(tab => `<li style="align-items: center;
                                   display: flex;
                                   flex-direction: row;
-                                  padding-inline-start: calc((${tab.$TST.getAttribute(Constants.kLEVEL)} - ${rootLevelOffset}) * 0.25em);"
+                                  padding-inline-start: calc((${tab.$TST?.getAttribute(Constants.kLEVEL) || tab.indent || 0} - ${rootLevelOffset}) * 0.25em);"
                            title="${sanitizeForHTMLText(tab.title)}"
                           ><img style="display: flex;
                                        max-height: 1em;
