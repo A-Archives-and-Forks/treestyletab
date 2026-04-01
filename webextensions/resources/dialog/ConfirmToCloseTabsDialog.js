@@ -57,10 +57,6 @@ class ConfirmToCloseTabsDialog extends RichConfirmDialog {
   }
 
   async updateContent() {
-    const range = document.createRange();
-    range.selectNodeContents(this.content);
-    range.collapse(false);
-
     const [win, tabs] = await Promise.all([
       browser.windows.get(parseInt(this.params.targetWindowId)),
       (() => {
@@ -83,11 +79,10 @@ class ConfirmToCloseTabsDialog extends RichConfirmDialog {
     const effectiveMessageKey = configs.warnOnCloseTabsWithListing ?
       (this.params.messageKey || 'warnOnCloseTabs_message') :
       'warnOnCloseTabs_message_short';
-    const fragment = range.createContextualFragment(`
-      <div>${sanitizeForHTMLText(browser.i18n.getMessage(effectiveMessageKey, [this.params.displayCount]))}</div>${listing}
+    this.content.insertAdjacentHTML('beforeend', `
+      <div>${sanitizeForHTMLText(browser.i18n.getMessage(effectiveMessageKey, [this.params.displayCount]))}</div>
+      ${listing}
     `.trim());
-    range.insertNode(fragment);
-    range.detach();
     for (const element of this.content.querySelectorAll('[accesskey]')) {
       this.updateAccessKey(element);
     }
