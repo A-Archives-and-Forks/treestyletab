@@ -27,7 +27,9 @@ function log(...args) {
   internalLogger('common/dialog', ...args);
 }
 
-export async function show(ownerWindow, dialogParams, DialogClass = RichConfirm) {
+export async function show({ ownerWindow, params, controller }) {
+  if (!controller)
+    controller = RichConfirm;
   let result;
   let unblocked = false;
   try {
@@ -38,7 +40,7 @@ export async function show(ownerWindow, dialogParams, DialogClass = RichConfirm)
       result = await browser.runtime.sendMessage({
         type:   Constants.kCOMMAND_SHOW_DIALOG,
         params: {
-          ...dialogParams,
+          ...params,
           onShown:                    null,
           onShownInTab:               null,
           onShownInPopup:             null,
@@ -85,7 +87,7 @@ export async function show(ownerWindow, dialogParams, DialogClass = RichConfirm)
           })() :
           null,
       ]);
-      result = await DialogClass.showInTab(tempTab.id, dialogParams);
+      result = await controller.showInTab(tempTab.id, params);
       UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
       unblocked = true;
       browser.tabs.remove(tempTab.id);
@@ -93,7 +95,7 @@ export async function show(ownerWindow, dialogParams, DialogClass = RichConfirm)
     else {
       log('showDialog: show in a popup window on ', ownerWindow.id);
       UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false });
-      result = await DialogClass.showInPopup(ownerWindow.id, dialogParams);
+      result = await controller.showInPopup(ownerWindow.id, params);
       UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
       unblocked = true;
     }

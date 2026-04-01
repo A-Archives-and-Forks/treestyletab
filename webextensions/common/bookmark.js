@@ -81,7 +81,11 @@ export async function bookmarkTab(tab, { parentId, showDialog } = {}) {
       }
     }
     else {
-      result = await Dialog.show(await browser.windows.get(windowId), dialogParams, BookmarkTabs);
+      result = await Dialog.show({
+        ownerWindow: await browser.windows.get(windowId),
+        params:      dialogParams,
+        controller:  BookmarkTabs,
+      });
     }
     if (result.buttonIndex != 0)
       return null;
@@ -217,7 +221,11 @@ export async function bookmarkTabs(tabs, { parentId, index, showDialog, title } 
       }
     }
     else {
-      result = await Dialog.show(await browser.windows.get(windowId), dialogParams, BookmarkTabs);
+      result = await Dialog.show({
+        ownerWindow: await browser.windows.get(windowId),
+        params:      dialogParams,
+        controller:  BookmarkTabs,
+      });
     }
     if (result.buttonIndex != 0)
       return null;

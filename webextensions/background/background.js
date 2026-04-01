@@ -603,14 +603,18 @@ export async function confirmToCloseTabs(tabs, {
   }
 
   const win = await browser.windows.get(windowId);
-  const result = await Dialog.show(win, {
-    tabIds:         Tab.sort(tabs).map(tab => tab.id),
-    displayCount:   configs.warnOnCloseTabsWithListing ? count : count + closingCount,
-    targetWindowId: windowId,
-    configKey,
-    messageKey,
-    titleKey,
-  }, ConfirmToCloseTabs);
+  const result = await Dialog.show({
+    ownerWindow: win,
+    params: {
+      tabIds:         Tab.sort(tabs).map(tab => tab.id),
+      displayCount:   configs.warnOnCloseTabsWithListing ? count : count + closingCount,
+      targetWindowId: windowId,
+      configKey,
+      messageKey,
+      titleKey,
+    },
+    controller: ConfirmToCloseTabs,
+  });
 
   log('confirmToCloseTabs: result = ', result);
   switch (result.buttonIndex) {

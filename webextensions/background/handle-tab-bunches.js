@@ -29,6 +29,8 @@ import * as TabsOpen from './tabs-open.js';
 import * as Tree from './tree.js';
 import * as TreeTransaction from './tree-transaction.js';
 
+import AutoGroupNewTabs from '/resources/dialog/AutoGroupNewTabs.js';
+
 function log(...args) {
   internalLogger('background/handle-tab-bunches', ...args);
 }
@@ -221,38 +223,13 @@ async function confirmToAutoGroupNewTabsFromOthers(tabs) {
     return true;
 
   const windowId = tabs[0].windowId;
-  const win = await browser.windows.get(windowId);
-
-  const listing = configs.warnOnAutoGroupNewTabsWithListing ?
-    Dialog.tabsToHTMLList(tabs, {
-      maxRows:   configs.warnOnAutoGroupNewTabsWithListingMaxRows,
-      maxHeight: Math.round(win.height * 0.8),
-      maxWidth:  Math.round(win.width * 0.75)
-    }) :
-    '';
-  const result = await Dialog.show(win, {
-    content: `
-      <div>${sanitizeForHTMLText(browser.i18n.getMessage('warnOnAutoGroupNewTabs_message', [tabs.length]))}</div>${listing}
-    `.trim(),
-    buttons: [
-      browser.i18n.getMessage('warnOnAutoGroupNewTabs_close'),
-      browser.i18n.getMessage('warnOnAutoGroupNewTabs_cancel')
-    ],
-    checkMessage: browser.i18n.getMessage('warnOnAutoGroupNewTabs_warnAgain'),
-    checked:      true,
-    modal:        true, // for popup
-    type:         'common-dialog', // for popup
-    url:          ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'), // for popup
-    title:        browser.i18n.getMessage('warnOnAutoGroupNewTabs_title'), // for popup
-    onShownInPopup(container) {
-      setTimeout(() => { // because window.requestAnimationFrame is decelerate for an invisible document.
-        // this need to be done on the next tick, to use the height of the box for calculation of dialog size
-        const style = container.querySelector('ul').style;
-        style.height = '0px'; // this makes the box shrinkable
-        style.maxHeight = 'none';
-        style.minHeight = '0px';
-      }, 0);
-    }
+  const result = await Dialog.show({
+    ownerWindow: await browser.windows.get(windowId),
+    params: {
+      targetWindowId: windowId,
+      tabIds:         Tab.sort(tabs).map(tab => tab.id),
+    },
+    controller: AutoGroupNewTabs,
   });
 
   switch (result.buttonIndex) {
