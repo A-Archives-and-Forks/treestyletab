@@ -605,7 +605,7 @@ export async function confirmToCloseTabs(tabs, {
   const win = await browser.windows.get(windowId);
   const result = await Dialog.show({
     ownerWindow: win,
-    params: {
+    params:      {
       tabIds:         Tab.sort(tabs).map(tab => tab.id),
       displayCount:   configs.warnOnCloseTabsWithListing ? count : count + closingCount,
       targetWindowId: windowId,

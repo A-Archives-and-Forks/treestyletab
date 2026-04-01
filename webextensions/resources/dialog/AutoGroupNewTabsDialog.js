@@ -70,9 +70,6 @@ class AutoGroupNewTabsDialog extends RichConfirmDialog {
       }) :
       '';
 
-    const effectiveMessageKey = configs.warnOnCloseTabsWithListing ?
-      (this.params.messageKey || 'warnOnCloseTabs_message') :
-      'warnOnCloseTabs_message_short';
     this.content.insertAdjacentHTML('beforeend', `
       <div>${sanitizeForHTMLText(browser.i18n.getMessage('warnOnAutoGroupNewTabs_message', [tabs.length]))}</div>
       ${listing}

@@ -9,7 +9,6 @@ import {
   log as internalLogger,
   dumpTab,
   configs,
-  sanitizeForHTMLText,
   compareAsNumber,
   isFirefoxViewTab,
   stack,
@@ -18,7 +17,6 @@ import * as ApiTabs from '/common/api-tabs.js';
 import * as Bookmark from '/common/bookmark.js';
 import * as Constants from '/common/constants.js';
 import * as Dialog from '/common/dialog.js';
-import * as Permissions from '/common/permissions.js';
 import * as TabsStore from '/common/tabs-store.js';
 import * as TSTAPI from '/common/tst-api.js';
 
@@ -225,7 +223,7 @@ async function confirmToAutoGroupNewTabsFromOthers(tabs) {
   const windowId = tabs[0].windowId;
   const result = await Dialog.show({
     ownerWindow: await browser.windows.get(windowId),
-    params: {
+    params:      {
       targetWindowId: windowId,
       tabIds:         Tab.sort(tabs).map(tab => tab.id),
     },
