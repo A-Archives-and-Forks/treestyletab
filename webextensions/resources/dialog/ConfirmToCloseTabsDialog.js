@@ -45,6 +45,7 @@ class ConfirmToCloseTabsDialog extends RichConfirmDialog {
           const style = container.closest('.rich-confirm-dialog').style;
           style.maxWidth = `${Math.floor(window.innerWidth * 0.6)}px`;
           style.marginInlineStart = style.marginInlineEnd = 'auto';
+          return;
         }
 
         const ul = container.querySelector('ul');

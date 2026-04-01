@@ -48,52 +48,10 @@ export async function show({ ownerWindow, params, controller }) {
         },
       }).catch(ApiTabs.createErrorHandler());
     }
-    else if (isMacOS() &&
-             ownerWindow.state == 'fullscreen') {
-      // on macOS, a popup window opened from a fullscreen browser window is always
-      // opened as a new fullscreen window, thus we need to fallback to a workaround.
-      log('showDialog: show in a temporary tab in ', ownerWindow.id);
-      UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false, shade: true });
-      const url = (await Permissions.isGranted(Permissions.ALL_URLS)) ? null : browser.runtime.getURL('/resources/blank.html');
-      const tempTab = await browser.tabs.create({
-        windowId: ownerWindow.id,
-        url,
-        active:   true
-      });
-      await Promise.all([
-        Tab.waitUntilTracked(tempTab.id).then(() => {
-          Tab.get(tempTab.id).$TST.addState('hidden', { broadcast: true });
-        }),
-        // We need to wait until the tab is completely loaded to avoid
-        // "Missing host permission" error.
-        url && url != 'about:blank' ?
-          (() => {
-            let onUpdated;
-            return Promise.race([
-              (new Promise((resolve, _reject) => {
-                onUpdated = (tabId, changes, tab) => {
-                  if (changes.status != 'complete' ||
-                      tab.url != url)
-                    return;
-                  resolve();
-                };
-                browser.tabs.onUpdated.addListener(onUpdated);
-              })).finally(() => {
-                browser.tabs.onUpdated.removeListener(onUpdated);
-              }),
-              wait(1000),
-            ]);
-          })() :
-          null,
-      ]);
-      result = await controller.showInTab(tempTab.id, params);
-      UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
-      unblocked = true;
-      browser.tabs.remove(tempTab.id);
-    }
     else {
       log('showDialog: show in a popup window on ', ownerWindow.id);
-      UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false });
+      params.forceInTab = configs.forceOpenDialogInTab || (isMacOS() && ownerWindow.state == 'fullscreen');
+      UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false, shade: params.forceInTab });
       result = await controller.showInPopup(ownerWindow.id, params);
       UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
       unblocked = true;

@@ -52,6 +52,7 @@ const localKeys = DEVICE_SPECIFIC_CONFIG_KEYS.concat(mapAndFilter(`
   enableMacOSBehaviors
   enableWindowsBehaviors
   faviconizedTabScale
+  forceOpenDialogInTab
   grantedExternalAddonPermissions
   grantedRemovingTabIds
   incognitoAllowedExternalAddons
@@ -647,6 +648,7 @@ export const configs = new Configs({
   enableLinuxBehaviors:      false,
   enableMacOSBehaviors:      false,
   enableWindowsBehaviors:    false,
+  forceOpenDialogInTab:      false,
 
 
   ...(Object.fromEntries(Array.from(obsoleteConfigs, key => [key, null]))),
