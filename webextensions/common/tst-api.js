@@ -1501,8 +1501,11 @@ const TABS_ARRAY_QUERY_MATCHER = /^(\*|allvisibles|normalvisibles)$/i;
 export async function formatTabResult(exportedTabs, originalMessage) {
   exportedTabs = await Promise.all(exportedTabs);
   if (Array.isArray(originalMessage.tabs) ||
+      Array.isArray(originalMessage.tabIds) ||
       TABS_ARRAY_QUERY_MATCHER.test(originalMessage.tab) ||
-      TABS_ARRAY_QUERY_MATCHER.test(originalMessage.tabs))
+      TABS_ARRAY_QUERY_MATCHER.test(originalMessage.tabId) ||
+      TABS_ARRAY_QUERY_MATCHER.test(originalMessage.tabs) ||
+      TABS_ARRAY_QUERY_MATCHER.test(originalMessage.tabIds))
     return exportedTabs.filter(tab => !!tab);
   return exportedTabs.length == 0 ?
     null :
