@@ -85,17 +85,7 @@ export async function show(ownerWindow, dialogParams, DialogClass = RichConfirm)
           })() :
           null,
       ]);
-      result = await DialogClass.showInTab(tempTab.id, {
-        ...dialogParams,
-        onShown: [
-          container => {
-            const style = container.closest('.rich-confirm-dialog').style;
-            style.maxWidth = `${Math.floor(window.innerWidth * 0.6)}px`;
-            style.marginInlineStart = style.marginInlineEnd = 'auto';
-          },
-          dialogParams.onShownInTab || dialogParams.onShown
-        ],
-      });
+      result = await DialogClass.showInTab(tempTab.id, dialogParams);
       UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
       unblocked = true;
       browser.tabs.remove(tempTab.id);
