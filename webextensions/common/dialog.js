@@ -42,7 +42,10 @@ export async function show({ ownerWindow, params, controller }) {
         windowId:                   ownerWindow.id,
         userOperationBlockerParams: { throbber: false },
         controller:                 controller.name,
-        params,
+        params:                     {
+          ...params,
+          sidebar: true,
+        },
       }).catch(ApiTabs.createErrorHandler());
     }
     else if (isMacOS() &&

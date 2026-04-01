@@ -36,8 +36,10 @@ class ConfirmToCloseTabsDialog extends RichConfirmDialog {
     this.params.title        = browser.i18n.getMessage(effectiveTitleKey); // for popup
 
     this.onShown = (container) => {
-      if (this.params.simulation)
+      if (this.params.simulation ||
+          this.params.sidebar)
         return;
+
       setTimeout(() => {
         if (this.params.tab) {
           const style = container.closest('.rich-confirm-dialog').style;
