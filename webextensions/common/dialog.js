@@ -12,16 +12,12 @@ import {
   configs,
   isMacOS,
   sanitizeForHTMLText,
-  wait,
 } from '/common/common.js';
 
 import * as ApiTabs from './api-tabs.js';
 import * as Constants from './constants.js';
-import * as Permissions from './permissions.js';
 import * as SidebarConnection from './sidebar-connection.js';
 import * as UserOperationBlocker from './user-operation-blocker.js';
-
-import { Tab } from './TreeItem.js';
 
 function log(...args) {
   internalLogger('common/dialog', ...args);
