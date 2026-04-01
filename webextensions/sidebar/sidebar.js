@@ -65,6 +65,16 @@ import { TabSoundButtonElement } from './components/TabSoundButtonElement.js';
 import { TabTwistyElement } from './components/TabTwistyElement.js';
 import { TreeItemSubstanceElement } from './components/TreeItemSubstanceElement.js';
 
+import AutoGroupNewTabs from '/resources/dialog/AutoGroupNewTabs.js';
+import BookmarkTabs from '/resources/dialog/BookmarkTabs.js';
+import ConfirmToCloseTabs from '/resources/dialog/ConfirmToCloseTabs.js';
+
+const DIALOG_CONTROLLERS = {
+  AutoGroupNewTabs,
+  BookmarkTabs,
+  ConfirmToCloseTabs,
+};
+
 function log(...args) {
   internalLogger('sidebar/sidebar', ...args);
 }
@@ -1107,11 +1117,9 @@ function onMessage(message, _sender, _respond) {
       return;
 
     case Constants.kCOMMAND_SHOW_DIALOG:
-      return RichConfirm.show({
-        ...message.params,
-        onHidden() {
-          UserOperationBlocker.unblockIn(mTargetWindow, message.userOperationBlockerParams || {});
-        }
+      return (DIALOG_CONTROLLERS[message.controller] || RichConfirm).show(message.params).then(result => {
+        UserOperationBlocker.unblockIn(mTargetWindow, message.userOperationBlockerParams || {});
+        return result;
       });
 
     case Constants.kCOMMAND_GET_SIDEBAR_POSITION:

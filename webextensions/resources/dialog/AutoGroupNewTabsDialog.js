@@ -71,8 +71,7 @@ class AutoGroupNewTabsDialog extends RichConfirmDialog {
       '';
 
     this.content.insertAdjacentHTML('beforeend', `
-      <div>${sanitizeForHTMLText(browser.i18n.getMessage('warnOnAutoGroupNewTabs_message', [tabs.length]))}</div>
-      ${listing}
+      <div>${sanitizeForHTMLText(browser.i18n.getMessage('warnOnAutoGroupNewTabs_message', [tabs.length]))}</div>${listing}
     `.trim());
     for (const element of this.content.querySelectorAll('[accesskey]')) {
       this.updateAccessKey(element);

@@ -38,15 +38,11 @@ export async function show({ ownerWindow, params, controller }) {
         SidebarConnection.hasFocus(ownerWindow.id)*/) {
       UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false });
       result = await browser.runtime.sendMessage({
-        type:   Constants.kCOMMAND_SHOW_DIALOG,
-        params: {
-          ...params,
-          onShown:                    null,
-          onShownInTab:               null,
-          onShownInPopup:             null,
-          userOperationBlockerParams: { throbber: false },
-        },
-        windowId: ownerWindow.id
+        type:                       Constants.kCOMMAND_SHOW_DIALOG,
+        windowId:                   ownerWindow.id,
+        userOperationBlockerParams: { throbber: false },
+        controller:                 controller.name,
+        params,
       }).catch(ApiTabs.createErrorHandler());
     }
     else if (isMacOS() &&

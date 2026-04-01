@@ -80,8 +80,7 @@ class ConfirmToCloseTabsDialog extends RichConfirmDialog {
       (this.params.messageKey || 'warnOnCloseTabs_message') :
       'warnOnCloseTabs_message_short';
     this.content.insertAdjacentHTML('beforeend', `
-      <div>${sanitizeForHTMLText(browser.i18n.getMessage(effectiveMessageKey, [this.params.displayCount]))}</div>
-      ${listing}
+      <div>${sanitizeForHTMLText(browser.i18n.getMessage(effectiveMessageKey, [this.params.displayCount]))}</div>${listing}
     `.trim());
     for (const element of this.content.querySelectorAll('[accesskey]')) {
       this.updateAccessKey(element);
