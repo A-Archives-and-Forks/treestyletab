@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+ - 4.3.1 (2026.4.3)
    * Fix breakage of custom dialogs (confirmation of closing tabs, bookmark creation, and others) on recent Firefox.
    * Reduce needless handling of changed configs while drag-and-drop operations.
    * Show duplicated tabs correctly even if the source tab has discarded state.
