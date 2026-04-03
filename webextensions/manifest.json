@@ -268,7 +268,8 @@
     "browser_style": false
   },
   "web_accessible_resources": [
-    "/resources/blank.html",
+    "/extlib/RichConfirm*",
+    "/resources/dialog/*",
     "/resources/group-tab.html*",
     "/resources/icons/*",
     "/sidebar/styles/icons/*"

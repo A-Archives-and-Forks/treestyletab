@@ -526,15 +526,14 @@ async function importFilesToUserStyleRulesField(files) {
     let result;
     try {
       result = await RichConfirm.showInPopup({
-        modal:   true,
+        modal:   !configs.debug,
         type:    'common-dialog',
-        url:     ((await Permissions.isGranted(Permissions.ALL_URLS)) ? null : '/resources/blank.html'),
         title:   browser.i18n.getMessage('config_userStyleRules_overwrite_title'),
         message: browser.i18n.getMessage('config_userStyleRules_overwrite_message'),
         buttons: [
           browser.i18n.getMessage('config_userStyleRules_overwrite_overwrite'),
-          browser.i18n.getMessage('config_userStyleRules_overwrite_append')
-        ]
+          browser.i18n.getMessage('config_userStyleRules_overwrite_append'),
+        ],
       });
     }
     catch(_error) {
