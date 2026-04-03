@@ -1,6 +1,10 @@
 # History
 
  - master/HEAD
+   * Fix breakage of custom dialogs (confirmation of closing tabs, bookmark creation, and others) on recent Firefox.
+   * Reduce needless handling of changed configs while drag-and-drop operations.
+   * Show duplicated tabs correctly even if the source tab has discarded state.
+   * API: `get-tree` and `get-light-tree` calls now return results correctly if `tabId` or `tabIds` are used.
  - 4.3.0 (2026.3.26)
    * Support presentation of split view on Firefox 149 and later. (Management commands except "Reverse Tabs" are not available yet due to restrictions of WebExtensions API.)
    * Simulate "Copy Link(s)" context menu command of Firefox 150 and later.
