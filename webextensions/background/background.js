@@ -606,9 +606,10 @@ export async function confirmToCloseTabs(tabs, {
   const result = await Dialog.show({
     ownerWindow: win,
     params:      {
-      tabIds:         Tab.sort(tabs).map(tab => tab.id),
-      displayCount:   configs.warnOnCloseTabsWithListing ? count : count + closingCount,
-      targetWindowId: windowId,
+      tabIds:                     Tab.sort(tabs).map(tab => tab.id),
+      displayCount:               configs.warnOnCloseTabsWithListing ? count : count + closingCount,
+      warnOnCloseTabsWithListing: configs.warnOnCloseTabsWithListing,
+      targetWindowId:             windowId,
       configKey,
       messageKey,
       titleKey,

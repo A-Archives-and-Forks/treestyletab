@@ -8,13 +8,8 @@
 import RichConfirm from '/extlib/RichConfirm.js';
 
 class AutoGroupNewTabs extends RichConfirm {
-  static get dialogHtmlPath() {
-    return browser.runtime.getURL('/resources/dialog/AutoGroupNewTabsDialog.html');
-  }
-  static get dialogJsPath() {
-    return browser.runtime.getURL('/resources/dialog/AutoGroupNewTabsDialog.js');
-  }
 }
 AutoGroupNewTabs.Dialog = null;
+AutoGroupNewTabs.init('/resources/dialog/AutoGroupNewTabsDialog.html');
 
 export default AutoGroupNewTabs;

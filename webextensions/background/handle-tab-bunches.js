@@ -224,8 +224,10 @@ async function confirmToAutoGroupNewTabsFromOthers(tabs) {
   const result = await Dialog.show({
     ownerWindow: await browser.windows.get(windowId),
     params:      {
-      targetWindowId: windowId,
-      tabIds:         Tab.sort(tabs).map(tab => tab.id),
+      targetWindowId:                           windowId,
+      tabIds:                                   Tab.sort(tabs).map(tab => tab.id),
+      warnOnAutoGroupNewTabsWithListing:        configs.warnOnAutoGroupNewTabsWithListing,
+      warnOnAutoGroupNewTabsWithListingMaxRows: configs.warnOnAutoGroupNewTabsWithListingMaxRows,
     },
     controller: AutoGroupNewTabs,
   });

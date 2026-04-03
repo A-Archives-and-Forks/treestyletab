@@ -8,13 +8,8 @@
 import RichConfirm from '/extlib/RichConfirm.js';
 
 class BookmarkTabs extends RichConfirm {
-  static get dialogHtmlPath() {
-    return browser.runtime.getURL('/resources/dialog/BookmarkTabsDialog.html');
-  }
-  static get dialogJsPath() {
-    return browser.runtime.getURL('/resources/dialog/BookmarkTabsDialog.js');
-  }
 }
 BookmarkTabs.Dialog = null;
+BookmarkTabs.init('/resources/dialog/BookmarkTabsDialog.html');
 
 export default BookmarkTabs;

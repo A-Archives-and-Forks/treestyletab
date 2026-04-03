@@ -8,20 +8,19 @@
 import RichConfirmDialog from '/extlib/RichConfirmDialog.js';
 
 import {
-  configs,
   sanitizeForHTMLText,
 } from '/common/common.js';
-import * as Dialog from '/common/dialog.js';
-import { Tab } from '/common/TreeItem.js';
+
+import * as Utils from './utils.js';
 
 class ConfirmToCloseTabsDialog extends RichConfirmDialog {
   constructor(params) {
     super(params);
 
-    const effectiveTitleKey = configs.warnOnCloseTabsWithListing ?
+    const effectiveTitleKey = this.params.warnOnCloseTabsWithListing ?
       (params.titleKey || 'warnOnCloseTabs_title') :
       'warnOnCloseTabs_title';
-    const effectiveCheckMessage = configs.warnOnCloseTabsWithListing ?
+    const effectiveCheckMessage = this.params.warnOnCloseTabsWithListing ?
       'warnOnCloseTabs_warnAgain' :
       'warnOnCloseTabs_warnAgain_short';
 
@@ -31,55 +30,63 @@ class ConfirmToCloseTabsDialog extends RichConfirmDialog {
     ];
     this.params.checkMessage = browser.i18n.getMessage(effectiveCheckMessage);
     this.params.checked      = true;
-    this.params.modal        = !configs.debug; // for popup
     this.params.type         = 'common-dialog'; // for popup
     this.params.title        = browser.i18n.getMessage(effectiveTitleKey); // for popup
+  }
 
-    this.onShown = (container) => {
-      if (this.params.simulation ||
-          this.params.sidebar)
+  onShown(container) {
+    if (this.params.simulation ||
+        this.params.sidebar)
+      return;
+
+    setTimeout(() => {
+      if (this.params.tab) {
+        const style = container.closest('.rich-confirm-dialog').style;
+        style.maxWidth = `${Math.floor(window.innerWidth * 0.6)}px`;
+        style.marginInlineStart = style.marginInlineEnd = 'auto';
         return;
+      }
 
-      setTimeout(() => {
-        if (this.params.tab) {
-          const style = container.closest('.rich-confirm-dialog').style;
-          style.maxWidth = `${Math.floor(window.innerWidth * 0.6)}px`;
-          style.marginInlineStart = style.marginInlineEnd = 'auto';
-          return;
-        }
-
-        const ul = container.querySelector('ul');
-        if (!ul)
-          return;
-        const style = ul.style;
-        style.height = '0px'; // this makes the box shrinkable
-        style.maxHeight = 'none';
-        style.minHeight = '0px';
-      }, 0);
-    }
+      const ul = container.querySelector('ul');
+      if (!ul)
+        return;
+      const style = ul.style;
+      style.height = '0px'; // this makes the box shrinkable
+      style.maxHeight = 'none';
+      style.maxWidth  = 'none';
+      style.minHeight = '0px';
+    }, 0);
   }
 
   async updateContent() {
     const [win, tabs] = await Promise.all([
-      browser.windows.get(parseInt(this.params.targetWindowId)),
-      (() => {
-        const tabs = this.params.tabIds.map(id => Tab.get(id));
-        if (tabs.length == 0 || tabs.every(tab => !!tab))
-          return tabs;
+      browser.windows?.get(parseInt(this.params.targetWindowId)) || {
+        // in-popup case with no permission
+        width:  window.outerWidth,
+        height: window.outerHeight,
+      },
+      (async () => {
+        const { Tab } = browser.tabs ? (await import('/common/TreeItem.js')) : {};
+        if (Tab) {
+          const tabs = this.params.tabIds.map(id => Tab.get(id));
+          if (tabs.length == 0 || tabs.every(tab => !!tab))
+            return tabs;
+        }
+        // in-popup case with no permission
         return browser.runtime.sendMessage({
           type:   'treestyletab:api:get-tree',
           tabIds: this.params.tabIds,
         });
       })(),
     ]);
-    const listing = configs.warnOnCloseTabsWithListing ?
-      Dialog.tabsToHTMLList(tabs, {
+    const listing = this.params.warnOnCloseTabsWithListing ?
+      Utils.tabsToHTMLList(tabs, {
         maxHeight: Math.round(win.height * 0.8),
         maxWidth:  Math.round(win.width * 0.75),
       }) :
       '';
 
-    const effectiveMessageKey = configs.warnOnCloseTabsWithListing ?
+    const effectiveMessageKey = this.params.warnOnCloseTabsWithListing ?
       (this.params.messageKey || 'warnOnCloseTabs_message') :
       'warnOnCloseTabs_message_short';
     this.content.insertAdjacentHTML('beforeend', `

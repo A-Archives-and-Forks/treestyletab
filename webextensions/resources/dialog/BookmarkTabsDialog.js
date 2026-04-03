@@ -8,13 +8,11 @@
 import RichConfirmDialog from '/extlib/RichConfirmDialog.js';
 
 import {
-  configs,
   sanitizeForHTMLText,
   isRTL,
 } from '/common/common.js';
 import * as ApiTabs from '/common/api-tabs.js';
 import * as Constants from '/common/constants.js';
-import { Tab } from '/common/TreeItem.js';
 
 class BookmarkTabsDialog extends RichConfirmDialog {
   constructor(params) {
@@ -26,28 +24,29 @@ class BookmarkTabsDialog extends RichConfirmDialog {
       browser.i18n.getMessage('bookmarkDialog_accept'),
       browser.i18n.getMessage('bookmarkDialog_cancel'),
     ];
-    this.params.modal = !configs.debug; // for popup
     this.params.type  = 'dialog'; // for popup
     this.params.title = browser.i18n.getMessage(params.tabId ? 'bookmarkDialog_dialogTitle_single' : 'bookmarkDialog_dialogTitle_multiple'); // for popup
 
-    this.onShown = async (container) => {
-      if (this.params.simulation)
-        return;
+    this.$Tab = null;
+  }
 
-      container.classList.add('bookmark-dialog');
-      const [defaultItem, rootItems] = await Promise.all([
-        browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-item-by-id', id: this.params.parentId || this.params.folderParams?.parentId }),
-        browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-child-items' })
-      ]);
-      BookmarkTabsDialog.initFolderChooser({
-        defaultItem,
-        rootItems,
-        container,
-        inline: this.params.inline,
-        isRTL:  isRTL(),
-      });
-      container.querySelector('[name="title"]').select();
-    }
+  async onShown(container) {
+    if (this.params.simulation)
+      return;
+
+    container.classList.add('bookmark-dialog');
+    const [defaultItem, rootItems] = await Promise.all([
+      browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-item-by-id', id: this.params.parentId || this.params.folderParams?.parentId }),
+      browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-child-items' })
+    ]);
+    BookmarkTabsDialog.initFolderChooser({
+      defaultItem,
+      rootItems,
+      container,
+      inline: this.params.inline,
+      isRTL:  isRTL(),
+    });
+    container.querySelector('[name="title"]').select();
   }
 
   static get BASE_ID() {
@@ -89,9 +88,25 @@ class BookmarkTabsDialog extends RichConfirmDialog {
     `.trim();
   }
 
+  async getTab(tabId) {
+    if (this.$Tab === null) {
+      const { Tab } = browser.tabs ? (await import('/common/TreeItem.js')) : {};
+      this.$Tab = Tab || undefined;
+    }
+    if (this.$Tab) {
+      return this.$Tab.get(tabId) || browser.tabs.get(tabId);
+    }
+
+    // in-popup case with no permission
+    return browser.runtime.sendMessage({
+      type: 'treestyletab:api:get-tree',
+      tabId,
+    });
+  }
+
   async updateContent() {
     const inlineClass = this.params.inline ? 'inline' : 'dialog';
-    const tab = this.params.tabId ? (Tab.get(this.params.tabId) || await browser.tabs.get(this.params.tabId)) : null;
+    const tab = this.params.tabId ? this.getTab(this.params.tabId) : null;
     const title = tab ? tab.title : this.params.folderParams?.title;
     const urlField = tab ? `
       <div class="itemContainer ${inlineClass}">
@@ -159,9 +174,13 @@ class BookmarkTabsDialog extends RichConfirmDialog {
     if (!id)
       return null;
     try {
-      const items = await browser.bookmarks.get(id).catch(ApiTabs.createErrorHandler());
-      if (items.length > 0)
-        return items[0];
+      if (browser.bookmarks) {
+        const items = await browser.bookmarks.get(id).catch(ApiTabs.createErrorHandler());
+        if (items.length > 0)
+          return items[0];
+      }
+      // in-popup case with no permission
+      return browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-item-by-id', id });
     }
     catch(_error) {
     }

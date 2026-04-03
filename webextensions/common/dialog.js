@@ -11,7 +11,6 @@ import {
   log as internalLogger,
   configs,
   isMacOS,
-  sanitizeForHTMLText,
 } from '/common/common.js';
 
 import * as ApiTabs from './api-tabs.js';
@@ -47,6 +46,7 @@ export async function show({ ownerWindow, params, controller }) {
     else {
       log('showDialog: show in a popup window on ', ownerWindow.id);
       params.forceInTab = configs.forceOpenDialogInTab || (isMacOS() && ownerWindow.state == 'fullscreen');
+      params.modal      = !configs.debug;
       UserOperationBlocker.blockIn(ownerWindow.id, { throbber: false, shade: params.forceInTab });
       result = await controller.showInPopup(ownerWindow.id, params);
       UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
@@ -62,39 +62,4 @@ export async function show({ ownerWindow, params, controller }) {
       UserOperationBlocker.unblockIn(ownerWindow.id, { throbber: false });
   }
   return result;
-}
-
-export function tabsToHTMLList(tabs, { maxHeight, maxWidth }) {
-  const rootLevelOffset = tabs.map(tab => parseInt(tab.$TST?.getAttribute(Constants.kLEVEL) || tab.indent || 0)).sort()[0];
-  return (
-    `<ul style="border: 1px inset;
-                display: flex;
-                flex-direction: column;
-                flex-grow: 1;
-                flex-shrink: 1;
-                margin-block: 0.5em;
-                margin-inline: 0;
-                min-height: 2em;
-                max-height: calc(${maxHeight}px - 12em /* title bar, message, checkbox, buttons, and margins */);
-                max-width: ${maxWidth}px;
-                overflow: auto;
-                padding-block: 0.5em;
-                padding-inline: 0.5em;">` +
-      tabs.map(tab => `<li style="align-items: center;
-                                  display: flex;
-                                  flex-direction: row;
-                                  padding-inline-start: calc((${tab.$TST?.getAttribute(Constants.kLEVEL) || tab.indent || 0} - ${rootLevelOffset}) * 0.25em);"
-                           title="${sanitizeForHTMLText(tab.title)}"
-                          ><img style="display: flex;
-                                       max-height: 1em;
-                                       max-width: 1em;"
-                                alt=""
-                                src="${sanitizeForHTMLText(tab.favIconUrl || browser.runtime.getURL('resources/icons/defaultFavicon.svg'))}"
-                               ><span style="margin-inline-start: 0.25em;
-                                             overflow: hidden;
-                                             text-overflow: ellipsis;
-                                             white-space: nowrap;"
-                                     >${sanitizeForHTMLText(tab.title)}</span></li>`).join('') +
-      `</ul>`
-  );
 }

@@ -8,13 +8,8 @@
 import RichConfirm from '/extlib/RichConfirm.js';
 
 class ConfirmToCloseTabs extends RichConfirm {
-  static get dialogHtmlPath() {
-    return browser.runtime.getURL('/resources/dialog/ConfirmToCloseTabsDialog.html');
-  }
-  static get dialogJsPath() {
-    return browser.runtime.getURL('/resources/dialog/ConfirmToCloseTabsDialog.js');
-  }
 }
 ConfirmToCloseTabs.Dialog = null;
+ConfirmToCloseTabs.init('/resources/dialog/ConfirmToCloseTabsDialog.html');
 
 export default ConfirmToCloseTabs;

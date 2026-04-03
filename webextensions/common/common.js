@@ -922,7 +922,7 @@ function onNotificationClicked(notificationId) {
   }
   resolve(true);
 }
-browser.notifications.onClicked.addListener(onNotificationClicked);
+browser.notifications?.onClicked.addListener(onNotificationClicked);
 
 function onNotificationClosed(notificationId) {
   const task = mNotificationTasks.get(notificationId);
@@ -932,7 +932,7 @@ function onNotificationClosed(notificationId) {
   const { resolve } = destroyNotificationTask(task);
   resolve(false);
 }
-browser.notifications.onClosed.addListener(onNotificationClosed);
+browser.notifications?.onClosed.addListener(onNotificationClosed);
 
 export async function notify({ icon, title, message, timeout, url } = {}) {
   const id = await browser.notifications.create({
