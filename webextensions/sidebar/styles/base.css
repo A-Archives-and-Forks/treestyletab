@@ -957,16 +957,16 @@ tab-item-substance.attention tab-favicon::before {
 
   & #pinned-tabs-container {
     &::before {
-    background: var(--toolbarbutton-icon-fill-attention);
-    content: "";
-    display: inline-block;
-    height: var(--svg-small-icon-size);
-    line-height: 1;
-    margin-block-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
-    mask: url("icons/pin.svg") no-repeat center / 100%;
-    max-height: var(--favicon-size);
-    max-width: var(--favicon-size);
-    width: var(--svg-small-icon-size);
+      background: var(--toolbarbutton-icon-fill-attention);
+      content: "";
+      display: inline-block;
+      height: var(--svg-small-icon-size);
+      line-height: 1;
+      margin-block-start: calc((var(--favicon-size) - var(--svg-small-icon-size)) / 2);
+      mask: url("icons/pin.svg") no-repeat center / 100%;
+      max-height: var(--favicon-size);
+      max-width: var(--favicon-size);
+      width: var(--svg-small-icon-size);
     }
 
     &::after {
