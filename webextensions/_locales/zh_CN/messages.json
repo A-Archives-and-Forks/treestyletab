@@ -327,6 +327,7 @@
   "tabDragBehaviorNotification_message_tab_bookmark": {
     "message": "在该标签页被释放的位置创建链接或书签项"
   },
+  "dropToPinDescription": { "message": "将标签页拖到此处以固定" },
   "tabsHighlightingNotification_message": {
     "message": "高亮标签页... $PROGRESS$ %",
     "placeholders": {

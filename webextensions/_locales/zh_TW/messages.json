@@ -120,7 +120,9 @@
     "tabDragBehaviorNotification_message_tab_tearoff":   { "message": "此分頁分離視窗" },
     "tabDragBehaviorNotification_message_tree_bookmark": { "message": "建立所有分頁的連結或書籤於放置處" },
     "tabDragBehaviorNotification_message_tab_bookmark":  { "message": "建立此分頁的連結或書籤於放置處" },
-  
+
+    "dropToPinDescription": { "message": "將分頁放到此處即可釘選" },
+
     "warnOnCloseTabs_title":     { "message": "關閉分頁？" },
     "warnOnCloseTabs_message":   { "message": "您即將關閉 $NUMBER$ 個分頁，確定要繼續嗎？",
       "placeholders": {

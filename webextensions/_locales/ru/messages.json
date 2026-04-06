@@ -130,6 +130,8 @@
   "tabDragBehaviorNotification_message_tree_bookmark": { "message": "создаст ссылку или закладку там где вы отпустите вкладки" },
   "tabDragBehaviorNotification_message_tab_bookmark":  { "message": "создаст ссылку или закладку там где вы отпустите вкладку" },
 
+  "dropToPinDescription": { "message": "Перетащите сюда вкладку, чтобы закрепить" },
+
   "tabsHighlightingNotification_message": { "message": "Подсвечивание вкладок... $PROGRESS$ %",
     "placeholders": {
       "progress": { "content": "$1", "example": "50" }

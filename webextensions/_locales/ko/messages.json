@@ -325,6 +325,7 @@
         "message": "드롭 위치에 이 탭에서 링크 또는 북마크 작성",
         "hash": "80989b319537e780ba90b6b5e6053085"
     },
+    "dropToPinDescription": { "message": "탭을 고정하려면 여기에 놓으세요" },
     "warnOnCloseTabs_title": {
         "message": "탭을 닫으시겠습니까?",
         "hash": "e1842818d02284ece4759c75cc83b4b5"

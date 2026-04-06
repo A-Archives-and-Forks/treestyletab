@@ -309,6 +309,7 @@
     "message": "créer un lien ou un marque-page à l'endroit où l'onglet est déposé",
     "hash": "80989b319537e780ba90b6b5e6053085"
   },
+  "dropToPinDescription": { "message": "Déposez un onglet ici pour l’épingler" },
   "warnOnCloseTabs_message": {
     "message": "Vous êtes sur le point de fermer $NUMBER$ onglets. Voulez-vous vraiment continuer ?",
     "placeholders": {

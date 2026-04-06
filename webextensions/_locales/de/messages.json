@@ -130,6 +130,8 @@
   "tabDragBehaviorNotification_message_tree_bookmark": { "message": "Verweise oder Lesezeichen an dem Platz anlegen, an dem die Tabs abgelegt werden" },
   "tabDragBehaviorNotification_message_tab_bookmark":  { "message": "einen Verweis oder ein Lesezeichen an dem Platz anlegen, an dem der Tab abgelegt wird" },
 
+  "dropToPinDescription": { "message": "Tab zum Anheften hier loslassen" },
+
   "tabsHighlightingNotification_message": { "message": "Hervorhebung der Tabs... $PROGRESS$ %",
     "placeholders": {
       "progress": { "content": "$1", "example": "50" }

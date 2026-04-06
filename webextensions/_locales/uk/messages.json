@@ -1588,5 +1588,7 @@
     "hash": "7b5cc0df2650200ed4924f7958607b73"
   },
 
+  "dropToPinDescription": { "message": "Перетягніть вкладку сюди, щоб закріпити" },
+
   "__WET_LOCALE__": { "message": "uk" }
 }

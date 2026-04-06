@@ -136,6 +136,8 @@
   "tabDragBehaviorNotification_message_tree_bookmark": { "message": "ドロップ位置にすべてのタブからリンクまたはブックマークが作成されます" },
   "tabDragBehaviorNotification_message_tab_bookmark":  { "message": "ドロップ位置にこのタブからリンクまたはブックマークが作成されます" },
 
+  "dropToPinDescription": { "message": "タブをここにドロップしてピン留めします" },
+
   "tabsHighlightingNotification_message": { "message": "タブを選択中... $PROGRESS$ % ",
     "placeholders": {
       "progress": { "content": "$1", "example": "50" }

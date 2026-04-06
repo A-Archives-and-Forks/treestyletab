@@ -406,6 +406,7 @@
     "message": "maken van een link of bladwijzer op de nieuwe locatie",
     "hash": "80989b319537e780ba90b6b5e6053085"
   },
+  "dropToPinDescription": { "message": "Sleep het tabblad hierheen om het vast te zetten" },
   "tabsHighlightingNotification_message": {
     "message": "Bezig met markeren… $PROGRESS$%",
     "placeholders": {

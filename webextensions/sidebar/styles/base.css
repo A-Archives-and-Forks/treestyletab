@@ -955,7 +955,8 @@ tab-item-substance.attention tab-favicon::before {
     justify-content: center;
   }
 
-  & #pinned-tabs-container::before {
+  & #pinned-tabs-container {
+    &::before {
     background: var(--toolbarbutton-icon-fill-attention);
     content: "";
     display: inline-block;
@@ -966,6 +967,12 @@ tab-item-substance.attention tab-favicon::before {
     max-height: var(--favicon-size);
     max-width: var(--favicon-size);
     width: var(--svg-small-icon-size);
+    }
+
+    &::after {
+      content: var(--pinned-tabs-drop-indicator-description);
+      margin-top: 0.25em;
+    }
   }
 }
 
