@@ -172,7 +172,7 @@ export default class InContentPanelController {
                   removeClosedContents(element);
                 }
                 closedContentsDestructors.clear();
-                lastClosedContainer.parentNode.removeChild(lastClosedContainer);
+                lastClosedContainer.remove();
                 window.lastClosedContainer = null;
               };
             }
@@ -189,7 +189,7 @@ export default class InContentPanelController {
             if (window.closedContentsDestructors.size > 0) {
               return;
             }
-            window.lastClosedContainer.parentNode.removeChild(window.lastClosedContainer);
+            window.lastClosedContainer.remove();
             window.lastClosedContainer = null;
           };
           window.createClosedContentsDestructor = (instance, onDestroy) => {
