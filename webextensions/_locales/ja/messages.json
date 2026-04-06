@@ -308,7 +308,7 @@
   "api_requestedPermissions_type_cookies":   { "message": "ブラウザーのタブのコンテナーの識別" },
 
 
-  "guessNewOrphanTabAsOpenedByNewTabCommandTitle": { "message": "新しいタブ|新しいプライベートタブ" },
+  "guessNewOrphanTabAsOpenedByNewTabCommandTitle": { "message": "新しいタブ|新規タブ|新しいプライベートタブ|新規プライベートタブ" },
 
 
   "context_menu_label": { "message": "タブのツリーを操作" },
