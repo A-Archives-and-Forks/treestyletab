@@ -2212,6 +2212,7 @@
   "tabContextMenu_shareTabURL_label": {
     "message": "分享(&H)"
   },
+  "tabContextMenu_copyLinks_label":   { "message": "复制 %S 个链接(&L)" },
   "tabContextMenu_shareTabURL_more_label": {
     "message": "更多…"
   },
