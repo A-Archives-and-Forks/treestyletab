@@ -157,8 +157,8 @@ export default class InContentPanelController {
             constructor() {
               super();
               const shadow = this.attachShadow({ mode: 'closed' });
-              window.appendClosedContents = element => shadow.appendChild(element);
-              window.removeClosedContents = element => shadow.removeChild(element);
+              window.appendClosedContents = element => element && shadow.appendChild(element);
+              window.removeClosedContents = element => element?.remove();
               window.clearClosedContents = () => {
                 for (const destructor of window.closedContentsDestructors) {
                   try {
