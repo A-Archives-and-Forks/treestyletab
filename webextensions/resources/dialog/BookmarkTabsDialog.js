@@ -26,8 +26,6 @@ class BookmarkTabsDialog extends RichConfirmDialog {
     ];
     this.params.type  = 'dialog'; // for popup
     this.params.title = browser.i18n.getMessage(params.tabId ? 'bookmarkDialog_dialogTitle_single' : 'bookmarkDialog_dialogTitle_multiple'); // for popup
-
-    this.$Tab = null;
   }
 
   async onShown(container) {
@@ -36,7 +34,7 @@ class BookmarkTabsDialog extends RichConfirmDialog {
 
     container.classList.add('bookmark-dialog');
     const [defaultItem, rootItems] = await Promise.all([
-      browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-item-by-id', id: this.params.parentId || this.params.folderParams?.parentId }),
+      browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-item-by-id', id: this.params.values.parentId }),
       browser.runtime.sendMessage({ type: 'treestyletab:get-bookmark-child-items' })
     ]);
     BookmarkTabsDialog.initFolderChooser({
@@ -88,61 +86,41 @@ class BookmarkTabsDialog extends RichConfirmDialog {
     `.trim();
   }
 
-  async getTab(tabId) {
-    if (this.$Tab === null) {
-      const { Tab } = browser.tabs ? (await import('/common/TreeItem.js')) : {};
-      this.$Tab = Tab || undefined;
-    }
-    if (this.$Tab) {
-      return this.$Tab.get(tabId) || browser.tabs.get(tabId);
-    }
-
-    // in-popup case with no permission
-    return browser.runtime.sendMessage({
-      type: 'treestyletab:api:get-tree',
-      tabId,
-    });
-  }
-
   async updateContent() {
     const inlineClass = this.params.inline ? 'inline' : 'dialog';
-    const tab = this.params.tabId ? this.getTab(this.params.tabId) : null;
-    const title = tab ? tab.title : this.params.folderParams?.title;
-    const urlField = tab ? `
+    const urlField = this.params.tabId ? `
       <div class="itemContainer ${inlineClass}">
-        <label for="${this.BASE_ID}url"
+        <label for="url"
                accesskey=${JSON.stringify(sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_url_accessKey')))}>
           <span accesskey=${JSON.stringify(sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_url_accessKey')))}
                >${sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_url'))}</span>
         </label>
-        <input id="${this.BASE_ID}url"
+        <input id="url"
                type="text"
-               name="url"
-               value=${JSON.stringify(sanitizeForHTMLText(tab.url))}>
+               name="url">
       </div>
     `.trim() : '';
     this.content.insertAdjacentHTML('beforeend', `
       <div class="itemContainer ${inlineClass}">
-        <label for="${this.BASE_ID}title"
+        <label for="title"
                accesskey=${JSON.stringify(sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_title_accessKey')))}>
           <span accesskey=${JSON.stringify(sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_title_accessKey')))}
                >${sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_title'))}</span>
         </label>
-        <input id="${this.BASE_ID}title"
+        <input id="title"
                type="text"
-               name="title"
-               value=${JSON.stringify(sanitizeForHTMLText(title))}>
+               name="title">
       </div>
       ${urlField}
       <div class="itemContainer last ${inlineClass}">
         <div class="itemContainer">
-          <label for="${this.BASE_ID}parentId"
+          <label for="parentId"
                  accesskey=${JSON.stringify(sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_parentId_accessKey')))}>
             <span accesskey=${JSON.stringify(sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_parentId_accessKey')))}
                  >${sanitizeForHTMLText(browser.i18n.getMessage('bookmarkDialog_parentId'))}</span>
           </label>
           <span class="parentIdChooserMiniContainer">
-            <select id="${this.BASE_ID}parentId"
+            <select id="parentId"
                     name="parentId"
                     class="parentIdChooserMini"></select>
             <button class="showAllFolders"

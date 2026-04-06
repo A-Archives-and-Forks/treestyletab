@@ -65,7 +65,11 @@ export async function bookmarkTab(tab, { parentId, showDialog } = {}) {
     const dialogParams = {
       inline: window.location.pathname.startsWith('/sidebar/'),
       tabId:  tab.id,
-      parentId,
+      values: {
+        title,
+        url,
+        parentId,
+      },
     };
     let result;
     if (dialogParams.inline) {
@@ -89,19 +93,9 @@ export async function bookmarkTab(tab, { parentId, showDialog } = {}) {
     }
     if (result.buttonIndex != 0)
       return null;
-    for (const [key, value] of Object.entries(result.values)) {
-      switch (key.replace(/^.+:/, '')) {
-        case 'title':
-          title = value;
-          break;
-        case 'url':
-          url = value;
-          break;
-        case 'parentId':
-          parentId = value;
-          break;
-      }
-    }
+    title    = result.values.title;
+    url      = result.values.url;
+    parentId = result.values.parentId;
   }
 
   mCreatingCount++;
@@ -205,7 +199,7 @@ export async function bookmarkTabs(tabs, { parentId, index, showDialog, title } 
     const windowId = tabs[0].windowId;
     const dialogParams = {
       inline: window.location.pathname.startsWith('/sidebar/'),
-      folderParams,
+      values: folderParams,
     };
     let result;
     if (dialogParams.inline) {
@@ -229,16 +223,8 @@ export async function bookmarkTabs(tabs, { parentId, index, showDialog, title } 
     }
     if (result.buttonIndex != 0)
       return null;
-    for (const [key, value] of Object.entries(result.values)) {
-      switch (key.replace(/^.+:/, '')) {
-        case 'title':
-          folderParams.title = value;
-          break;
-        case 'parentId':
-          folderParams.parentId = value;
-          break;
-      }
-    }
+    folderParams.title    = result.values.value;
+    folderParams.parentId = result.values.parentId;
   }
 
   const toBeCreatedCount = tabs.length + 1;
