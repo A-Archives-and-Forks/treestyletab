@@ -1,6 +1,11 @@
 # History
 
  - master/HEAD
+   * Restore internal state of collapsed tabs more correctly whether the tree cache is not used.
+   * Add "Drop here to pin tab" description to the drop action indicator around top area of the sidebar, like Firefox does.
+   * Detect newly opened tabs from the "New Tab" command more certainly, on Firefox on macOS with Japanese locale.
+   * Add zh_CN localized label of the "Copy Links" context menu command.
+   * Reduce unhandled errors in webpages.
  - 4.3.1 (2026.4.3)
    * Fix breakage of custom dialogs (confirmation of closing tabs, bookmark creation, and others) on recent Firefox.
    * Reduce needless handling of changed configs while drag-and-drop operations.
