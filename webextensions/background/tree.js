@@ -1896,6 +1896,7 @@ export async function applyTreeStructureToTabs(tabs, treeStructure, options = {}
     if (isCollapsed && tab.$TST.hasChild) {
       await collapseExpandSubtree(tab, {
         collapsed: isCollapsed,
+        force:     options.force,
         justNow:   true,
         broadcast: true,
       });

@@ -86,7 +86,7 @@ async function saveTreeStructure(windowId) {
 }
 
 export async function loadTreeStructure(windows, restoredFromCacheResults) {
-  log('loadTreeStructure');
+  log('loadTreeStructure ', restoredFromCacheResults);
   MetricsData.add('loadTreeStructure: start');
   return MetricsData.addAsync('loadTreeStructure: restoration for windows', Promise.all(windows.map(async win => {
     if (restoredFromCacheResults &&
@@ -116,7 +116,11 @@ export async function loadTreeStructure(windows, restoredFromCacheResults) {
         }
         if (tabsOffset > -1) {
           const structureRestoreTabs = tabs.slice(tabsOffset);
-          await Tree.applyTreeStructureToTabs(structureRestoreTabs, structure);
+          await Tree.applyTreeStructureToTabs(structureRestoreTabs, structure, {
+            // We apply the structure reqursively to reset "collapsed" state of descendants under collapsed tree.
+            // See also: https://github.com/piroor/treestyletab/issues/3900
+            force: true,
+          });
           for (const tab of structureRestoreTabs) {
             tab.$TST.temporaryMetadata.set('treeStructureAlreadyRestoredFromSessionData', true);
           }
