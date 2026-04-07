@@ -1092,21 +1092,21 @@ async function collapseExpandSubtreeInternal(tab, params = {}) {
     tab.$TST.subtreeCollapsed != params.collapsed
   );
   if (updateSubtreeCollapsed) {
-  SidebarConnection.sendMessage({
-    type:      Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGING,
-    windowId:  tab.windowId,
-    tabId:     tab.id,
-    collapsed: !!params.collapsed,
-  });
+    SidebarConnection.sendMessage({
+      type:      Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGING,
+      windowId:  tab.windowId,
+      tabId:     tab.id,
+      collapsed: !!params.collapsed,
+    });
 
-  if (params.collapsed) {
-    tab.$TST.addState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
-    tab.$TST.removeState(Constants.kTAB_STATE_SUBTREE_EXPANDED_MANUALLY);
-  }
-  else {
-    tab.$TST.removeState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
-  }
-  //setTabValue(tab, Constants.kTAB_STATE_SUBTREE_COLLAPSED, params.collapsed);
+    if (params.collapsed) {
+      tab.$TST.addState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
+      tab.$TST.removeState(Constants.kTAB_STATE_SUBTREE_EXPANDED_MANUALLY);
+    }
+    else {
+      tab.$TST.removeState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
+    }
+    //setTabValue(tab, Constants.kTAB_STATE_SUBTREE_COLLAPSED, params.collapsed);
   }
 
   // The anchor is only used when expanding (passed to the last child tab
@@ -1149,17 +1149,17 @@ async function collapseExpandSubtreeInternal(tab, params = {}) {
   const visibilityChangedTabIds = [...new Set(allVisibilityChangedTabIds)];
 
   if (updateSubtreeCollapsed) {
-  onSubtreeCollapsedStateChanging.dispatch(tab, { collapsed: params.collapsed });
-  SidebarConnection.sendMessage({
-    type:      Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGED,
-    windowId:  tab.windowId,
-    tabId:     tab.id,
-    collapsed: !!params.collapsed,
-    justNow:   params.justNow,
-    anchorId:  anchor?.id,
-    visibilityChangedTabIds,
-    last:      true
-  });
+    onSubtreeCollapsedStateChanging.dispatch(tab, { collapsed: params.collapsed });
+    SidebarConnection.sendMessage({
+      type:      Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGED,
+      windowId:  tab.windowId,
+      tabId:     tab.id,
+      collapsed: !!params.collapsed,
+      justNow:   params.justNow,
+      anchorId:  anchor?.id,
+      visibilityChangedTabIds,
+      last:      true
+    });
   }
 
   return visibilityChangedTabIds;
