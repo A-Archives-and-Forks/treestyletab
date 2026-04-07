@@ -238,7 +238,8 @@ async function fixupTabsRestoredFromCache(tabs, permanentStates, cachedTabs) {
     tab = Tab.get(tab.id);
     log(`fixupTabsRestoredFromCache: remap ${oldId} => ${tab.id}`);
     idMap.set(oldId, tab);
-    if (oldId != tab.id)
+    if (oldId != tab.id ||
+        tab.$TST?.uniqueId?.restored)
       remappedCount++;
     return tab;
   });
