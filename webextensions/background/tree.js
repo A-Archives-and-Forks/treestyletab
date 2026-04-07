@@ -1087,10 +1087,11 @@ export async function collapseExpandSubtree(tab, params = {}) {
   return visibilityChangedTabIds;
 }
 async function collapseExpandSubtreeInternal(tab, params = {}) {
-  if (!params.force &&
-      tab.$TST.subtreeCollapsed == params.collapsed)
-    return [];
-
+  const updateSubtreeCollapsed = (
+    params.force ||
+    tab.$TST.subtreeCollapsed != params.collapsed
+  );
+  if (updateSubtreeCollapsed) {
   SidebarConnection.sendMessage({
     type:      Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGING,
     windowId:  tab.windowId,
@@ -1106,6 +1107,7 @@ async function collapseExpandSubtreeInternal(tab, params = {}) {
     tab.$TST.removeState(Constants.kTAB_STATE_SUBTREE_COLLAPSED);
   }
   //setTabValue(tab, Constants.kTAB_STATE_SUBTREE_COLLAPSED, params.collapsed);
+  }
 
   // The anchor is only used when expanding (passed to the last child tab
   // for scroll position anchoring). When collapsing, the anchor is never
@@ -1146,6 +1148,7 @@ async function collapseExpandSubtreeInternal(tab, params = {}) {
   }
   const visibilityChangedTabIds = [...new Set(allVisibilityChangedTabIds)];
 
+  if (updateSubtreeCollapsed) {
   onSubtreeCollapsedStateChanging.dispatch(tab, { collapsed: params.collapsed });
   SidebarConnection.sendMessage({
     type:      Constants.kCOMMAND_NOTIFY_SUBTREE_COLLAPSED_STATE_CHANGED,
@@ -1157,6 +1160,7 @@ async function collapseExpandSubtreeInternal(tab, params = {}) {
     visibilityChangedTabIds,
     last:      true
   });
+  }
 
   return visibilityChangedTabIds;
 }
@@ -1896,7 +1900,6 @@ export async function applyTreeStructureToTabs(tabs, treeStructure, options = {}
     if (isCollapsed && tab.$TST.hasChild) {
       await collapseExpandSubtree(tab, {
         collapsed: isCollapsed,
-        force:     options.force,
         justNow:   true,
         broadcast: true,
       });

@@ -116,11 +116,7 @@ export async function loadTreeStructure(windows, restoredFromCacheResults) {
         }
         if (tabsOffset > -1) {
           const structureRestoreTabs = tabs.slice(tabsOffset);
-          await Tree.applyTreeStructureToTabs(structureRestoreTabs, structure, {
-            // We apply the structure reqursively to reset "collapsed" state of descendants under collapsed tree.
-            // See also: https://github.com/piroor/treestyletab/issues/3900
-            force: true,
-          });
+          await Tree.applyTreeStructureToTabs(structureRestoreTabs, structure);
           for (const tab of structureRestoreTabs) {
             tab.$TST.temporaryMetadata.set('treeStructureAlreadyRestoredFromSessionData', true);
           }
