@@ -49,6 +49,10 @@
 // H.2. The CONTROLLER sends a message to hide the UI in the TAB, to the IMPL,
 //      like "hide the UI"
 // H.3. The IMPL hides the panel.
+// H.4. After the panel is completely hidden, the IMPL sends "notify-panel-hidden"
+//      message to the CONTROLLER.
+// H.5. The CONTROLLER sends "destroy" message to the MANAGER in the TAB.
+// H.6. The manager destroys the instance of the IMPL.
 
 import {
   configs,
@@ -108,6 +112,7 @@ export default class InContentPanelController {
         case `treestyletab:${this.type}:notify-panel-hidden`:
           if (sender.tab) {
             browser.sessions.removeTabValue(sender.tab.id, KEY_CLOSED_CONTAINER_TYPE).catch(_error => null);
+            // H.5.
             browser.tabs.sendMessage(sender.tab.id, {
               type: `treestyletab:${this.type}:destroy`,
             });
@@ -231,7 +236,7 @@ export default class InContentPanelController {
                   if (message.stillVisibleInSplitView)
                     return;
                 case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
-                case 'treestyletab:' + instance.type + ':destroy':
+                case 'treestyletab:' + instance.type + ':destroy': // H.6.
                   window.destroyClosedContents(destructor);
                   break;
               }

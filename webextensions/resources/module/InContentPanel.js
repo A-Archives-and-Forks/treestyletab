@@ -301,6 +301,7 @@ export default class InContentPanel {
     this.root = this.onMessageSelf = this.destroySelf = null;
   }
 
+  // H.3.
   async hide() {
     if (!this.panel)
       return;
@@ -313,6 +314,7 @@ export default class InContentPanel {
       });
     }
 
+    // H.4.
     browser.runtime.sendMessage({
       type: `treestyletab:${this.type}:notify-panel-hidden`,
     });
