@@ -64,6 +64,8 @@ import { Tab } from '/common/TreeItem.js';
 
 import InContentPanel from './InContentPanel.js';
 
+const KEY_CLOSED_CONTAINER_TYPE = 'closed-container-type';
+
 export default class InContentPanelController {
   constructor({
     // required
@@ -125,6 +127,7 @@ export default class InContentPanelController {
       return;
 
     this.log(`preparePlaygroundTab (${this.type}): insert container to the tab contents `, playgroundTab.url);
+    const lastClosedContainerType = (await browser.sessions.getTabValue(playgroundTab.id, KEY_CLOSED_CONTAINER_TYPE).catch(_error => null)) || '';
     await browser.tabs.executeScript(playgroundTabId, {
       matchAboutBlank: true,
       runAt:           'document_start',
@@ -139,6 +142,14 @@ export default class InContentPanelController {
         // its constructor raises unexpected error), so we just use only one
         // custom element type and recycle it for multiple purposes.
         window.closedContainerType = window.closedContainerType || '${this.generateOneTimeCustomElementName()}';
+
+        const lastClosedContainerType = '${lastClosedContainerType}';
+        if (lastClosedContainerType &&
+            lastClosedContainerType != window.closedContainerType) {
+          for (const container of document.querySelectorAll(lastClosedContainerType)) {
+            container.remove();
+          }
+        }
 
         const version = '${browser.runtime.getManifest().version}';
         if (window.lastClosedContainerVersion &&
@@ -198,7 +209,7 @@ export default class InContentPanelController {
             const onMessage = (message, _sender) => {
               switch (message?.type) {
                 case 'treestyletab:' + instance.type + ':ask-container-ready':
-                  return Promise.resolve(true); // S.1.1. Responds to the CONTROLLER
+                  return Promise.resolve(window.closedContainerType); // S.1.1. Responds to the CONTROLLER
 
                 case '${Constants.kCOMMAND_NOTIFY_TAB_UNACTIVATED}':
                   if (message.stillVisibleInSplitView)
@@ -306,15 +317,18 @@ export default class InContentPanelController {
     // S.1. Sends a messaeg to the MANAGER
     let rawTab;
     try {
-      const [ready, gotRawTab] = await Promise.all([
+      const [readiedClosedContainerType, gotRawTab] = await Promise.all([
         browser.tabs.sendMessage(playgroundTabId, {
           type: `treestyletab:${this.type}:ask-container-ready`,
         }).catch(_error => {}),
         browser.tabs.get(playgroundTabId).catch(_error => null),
       ]);
       rawTab = gotRawTab;
-      this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { ready });
-      if (!ready) {
+      this.log(`sendMessage (${this.type}) (${message.type}${retrying ? ', retrying' : ''}): response from the tab: `, { readiedClosedContainerType });
+      if (readiedClosedContainerType) {
+        browser.sessions.setTabValue(playgroundTabId, KEY_CLOSED_CONTAINER_TYPE, readiedClosedContainerType);
+      }
+      else {
         if (!message.canRetry) {
           this.log(`sendMessage (${this.type}) => no response, give up to send`);
           return false;
