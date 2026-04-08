@@ -773,7 +773,7 @@ async function handleDroppedNonTreeItems(event, dropActionInfo) {
   log('handleDroppedNonTreeItems: ', uris);
 
   const dragOverItem = dropActionInfo.dragOverItem;
-  const groupId = dragOverItem.groupId || dragOverItem.id || undefined;
+  const groupId = dragOverItem?.groupId || dragOverItem?.id || undefined;
   if (dragOverItem &&
       dropActionInfo.dropPosition == kDROP_ON_SELF &&
       !dragOverItem.pinned) {
