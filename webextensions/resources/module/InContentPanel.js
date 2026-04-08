@@ -440,7 +440,7 @@ export default class InContentPanel {
 
       this.onCompleteUpdate({ logging });
 
-      const maxY = window.innerHeight / scale;
+      const maxY = window.innerHeight;
       const panelHeight = panelBox.height;
 
       let top;
@@ -464,7 +464,7 @@ export default class InContentPanel {
       else { // in-content
         // We need to shift the position with the height of the sidebar header.
         const alignToTopPosition = Math.max(0, anchorTabRect.top / scale) + sidebarContentsOffset;
-        const alignToBottomPosition = Math.min(maxY, anchorTabRect.bottom + sidebarContentsOffset / scale) - panelHeight;
+        const alignToBottomPosition = Math.min(maxY, (anchorTabRect.bottom / scale) + sidebarContentsOffset) - panelHeight;
 
         if (logging)
           console.log(`${this.type} updateUI/complete: in-content, alignment calculating: `, { offsetFromWindowEdge, sidebarContentsOffset, alignToTopPosition, panelHeight, maxY, scale });
