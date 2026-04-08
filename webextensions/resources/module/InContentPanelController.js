@@ -102,6 +102,22 @@ export default class InContentPanelController {
       this.hideIn(activeInfo.tabId, { timestamp });
       this.hideIn(activeInfo.previousTabId, { timestamp });
     });
+
+    browser.runtime.onMessage.addListener((message, sender) => {
+      switch (message?.type) {
+        case `treestyletab:${this.type}:notify-panel-hidden`:
+          if (sender.tab) {
+            browser.sessions.removeTabValue(sender.tab.id, KEY_CLOSED_CONTAINER_TYPE).catch(_error => null);
+            browser.tabs.sendMessage(sender.tab.id, {
+              type: `treestyletab:${this.type}:destroy`,
+            });
+          }
+          break;
+
+        default:
+          break;
+      }
+    });
   }
 
   value(property) {
@@ -215,6 +231,7 @@ export default class InContentPanelController {
                   if (message.stillVisibleInSplitView)
                     return;
                 case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
+                case 'treestyletab:' + instance.type + ':destroy':
                   window.destroyClosedContents(destructor);
                   break;
               }

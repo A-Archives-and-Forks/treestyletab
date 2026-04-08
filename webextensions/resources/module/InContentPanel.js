@@ -268,13 +268,13 @@ export default class InContentPanel {
           if (message.targetId) {
             this.lastTimestampFor.set(message.targetId, message.timestamp);
           }
-          this.panel.classList.remove('open');
+          this.hide();
           return true;
         })();
 
       case 'treestyletab:notify-sidebar-closed':
         if (this.panel) {
-          this.panel.classList.remove('open');
+          this.hide();
         }
         break;
     }
@@ -289,7 +289,7 @@ export default class InContentPanel {
       return;
 
     if (this.panel) {
-      this.panel.parentNode.removeChild(this.panel);
+      this.panel.remove();
       this.panel = null;
     }
 
@@ -299,6 +299,23 @@ export default class InContentPanel {
 
     this.lastTimestampFor.clear();
     this.root = this.onMessageSelf = this.destroySelf = null;
+  }
+
+  async hide() {
+    if (!this.panel)
+      return;
+
+    this.panel.classList.remove('open');
+
+    if (this.panel.classList.contains('animation')) {
+      await new Promise((resolve, _reject) => {
+        this.panel.addEventListener('transitionend', resolve, { once: true });
+      });
+    }
+
+    browser.runtime.sendMessage({
+      type: `treestyletab:${this.type}:notify-panel-hidden`,
+    });
   }
 
   get UISource() { // this can be overridden by subclasses
