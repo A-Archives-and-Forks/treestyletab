@@ -20,14 +20,14 @@ export default class TabGroupMenuPanel extends InContentPanel {
 
           /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#266 */
           /** Size **/
-          --size-item-small: 16px;
-          --size-item-medium: 28px;
-          --size-item-large: 32px;
+          --size-item-small: calc(16px / var(--in-content-panel-scale));
+          --size-item-medium: calc(28px / var(--in-content-panel-scale));
+          --size-item-large: calc(32px / var(--in-content-panel-scale));
 
           /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/toolkit/themes/shared/design-system/tokens-shared.css#271 */
           /** Space **/
           --space-xxsmall: calc(0.5 * var(--space-xsmall)); /* 2px */
-          --space-xsmall: 0.267rem; /* 4px */
+          --space-xsmall: calc(0.267rem /* 4px */ / var(--in-content-panel-scale));
           --space-small: calc(2 * var(--space-xsmall)); /* 8px */
           --space-medium: calc(3 * var(--space-xsmall)); /* 12px */
           --space-large: calc(4 * var(--space-xsmall)); /* 16px */
@@ -35,7 +35,7 @@ export default class TabGroupMenuPanel extends InContentPanel {
           --space-xxlarge: calc(8 * var(--space-xsmall)); /* 32px */
 
           /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/browser/themes/shared/customizableui/panelUI-shared.css#20 */
-          --panel-separator-margin-vertical: 4px;
+          --panel-separator-margin-vertical: calc(4px / var(--in-content-panel-scale));
 
           /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#107 */
           /** Color **/
@@ -71,8 +71,8 @@ export default class TabGroupMenuPanel extends InContentPanel {
           --focus-outline: var(--focus-outline-width) solid var(--focus-outline-color);
           --focus-outline-color: var(--color-accent-primary);
           --focus-outline-inset: calc(-1 * var(--focus-outline-width));
-          --focus-outline-offset: 2px;
-          --focus-outline-width: 2px;
+          --focus-outline-offset: calc(2px / var(--in-content-panel-scale));
+          --focus-outline-width: calc(2px / var(--in-content-panel-scale));
 
           /* https://searchfox.org/mozilla-central/rev/126697140e711e04a9d95edae537541c3bde89cc/toolkit/themes/shared/design-system/tokens-shared.css#20 */
           /** Border **/
@@ -80,10 +80,10 @@ export default class TabGroupMenuPanel extends InContentPanel {
           --border-color-interactive-hover: var(--border-color-interactive);
           --border-color-interactive-active: var(--border-color-interactive);
           --border-color-interactive-disabled: var(--border-color-interactive);
-          --border-radius-circle: 9999px;
-          --border-radius-small: 4px;
-          --border-radius-medium: 8px;
-          --border-width: 1px;
+          --border-radius-circle: calc(9999px / var(--in-content-panel-scale));
+          --border-radius-small: calc(4px/ var(--in-content-panel-scale));
+          --border-radius-medium: calc(8px / var(--in-content-panel-scale));
+          --border-width: calc(1px / var(--in-content-panel-scale));
 
           /* https://searchfox.org/mozilla-central/rev/7d73613454bfe426fdceb635b33cd3061a69def4/browser/themes/shared/tabbrowser/tabs.css#79 */
           --tab-group-color-blue: var(--color-blue-70);
@@ -179,6 +179,7 @@ export default class TabGroupMenuPanel extends InContentPanel {
             > h1 {
               text-align: center;
               font: menu;
+              font-size: calc(100% / var(--in-content-panel-scale));
               font-weight: bold;
 
               margin-top: 0;
@@ -187,8 +188,8 @@ export default class TabGroupMenuPanel extends InContentPanel {
 
           hr /*toolbarseparator*/ {
             margin-block: var(--space-medium);
-            border: 1px solid;
-            border-width: 1px 0 0 0;
+            border: calc(1px / var(--in-content-panel-scale)) solid;
+            border-width: calc(1px / var(--in-content-panel-scale)) 0 0 0;
             opacity: 0.5;
           }
 
@@ -204,11 +205,13 @@ export default class TabGroupMenuPanel extends InContentPanel {
           .tab-group-editor-name > label {
             display: flex;
             flex-direction: column;
-            > label {
-              margin-inline: 0;
-              margin-bottom: var(--space-small);
-            }
+            font: menu;
+            font-size: calc(100% / var(--in-content-panel-scale));
+            margin-inline: 0;
+            margin-bottom: var(--space-small);
+
             > input[type="text"] {
+              font-size: 100%;
               padding: var(/*--space-medium*/--space-xsmall);
             }
           }
@@ -230,8 +233,8 @@ export default class TabGroupMenuPanel extends InContentPanel {
             margin: 0;
 
             font-size: 0;
-            width: 16px;
-            height: 16px;
+            width: calc(16px / var(--in-content-panel-scale));
+            height: calc(16px / var(--in-content-panel-scale));
             padding: var(--focus-outline-offset);
             border: var(--focus-outline-width) solid transparent;
             border-radius: var(--border-radius-medium);
@@ -247,8 +250,8 @@ export default class TabGroupMenuPanel extends InContentPanel {
             }
 
             &:focus-visible {
-              outline: 1px solid var(--focus-outline-color);
-              outline-offset: 1px;
+              outline: calc(1px / var(--in-content-panel-scale))) solid var(--focus-outline-color);
+              outline-offset: calc(1px / var(--in-content-panel-scale))
             }
 
             + .label-text {
@@ -266,6 +269,7 @@ export default class TabGroupMenuPanel extends InContentPanel {
              border-radius: var(--space-xsmall);
              display: block;
              font: menu;
+             font-size: calc(100% / var(--in-content-panel-scale));
              margin: 0;
              padding: var(--space-small);
              text-align: start;
