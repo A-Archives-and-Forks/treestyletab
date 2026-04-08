@@ -236,10 +236,12 @@ async function onActivated(activeInfo) {
     // We need to notify this to some content scripts, to destroy themselves.
     try {
       if (activeInfo.previousTabId &&
-          activeInfo.previousTabId != -1)
+          activeInfo.previousTabId != -1) {
         browser.tabs.sendMessage(activeInfo.previousTabId, {
-          type: Constants.kCOMMAND_NOTIFY_TAB_UNACTIVATED,
+          type:                    Constants.kCOMMAND_NOTIFY_TAB_UNACTIVATED,
+          stillVisibleInSplitView: newActiveTab.$TST.pairedSplitViewTab?.id === activeInfo.previousTabId,
         }).catch(_error => {});
+      }
     }
     catch(_error) {
     }

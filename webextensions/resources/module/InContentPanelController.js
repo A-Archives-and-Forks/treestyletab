@@ -200,8 +200,10 @@ export default class InContentPanelController {
                 case 'treestyletab:' + instance.type + ':ask-container-ready':
                   return Promise.resolve(true); // S.1.1. Responds to the CONTROLLER
 
-                case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
                 case '${Constants.kCOMMAND_NOTIFY_TAB_UNACTIVATED}':
+                  if (message.stillVisibleInSplitView)
+                    return;
+                case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
                   window.destroyClosedContents(destructor);
                   break;
               }
