@@ -201,6 +201,7 @@ export default class InContentPanelController {
                   return Promise.resolve(true); // S.1.1. Responds to the CONTROLLER
 
                 case '${Constants.kCOMMAND_NOTIFY_TAB_DETACHED_FROM_WINDOW}':
+                case '${Constants.kCOMMAND_NOTIFY_TAB_UNACTIVATED}':
                   window.destroyClosedContents(destructor);
                   break;
               }
