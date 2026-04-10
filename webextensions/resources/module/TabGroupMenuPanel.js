@@ -169,7 +169,7 @@ export default class TabGroupMenuPanel extends InContentPanel {
           --button-text-color-primary-disabled: var(--button-text-color-primary);
 
 
-          --panel-width: 22em;
+          --panel-width: calc(22em / var(--in-content-panel-scale));
           --panel-padding: var(--space-large);
           --panel-separator-margin: var(--panel-separator-margin-vertical) 0;
           font: menu;
@@ -294,7 +294,7 @@ export default class TabGroupMenuPanel extends InContentPanel {
         }
 
         .tab-group-editor-panel.tab-group-editor-panel-expanded {
-          --panel-width: 25em;
+          --panel-width: calc(25em / var(--in-content-panel-scale));
         }
 
         @media not (prefers-contrast) {

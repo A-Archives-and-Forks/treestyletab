@@ -33,6 +33,8 @@ export default class InContentPanel {
       .in-content-panel-root {
         --in-content-panel-show-hide-animation: opacity 0.1s ease-out;
         --in-content-panel-scale: 1; /* Web contents may be zoomed by the user, and we need to cancel the zoom effect. */
+        --base-panel-width: ${this.BASE_PANEL_WIDTH};
+        --max-panel-width: 100%;
         --max-32bit-integer: 2147483647;
         background: transparent;
         border: 0 none;
@@ -58,7 +60,6 @@ export default class InContentPanel {
           --panel-padding: var(--panel-padding-block) 0;
           --panel-border-radius: calc(4px / var(--in-content-panel-scale));
           --panel-border-color: ThreeDShadow;
-          --panel-width: initial;
 
           --panel-shadow-margin: 0px;
           --panel-shadow: 0px 0px var(--panel-shadow-margin) hsla(0,0%,0%,.2);
@@ -94,18 +95,18 @@ export default class InContentPanel {
           }
 
           /*@media (-moz-platform: macos) {*/
-          ${this.isMac ? '' : '/*'}
+          ${this.isMac ? `
             appearance: auto;
             -moz-default-appearance: menupopup;
             background-color: Menu;
             --panel-background: white /* https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/browser/themes/shared/browser-colors.css#89 https://searchfox.org/mozilla-central/rev/86c208f86f35d53dc824f18f8e540fe5b0663870/toolkit/themes/shared/global-shared.css#128 */;
             --panel-border-color: transparent;
             --panel-border-radius: calc(6px / var(--in-content-panel-scale));
-          ${this.isMac ? '' : '*/'}
+          ` : ''}
           /*}*/
 
           /* https://searchfox.org/mozilla-central/rev/dfaf02d68a7cb018b6cad7e189f450352e2cde04/browser/themes/shared/tabbrowser/tab-hover-preview.css#5 */
-          --panel-width: min(100%, calc(${this.BASE_PANEL_WIDTH}px / var(--in-content-panel-scale)));
+          --panel-width: min(var(--max-panel-width), calc(var(--base-panel-width) / var(--in-content-panel-scale)));
           --panel-padding: 0;
 
           /* https://searchfox.org/mozilla-central/rev/b576bae69c6f3328d2b08108538cbbf535b1b99d/toolkit/themes/shared/global-shared.css#111 */
@@ -375,16 +376,14 @@ export default class InContentPanel {
     // of the browser window can be scaled on a high-DPI display by the
     // platform.
     const isResistFingerprintingMode = window.mozInnerScreenY == window.screenY;
-    const devicePixelRatio = window.devicePixelRatio != 1 ?
-      window.devicePixelRatio : // devicePixelRatio is always available on macOS with Retina
-      ((widthInOuterWorld || window.innerWidth) / window.innerWidth);
+    const devicePixelRatio = window.devicePixelRatio; // ((widthInOuterWorld || window.innerWidth) / window.innerWidth);
     if (logging)
       console.log(`${this.type} updateUI: isResistFingerprintingMode `, isResistFingerprintingMode, { devicePixelRatio });
     // But window.devicePixelRatio is not available if privacy.resistFingerprinting=true,
     // thus we need to calculate it based on tabs.Tab.width.
     scale = devicePixelRatio * (scale || 1);
     this.root.style.setProperty('--in-content-panel-scale', scale);
-    this.panel.style.setProperty('--panel-width', `min(${window.innerWidth}px, calc(${this.BASE_PANEL_WIDTH} / ${scale}))`);
+    this.root.style.setProperty('--max-panel-width', `${window.innerWidth}px`);
 
     const offsetFromWindowEdge = isResistFingerprintingMode ?
       0 :
