@@ -682,6 +682,7 @@
   "config_expandNativeTabGroupByMemberTreeExpansion_label": { "message": "折りたたまれたネイティブタブグループ配下のツリーが展開された時に、タブグループも展開する" },
   "config_autoDiscardTabForUnexpectedFocus_label": { "message": "待機状態のタブが意図せずフォーカスされた後にすぐ別のタブへフォーカスし直された場合、タブを待機状態に戻す" },
   "config_avoidDiscardedTabToBeActivatedIfPossible_label": { "message": "現在のタブを閉じたりツリーを折りたたんだりした時に、なるべく待機状態のタブが選択されないようにする" },
+  "config_avoidDiscardedTabToBeActivatedExceptGroupTabs_label": { "message": "グループ化用のタブは除く" },
 
   "config_treeDoubleClickBehavior_caption":             { "message": "タブのダブルクリック" },
   "config_treeDoubleClickBehavior_toggleCollapsed":     { "message": "ツリーを開閉する" },

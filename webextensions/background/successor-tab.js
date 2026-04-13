@@ -246,7 +246,9 @@ async function updateInternal(tabId, excludeTabIds = []) {
       });
       if (successor &&
           successor.discarded &&
-          configs.avoidDiscardedTabToBeActivatedIfPossible) {
+          configs.avoidDiscardedTabToBeActivatedIfPossible &&
+          (!successor.$TST.isGroupTab ||
+           !configs.avoidDiscardedTabToBeActivatedExceptGroupTabs)) {
         log(`  ${dumpTab(successor)} is discarded.`);
         successor = findSuccessor(
           tab.$TST.nearestLoadedSiblingTab,

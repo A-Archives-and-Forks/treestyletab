@@ -1451,6 +1451,12 @@ const mItems = [
         expert: true,
       },
       {
+        title:  indent() + browser.i18n.getMessage('config_avoidDiscardedTabToBeActivatedExceptGroupTabs_label'),
+        key:    'avoidDiscardedTabToBeActivatedExceptGroupTabs',
+        type:   'checkbox',
+        expert: true,
+      },
+      {
         title:       browser.i18n.getMessage('config_requestPermissions_allUrls_ctrlTabTracking'),
         key:         'skipCollapsedTabsForTabSwitchingShortcuts',
         type:        'checkbox',

@@ -478,6 +478,7 @@ export const configs = new Configs({
   autoDiscardTabForUnexpectedFocus:                       true,
   autoDiscardTabForUnexpectedFocusDelay:                  500,
   avoidDiscardedTabToBeActivatedIfPossible:               false,
+  avoidDiscardedTabToBeActivatedExceptGroupTabs:          true,
   provressiveHighlightingStep:                            Number.MAX_SAFE_INTEGER,
   progressievHighlightingInterval:                        100,
   generatedTreeItemElementsPoolLifetimeMsec:              5 * 1000,

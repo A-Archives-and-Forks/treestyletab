@@ -686,6 +686,7 @@
   "config_expandNativeTabGroupByMemberTreeExpansion_label": { "message": "When a tree under a collapsed native tab group is expanded, expand the group also" },
   "config_autoDiscardTabForUnexpectedFocus_label": { "message": "Keep tabs pending (unloaded) when tabs are accidentaly focused and the focus is redirected immediately" },
   "config_avoidDiscardedTabToBeActivatedIfPossible_label": { "message": "Avoid pending (unloaded) tabs to be activated accidentally on current tab closes or tree collapsing" },
+  "config_avoidDiscardedTabToBeActivatedExceptGroupTabs_label": { "message": "Except group tabs" },
 
   "config_treeDoubleClickBehavior_caption":             { "message": "Double-click on a tab" },
   "config_treeDoubleClickBehavior_toggleCollapsed":     { "message": "Collapse/expand tree" },
