@@ -1,6 +1,7 @@
 # History
 
  - master/HEAD
+ - 4.3.2 (2026.4.13)
    * Restore internal state of collapsed tabs more correctly whether the tree cache is not used.
    * Add "Drop here to pin tab" description to the drop action indicator around top area of the sidebar, like Firefox does.
    * Detect newly opened tabs from the "New Tab" command more certainly, on Firefox on macOS with Japanese locale.
