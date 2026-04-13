@@ -4,7 +4,8 @@
    * Restore internal state of collapsed tabs more correctly whether the tree cache is not used.
    * Add "Drop here to pin tab" description to the drop action indicator around top area of the sidebar, like Firefox does.
    * Detect newly opened tabs from the "New Tab" command more certainly, on Firefox on macOS with Japanese locale.
-   * Fix unfilled "Bookmark this Tab" dialog. (regression no 4.3.1)
+   * Fix unfilled "Bookmark this Tab" dialog. (regression on 4.3.1)
+   * Fix unexpected cleared favicon of sticky tabs. (regression on 4.3.0)
    * Add zh_CN localized label of the "Copy Links" context menu command.
    * Reduce unhandled errors in webpages.
  - 4.3.1 (2026.4.3)
