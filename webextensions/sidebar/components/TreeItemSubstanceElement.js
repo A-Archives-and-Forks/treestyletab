@@ -534,7 +534,7 @@ index = ${raw.index}
   }
 
   applyAttributes() {
-    this.favIconUrl = this._favIconUrl;
+    this.favIconUrl = this._favIconUrl ||= this.raw?.favIconUrl;
     //this.setAttribute('aria-selected', this.classList.contains(Constants.kTAB_STATE_HIGHLIGHTED) ? 'true' : 'false');
 
     if (this.getAttribute('type') == TreeItem.TYPE_TAB && this.raw) {
