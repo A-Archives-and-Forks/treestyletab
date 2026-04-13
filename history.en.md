@@ -7,6 +7,7 @@
    * Detect newly opened tabs from the "New Tab" command more certainly, on Firefox on macOS with Japanese locale.
    * Fix unfilled "Bookmark this Tab" dialog. (regression on 4.3.1)
    * Fix unexpected cleared favicon of sticky tabs. (regression on 4.3.0)
+   * Add a new expert option to allow pending (discarded) group tabs to become successor of closed active tabs.
    * Add zh_CN localized label of the "Copy Links" context menu command.
    * Reduce unhandled errors in webpages.
  - 4.3.1 (2026.4.3)
