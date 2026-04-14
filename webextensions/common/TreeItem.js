@@ -929,7 +929,7 @@ class TabGroupCollapsedMembersCounter extends TreeItem {
 
   get title() {
     const members = this.raw.group.$TST.members;
-    const hasActiveSplitView = members.filter(tab => tab.active && !!tab.$TST.pairedSplitViewTab);
+    const hasActiveSplitView = members.some(tab => tab.active && !!tab.$TST.pairedSplitViewTab);
     const collapsedItemsCount = Math.max(0, members.length - (hasActiveSplitView ? 2 : 1));
     return `+${collapsedItemsCount}`;
   }
