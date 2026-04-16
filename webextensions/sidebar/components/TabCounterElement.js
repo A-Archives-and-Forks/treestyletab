@@ -47,12 +47,16 @@ export class TabCounterElement extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.owner = null;
+    this.$owner = null;
+  }
+
+  get owner() {
+    return this.$owner ||= this.closest(`[${Constants.kAPI_TAB_ID}]`)?.raw;
   }
 
   update() {
     const tab = this.owner;
-    if (!tab || !tab.$TST)
+    if (!tab?.$TST)
       return;
 
     // We use the sub split view tab as the alias to the main split view, in the inverted mode.
@@ -62,6 +66,8 @@ export class TabCounterElement extends HTMLElement {
       count += 1;
     this.textContent = count;
 
-    tab.$TST.subSplitViewTab?.$TST.element?.substanceElement?.counterElement?.update();
+    const counterElement = tab.$TST.subSplitViewTab?.$TST.element?.substanceElement?.counterElement;
+    if (counterElement && counterElement != this)
+      counterElement.update();
   }
 }

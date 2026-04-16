@@ -99,7 +99,11 @@ export class TreeItemLabelElement extends HTMLElement {
   disconnectedCallback() {
     this._overflowChangeListeners.clear();
     this._endListening();
-    this.owner = null;
+    this.$owner = null;
+  }
+
+  get owner() {
+    return this.$owner ||= this.closest(`[${Constants.kAPI_TAB_ID}]`)?.raw;
   }
 
   get initialized() {
@@ -159,7 +163,7 @@ export class TreeItemLabelElement extends HTMLElement {
       if (!this.checkVisibility({ visibilityProperty: false, opacityProperty: false }))
         return;
       const tab = this.owner;
-      const overflow = tab && !tab.raw?.pinned && this._content.offsetWidth > this.offsetWidth;
+      const overflow = tab && !tab.pinned && this._content.offsetWidth > this.offsetWidth;
       this.classList.toggle('overflow', overflow);
       // Don't touch offsetWidth if not needed - touching it will trigger indent animation unexpectedly
       this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${this._content.offsetWidth}px`);
@@ -233,10 +237,14 @@ export class TreeItemLabelElement extends HTMLElement {
   }
 
   addOverflowChangeListener(listener) {
+    if (typeof listener != 'function')
+      return;
     this._overflowChangeListeners.add(listener);
   }
 
   removeOverflowChangeListener(listener) {
+    if (typeof listener != 'function')
+      return;
     this._overflowChangeListeners.delete(listener);
   }
 

@@ -3,6 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
+import * as Constants from '/common/constants.js';
 
 export const kTAB_SOUND_BUTTON_ELEMENT_NAME = 'tab-sound-button';
 
@@ -52,7 +53,11 @@ export class TabSoundButtonElement extends HTMLElement {
       this.removeEventListener('mouseover', this._reservedUpdate);
       this._reservedUpdate = null;
     }
-    this.owner = null;
+    this.$owner = null;
+  }
+
+  get owner() {
+    return this.$owner ||= this.closest(`[${Constants.kAPI_TAB_ID}]`)?.raw;
   }
 
   invalidate() {
@@ -68,7 +73,7 @@ export class TabSoundButtonElement extends HTMLElement {
 
   updateTooltip() {
     const tab = this.owner;
-    if (!tab || !tab.$TST)
+    if (!tab?.$TST)
       return;
 
     const suffix = tab.$TST.multiselected ? '_multiselected' : '' ;
@@ -85,6 +90,6 @@ export class TabSoundButtonElement extends HTMLElement {
   }
 
   makeAccessible() {
-    this.setAttribute('aria-label', browser.i18n.getMessage('tab_soundButton_aria_label', [this.owner.id]));
+    this.setAttribute('aria-label', browser.i18n.getMessage('tab_soundButton_aria_label', [this.owner?.id]));
   }
 }

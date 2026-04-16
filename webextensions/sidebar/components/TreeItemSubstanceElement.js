@@ -104,6 +104,7 @@ export class TreeItemSubstanceElement extends HTMLElement {
     this._extraItemsContainerFrontRoot = null;
     this._extraItemsContainerAboveRoot = null;
     this._extraItemsContainerBelowRoot = null;
+    this.$onLabelOverflowSelf ||= this.$onLabelOverflow.bind(this);
   }
 
   connectedCallback() {
@@ -161,6 +162,7 @@ export class TreeItemSubstanceElement extends HTMLElement {
 
   disconnectedCallback() {
     this._endListening();
+    this.labelElement?.removeOverflowChangeListener(this.$onLabelOverflowSelf);
     this.cancelTooltipUpdate();
     this._raw = null;
     this._$TST = null;
@@ -169,6 +171,7 @@ export class TreeItemSubstanceElement extends HTMLElement {
     this._extraItemsContainerFrontRoot = null;
     this._extraItemsContainerAboveRoot = null;
     this._extraItemsContainerBelowRoot = null;
+    this.$onLabelOverflowSelf = null;
   }
 
   cancelTooltipUpdate() {
@@ -506,31 +509,16 @@ index = ${raw.index}
   }
 
   initializeContents() {
-    if (this.labelElement) {
-      if (!this.labelElement.owner) {
-        this.labelElement.addOverflowChangeListener(() => {
-          if (!this.$TST ||
-              this.$TST.tab?.pinned)
-            return;
-          this.invalidateTooltip();
-        });
-      }
-      this.labelElement.owner = this;
-    }
-    if (this.twisty) {
-      this.twisty.owner = this;
-      this.twisty.makeAccessible();
-    }
-    if (this.counterElement)
-      this.counterElement.owner = this;
-    if (this.soundButtonElement) {
-      this.soundButtonElement.owner = this;
-      this.soundButtonElement.makeAccessible();
-    }
-    if (this.closeBox) {
-      this.closeBox.owner = this;
-      this.closeBox.makeAccessible();
-    }
+    this.labelElement?.addOverflowChangeListener(this.$onLabelOverflowSelf);
+    this.twisty?.makeAccessible();
+    this.soundButtonElement?.makeAccessible();
+    this.closeBox?.makeAccessible();
+  }
+  $onLabelOverflow() {
+    if (!this.$TST ||
+        this.$TST.tab?.pinned)
+      return;
+    this.invalidateTooltip();
   }
 
   applyAttributes() {
@@ -577,7 +565,7 @@ index = ${raw.index}
       this.closeBox?.invalidate();
 
     if (targets & TabInvalidationTarget.Overflow) {
-      this.labelElement.invalidateOverflow();
+      this.labelElement?.invalidateOverflow();
       this._needToUpdateOverflow = true;
     }
   }

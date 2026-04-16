@@ -3,6 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
+import * as Constants from '/common/constants.js';
 
 const EXPANDED_TOOLTIP  = 'tab_twisty_expanded_tooltip';
 const COLLAPSED_TOOLTIP = 'tab_twisty_collapsed_tooltip';
@@ -55,7 +56,11 @@ export class TabTwistyElement extends HTMLElement {
       this.removeEventListener('mouseover', this._reservedUpdate);
       this._reservedUpdate = null;
     }
-    this.owner = null;
+    this.$owner = null;
+  }
+
+  get owner() {
+    return this.$owner ||= this.closest(`[${Constants.kAPI_TAB_ID}]`)?.raw;
   }
 
   invalidate() {
@@ -81,6 +86,6 @@ export class TabTwistyElement extends HTMLElement {
   }
 
   makeAccessible() {
-    this.setAttribute('aria-label', browser.i18n.getMessage('tab_twisty_aria_label', [this.owner.id]));
+    this.setAttribute('aria-label', browser.i18n.getMessage('tab_twisty_aria_label', [this.owner?.id]));
   }
 }

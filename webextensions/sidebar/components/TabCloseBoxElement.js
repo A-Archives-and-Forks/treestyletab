@@ -3,6 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 */
+import * as Constants from '/common/constants.js';
 
 const NORMAL_TOOLTIP        = 'tab_closebox_tab_tooltip';
 const MULTISELECTED_TOOLTIP = 'tab_closebox_tab_tooltip_multiselected';
@@ -57,7 +58,11 @@ export class TabCloseBoxElement extends HTMLElement {
       this.removeEventListener('mouseover', this._reservedUpdate);
       this._reservedUpdate = null;
     }
-    this.owner = null;
+    this.$owner = null;
+  }
+
+  get owner() {
+    return this.$owner ||= this.closest(`[${Constants.kAPI_TAB_ID}]`)?.raw;
   }
 
   invalidate() {
@@ -73,7 +78,7 @@ export class TabCloseBoxElement extends HTMLElement {
 
   updateTooltip() {
     const tab = this.owner;
-    if (!tab || !tab.$TST)
+    if (!tab?.$TST)
       return;
 
     let key;
@@ -89,6 +94,6 @@ export class TabCloseBoxElement extends HTMLElement {
   }
 
   makeAccessible() {
-    this.setAttribute('aria-label', browser.i18n.getMessage('tab_closebox_aria_label', [this.owner.id]));
+    this.setAttribute('aria-label', browser.i18n.getMessage('tab_closebox_aria_label', [this.owner?.id]));
   }
 }
