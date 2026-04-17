@@ -82,6 +82,7 @@ export async function setCollapsed(tab, info = {}) {
     tab.$TST.addState(Constants.kTAB_STATE_COLLAPSED);
     TabsStore.removeVisibleTab(tab);
     TabsStore.removeExpandedTab(tab);
+    TabsStore.removeScrollPositionCalculationTargetTab(tab);
   }
   else {
     if (tab.$TST.states.has(Constants.kTAB_STATE_COLLAPSED_DONE)) {
@@ -92,6 +93,7 @@ export async function setCollapsed(tab, info = {}) {
     tab.$TST.removeState(Constants.kTAB_STATE_COLLAPSED);
     TabsStore.addVisibleTab(tab);
     TabsStore.addExpandedTab(tab);
+    TabsStore.addScrollPositionCalculationTargetTab(tab);
   }
 
   if (mCollapseExpandAnimationCallback.has(tab.id)) {
