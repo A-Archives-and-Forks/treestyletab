@@ -1,6 +1,10 @@
 # History
 
  - master/HEAD
+ - 4.3.3 (2026.4.17)
+   * Update in-tab elements (counter and so on) continuously even after tabs are rearranged. (regression on 4.3.0)
+   * Fix miscalculation of tabs' visual position after they are moved. It triggered misdetection of tab visibility, misscrolling to an active tab, and so on.
+   * Don't show nonsense "+0" label for collapsed tab groups even if there is no split view.
  - 4.3.2 (2026.4.13)
    * Restore internal state of collapsed tabs more correctly whether the tree cache is not used.
    * Add "Drop here to pin tab" description to the drop action indicator around top area of the sidebar, like Firefox does.
