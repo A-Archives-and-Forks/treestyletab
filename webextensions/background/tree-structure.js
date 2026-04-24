@@ -202,14 +202,17 @@ async function reserveToAttachTabFromRestoredInfo(tab, options = {}) {
         return false;
       })
     ));
+    const restoredInfoById = new Map(restoredInfos.map(info => [info.tab.id, info]));
     // Phase 2: apply tree structure sequentially
     // Wrap in TreeTransaction to batch all kCOMMAND_APPLY_TREE_TRANSACTION
     // messages into a single sidebar message.
     const attachedResults = [];
     await TreeTransaction.run(async () => {
       for (const info of restoredInfos) {
+        if (info.done)
+          continue;
         try {
-          attachedResults.push(info ? await applyRestoredTabInfo(info) : false);
+          attachedResults.push(info ? await applyRestoredTabInfo(info, restoredInfoById) : false);
         }
         catch(error) {
           console.log(`TreeStructure.reserveToAttachTabFromRestoredInfo: Fatal error applying info, ${error}`, stack(error.stack));
@@ -218,7 +221,7 @@ async function reserveToAttachTabFromRestoredInfo(tab, options = {}) {
       }
     });
     if (typeof reserveToAttachTabFromRestoredInfo.onDone == 'function')
-      reserveToAttachTabFromRestoredInfo.onDone(attachedResults.every(attached => !!attached));
+      reserveToAttachTabFromRestoredInfo.onDone(attachedResults.flat().every(attached => !!attached));
     delete reserveToAttachTabFromRestoredInfo.onDone;
     delete reserveToAttachTabFromRestoredInfo.promisedDone;
     Tab.dumpAll();
@@ -306,10 +309,12 @@ async function collectRestoredTabInfo(tab, options = {}) {
   };
 }
 
-async function applyRestoredTabInfo(info) {
+async function applyRestoredTabInfo(info, restoredInfoById) {
   const { tab, insertBefore, insertAfter, ancestors, children,
     active, maybeRecycledTab, subtreeCollapsed,
     keepCurrentTree, canCollapse, processChildren } = info;
+
+  info.done = true;
 
   let attached = false;
   for (const ancestor of ancestors) {
@@ -358,6 +363,7 @@ async function applyRestoredTabInfo(info) {
       broadcast: true
     });
   }
+  const attachedFromChildren = [];
   if (processChildren) {
     await TreeTransaction.run(async () => {
       let firstInTree = tab.$TST.firstChild || tab;
@@ -365,6 +371,13 @@ async function applyRestoredTabInfo(info) {
       for (const child of children) {
         if (!child)
           continue;
+
+        // We must restore subtree from edge, because detection logic of the
+        // "dontMove" parameter depends on completely restored subtree.
+        const childInfo = restoredInfoById.get(child.id);
+        if (childInfo && !childInfo.done)
+          attachedFromChildren.push(await applyRestoredTabInfo(childInfo, restoredInfoById));
+
         await Tree.attachTabTo(child, tab, {
           dontExpand:  !child.active,
           forceExpand: active,
@@ -375,7 +388,7 @@ async function applyRestoredTabInfo(info) {
         if (child.index < firstInTree.index)
           firstInTree = child;
         else if (child.index > lastInTree.index)
-          lastInTree = child;
+          lastInTree = child.$TST.lastDescendant || child;
       }
     });
   }
@@ -413,7 +426,10 @@ async function applyRestoredTabInfo(info) {
 
   updateCollapsedState();
 
-  return attached;
+  if (attachedFromChildren.length == 0)
+    return attached;
+
+  return [attached, ...attachedFromChildren.flat()];
 }
 
 const mRestoringTabs = new Map();
