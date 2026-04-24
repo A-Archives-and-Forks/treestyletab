@@ -136,23 +136,27 @@ export class TreeItemLabelElement extends HTMLElement {
 
   updateTextContent() {
     const content = this._content;
-    if (!content || this._throttled)
+    if (!content)
+      return;
+
+    content.textContent = this.getAttribute(kATTR_NAME_VALUE) || '';
+    this.classList.toggle('rtl', isRTL(content.textContent));
+
+    if (this._throttled)
       return;
 
     this._throttled = true;
     window.requestAnimationFrame(() => {
       this._throttled = false;
-    content.textContent = this.getAttribute(kATTR_NAME_VALUE) || '';
-    this.classList.toggle('rtl', isRTL(content.textContent));
-    this.invalidateOverflow();
-    if (!this.checkVisibility({ visibilityProperty: false, opacityProperty: false }))
-      return;
-    // Don't touch offsetWidth if not needed - touching it will trigger indent animation unexpectedly
-    window.requestAnimationFrame(() => {
-      if (!this.closest('body')) // already detached from document!
+      this.invalidateOverflow();
+      if (!this.checkVisibility({ visibilityProperty: false, opacityProperty: false }))
         return;
-      this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
-    });
+      // Don't touch offsetWidth if not needed - touching it will trigger indent animation unexpectedly
+      window.requestAnimationFrame(() => {
+        if (!this.closest('body')) // already detached from document!
+          return;
+        this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
+      });
     });
   }
 
