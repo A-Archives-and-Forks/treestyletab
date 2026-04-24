@@ -57,6 +57,7 @@ export class TreeItemLabelElement extends HTMLElement {
 
     // We should initialize private properties with blank value for better performance with a fixed shape.
     this.__unwatch     = null;
+    this._throttled    = false;
   }
 
   connectedCallback() {
@@ -100,6 +101,7 @@ export class TreeItemLabelElement extends HTMLElement {
     this._overflowChangeListeners.clear();
     this._endListening();
     this.$owner = null;
+    this._throttled = false;
   }
 
   get owner() {
@@ -134,8 +136,12 @@ export class TreeItemLabelElement extends HTMLElement {
 
   updateTextContent() {
     const content = this._content;
-    if (!content)
+    if (!content || this._throttled)
       return;
+
+    this._throttled = true;
+    window.requestAnimationFrame(() => {
+      this._throttled = false;
     content.textContent = this.getAttribute(kATTR_NAME_VALUE) || '';
     this.classList.toggle('rtl', isRTL(content.textContent));
     this.invalidateOverflow();
@@ -146,6 +152,7 @@ export class TreeItemLabelElement extends HTMLElement {
       if (!this.closest('body')) // already detached from document!
         return;
       this.closest('tab-item[type="group"]')?.style.setProperty('--tab-label-width', `${content.offsetWidth}px`);
+    });
     });
   }
 
