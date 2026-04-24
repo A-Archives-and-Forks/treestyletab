@@ -42,7 +42,7 @@ Tab.onBeforeCreate.addListener(async (tab, info) => {
   const shouldAttachToPinnedOpener = (
     !tab.openerTabId &&
     !tab.pinned &&
-    !tab.$TST.isSplitViewTab &&
+    !tab.$TST.mainSplitViewTab /* opened by "Open Link in Split View" case */ &&
     tab.$TST.isNewTabCommandTab &&
     Constants.kCONTROLLED_NEWTAB_POSITION.has(configs.autoAttachOnNewTabCommand) &&
     (
@@ -472,7 +472,7 @@ Tab.onUpdated.addListener((tab, changeInfo) => {
     const possibleOpenerTab = Tab.get(tab.$TST.temporaryMetadata.get('possibleOpenerTab'));
     tab.$TST.temporaryMetadata.delete('possibleOpenerTab');
     log('possibleOpenerTab ', dumpTab(possibleOpenerTab));
-    if (tab.$TST.isSplitViewTab) {
+    if (tab.$TST.mainSplitViewTab) {
       log('do nothing for newly opened split view tab)');
       return;
     }

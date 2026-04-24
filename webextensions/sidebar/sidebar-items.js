@@ -954,7 +954,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       TabsStore.addLoadingTab(tab);
       TabsStore.updateVirtualScrollRenderabilityIndexForTab(tab);
       if (shouldApplyAnimation() &&
-          !tab.$TST.isSplitViewTab) {
+          !tab.$TST.mainSplitViewTab /* opened by "Open Link in Split View" case */) {
         CollapseExpand.setCollapsed(tab, {
           collapsed: true,
           justNow:   true
@@ -986,7 +986,7 @@ BackgroundConnection.onMessage.addListener(async message => {
       if (message.maybeMoved)
         await waitUntilNewTabIsMoved(message.tabId);
       if (tab.pinned ||
-          tab.$TST.isSplitViewTab) {
+          tab.$TST.mainSplitViewTab /* opened by "Open Link in Split View" case */) {
         renderItem(tab);
         //onPinnedTabsChanged.dispatch(tab);
       }

@@ -393,7 +393,7 @@ async function onCreated(tab) {
 
 async function onNewTabTracked(tab, info) {
   const win                  = Window.track(tab.windowId);
-  const bypassTabControl     = win.bypassTabControlCount > 0 || ((tab.splitViewId || -1) == -1);
+  const bypassTabControl     = win.bypassTabControlCount > 0;
   const isNewTabCommandTab   = win.toBeOpenedNewTabCommandTab > 0;
   const positionedBySelf     = win.toBeOpenedTabsWithPositions > 0;
   const openedWithCookieStoreId = win.toBeOpenedTabsWithCookieStoreId > 0;
@@ -609,7 +609,7 @@ async function onNewTabTracked(tab, info) {
     }
 
     let moved = Tab.onCreating.dispatch(tab, {
-      bypassTabControl,
+      bypassTabControl: bypassTabControl || !!tab.$TST.mainSplitViewTab /* opened by "Open Link in Split View" case */,
       positionedBySelf,
       openedWithCookieStoreId,
       mayBeReplacedWithContainer,
@@ -674,7 +674,7 @@ async function onNewTabTracked(tab, info) {
     log(`onNewTabTracked(${dumpTab(tab)}): uniqueId = `, uniqueId);
 
     Tab.onCreated.dispatch(tab, {
-      bypassTabControl,
+      bypassTabControl:         bypassTabControl || !!tab.$TST.mainSplitViewTab /* opened by "Open Link in Split View" case */,
       positionedBySelf,
       mayBeReplacedWithContainer,
       movedBySelfWhileCreation: moved,
