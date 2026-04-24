@@ -953,7 +953,8 @@ BackgroundConnection.onMessage.addListener(async message => {
 
       TabsStore.addLoadingTab(tab);
       TabsStore.updateVirtualScrollRenderabilityIndexForTab(tab);
-      if (shouldApplyAnimation()) {
+      if (shouldApplyAnimation() &&
+          !tab.$TST.isSplitViewTab) {
         CollapseExpand.setCollapsed(tab, {
           collapsed: true,
           justNow:   true
@@ -984,7 +985,8 @@ BackgroundConnection.onMessage.addListener(async message => {
       tab.$TST.resolveOpened();
       if (message.maybeMoved)
         await waitUntilNewTabIsMoved(message.tabId);
-      if (tab.pinned) {
+      if (tab.pinned ||
+          tab.$TST.isSplitViewTab) {
         renderItem(tab);
         //onPinnedTabsChanged.dispatch(tab);
       }

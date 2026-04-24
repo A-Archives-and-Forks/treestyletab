@@ -393,7 +393,7 @@ async function onCreated(tab) {
 
 async function onNewTabTracked(tab, info) {
   const win                  = Window.track(tab.windowId);
-  const bypassTabControl     = win.bypassTabControlCount > 0;
+  const bypassTabControl     = win.bypassTabControlCount > 0 || ((tab.splitViewId || -1) == -1);
   const isNewTabCommandTab   = win.toBeOpenedNewTabCommandTab > 0;
   const positionedBySelf     = win.toBeOpenedTabsWithPositions > 0;
   const openedWithCookieStoreId = win.toBeOpenedTabsWithCookieStoreId > 0;

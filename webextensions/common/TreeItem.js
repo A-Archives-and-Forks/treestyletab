@@ -2396,6 +2396,11 @@ export class Tab extends TreeItem {
     return Tab.get(win.previousLastRelatedTabs.get(this.id)) || null;
   }
 
+  get isSplitViewTab() {
+    const splitViewId = this.raw?.splitViewId || -1;
+    return splitViewId != -1;
+  }
+
   get pairedSplitViewTab() {
     const splitViewId = this.raw?.splitViewId || -1;
     if (splitViewId == -1)
