@@ -5,6 +5,7 @@
    * Create bookmarks folder with given name correctly. (regression on 4.3.3)
    * Fix blank custom dialogs on some environments e.g. ESR140. (regression on 4.3.1)
    * Fix mis-sizing of custom dialogs. (regression on 4.3.1)
+   * Fix performance degression from continuous and massive re-rendering of tabs like while scrolling.
  - 4.3.3 (2026.4.17)
    * Update in-tab elements (counter and so on) continuously even after tabs are rearranged. (regression on 4.3.0)
    * Fix miscalculation of tabs' visual position after they are moved. It triggered misdetection of tab visibility, misscrolling to an active tab, and so on.
