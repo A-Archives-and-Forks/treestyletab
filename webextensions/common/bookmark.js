@@ -223,7 +223,7 @@ export async function bookmarkTabs(tabs, { parentId, index, showDialog, title } 
     }
     if (result.buttonIndex != 0)
       return null;
-    folderParams.title    = result.values.value;
+    folderParams.title    = result.values.title;
     folderParams.parentId = result.values.parentId;
   }
 
