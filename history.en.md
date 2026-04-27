@@ -2,6 +2,7 @@
 
  - master/HEAD
    * Render split view correctly even if it is created by "Open Link in Split View".
+   * Create bookmarks folder with given name correctly. (regression on 4.3.3)
    * Fix blank custom dialogs on some environments e.g. ESR140. (regression on 4.3.1)
    * Fix mis-sizing of custom dialogs. (regression on 4.3.1)
  - 4.3.3 (2026.4.17)
