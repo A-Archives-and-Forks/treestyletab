@@ -6,6 +6,7 @@
 'use strict';
 
 import { DOMUpdater } from '/extlib/dom-updater.js';
+import DOMPurify from '/extlib/purify.es.mjs';
 
 import {
   configs,
@@ -227,7 +228,7 @@ TSTAPI.onMessageExternal.addListener((message, sender) => {
 });
 
 // https://developer.mozilla.org/docs/Web/HTML/Element
-const SAFE_CONTENTS = `
+const ALLOWED_TAGS = `
 a
 abbr
 acronym
@@ -368,7 +369,6 @@ var
 wbr
 xmp
 `.trim().split('\n').filter(selector => !selector.startsWith('//'));
-const DANGEROUS_CONTENTS_SELECTOR = SAFE_CONTENTS.map(selector => `:not(${selector})`).join('');
 
 function setExtraContentsTo(tab, id, params = {}) {
   if (!tab || !tab.$TST.element)
@@ -460,15 +460,8 @@ function setExtraContentsToContainer(container, id, params = {}) {
 
   const range = document.createRange();
   range.selectNodeContents(item);
-  const contents = range.createContextualFragment(contentsSource);
+  const contents = range.createContextualFragment(DOMPurify.sanitize(contentsSource, { ALLOWED_TAGS }));
   range.detach();
-
-  const dangerousContents = contents.querySelectorAll(DANGEROUS_CONTENTS_SELECTOR);
-  for (const node of dangerousContents) {
-    node.parentNode.removeChild(node);
-  }
-  if (dangerousContents.length > 0)
-    console.log(`Could not include some elements as extra contents. provider=${id}, container:`, container, dangerousContents);
 
   // Sanitize remote resources
   for (const node of contents.querySelectorAll('*[href], *[src], *[srcset], *[part]')) {

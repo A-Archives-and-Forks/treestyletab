@@ -33,8 +33,10 @@ update_extlib:
 	git submodule foreach 'git checkout trunk || git checkout main || git checkout master && git pull'
 
 install_extlib: install_dependency
-	rm -f $(EXTERNAL_LIB_DIR)/*.js
 	rm -f $(EXTERNAL_LIB_DIR)/*.css
+	rm -f $(EXTERNAL_LIB_DIR)/*.html
+	rm -f $(EXTERNAL_LIB_DIR)/*.js
+	rm -f $(EXTERNAL_LIB_DIR)/*.map
 	rm -rf $(EXTERNAL_LIB_DIR)/codemirror-theme
 	mkdir -p $(EXTERNAL_LIB_DIR)/codemirror-theme
 	cp ../submodules/webextensions-lib-event-listener-manager/EventListenerManager.js $(EXTERNAL_LIB_DIR)/
@@ -63,6 +65,7 @@ install_extlib: install_dependency
 	sed -i -e "s/(this, (function () { 'use strict';/(this || self, (function () { 'use strict';/" $(EXTERNAL_LIB_DIR)/codemirror-colorpicker.js
 	echo 'window["codemirror-picker"] = self["codemirror-picker"];' >> $(EXTERNAL_LIB_DIR)/codemirror-colorpicker.js
 	cat node_modules/codemirror-colorpicker/dist/codemirror-colorpicker.css >> $(EXTERNAL_LIB_DIR)/codemirror-colorpicker.css
+	cp node_modules/dompurify/dist/purify.es.mjs* $(EXTERNAL_LIB_DIR)/
 
 fix_locale_errors:
 	find ./_locales -name messages.json | xargs "$(TOOLS_DIR)/shell/escape-special-characters.sh"
