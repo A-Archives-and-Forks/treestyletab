@@ -823,7 +823,7 @@
 
   "config_undoMultipleTabsClose_label": { "message": "Restore the set of tabs most recently closed, when one of them is restored via the \"Reopen Closed Tab\" command" },
   "config_maxParallelReloadTabsCount_label_before": { "message": "Reload up to" },
-  "config_maxParallelReloadTabsCount_label_after":  { "message": "tabs simultaneously" },
+  "config_maxParallelReloadTabsCount_label_after":  { "message": "tabs simultaneously (less than 1 means no limit)" },
 
   "config_scrollLines_label_before": { "message": "Scroll up or down " },
   "config_scrollLines_label_after":  { "message": "lines via \"Scroll Tabs Up/Down by Lines\" shortcut commands" },

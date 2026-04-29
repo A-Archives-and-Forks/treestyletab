@@ -51,7 +51,8 @@ const queuedTabIdsToReload = [];
 const pendingReloads = new Map();
 
 function processQueuedReload() {
-  if (reloadingTabsCount >= Math.max(configs.maxParallelReloadTabsCount, 1))
+  if (configs.maxParallelReloadTabsCount > 0 &&
+      reloadingTabsCount >= configs.maxParallelReloadTabsCount)
     return;
 
   const tabId = queuedTabIdsToReload.shift();
