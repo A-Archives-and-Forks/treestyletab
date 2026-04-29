@@ -1366,17 +1366,7 @@ async function onClick(info, contextTab) {
       break;
 
     case 'context_reloadTab':
-      if (multiselectedTabs) {
-        for (const tab of multiselectedTabs) {
-          browser.tabs.reload(tab.id)
-            .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
-        }
-      }
-      else {
-        const tab = contextTab || activeTab;
-        browser.tabs.reload(tab.id)
-          .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
-      }
+      Commands.requestReloadTabs(multiselectedTabs || contextTab || activeTab);
       break;
     case 'context_toggleMuteTab': {
       const tab = contextTab || activeTab;

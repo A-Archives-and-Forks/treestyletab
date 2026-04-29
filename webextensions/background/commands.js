@@ -46,21 +46,80 @@ export const onTabsClosing = new EventListenerManager();
 export const onMoveUp      = new EventListenerManager();
 export const onMoveDown    = new EventListenerManager();
 
-export function reloadTree(tabs) {
-  for (const tab of Tab.uniqTabsAndDescendantsSet(tabs)) {
-    browser.tabs.reload(tab.id)
-      .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
+let reloadingTabsCount = 0;
+const queuedTabIdsToReload = [];
+const pendingReloads = new Map();
+
+function processQueuedReload() {
+  if (reloadingTabsCount >= Math.max(configs.maxParallelReloadTabsCount, 1))
+    return;
+
+  const tabId = queuedTabIdsToReload.shift();
+  if (!tabId)
+    return;
+
+  reloadingTabsCount++;
+
+  reloadTabAndWait(tabId)
+    .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError))
+    .finally(() => {
+      reloadingTabsCount--;
+      processQueuedReload();
+    });
+
+  processQueuedReload();
+}
+
+function enqueueToReload(tabId) {
+  queuedTabIdsToReload.push(tabId);
+  processQueuedReload();
+}
+
+function reloadTabAndWait(tabId) {
+  if (pendingReloads.has(tabId))
+    return pendingReloads.get(tabId);
+
+  const promise = new Promise(async (resolve, reject) => {
+    const listener = (_updatedTabId, changeInfo, tab) => {
+      if (changeInfo.status != 'complete')
+        return;
+      browser.tabs.onUpdated.removeListener(listener);
+      pendingReloads.delete(tabId);
+      resolve(tab);
+    };
+
+    browser.tabs.onUpdated.addListener(listener, { tabId });
+
+    try {
+      await browser.tabs.reload(tabId);
+    }
+    catch(error) {
+      browser.tabs.onUpdated.removeListener(listener);
+      pendingReloads.delete(tabId);
+      reject(error);
+    }
+  });
+
+  pendingReloads.set(tabId, promise);
+  return promise;
+}
+
+export function requestReloadTabs(tabs) {
+  if (!Array.isArray(tabs))
+    tabs = [tabs];
+
+  for (const tab of tabs) {
+    enqueueToReload(tab.id);
   }
+}
+
+export function reloadTree(tabs) {
+  requestReloadTabs(Tab.uniqTabsAndDescendantsSet(tabs));
 }
 
 export function reloadDescendants(rootTabs) {
   const rootTabsSet = new Set(rootTabs);
-  for (const tab of Tab.uniqTabsAndDescendantsSet(rootTabs)) {
-    if (rootTabsSet.has(tab))
-      continue;
-    browser.tabs.reload(tab.id)
-      .catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
-  }
+  requestReloadTabs([...Tab.uniqTabsAndDescendantsSet(rootTabs)].filter(tab => !rootTabsSet.has(tab)));
 }
 
 function isUnmuted(tab) {

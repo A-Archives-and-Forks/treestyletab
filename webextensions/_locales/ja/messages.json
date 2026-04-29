@@ -818,6 +818,8 @@
   "config_tabGroupMenuPanelRenderIn_label_after": { "message": "\u200b" },
 
   "config_undoMultipleTabsClose_label": { "message": "最後にまとめて閉じたタブ群のうちの1つが「閉じたタブを元に戻す」で復元されたとき、タブ群全体を復元する" },
+  "config_maxParallelReloadTabsCount_label_before": { "message": "タブの再読み込みを最大で同時に" },
+  "config_maxParallelReloadTabsCount_label_after":  { "message": "個まで行う" },
 
   "config_scrollLines_label_before": { "message": "キーボードショートカットの「タブの一覧を数行上/下にスクロール」で" },
   "config_scrollLines_label_after":  { "message": "行分スクロールする" },
