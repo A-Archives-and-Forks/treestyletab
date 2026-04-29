@@ -145,16 +145,7 @@ let mShowExpertOptionsTemporarily = false;
 
 let mThrottledApplyChangedUserStyles = null;
 
-const mThrottledApplyChangedConfigs = new Map();
 function onConfigChanged(key) {
-  if (mThrottledApplyChangedConfigs.has(key))
-    clearTimeout(mThrottledApplyChangedConfigs.get(key));
-  mThrottledApplyChangedConfigs.set(key, setTimeout(() => {
-    mThrottledApplyChangedConfigs.delete(key);
-    handleChangedConfig(key);
-  }, 500));
-}
-function handleChangedConfig(key) {
   const value = configs[key];
   switch (key) {
     case 'successorTabControlLevel': {
@@ -642,12 +633,12 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   try {
     options.buildUIForAllConfigs(document.querySelector('#group-allConfigs'));
-    handleChangedConfig('successorTabControlLevel');
-    handleChangedConfig('showExpertOptions');
+    onConfigChanged('successorTabControlLevel');
+    onConfigChanged('showExpertOptions');
     await wait(0);
-    handleChangedConfig('parentTabOperationBehaviorMode');
-    handleChangedConfig('autoAttachOnAnyOtherTrigger');
-    handleChangedConfig('syncDeviceInfo');
+    onConfigChanged('parentTabOperationBehaviorMode');
+    onConfigChanged('autoAttachOnAnyOtherTrigger');
+    onConfigChanged('syncDeviceInfo');
 
     if (focusedItem)
       focusedItem.scrollIntoView({ block: 'start' });
