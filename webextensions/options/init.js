@@ -143,6 +143,8 @@ const mDarkModeMedia = window.matchMedia('(prefers-color-scheme: dark)');
 
 let mShowExpertOptionsTemporarily = false;
 
+let mThrottledApplyChangedUserStyles = null;
+
 const mThrottledApplyChangedConfigs = new Map();
 function onConfigChanged(key) {
   if (mThrottledApplyChangedConfigs.has(key))
@@ -238,8 +240,16 @@ function handleChangedConfig(key) {
 
     default:
       if (key.startsWith('chunkedUserStyleRules') &&
-          !mUserStyleRulesField.$saving)
-        mUserStyleRulesFieldEditor.setValue(loadUserStyleRules());
+          !mUserStyleRulesField.$saving) {
+        if (mThrottledApplyChangedUserStyles)
+          clearTimeout(mThrottledApplyChangedUserStyles);
+        mThrottledApplyChangedUserStyles = setTimeout(() => {
+          mThrottledApplyChangedUserStyles = null;
+          const style = loadUserStyleRules();
+          if (style != mUserStyleRulesFieldEditor.getValue())
+            mUserStyleRulesFieldEditor.setValue(style);
+        }, 500);
+      }
       break;
   }
 }
