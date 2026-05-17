@@ -1325,6 +1325,11 @@ export class Tab extends TreeItem {
     // We should initialize private properties with blank value for better performance with a fixed shape.
     this.delayedInheritSoundStateFromChildren = null;
     this.delayedInheritSharingStateFromChildren = null;
+
+    this.$lastPermanentStates = null;
+    browser.sessions.getTabValue(raw.id, Constants.kPERSISTENT_STATES).then(states => {
+      this.$lastPermanentStates = states;
+    }).catch(ApiTabs.handleMissingTabError);
   }
 
   destroy() {
@@ -2812,6 +2817,7 @@ export class Tab extends TreeItem {
     const states = this.raw && await browser.sessions.getTabValue(this.id, Constants.kPERSISTENT_STATES).catch(ApiTabs.handleMissingTabError);
     // We need to cleanup invalid values stored accidentally.
     // See also: https://github.com/piroor/treestyletab/issues/2882
+    this.$lastPermanentStates = states;
     return states && mapAndFilterUniq(states, state => state && String(state) || undefined) || [];
   }
 

@@ -1115,6 +1115,7 @@ async function onAttached(tabId, attachInfo) {
   try {
     log('tabs.onAttached, id: ', tabId, attachInfo);
     let tab = Tab.get(tabId);
+    await ensureSessionTabValueStored(tab);
     let attachedTab = await browser.tabs.get(tabId).catch(ApiTabs.createErrorHandler(ApiTabs.handleMissingTabError));
     if (!attachedTab) {
       // We sometimes fail to get window and tab via API if it is opened
@@ -1210,6 +1211,26 @@ async function onAttached(tabId, attachInfo) {
     console.log(e);
     onCompleted();
   }
+}
+
+// Workaround for https://github.com/piroor/treestyletab/issues/3918
+async function ensureSessionTabValueStored(tab) {
+  const [oldId, states] = await Promise.all([
+    browser.sessions.getTabValue(tab.id, Constants.kPERSISTENT_ID).catch(ApiTabs.createErrorHandler()),
+    browser.sessions.getTabValue(tab.id, Constants.kPERSISTENT_STATES).catch(ApiTabs.createErrorHandler()),
+  ]);
+  if ((!tab.$TST.uniqueId || oldId !== undefined) &&
+      (!tab.$TST.$lastPermanentStates || states !== undefined))
+    return;
+
+  log(`ensureSessionTabValueStored: The tab ${tab.id} has been moved from another window, and lost its session data unexpectedly, so now we try to save them again for safety.`);
+  await Promise.all([
+    tab.$TST.uniqueId && browser.sessions.setTabValue(tab.id, Constants.kPERSISTENT_ID, {
+      id:    tab.$TST.uniqueId.id,
+      tabId: tab.id,
+    }).catch(ApiTabs.createErrorSuppressor()),
+    tab.$TST.$lastPermanentStates && browser.sessions.setTabValue(tab.id, Constants.kPERSISTENT_STATES, tab.$TST.$lastPermanentStates).catch(ApiTabs.createErrorSuppressor()),
+  ]);
 }
 
 async function onDetached(tabId, detachInfo) {

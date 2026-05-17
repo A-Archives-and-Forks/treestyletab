@@ -198,11 +198,13 @@ export async function request(tabOrId, options = {}) {
 
     let oldId;
     if (mRestoredPersistentIdMap.has(tab.id)) {
+      log('tab', tab.id, ': in mRestoredPersistentIdMap');
       oldId = mRestoredPersistentIdMap.get(tab.id);
       mRestoredPersistentIdMap.delete(tab.id);
     }
     else {
       oldId = await browser.sessions.getTabValue(tab.id, Constants.kPERSISTENT_ID).catch(ApiTabs.createErrorHandler());
+      log('tab', tab.id, ': oldId from session tabValue: ', oldId);
     }
     if (oldId && !oldId.tabId) // ignore broken information!
       oldId = null;
