@@ -486,6 +486,7 @@ export const configs = new Configs({
   expandNativeTabGroupByMemberTreeExpansion:              true,
   undoMultipleTabsClose:                                  true,
   maxParallelReloadTabsCount:                             3,
+  parallelReloadTimeoutAfterRestored:                     3000,
   allowDragNewTabButton:                                  true,
   newTabButtonDragGestureModifiers:                       'shift',
   migratedBookmarkUrls:                                   [],

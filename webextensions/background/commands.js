@@ -51,6 +51,7 @@ const queuedTabIdsToReload = [];
 const pendingReloads = new Map();
 
 function processQueuedReload() {
+  log('processQueuedReload: reloadingTabsCount = ', reloadingTabsCount);
   if (configs.maxParallelReloadTabsCount > 0 &&
       reloadingTabsCount >= configs.maxParallelReloadTabsCount)
     return;
@@ -80,13 +81,41 @@ function reloadTabAndWait(tabId) {
   if (pendingReloads.has(tabId))
     return pendingReloads.get(tabId);
 
-  const promise = new Promise(async (resolve, reject) => {
-    const listener = (_updatedTabId, changeInfo, tab) => {
-      if (changeInfo.status != 'complete')
-        return;
-      browser.tabs.onUpdated.removeListener(listener);
+  log('reloadTabAndWait ', tabId);
+  const promisedComplete = new Promise(async (resolve, reject) => {
+    let needToRestore = Tab.get(tabId).discarded;
+    let timeoutToReloadAfterRestored = 0;
+    const onComplete = () => {
+      if (timeoutToReloadAfterRestored) {
+        log('reloadTabAndWait: timed out ', tabId);
+        clearTimeout(timeoutToReloadAfterRestored);
+      }
+      browser.tabs.onUpdated.removeListener(listener); // eslint-disable-line no-use-before-define
       pendingReloads.delete(tabId);
-      resolve(tab);
+      resolve(Tab.get(tabId));
+    };
+    const listener = (_updatedTabId, changeInfo, _tab) => {
+      switch (changeInfo.status) {
+        case 'complete':
+          break;
+
+        case 'loading':
+          if (!needToRestore &&
+              timeoutToReloadAfterRestored) {
+            log('reloadTabAndWait: clear timeout and wait to reload ', tabId);
+            clearTimeout(timeoutToReloadAfterRestored);
+            timeoutToReloadAfterRestored = 0;
+          }
+        default:
+          return;
+      }
+      if (needToRestore) {
+        log('reloadTabAndWait: completely reloaded but was discarded, so it may be just a restoration, so setting timeout for ', tabId);
+        needToRestore = false;
+        timeoutToReloadAfterRestored = setTimeout(onComplete, configs.parallelReloadTimeoutAfterRestored);
+        return;
+      }
+      onComplete();
     };
 
     browser.tabs.onUpdated.addListener(listener, { tabId });
@@ -101,8 +130,8 @@ function reloadTabAndWait(tabId) {
     }
   });
 
-  pendingReloads.set(tabId, promise);
-  return promise;
+  pendingReloads.set(tabId, promisedComplete);
+  return promisedComplete;
 }
 
 export function requestReloadTabs(tabs) {
