@@ -171,12 +171,14 @@ function cleanupNeedlssGroupTab(tabs) {
   TabsInternalOperation.removeTabs(tabsToBeRemoved, { keepDescendants: true });
 }
 
-export async function tryReplaceTabWithGroup(tab, { windowId, parent, children, insertBefore, newParent } = {}) {
+export async function tryReplaceTabWithGroup(tab, { windowId, parent, children, insertBefore, newParent, title } = {}) {
   if (tab) {
     windowId     = tab.windowId;
     parent       = tab.$TST.parent;
     children     = tab.$TST.children;
     insertBefore = insertBefore || tab.$TST.unsafeNextTab;
+    if (configs.closeParentBehavior_replaceWithGroup_inheritTitle)
+      title = tab.title;
   }
 
   if (children.length <= 1 ||
@@ -188,7 +190,7 @@ export async function tryReplaceTabWithGroup(tab, { windowId, parent, children, 
 
   const firstChild = children[0];
   const uri = makeGroupTabURI({
-    title:               browser.i18n.getMessage('groupTab_label', firstChild.title),
+    title:               title ?? browser.i18n.getMessage('groupTab_label', firstChild.title),
     ...temporaryStateParams(configs.groupTabTemporaryStateForOrphanedTabs),
     replacedParentCount: (tab?.$TST?.replacedParentGroupTabCount || 0) + 1,
   });

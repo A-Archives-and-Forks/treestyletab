@@ -134,7 +134,14 @@ async function handleRemovingPostProcess({ closeParentBehavior, windowId, parent
     });
 
   const replacedGroupTab = (closeParentBehavior == Constants.kPARENT_TAB_OPERATION_BEHAVIOR_REPLACE_WITH_GROUP_TAB) ?
-    await TabsGroup.tryReplaceTabWithGroup(null, { windowId, parent, children, insertBefore, newParent }) :
+    await TabsGroup.tryReplaceTabWithGroup(null, {
+      windowId,
+      parent,
+      children,
+      insertBefore,
+      newParent,
+      title: configs.closeParentBehavior_replaceWithGroup_inheritTitle ? removedTab.title : null,
+    }) :
     null;
 
   if (!replacedGroupTab) {
