@@ -205,6 +205,7 @@
   "bookmarkFolderChooser_useThisFolder": { "message": "このフォルダーを選択" },
 
   "shareQRCode_message":     { "message": "コンテキストメニューを使用してQRコードをコピーまたは保存してください" },
+  "shareQRCode_alt":         { "message": "[QRコード]" },
   "shareQRCode_dialogWidth": { "message": "40em" },
   "shareQRCode_close":       { "message": "閉じる" },
 
