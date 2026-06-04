@@ -6,6 +6,7 @@
 'use strict';
 
 import RichConfirmDialog from '/extlib/RichConfirmDialog.js';
+import QRCode from '/extlib/qrcode.mjs';
 
 import {
   sanitizeForHTMLText,
@@ -55,9 +56,14 @@ class ShareQRCodeDialog extends RichConfirmDialog {
   }
 
   async updateContent() {
+    const qrcode = QRCode(0, 'L');
+    qrcode.addData(this.params.sharedURL);
+    qrcode.make();
+    const image = qrcode.createDataURL(4);
+
     this.content.insertAdjacentHTML('beforeend', `
       <div style="text-align: center">
-        <img class="qrcode" src="${this.params.image}" alt="${sanitizeForHTMLText(browser.i18n.getMessage('shareQRCode_alt'))}">
+        <img class="qrcode" src="${image}" alt="${sanitizeForHTMLText(browser.i18n.getMessage('shareQRCode_alt'))}">
         <p class="url" title="${sanitizeForHTMLText(this.params.sharedURL)}">${sanitizeForHTMLText(this.params.sharedURL)}</p>
         <p>${sanitizeForHTMLText(browser.i18n.getMessage('shareQRCode_message'))}</p>
       </div>

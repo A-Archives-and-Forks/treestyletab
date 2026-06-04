@@ -1585,14 +1585,23 @@ function toRichTextLink(tab) {
 }
 
 export async function generateQRCode(tab) {
-  const QRCode = (await import('/extlib/qrcode.mjs')).default;
-  const qrcode = QRCode(0, 'L');
-  qrcode.addData(tab.url);
-  qrcode.make();
-  if (!tab.active)
+  if (!tab.active) {
+    const promisedRestore = tab.discarded && new Promise(async (resolve, _reject) => {
+      const onUpdated = (_updatedTabId, changeInfo, _tab) => {
+        if (changeInfo.status != 'complete')
+          return;
+        browser.tabs.onUpdated.removeListener(onUpdated);
+        resolve();
+      };
+      browser.tabs.onUpdated.addListener(onUpdated, { tabId: tab.id });
+    });
+
     TabsInternalOperation.activateTab(tab);
+
+    await promisedRestore;
+  }
+
   ShareQRCode.showInTab(tab.id, {
-    image:     qrcode.createDataURL(4),
     sharedURL: tab.url,
   });
 }
