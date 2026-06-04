@@ -725,30 +725,30 @@ async function updateSharingServiceItems(parentId, contextTab) {
     }
   }
 
-    const separator = {
-      ...baseParams,
-      type: 'separator',
-      id:   `${parentId}:separator`,
-    };
-    browser.menus.create(separator);
-    onMessageExternal({
-      type:   TSTAPI.kCONTEXT_MENU_CREATE,
-      params: separator,
-    }, browser.runtime);
-    items.add(separator);
+  const separator = {
+    ...baseParams,
+    type: 'separator',
+    id:   `${parentId}:separator`,
+  };
+  browser.menus.create(separator);
+  onMessageExternal({
+    type:   TSTAPI.kCONTEXT_MENU_CREATE,
+    params: separator,
+  }, browser.runtime);
+  items.add(separator);
 
-    const moreItem = {
-      ...baseParams,
-      type:  'normal',
-      id:    `${parentId}:more`,
-      title: browser.i18n.getMessage('tabContextMenu_shareTabURL_more_label'),
-    };
-    browser.menus.create(moreItem);
-    onMessageExternal({
-      type:   TSTAPI.kCONTEXT_MENU_CREATE,
-      params: moreItem,
-    }, browser.runtime);
-    items.add(moreItem);
+  const moreItem = {
+    ...baseParams,
+    type:  'normal',
+    id:    `${parentId}:more`,
+    title: browser.i18n.getMessage('tabContextMenu_shareTabURL_more_label'),
+  };
+  browser.menus.create(moreItem);
+  onMessageExternal({
+    type:   TSTAPI.kCONTEXT_MENU_CREATE,
+    params: moreItem,
+  }, browser.runtime);
+  items.add(moreItem);
 
   mShareItems.set(parentId, items);
   return true;
