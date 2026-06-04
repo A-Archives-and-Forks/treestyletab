@@ -1591,8 +1591,8 @@ export async function generateQRCode(tab) {
   const img = qrcode.createImgTag(8);
   console.log(img);
   RichConfirm.showInTab(tab.id, {
-    contents:     img,
-    buttons:      ['OK'],
+    content: `<div style="text-align: center">${img}</div>`,
+    buttons: ['OK'],
   });
 }
 
