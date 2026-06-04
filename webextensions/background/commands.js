@@ -1589,6 +1589,8 @@ export async function generateQRCode(tab) {
   const qrcode = QRCode(0, 'L');
   qrcode.addData(tab.url);
   qrcode.make();
+  if (!tab.active)
+    TabsInternalOperation.activateTab(tab);
   ShareQRCode.showInTab(tab.id, {
     image:     qrcode.createDataURL(4),
     sharedURL: tab.url,
