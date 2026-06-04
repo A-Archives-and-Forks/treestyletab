@@ -193,24 +193,24 @@ const mItemsById = {
     parentId:           'context_shareTabURL',
     title:              browser.i18n.getMessage('tabContextMenu_copyLinks_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_copyLinks_label_multiselected'),
-    icons:              { 16: '/resources/icons/link.svg' },
+    icons:              { 16: '/resources/icons/link.svg#default' },
   },
   'context_topLevel_copyTreeLinks': {
     parentId:           'context_shareTabURL',
     title:              browser.i18n.getMessage('context_copyTreeLinks_label'),
     titleMultiselected: browser.i18n.getMessage('context_copyTreeLinks_label_multiselected'),
-    icons:              { 16: '/resources/icons/link.svg' },
+    icons:              { 16: '/resources/icons/link.svg#default' },
   },
   'context_topLevel_copyDescendantsLinks': {
     parentId:           'context_shareTabURL',
     title:              browser.i18n.getMessage('context_copyDescendantsLinks_label'),
     titleMultiselected: browser.i18n.getMessage('context_copyDescendantsLinks_label_multiselected'),
-    icons:              { 16: '/resources/icons/link.svg' },
+    icons:              { 16: '/resources/icons/link.svg#default' },
   },
   'context_generateQRCode': {
     parentId: 'context_shareTabURL',
     title:    browser.i18n.getMessage('tabContextMenu_generateQRCode_label'),
-    icons:    { 16: '/resources/icons/qrcode.svg' },
+    icons:    { 16: '/resources/icons/qrcode.svg#default' },
   },
   'context_sendTabsToDevice': {
     title:              browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label'),
