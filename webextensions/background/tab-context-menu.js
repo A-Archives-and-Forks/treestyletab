@@ -190,16 +190,27 @@ const mItemsById = {
     title: browser.i18n.getMessage('tabContextMenu_shareTabURL_label'),
   },
   'context_copyLinks': {
+    parentId:           'context_shareTabURL',
     title:              browser.i18n.getMessage('tabContextMenu_copyLinks_label'),
-    titleMultiselected: browser.i18n.getMessage('tabContextMenu_copyLinks_label_multiselected')
+    titleMultiselected: browser.i18n.getMessage('tabContextMenu_copyLinks_label_multiselected'),
+    icons:              { 16: '/resources/icons/link.svg' },
   },
   'context_topLevel_copyTreeLinks': {
+    parentId:           'context_shareTabURL',
     title:              browser.i18n.getMessage('context_copyTreeLinks_label'),
-    titleMultiselected: browser.i18n.getMessage('context_copyTreeLinks_label_multiselected')
+    titleMultiselected: browser.i18n.getMessage('context_copyTreeLinks_label_multiselected'),
+    icons:              { 16: '/resources/icons/link.svg' },
   },
   'context_topLevel_copyDescendantsLinks': {
+    parentId:           'context_shareTabURL',
     title:              browser.i18n.getMessage('context_copyDescendantsLinks_label'),
-    titleMultiselected: browser.i18n.getMessage('context_copyDescendantsLinks_label_multiselected')
+    titleMultiselected: browser.i18n.getMessage('context_copyDescendantsLinks_label_multiselected'),
+    icons:              { 16: '/resources/icons/link.svg' },
+  },
+  'context_generateQRCode': {
+    parentId: 'context_shareTabURL',
+    title:    browser.i18n.getMessage('tabContextMenu_generateQRCode_label'),
+    icons:    { 16: '/resources/icons/qrcode.svg' },
   },
   'context_sendTabsToDevice': {
     title:              browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label'),
@@ -385,6 +396,8 @@ export async function init() {
     };
     if (item.parentId)
       info.parentId = item.parentId;
+    if (item.icons)
+      info.icons = item.icons;
     if (!item.fakeMenu)
       browser.menus.create(info);
     onMessageExternal({
@@ -659,8 +672,22 @@ export async function updateSendToDeviceItems(parentId, { manage } = {}) {
 const mLastSharingServicesSignature = new Map();
 const mShareItems                   = new Map();
 async function updateSharingServiceItems(parentId, contextTab) {
-  if (!mSharingService ||
-      !contextTab)
+  if (!contextTab)
+    return false;
+
+  const items = mShareItems.get(parentId) || new Set();
+  for (const item of items) {
+    const id = item.id;
+    browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
+    onMessageExternal({
+      type:   TSTAPI.kCONTEXT_MENU_REMOVE,
+      params: id,
+    }, browser.runtime);
+  }
+  items.clear();
+
+  // Not implemented yet as a built-in. See also: https://github.com/piroor/treestyletab/issues/3423
+  if (!mSharingService)
     return false;
 
   const services = await mSharingService.listServices(contextTab);
@@ -669,17 +696,6 @@ async function updateSharingServiceItems(parentId, contextTab) {
     return false;
 
   mLastSharingServicesSignature.set(parentId, signature);
-
-  const items = mShareItems.get(parentId) || new Set();
-  for (const item of items) {
-    const id = item.id;
-    browser.menus.remove(id).catch(ApiTabs.createErrorSuppressor());
-    onMessageExternal({
-      type:   TSTAPI.kCONTEXT_MENU_REMOVE,
-      params: id
-    }, browser.runtime);
-  }
-  items.clear();
 
   const baseParams = {
     parentId,
@@ -707,6 +723,7 @@ async function updateSharingServiceItems(parentId, contextTab) {
       }, browser.runtime);
       items.add(item);
     }
+  }
 
     const separator = {
       ...baseParams,
@@ -725,9 +742,6 @@ async function updateSharingServiceItems(parentId, contextTab) {
       type:  'normal',
       id:    `${parentId}:more`,
       title: browser.i18n.getMessage('tabContextMenu_shareTabURL_more_label'),
-      icons: {
-        '16': '/resources/icons/more-horiz-16.svg',
-      },
     };
     browser.menus.create(moreItem);
     onMessageExternal({
@@ -735,7 +749,6 @@ async function updateSharingServiceItems(parentId, contextTab) {
       params: moreItem,
     }, browser.runtime);
     items.add(moreItem);
-  }
 
   mShareItems.set(parentId, items);
   return true;
@@ -750,10 +763,13 @@ function updateItem(id, state = {}) {
   }
   const updateInfo = {
     visible: 'visible' in state ? !!state.visible : true,
-    enabled: 'enabled' in state ? !!state.enabled : true
+    enabled: 'enabled' in state ? !!state.enabled : true,
   };
   if ('checked' in state)
     updateInfo.checked = state.checked;
+  if ('icons' in state &&
+      JSON.stringify(state.icons) != JSON.stringify(item.icons || null))
+    updateInfo.icons = state.icons;
   const title = String(
     state.title ||
     (state.multiselected && item.titleMultiselected) ||
@@ -997,26 +1013,31 @@ async function onShown(info, contextTab) {
       multiselected
     }) && modifiedItemsCount++;
 
-    // Not implemented yet as a built-in. See also: https://github.com/piroor/treestyletab/issues/3423
     updateItem('context_shareTabURL', {
-      visible: emulate && !!contextTab && mSharingService && Sync.isSendableTab(contextTab) && !multiselected,
+      visible: emulate && !!contextTab && Sync.isSendableTab(contextTab) && !multiselected,
     }) && modifiedItemsCount++;
 
     const canWriteToClipboard = typeof navigator.clipboard.write == 'function' || typeof navigator.clipboard.writeText == 'function';
     updateItem('context_copyLinks', {
-      visible: emulate && !!contextTab && (!mSharingService || multiselected) && canWriteToClipboard,
+      visible: emulate && !!contextTab,
+      enabled: canWriteToClipboard,
       multiselected,
       count:   contextTabs.length
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_copyTreeLinks', {
-      visible: emulate && !!contextTab && canWriteToClipboard && configs.context_topLevel_copyTreeLinks && hasChild,
-      enabled: hasChild,
+      visible: emulate && !!contextTab && configs.context_topLevel_copyTreeLinks && hasChild,
+      enabled: canWriteToClipboard && hasChild,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_copyDescendantsLinks', {
-      visible: emulate && !!contextTab && canWriteToClipboard && configs.context_topLevel_copyDescendantsLinks && hasChild,
-      enabled: hasChild,
+      visible: emulate && !!contextTab && configs.context_topLevel_copyDescendantsLinks && hasChild,
+      enabled: canWriteToClipboard && hasChild,
       multiselected
+    }) && modifiedItemsCount++;
+    updateItem('context_generateQRCode', {
+      visible: emulate && !!contextTab,
+      enabled: contextTabs.length == 1,
+      multiselected,
     }) && modifiedItemsCount++;
 
     updateItem('context_sendTabsToDevice', {
@@ -1427,15 +1448,17 @@ async function onClick(info, contextTab) {
       Commands.openTabInWindow(contextTab, { withTree: true });
       break;
     case 'context_shareTabURL':
-      if (mSharingService)
-        mSharingService.share(contextTab);
       break;
     case 'context_shareTabURL:more':
       if (mSharingService)
-        mSharingService.openPreferences();
+        mSharingService.share(contextTab);
+        //mSharingService.openPreferences();
       break;
     case 'context_copyLinks':
       Commands.copyLinks(multiselectedTabs || [contextTab]);
+      break;
+    case 'context_generateQRCode':
+      Commands.generateQRCode(contextTab);
       break;
     case 'context_sendTabsToDevice:all':
       Sync.sendTabsToAllDevices(multiselectedTabs || [contextTab]);

@@ -1582,6 +1582,9 @@ function toRichTextLink(tab) {
   return `<a href="${sanitizeForHTMLText(tab.url)}">${sanitizeForHTMLText(tab.title)}</a>`;
 }
 
+export function generateQRCode(tab) {
+}
+
 
 SidebarConnection.onMessage.addListener(async (windowId, message) => {
   switch (message.type) {
