@@ -37,6 +37,7 @@ install_extlib: install_dependency
 	rm -f $(EXTERNAL_LIB_DIR)/*.html
 	rm -f $(EXTERNAL_LIB_DIR)/*.js
 	rm -f $(EXTERNAL_LIB_DIR)/*.map
+	rm -f $(EXTERNAL_LIB_DIR)/*.mjs
 	rm -rf $(EXTERNAL_LIB_DIR)/codemirror-theme
 	mkdir -p $(EXTERNAL_LIB_DIR)/codemirror-theme
 	cp ../submodules/webextensions-lib-event-listener-manager/EventListenerManager.js $(EXTERNAL_LIB_DIR)/
@@ -52,6 +53,7 @@ install_extlib: install_dependency
 	cp ../submodules/webextensions-lib-dom-updater/src/dom-updater.js $(EXTERNAL_LIB_DIR)/
 	cp ../submodules/webextensions-lib-placeholder-parser/src/placeholder-parser.js $(EXTERNAL_LIB_DIR)/
 	cp ../submodules/webextensions-lib-cross-context-messaging/cross-context-messaging-*.js $(EXTERNAL_LIB_DIR)/
+	cp ../submodules/qrcode-generator/js/dist/qrcode.mjs $(EXTERNAL_LIB_DIR)/
 	echo "/* CodeMirror version $$(cat node_modules/codemirror/package.json | jq -r .version) */" > $(EXTERNAL_LIB_DIR)/codemirror.js
 	cp $(EXTERNAL_LIB_DIR)/codemirror.js $(EXTERNAL_LIB_DIR)/codemirror.css
 	cp $(EXTERNAL_LIB_DIR)/codemirror.js $(EXTERNAL_LIB_DIR)/codemirror-mode-css.js

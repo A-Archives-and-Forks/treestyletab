@@ -6,6 +6,7 @@
 'use strict';
 
 import EventListenerManager from '/extlib/EventListenerManager.js';
+import RichConfirm from '/extlib/RichConfirm.js';
 
 import {
   log as internalLogger,
@@ -1582,7 +1583,17 @@ function toRichTextLink(tab) {
   return `<a href="${sanitizeForHTMLText(tab.url)}">${sanitizeForHTMLText(tab.title)}</a>`;
 }
 
-export function generateQRCode(tab) {
+export async function generateQRCode(tab) {
+  const QRCode = (await import('/extlib/qrcode.mjs')).default;
+  const qrcode = QRCode(0, 'L');
+  qrcode.addData(tab.url);
+  qrcode.make();
+  const img = qrcode.createImgTag(8);
+  console.log(img);
+  RichConfirm.showInTab(tab.id, {
+    contents:     img,
+    buttons:      ['OK'],
+  });
 }
 
 

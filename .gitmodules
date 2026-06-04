@@ -40,3 +40,6 @@
 [submodule "submodules/webextensions-lib-cross-context-messaging"]
 	path = submodules/webextensions-lib-cross-context-messaging
 	url = https://github.com/piroor/webextensions-lib-cross-context-messaging.git
+[submodule "submodules/qrcode-generator"]
+	path = submodules/qrcode-generator
+	url = https://github.com/kazuhikoarase/qrcode-generator.git
