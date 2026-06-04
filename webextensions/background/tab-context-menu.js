@@ -212,6 +212,15 @@ const mItemsById = {
     title:    browser.i18n.getMessage('tabContextMenu_generateQRCode_label'),
     icons:    { 16: '/resources/icons/qrcode.svg#default' },
   },
+  'context_reopenInContainer': {
+    title: browser.i18n.getMessage('tabContextMenu_reopenInContainer_label')
+  },
+  'context_selectAllTabs': {
+    title: browser.i18n.getMessage('tabContextMenu_selectAllTabs_label')
+  },
+  'context_separator:afterSelectAllTabs': {
+    type: 'separator'
+  },
   'context_sendTabsToDevice': {
     title:              browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label'),
     titleMultiselected: browser.i18n.getMessage('tabContextMenu_sendTabsToDevice_label_multiselected')
@@ -220,13 +229,7 @@ const mItemsById = {
     title:              browser.i18n.getMessage('context_sendTreeToDevice_label'),
     titleMultiselected: browser.i18n.getMessage('context_sendTreeToDevice_label_multiselected')
   },
-  'context_reopenInContainer': {
-    title: browser.i18n.getMessage('tabContextMenu_reopenInContainer_label')
-  },
-  'context_selectAllTabs': {
-    title: browser.i18n.getMessage('tabContextMenu_selectAllTabs_label')
-  },
-  'context_separator:afterSelectAllTabs': {
+  'context_separator:afterSendTabsToDevice': {
     type: 'separator'
   },
   'context_topLevel_collapseTree': {
@@ -1176,6 +1179,7 @@ async function onShown(info, contextTab) {
 
     updateSeparator('context_separator:afterDuplicate') && modifiedItemsCount++;
     updateSeparator('context_separator:afterSelectAllTabs') && modifiedItemsCount++;
+    updateSeparator('context_separator:afterSendTabsToDevice') && modifiedItemsCount++;
     updateSeparator('context_separator:afterCollapseExpand') && modifiedItemsCount++;
     updateSeparator('context_separator:afterClose') && modifiedItemsCount++;
 
