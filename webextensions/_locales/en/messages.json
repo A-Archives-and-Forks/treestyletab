@@ -204,6 +204,10 @@
   "bookmarkFolderChooser_blank":         { "message": "(no name)" },
   "bookmarkFolderChooser_useThisFolder": { "message": "Use this folder" },
 
+  "shareQRCode_message":     { "message": "Copy or save the QR code with the context menu." },
+  "shareQRCode_dialogWidth": { "message": "35em" },
+  "shareQRCode_close":       { "message": "Close" },
+
   "syncDeviceDefaultName": { "message": "$BROWSER$ on $PLATFORM$",
     "placeholders": {
       "PLATFORM": { "content": "$1", "example": "Firefox" },

@@ -204,6 +204,10 @@
   "bookmarkFolderChooser_blank":         { "message": "(名前なし)" },
   "bookmarkFolderChooser_useThisFolder": { "message": "このフォルダーを選択" },
 
+  "shareQRCode_message":     { "message": "コンテキストメニューを使用してQRコードをコピーまたは保存してください" },
+  "shareQRCode_dialogWidth": { "message": "40em" },
+  "shareQRCode_close":       { "message": "閉じる" },
+
   "syncDeviceDefaultName": { "message": "$PLATFORM$ の $BROWSER$",
     "placeholders": {
       "PLATFORM": { "content": "$1", "example": "Firefox" },

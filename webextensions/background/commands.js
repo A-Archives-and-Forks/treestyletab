@@ -6,7 +6,6 @@
 'use strict';
 
 import EventListenerManager from '/extlib/EventListenerManager.js';
-import RichConfirm from '/extlib/RichConfirm.js';
 
 import {
   log as internalLogger,
@@ -38,6 +37,8 @@ import * as TabsMove from './tabs-move.js';
 import * as TabsOpen from './tabs-open.js';
 import * as Tree from './tree.js';
 import * as TreeTransaction from './tree-transaction.js';
+
+import ShareQRCode from '/resources/dialog/ShareQRCode.js';
 
 function log(...args) {
   internalLogger('background/commands', ...args);
@@ -1588,11 +1589,9 @@ export async function generateQRCode(tab) {
   const qrcode = QRCode(0, 'L');
   qrcode.addData(tab.url);
   qrcode.make();
-  const img = qrcode.createImgTag(8);
-  console.log(img);
-  RichConfirm.showInTab(tab.id, {
-    content: `<div style="text-align: center">${img}</div>`,
-    buttons: ['OK'],
+  ShareQRCode.showInTab(tab.id, {
+    image:     qrcode.createDataURL(4),
+    sharedURL: tab.url,
   });
 }
 
