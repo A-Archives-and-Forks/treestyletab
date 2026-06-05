@@ -1127,6 +1127,9 @@ function onMessage(message, _sender, _respond) {
         Constants.kTABBAR_POSITION_INVERTED :
         Constants.kTABBAR_POSITION_REGULAR);
 
+    case Constants.kCOMMAND_GET_DEVICE_PIXEL_RATIO:
+      return Promise.resolve(window.devicePixelRatio);
+
     // for automated tests
     case Constants.kCOMMAND_GET_BOUNDING_CLIENT_RECT: {
       const range = document.createRange();

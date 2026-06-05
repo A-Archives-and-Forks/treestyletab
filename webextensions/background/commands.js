@@ -1601,8 +1601,14 @@ export async function generateQRCode(tab) {
     await promisedRestore;
   }
 
+  const devicePixelRatio = await browser.runtime.sendMessage({
+    type:     Constants.kCOMMAND_GET_DEVICE_PIXEL_RATIO,
+    windowId: tab.windowId,
+  }) || window.devicePixelRatio;
+
   ShareQRCode.showInTab(tab.id, {
     sharedURL: tab.url,
+    devicePixelRatio,
   });
 }
 
