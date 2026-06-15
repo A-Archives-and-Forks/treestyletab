@@ -80,11 +80,11 @@ async function getAllWindows() {
 
   const groupsByWindow = new Map();
   if (tabGroups) {
-  for (const group of tabGroups) {
-    const groupsInWindow = groupsByWindow.get(group.windowId) || [];
-    groupsInWindow.push(group);
-    groupsByWindow.set(group.windowId, groupsInWindow)
-  }
+    for (const group of tabGroups) {
+      const groupsInWindow = groupsByWindow.get(group.windowId) || [];
+      groupsInWindow.push(group);
+      groupsByWindow.set(group.windowId, groupsInWindow)
+    }
   }
 
   for (const win of windows) {
