@@ -75,7 +75,7 @@ async function getAllWindows() {
       // See also: https://github.com/piroor/treestyletab/issues/3311
       windowTypes: ['normal', 'panel', 'popup'],
     }).catch(ApiTabs.createErrorHandler()),
-    browser.tabGroups.query({}).catch(ApiTabs.createErrorHandler()), // see https://github.com/piroor/treestyletab/issues/3931 why we need to catch errors
+    browser.tabGroups.query({}).catch(ApiTabs.createErrorHandler()),
   ]);
 
   const groupsByWindow = new Map();
