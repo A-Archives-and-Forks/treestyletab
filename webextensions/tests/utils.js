@@ -243,7 +243,7 @@ export async function waitUntilAllTabChangesFinished(operation) {
 export async function waitUntilTabsClosed(toBeClosedTabsCount, { timeout } = {}) {
   let onRemoved;
   await Promise.race([
-    new Promise(async (resolve, reject) => {
+    new Promise(async (resolve, _reject) => {
       let cloedCount = 0;
       onRemoved = () => {
         cloedCount++;
