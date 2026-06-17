@@ -6,7 +6,7 @@
 'use strict';
 
 import {
-  wait,
+  wait as commonWait,
   configs
 } from '/common/common.js';
 import { is /*, ok, ng*/ } from './assert.js';
@@ -211,7 +211,7 @@ export async function waitUntilAllTabChangesFinished(operation) {
     let operationFinished = false;
     const onChanged = () => {
       changeCount++;
-      setTimeout(() => {
+      wait(500).then(() => {
         changeCount--;
         if (changeCount > 0)
           return;
@@ -220,7 +220,7 @@ export async function waitUntilAllTabChangesFinished(operation) {
         browser.tabs.onMoved.removeListener(onChanged);
         if (operationFinished)
           resolve();
-      }, 500);
+      });
     };
     browser.tabs.onCreated.addListener(onChanged);
     browser.tabs.onRemoved.addListener(onChanged);
@@ -238,4 +238,13 @@ export async function waitUntilAllTabChangesFinished(operation) {
     if (changeCount == 0)
       resolve();
   });
+}
+
+export async function wait(totalTimeout) {
+  const startAt = Date.now();
+  const times = Math.round(totalTimeout / 50);
+  for (let i = 0; i < times; i++) {
+    await commonWait(totalTimeout / times);
+  }
+  console.log('wait, requested ', totalTimeout, 'msec, actual ', Date.now() - startAt, 'msec');
 }

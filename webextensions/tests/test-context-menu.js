@@ -48,7 +48,7 @@ export async function testCloseTabsToTopTabs() {
       },
       tab: tabs.C.$TST.sanitized
     });
-    await wait(500);
+    await Utils.wait(500);
   });
 
   const afterTabs = await browser.tabs.query({ windowId: win.id });
@@ -83,7 +83,7 @@ export async function testCloseTabsToBottomTabs() {
       },
       tab: tabs.B.$TST.sanitized
     });
-    await wait(500);
+    await Utils.wait(500);
   });
 
   const afterTabs1 = await browser.tabs.query({ windowId: win.id });
@@ -102,7 +102,7 @@ export async function testCloseTabsToBottomTabs() {
       },
       tab: tabs.P1.$TST.sanitized
     });
-    await wait(500);
+    await Utils.wait(500);
   });
 
   const afterTabs2 = await browser.tabs.query({ windowId: win.id });
@@ -135,7 +135,7 @@ export async function testCloseOtherTabs() {
       },
       tab: tabs.B.$TST.sanitized
     });
-    await wait(500);
+    await Utils.wait(500);
   });
 
   const afterTabs = await browser.tabs.query({ windowId: win.id });
