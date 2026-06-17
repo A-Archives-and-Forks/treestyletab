@@ -44,7 +44,7 @@ export async function testInheritContainerFromAutoAttachedParent() {
       windowId:      win.id,
       cookieStoreId: 'firefox-default'
     });
-    await Utils.wait(1000); // wait until new tab is reopened by TST
+    await Utils.waitUntilTabsClosed(1, { timeout: 3000 });
   }, { windowId: win.id });
   is({
     newTabsCount:    1,

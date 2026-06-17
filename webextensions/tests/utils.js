@@ -240,6 +240,24 @@ export async function waitUntilAllTabChangesFinished(operation) {
   });
 }
 
+export async function waitUntilTabsClosed(toBeClosedTabsCount, { timeout } = {}) {
+  let onRemoved;
+  await Promise.race([
+    new Promise(async (resolve, reject) => {
+      let cloedCount = 0;
+      onRemoved = () => {
+        cloedCount++;
+        if (cloedCount < toBeClosedTabsCount)
+          return;
+        resolve();
+      };
+      browser.tabs.onRemoved.addListener(onRemoved);
+    }),
+    wait(timeout || 1000),
+  ]);
+  browser.tabs.onRemoved.removeListener(onRemoved);
+}
+
 export async function wait(totalTimeout) {
   const startAt = Date.now();
   const times = Math.round(totalTimeout / 50);
