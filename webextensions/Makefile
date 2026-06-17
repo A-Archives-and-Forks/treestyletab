@@ -68,6 +68,7 @@ install_extlib: install_dependency
 	echo 'window["codemirror-picker"] = self["codemirror-picker"];' >> $(EXTERNAL_LIB_DIR)/codemirror-colorpicker.js
 	cat node_modules/codemirror-colorpicker/dist/codemirror-colorpicker.css >> $(EXTERNAL_LIB_DIR)/codemirror-colorpicker.css
 	cp node_modules/dompurify/dist/purify.es.mjs* $(EXTERNAL_LIB_DIR)/
+	cp node_modules/morphdom/dist/morphdom-esm.js $(EXTERNAL_LIB_DIR)/
 
 fix_locale_errors:
 	find ./_locales -name messages.json | xargs "$(TOOLS_DIR)/shell/escape-special-characters.sh"

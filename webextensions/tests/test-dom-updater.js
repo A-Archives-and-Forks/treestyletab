@@ -6,7 +6,7 @@
 import { is /*, ok, ng*/ } from '/tests/assert.js';
 
 import { DOMUpdater } from '/extlib/dom-updater.js';
-import morphdom from '/node_modules/morphdom/dist/morphdom-esm.js';
+import morphdom from '/extlib/morphdom-esm.js';
 
 const container = document.body.appendChild(document.createElement('div'));
 
