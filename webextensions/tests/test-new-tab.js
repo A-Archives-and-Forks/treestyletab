@@ -157,21 +157,15 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
         // TST doesn't have a permission to simulate that, so instead I wait until a
         // content script is executed in the new tab.
         const reopenedTab = await browser.tabs.create({
-          // This must be an already loaded URL, othwrwise tabs.executeScript()
-          // is called for about:blank page and this test fails with "missing
-          // host permission" error.
           url:   `${window.location.origin}/resources/ui-color.css`,
           index: 2
         });
-        if (browser.scripting)
-          await browser.scripting.executeScript({ // Manifest V3
-            target: { tabId: reopenedTab.id },
-            func:   function() { return window.location.href; },
-          });
-        else
-          await browser.tabs.executeScript(reopenedTab.id, {
-            code: 'location.href',
-          });
+        while (true) {
+          const tab = await browser.tabs.get(reopenedTab.id);
+          if (tab.url == `${window.location.origin}/resources/ui-color.css`)
+            break;
+          await Utils.wait(250);
+        }
         browser.tabs.remove(tab.id);
         resolve(reopenedTab);
       }
