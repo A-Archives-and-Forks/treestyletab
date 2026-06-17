@@ -6,7 +6,6 @@
 'use strict';
 
 import {
-  wait,
   configs
 } from '/common/common.js';
 import { is, isNot /*, ok, ng*/ } from '/tests/assert.js';
@@ -20,7 +19,7 @@ let win;
 export async function setup() {
   win = await browser.windows.create();
   // wait until timeout the special timer which prevents grouping of new tabs
-  await wait(configs.tabBunchesDetectionDelayOnNewWindow);
+  await Utils.wait(configs.tabBunchesDetectionDelayOnNewWindow);
 }
 
 export async function teardown() {
@@ -45,7 +44,7 @@ export async function testInheritContainerFromAutoAttachedParent() {
       windowId:      win.id,
       cookieStoreId: 'firefox-default'
     });
-    await wait(1000); // wait until new tab is reopened by TST
+    await Utils.wait(1000); // wait until new tab is reopened by TST
   }, { windowId: win.id });
   is({
     newTabsCount:    1,
@@ -75,7 +74,7 @@ export async function testDoNotInheritContainerFromExplicitParent() {
       cookieStoreId: 'firefox-default',
       openerTabId:   parent.id
     });
-    await wait(1000); // wait until new tab is reopened by TST
+    await Utils.wait(1000); // wait until new tab is reopened by TST
   }, { windowId: win.id });
   is({
     newTabsCount:    1,
@@ -106,7 +105,7 @@ export async function testTryToOpenUnpinnedTabBeforePinnedTab() {
         as:        Constants.kNEWTAB_OPEN_AS_NEXT_SIBLING
       }
     });
-    await wait(1000);
+    await Utils.wait(1000);
   }, { windowId: win.id });
   is(1, newTabs.length, 'a new tab must be opened');
   is(2, newTabs[0].index, 'a new tab must be placed after pinned tabs');
@@ -117,12 +116,12 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
     insertNewChildAt:            Constants.kINSERT_END,
     insertNewTabFromPinnedTabAt: Constants.kINSERT_END
   });
-  await wait(1000); // this is required to avoid affections from other tests
+  await Utils.wait(1000); // this is required to avoid affections from other tests
   let tabs = await Utils.createTabs({
     A: { index: 1, active: true },
     B: { index: 2 }
   }, { windowId: win.id });
-  await wait(1000);
+  await Utils.wait(1000);
 
   let onCreated;
   // Simulation of a feature of something another addon which reopens a new tab with
@@ -136,7 +135,7 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
         while (true) {
           if (Date.now() - start > 1000)
             throw new Error('timeout');
-          await wait(1);
+          await Utils.wait(1);
           const tabs = await Utils.refreshTabs({ opened: tab });
           if (!tabs.opened || !tabs.opened.$TST.parent)
             continue;
@@ -193,7 +192,7 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
   const reopenedTab = await promisedTabReopenedByAnotherAddon;
 
   // wait until TST's operation is finished
-  await wait(1000);
+  await Utils.wait(1000);
   tabs = await Utils.refreshTabs({
     A:        tabs.A,
     B:        tabs.B,

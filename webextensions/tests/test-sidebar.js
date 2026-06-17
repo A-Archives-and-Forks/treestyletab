@@ -5,10 +5,6 @@
 */
 'use strict';
 
-import {
-  wait,
-  //configs,
-} from '/common/common.js';
 import { is, ok, ng } from '/tests/assert.js';
 //import { Tab } from '/common/TreeItem.js';
 
@@ -22,7 +18,7 @@ export async function setup() {
     width:  600,
     height: 500,
   });
-  await wait(250); // wait until the window is tracked
+  await Utils.wait(250); // wait until the window is tracked
   sidebar = await browser.windows.create({
     url:    `${Constants.kSHORTHAND_URIS.tabbar}?windowId=${win.id}`,
     width:  600,
@@ -43,7 +39,7 @@ export async function setup() {
     }
     if (Date.now() - startAt > 1000)
       throw new Error('timeout: failed to initialize sidebar within 1 sec');
-    await wait(100);
+    await Utils.wait(100);
   }
 }
 
@@ -68,7 +64,7 @@ export async function testMaxFaviconizedPinnedTabsInOneRow() {
     faviconizePinnedTabs:             true,
     maxFaviconizedPinnedTabsInOneRow: 0,
   });
-  await wait(250);
+  await Utils.wait(250);
 
   await Utils.createTabs({
     A: { index: 0, pinned: true },
@@ -95,7 +91,7 @@ export async function testMaxFaviconizedPinnedTabsInOneRow() {
   await Utils.setConfigs({
     maxFaviconizedPinnedTabsInOneRow: 1,
   });
-  await wait(250);
+  await Utils.wait(250);
   allPinnedTabsRect = await getAllPinnedTabsRect(win.id);
   is(pinnedTabRect.width * 1,
      allPinnedTabsRect.width,
@@ -104,7 +100,7 @@ export async function testMaxFaviconizedPinnedTabsInOneRow() {
   await Utils.setConfigs({
     maxFaviconizedPinnedTabsInOneRow: 2,
   });
-  await wait(250);
+  await Utils.wait(250);
   allPinnedTabsRect = await getAllPinnedTabsRect(win.id);
   is(pinnedTabRect.width * 2,
      allPinnedTabsRect.width,
@@ -113,7 +109,7 @@ export async function testMaxFaviconizedPinnedTabsInOneRow() {
   await Utils.setConfigs({
     maxFaviconizedPinnedTabsInOneRow: 3,
   });
-  await wait(250);
+  await Utils.wait(250);
   allPinnedTabsRect = await getAllPinnedTabsRect(win.id);
   is(pinnedTabRect.width * 3,
      allPinnedTabsRect.width,
@@ -122,7 +118,7 @@ export async function testMaxFaviconizedPinnedTabsInOneRow() {
   await Utils.setConfigs({
     maxFaviconizedPinnedTabsInOneRow: -1,
   });
-  await wait(250);
+  await Utils.wait(250);
   allPinnedTabsRect = await getAllPinnedTabsRect(win.id);
   is(pinnedTabRect.width * 7,
      allPinnedTabsRect.width,
@@ -139,7 +135,7 @@ async function isNormalTabsOverflow() {
 }
 
 export async function testTabbarOverflow() {
-  await wait(250);
+  await Utils.wait(250);
   ng(await isNormalTabsOverflow(),
      'initially the tab bar should not be overflowed');
 
@@ -198,7 +194,7 @@ export async function testTabbarOverflow() {
       'A => B => C => D => E => F => G => H => I => J => K => L => M => N => O => P => Q => R => S => T => U => V => W => X => Y',
       'A => B => C => D => E => F => G => H => I => J => K => L => M => N => O => P => Q => R => S => T => U => V => W => X => Y => Z' ]
   );
-  await wait(500);
+  await Utils.wait(500);
 
   ok(await isNormalTabsOverflow(),
      'the tab bar should be overflowed for many tabs');
@@ -207,7 +203,7 @@ export async function testTabbarOverflow() {
     type:  'treestyletab:api:collapse-tree',
     tabId: tabs.A.id
   });
-  await wait(1000);
+  await Utils.wait(1000);
   ng(await isNormalTabsOverflow(),
      'the tab bar should not be overflowed after the tree is collapsed');
 }

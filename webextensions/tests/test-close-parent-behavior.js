@@ -6,7 +6,6 @@
 'use strict';
 
 import {
-  wait,
   configs
 } from '/common/common.js';
 import { is, ok/*, ng*/ } from '/tests/assert.js';
@@ -62,7 +61,7 @@ async function expandAll(windowId) {
     tabId: '*',
     windowId
   });
-  await wait(250);
+  await Utils.wait(250);
 }
 
 async function collapseAll(windowId) {
@@ -71,7 +70,7 @@ async function collapseAll(windowId) {
     tabId: '*',
     windowId
   });
-  await wait(250);
+  await Utils.wait(250);
 }
 
 function openSidebar() {
@@ -446,7 +445,7 @@ async function closeTabsFromSidebar(tabs) {
       type:   Constants.kCOMMAND_REMOVE_TABS_BY_MOUSE_OPERATION,
       tabIds: [tab.id],
     });
-    await wait(250);
+    await Utils.wait(250);
   }
 }
 
@@ -476,7 +475,7 @@ async function moveTabsFromOutside(tabs) {
   const tabIds = tabs.map(tab => tab.id);
   for (const id of tabIds) {
     await browser.tabs.move(id, { index: 0 });
-    await wait(300);
+    await Utils.wait(300);
   }
   //await browser.tabs.remove(tabIds);
 }
@@ -937,7 +936,7 @@ export async function testPromoteOnlyFirstChildWhenClosedParentIsLastChild() {
   await expandAll(win.id);
 
   await browser.tabs.remove([tabs.B.id, tabs.E.id]);
-  await wait(500);
+  await Utils.wait(500);
 
   delete tabs.B;
   delete tabs.E;
@@ -984,7 +983,7 @@ export async function testPromoteAllChildrenWhenClosedParentIsLastChild() {
   await expandAll(win.id);
 
   await browser.tabs.remove([tabs.B.id, tabs.E.id]);
-  await wait(500);
+  await Utils.wait(500);
 
   delete tabs.B;
   delete tabs.E;
@@ -1028,7 +1027,7 @@ export async function testKeepChildrenForTemporaryAggressiveGroupWithCloseParent
 
   const beforeTabs = await browser.tabs.query({ windowId: win.id });
   await browser.tabs.remove(tabs.C.id);
-  await wait(500);
+  await Utils.wait(500);
   const afterTabs = await browser.tabs.query({ windowId: win.id });
   is(beforeTabs.length - 2,
      afterTabs.length,

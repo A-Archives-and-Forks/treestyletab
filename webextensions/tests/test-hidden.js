@@ -5,9 +5,6 @@
 */
 'use strict';
 
-import {
-  wait
-} from '/common/common.js';
 import { is /*, ok, ng*/ } from '/tests/assert.js';
 import * as TSTAPI from '/common/tst-api.js';
 //import { Tab } from '/common/TreeItem.js';
@@ -63,7 +60,7 @@ export async function testAutoFixupForHiddenTabs() {
       'A => F => G',
       'A => H' ]
   );
-  await wait(1000);
+  await Utils.wait(1000);
 
   tabs = await Utils.refreshTabs(tabs);
   {
@@ -80,7 +77,7 @@ export async function testAutoFixupForHiddenTabs() {
       browser.tabs.onUpdated.addListener(onUpdated);
       browser.tabs.hide([B.id, C.id, F.id, G.id]);
     });
-    await wait(1000);
+    await Utils.wait(1000);
   }
 
   tabs = await Utils.refreshTabs(tabs);
@@ -110,7 +107,7 @@ export async function testAutoFixupForHiddenTabs() {
       browser.tabs.onUpdated.addListener(onUpdated);
       browser.tabs.show([B.id, C.id, F.id, G.id]);
     });
-    await wait(1000);
+    await Utils.wait(1000);
   }
 
   tabs = await Utils.refreshTabs(tabs);
@@ -141,7 +138,7 @@ export async function testCalculateNewTabPositionWithHiddenTabs() {
     C: { index: 3 }
   }, { windowId: win.id });
   await browser.tabs.hide([tabs.A.id]);
-  await wait(1000);
+  await Utils.wait(1000);
   const childTabs = await Utils.createTabs({
     D: { openerTabId: tabs.B.id }
   }, { windowId: win.id });
@@ -173,7 +170,7 @@ export async function testNewTabBeforeHiddenTab() {
     G: { index: 7 }
   }, { windowId: win.id });
   await browser.tabs.hide([tabs.B.id, tabs.F.id]);
-  await wait(1000);
+  await Utils.wait(1000);
 
   tabs = await Utils.refreshTabs(tabs);
   {
@@ -200,7 +197,7 @@ export async function testNewTabBeforeHiddenTab() {
           as:        position
         }
       });
-      await wait(1000);
+      await Utils.wait(1000);
     }, { windowId: win.id });
     is(1, newTabs.length, 'a new tab must be opened');
     is(expectedIndex, newTabs[0].index, 'a new tab must be placed before hidden tab');
@@ -227,7 +224,7 @@ export async function testMoveAttachedTabBeforeHiddenTab() {
     I: { index: 9 }
   }, { windowId: win.id });
   await browser.tabs.hide([tabs.B.id, tabs.F.id]);
-  await wait(1000);
+  await Utils.wait(1000);
 
   tabs = await Utils.refreshTabs(tabs);
   {
@@ -256,7 +253,7 @@ export async function testMoveAttachedTabBeforeHiddenTab() {
     parent: tabs.C.id,
     child:  tabs.I.id
   });
-  await wait(500);
+  await Utils.wait(500);
 
   tabs = await Utils.refreshTabs(tabs);
   is(tabs.A.index + 1, tabs.H.index, 'first child tab must be placed before hidden tab');

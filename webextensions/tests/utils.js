@@ -211,7 +211,7 @@ export async function waitUntilAllTabChangesFinished(operation) {
     let operationFinished = false;
     const onChanged = () => {
       changeCount++;
-      wait(500).then(() => {
+      wait(1000).then(() => {
         changeCount--;
         if (changeCount > 0)
           return;

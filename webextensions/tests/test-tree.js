@@ -6,7 +6,6 @@
 'use strict';
 
 import {
-  wait,
   configs
 } from '/common/common.js';
 import { is /*, ok, ng*/ } from '/tests/assert.js';
@@ -54,7 +53,7 @@ export async function testInheritMutedState() {
   }
 
   await browser.tabs.update(tabs.C.id, { muted: true });
-  await wait(1000);
+  await Utils.wait(1000);
 
   tabs = await Utils.refreshTabs(tabs);
   {
@@ -77,9 +76,9 @@ export async function testInheritMutedState() {
     type:  'treestyletab:api:collapse-tree',
     tabId: tabs.B.id
   });
-  await wait(1000);
+  await Utils.wait(1000);
   await browser.tabs.update(tabs.B.id, { muted: true });
-  await wait(1000);
+  await Utils.wait(1000);
   tabs = await Utils.refreshTabs(tabs);
   {
     const { A, B, C, D } = tabs;
@@ -88,7 +87,7 @@ export async function testInheritMutedState() {
        'collapsed descendants must be muted too');
   }
   await browser.tabs.update(tabs.B.id, { muted: false });
-  await wait(1000);
+  await Utils.wait(1000);
   tabs = await Utils.refreshTabs(tabs);
   {
     const { A, B, C, D } = tabs;
@@ -198,9 +197,9 @@ export async function testNearestLoadedTabInTree() {
     tabs.L.id,
     tabs.M.id
   ]);
-  await wait(50);
+  await Utils.wait(50);
   tabs = await Utils.refreshTabs(tabs);
-  await wait(1000);
+  await Utils.wait(1000);
 
   const tabNameById = {};
   const promisedExpanded = [];
@@ -234,7 +233,7 @@ export async function testNearestLoadedTabInTree() {
       lastTab && browser.tabs.discard(lastTab.id),
       browser.tabs.reload(nextTab.id)
     ]);
-    await wait(500);
+    await Utils.wait(500);
     tabs = await Utils.refreshTabs(tabs);
     is(tabNameById[nextTab.id],
        tabs.H.$TST.nearestLoadedTabInTree &&
@@ -263,7 +262,7 @@ export async function testNearestLoadedTabInTree() {
       lastTab && browser.tabs.discard(lastTab.id),
       browser.tabs.reload(nextTab.id)
     ]);
-    await wait(500);
+    await Utils.wait(500);
     tabs = await Utils.refreshTabs(tabs);
     is(tabNameById[nextTab.id],
        tabs.H.$TST.nearestLoadedTabInTree &&
@@ -280,7 +279,7 @@ export async function testNearestLoadedTabInTree() {
 
 async function prepareRelatedTabsToTestInsertionPosition() {
   // wait until timeout the special timer which prevents grouping of new tabs
-  await wait(configs.tabBunchesDetectionDelayOnNewWindow);
+  await Utils.wait(configs.tabBunchesDetectionDelayOnNewWindow);
   await Utils.setConfigs({
     insertDroppedTabsAt:        Constants.kINSERT_END,
     simulateSelectOwnerOnClose: false
@@ -293,23 +292,23 @@ async function prepareRelatedTabsToTestInsertionPosition() {
   const C = await browser.tabs.create({ windowId, openerTabId: A.id, active, url: 'about:blank?C' });
 
   await browser.tabs.update(B.id, { active: true });
-  await wait(150);
+  await Utils.wait(150);
   const B1 = await browser.tabs.create({ windowId, openerTabId: B.id, active, url: 'about:blank?B1' });
   const B2 = await browser.tabs.create({ windowId, openerTabId: B.id, active, url: 'about:blank?B2' });
 
-  await wait(150); // this is required to prevent tabs.onActivated is processed before B1 and B2 are attached to B
+  await Utils.wait(150); // this is required to prevent tabs.onActivated is processed before B1 and B2 are attached to B
   await browser.tabs.update(C.id, { active: true });
-  await wait(150);
+  await Utils.wait(150);
   const C1 = await browser.tabs.create({ windowId, openerTabId: C.id, active, url: 'about:blank?C1' });
   const C2 = await browser.tabs.create({ windowId, openerTabId: C.id, active, url: 'about:blank?C2' });
 
-  await wait(150); // this is required to prevent tabs.onActivated is processed before C1 and C2 are attached to C
+  await Utils.wait(150); // this is required to prevent tabs.onActivated is processed before C1 and C2 are attached to C
   await browser.tabs.update(A.id, { active: true });
-  await wait(150);
+  await Utils.wait(150);
   const D = await browser.tabs.create({ windowId, openerTabId: A.id, active, url: 'about:blank?D' });
   const E = await browser.tabs.create({ windowId, openerTabId: A.id, active, url: 'about:blank?E' });
 
-  await wait(500);
+  await Utils.wait(500);
   return Utils.refreshTabs({ A, B, B1, B2, C, C1, C2, D, E });
 }
 
@@ -382,7 +381,7 @@ export async function testInsertNewChildAt_nextToLastRelatedTab() {
 
 async function preparePinnedTabsAndChildrenToTestInsertionPosition() {
   // wait until timeout the special timer which prevents grouping of new tabs
-  await wait(configs.tabBunchesDetectionDelayOnNewWindow);
+  await Utils.wait(configs.tabBunchesDetectionDelayOnNewWindow);
   await Utils.setConfigs({
     insertDroppedTabsAt:        Constants.kINSERT_END,
     simulateSelectOwnerOnClose: false
@@ -392,30 +391,30 @@ async function preparePinnedTabsAndChildrenToTestInsertionPosition() {
   const active = false;
   const A = await browser.tabs.create({ windowId, active: true, url: 'about:blank?A', pinned: true });
   const O = await browser.tabs.create({ windowId, active, url: 'about:blank?Outer' });
-  await wait(configs.tabBunchesDetectionTimeout + 250);
+  await Utils.wait(configs.tabBunchesDetectionTimeout + 250);
 
   const B = await browser.tabs.create({ windowId, openerTabId: A.id, active, url: 'about:blank?B' });
   const C = await browser.tabs.create({ windowId, openerTabId: A.id, active, url: 'about:blank?C' });
-  await wait(configs.tabBunchesDetectionTimeout + 1000);
+  await Utils.wait(configs.tabBunchesDetectionTimeout + 1000);
 
   await browser.tabs.update(B.id, { active: true });
-  await wait(150);
+  await Utils.wait(150);
   const B1 = await browser.tabs.create({ windowId, openerTabId: B.id, active, url: 'about:blank?B1' });
   const B2 = await browser.tabs.create({ windowId, openerTabId: B.id, active, url: 'about:blank?B2' });
 
-  await wait(150); // this is required to prevent tabs.onActivated is processed before B1 and B2 are attached to B
+  await Utils.wait(150); // this is required to prevent tabs.onActivated is processed before B1 and B2 are attached to B
   await browser.tabs.update(C.id, { active: true });
-  await wait(150);
+  await Utils.wait(150);
   const C1 = await browser.tabs.create({ windowId, openerTabId: C.id, active, url: 'about:blank?C1' });
   const C2 = await browser.tabs.create({ windowId, openerTabId: C.id, active, url: 'about:blank?C2' });
 
-  await wait(150); // this is required to prevent tabs.onActivated is processed before C1 and C2 are attached to C
+  await Utils.wait(150); // this is required to prevent tabs.onActivated is processed before C1 and C2 are attached to C
   await browser.tabs.update(A.id, { active: true });
-  await wait(150);
+  await Utils.wait(150);
   const D = await browser.tabs.create({ windowId, openerTabId: A.id, active, url: 'about:blank?D' });
   const E = await browser.tabs.create({ windowId, openerTabId: A.id, active, url: 'about:blank?E' });
 
-  await wait(configs.tabBunchesDetectionTimeout + 1000);
+  await Utils.wait(configs.tabBunchesDetectionTimeout + 1000);
   return Utils.refreshTabs({ A, B, B1, B2, C, C1, C2, D, E, O });
 }
 
