@@ -235,6 +235,45 @@ async function onShortcutCommand(command) {
       Commands.moveDown(activeTab, { followChildren: true });
       return;
 
+    case 'tabMoveStart': {
+      const firstNormalTab = Tab.getFirstNormalTab(activeTab.windowId);
+      if (firstNormalTab == activeTab)
+        return;
+      Commands.moveBefore(activeTab, {
+        referenceTab:   firstNormalTab,
+        followChildren: false,
+      });
+    }; return;
+    case 'treeMoveStart': {
+      const firstNormalTab = Tab.getFirstNormalTab(activeTab.windowId);
+      if (firstNormalTab == activeTab)
+        return;
+      Commands.moveBefore(activeTab, {
+        referenceTab:   firstNormalTab,
+        followChildren: true,
+      });
+    }; return;
+    case 'tabMoveEnd': {
+      const lastVisibleTab = Tab.getLastVisibleTab(activeTab.windowId);
+      if (lastVisibleTab == activeTab ||
+          lastVisibleTab.$TST.rootTab == activeTab)
+        return;
+      Commands.moveAfter(activeTab, {
+        referenceTab:   lastVisibleTab,
+        followChildren: false,
+      });
+    }; return;
+    case 'treeMoveEnd': {
+      const lastVisibleTab = Tab.getLastVisibleTab(activeTab.windowId);
+      if (lastVisibleTab == activeTab ||
+          lastVisibleTab.$TST.rootTab == activeTab)
+        return;
+      Commands.moveAfter(activeTab, {
+        referenceTab:   lastVisibleTab,
+        followChildren: true,
+      });
+    }; return;
+
     case 'focusPrevious':
       focusPrevious(activeTab);
       return;

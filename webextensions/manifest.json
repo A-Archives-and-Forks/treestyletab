@@ -150,6 +150,18 @@
     "treeMoveDown": {
       "description": "__MSG_command_treeMoveDown__"
     },
+    "tabMoveStart": {
+      "description": "__MSG_command_tabMoveStart__"
+    },
+    "treeMoveStart": {
+      "description": "__MSG_command_treeMoveStart__"
+    },
+    "tabMoveEnd": {
+      "description": "__MSG_command_tabMoveEnd__"
+    },
+    "treeMoveEnd": {
+      "description": "__MSG_command_treeMoveEnd__"
+    },
     "focusPrevious": {
       "description": "__MSG_command_focusPrevious__"
     },
