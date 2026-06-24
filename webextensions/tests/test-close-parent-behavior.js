@@ -155,7 +155,10 @@ async function assertAllChildrenPromoted({ operator, collapsed } = {}) {
   else
     await expandAll(win.id);
 
-  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]));
+  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]), {
+    close:   2,
+    timeout: 10000,
+  });
 
   delete tabs.B;
   delete tabs.E;
@@ -199,7 +202,10 @@ async function assertPromotedIntelligently({ operator, collapsed } = {}) {
   else
     await expandAll(win.id);
 
-  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.F]));
+  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.F]), {
+    close:   2,
+    timeout: 10000,
+  });
 
   delete tabs.B;
   delete tabs.F;
@@ -244,7 +250,10 @@ async function assertAllChildrenDetached({ operator, collapsed } = {}) {
   else
     await expandAll(win.id);
 
-  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.F]));
+  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.F]), {
+    close:   2,
+    timeout: 10000,
+  });
 
   delete tabs.B;
   delete tabs.F;
@@ -290,7 +299,10 @@ async function assertAllChildrenSimplyDetached({ operator, collapsed } = {}) {
   else
     await expandAll(win.id);
 
-  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.F]));
+  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.F]), {
+    close:   2,
+    timeout: 10000,
+  });
 
   delete tabs.B;
   delete tabs.F;
@@ -334,7 +346,10 @@ async function assertEntireTreeClosed({ operator, collapsed } = {}) {
   else
     await expandAll(win.id);
 
-  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]));
+  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]), {
+    close:   6,
+    timeout: 10000,
+  });
   const afterTabs = await Promise.all(
     Array.from(Object.values(tabs))
       .map(tab => browser.tabs.get(tab.id).catch(_error => null))
@@ -371,7 +386,10 @@ async function assertEntireTreeMoved({ operator, collapsed } = {}) {
   ]);
 
   const operatedTabs = [tabs.B, tabs.E];
-  await Utils.waitUntilAllTabChangesFinished(() => operator(operatedTabs));
+  await Utils.waitUntilAllTabChangesFinished(() => operator(operatedTabs), {
+    move:    2,
+    timeout: 10000,
+  });
   const [oldFirstTab, afterOperatedTabs, afterOtherTabs] = await Promise.all([
     browser.tabs.get(allTabs[0].id),
     Promise.all([tabs.B, tabs.C, tabs.D, tabs.E, tabs.F, tabs.G]
@@ -412,7 +430,11 @@ async function assertClosedParentIsReplacedWithGroup({ operator, collapsed } = {
     await expandAll(win.id);
 
   const beforeTabIds = new Set((await browser.tabs.query({ windowId: win.id })).map(tab => tab.id));
-  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]));
+  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]), {
+    open:    2,
+    close:   2,
+    timeout: 10000,
+  });
   const openedTabs = (await browser.tabs.query({ windowId: win.id })).filter(tab => !beforeTabIds.has(tab.id));
   is(2,
      openedTabs.length,
@@ -485,15 +507,15 @@ export async function testPermanentlyConsistentBehaviors() {
   openSidebar();
 
   configs.parentTabOperationBehaviorMode = Constants.kPARENT_TAB_OPERATION_BEHAVIOR_MODE_CONSISTENT;
-  await Utils.waitUntilAllTabChangesFinished(() => assertEntireTreeClosed({ operator: closeTabsFromSidebar, collapsed: true }));
-  //await Utils.waitUntilAllTabChangesFinished(() => assertEntireTreeMoved({ operator: moveTabsFromSidebar, collapsed: true }));
-  //await Utils.waitUntilAllTabChangesFinished(() => assertEntireTreeMoved({ operator: moveTabsFromSidebar }));
+  await assertEntireTreeClosed({ operator: closeTabsFromSidebar, collapsed: true });
+  //await assertEntireTreeMoved({ operator: moveTabsFromSidebar, collapsed: true });
+  //await assertEntireTreeMoved({ operator: moveTabsFromSidebar });
 
   configs.parentTabOperationBehaviorMode = Constants.kPARENT_TAB_OPERATION_BEHAVIOR_MODE_PARALLEL;
-  await Utils.waitUntilAllTabChangesFinished(() => assertEntireTreeClosed({ operator: closeTabsFromSidebar, collapsed: true }));
+  await assertEntireTreeClosed({ operator: closeTabsFromSidebar, collapsed: true });
 
   configs.parentTabOperationBehaviorMode = Constants.kPARENT_TAB_OPERATION_BEHAVIOR_MODE_CUSTOM;
-  await Utils.waitUntilAllTabChangesFinished(() => assertEntireTreeClosed({ operator: closeTabsFromSidebar, collapsed: true }));
+  await assertEntireTreeClosed({ operator: closeTabsFromSidebar, collapsed: true });
 }
 
 
@@ -503,13 +525,13 @@ async function assertCloseBehaved({
   collapsed_noSidebar, expanded_noSidebar
 }) {
   openSidebar();
-  await Utils.waitUntilAllTabChangesFinished(() => collapsed_insideSidebar({ operator: closeTabsFromSidebar, collapsed: true }));
-  await Utils.waitUntilAllTabChangesFinished(() => expanded_insideSidebar({ operator: closeTabsFromSidebar }));
-  await Utils.waitUntilAllTabChangesFinished(() => collapsed_outsideSidebar({ operator: closeTabsFromOutside, collapsed: true }));
-  await Utils.waitUntilAllTabChangesFinished(() => expanded_outsideSidebar({ operator: closeTabsFromOutside }));
+  await collapsed_insideSidebar({ operator: closeTabsFromSidebar, collapsed: true });
+  await expanded_insideSidebar({ operator: closeTabsFromSidebar });
+  await collapsed_outsideSidebar({ operator: closeTabsFromOutside, collapsed: true });
+  await expanded_outsideSidebar({ operator: closeTabsFromOutside });
   closeSidebar();
-  await Utils.waitUntilAllTabChangesFinished(() => collapsed_noSidebar({ operator: closeTabsFromOutside, collapsed: true }));
-  await Utils.waitUntilAllTabChangesFinished(() => expanded_noSidebar({ operator: closeTabsFromOutside }));
+  await collapsed_noSidebar({ operator: closeTabsFromOutside, collapsed: true });
+  await expanded_noSidebar({ operator: closeTabsFromOutside });
 }
 
 async function assertMoveBehaved({
@@ -517,11 +539,11 @@ async function assertMoveBehaved({
   collapsed_noSidebar, expanded_noSidebar
 }) {
   openSidebar();
-  await Utils.waitUntilAllTabChangesFinished(() => collapsed_outsideSidebar({ operator: moveTabsFromOutside, collapsed: true }));
-  await Utils.waitUntilAllTabChangesFinished(() => expanded_outsideSidebar({ operator: moveTabsFromOutside }));
+  await collapsed_outsideSidebar({ operator: moveTabsFromOutside, collapsed: true });
+  await expanded_outsideSidebar({ operator: moveTabsFromOutside });
   closeSidebar();
-  await Utils.waitUntilAllTabChangesFinished(() => collapsed_noSidebar({ operator: moveTabsFromOutside, collapsed: true }));
-  await Utils.waitUntilAllTabChangesFinished(() => expanded_noSidebar({ operator: moveTabsFromOutside }));
+  await collapsed_noSidebar({ operator: moveTabsFromOutside, collapsed: true });
+  await expanded_noSidebar({ operator: moveTabsFromOutside });
 }
 
 

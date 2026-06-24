@@ -38,14 +38,18 @@ export async function testInheritContainerFromAutoAttachedParent() {
     windowId:      win.id,
     cookieStoreId: 'firefox-container-1'
   });
-  let originalTab;
-  const newTabs = await Utils.doAndGetNewTabs(async () => {
-    originalTab = await browser.tabs.create({
-      windowId:      win.id,
-      cookieStoreId: 'firefox-default'
-    });
-    await Utils.waitUntilTabsClosed(1, { timeout: 3000 });
-  }, { windowId: win.id });
+  let originalTab, newTabs;
+  await Utils.waitUntilAllTabChangesFinished(async () => {
+    newTabs = await Utils.doAndGetNewTabs(async () => {
+      originalTab = await browser.tabs.create({
+        windowId:      win.id,
+        cookieStoreId: 'firefox-default'
+      });
+    }, { windowId: win.id });
+  }, {
+    close:   1,
+    timeout: 3000,
+  });
   is({
     newTabsCount:    1,
     newTabParent:    parent.id,

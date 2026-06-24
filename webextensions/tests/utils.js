@@ -205,39 +205,64 @@ export async function callAPI(message) {
   });
 }
 
-export async function waitUntilAllTabChangesFinished(operation) {
-  return new Promise(async (resolve, reject) => {
-    let changeCount = 0;
-    let operationFinished = false;
-    const onChanged = () => {
-      changeCount++;
-      wait(1000).then(() => {
-        changeCount--;
-        if (changeCount > 0)
-          return;
-        browser.tabs.onCreated.removeListener(onChanged);
-        browser.tabs.onRemoved.removeListener(onChanged);
-        browser.tabs.onMoved.removeListener(onChanged);
-        if (operationFinished)
+export async function waitUntilAllTabChangesFinished(operation, { open, close, move, timeout } = {}) {
+  open ||= 0;
+  close ||= 0;
+  move ||= 0;
+  timeout ||= 3000;
+
+  let opened = 0;
+  let closed = 0;
+  let moved = 0;
+  let operationFinished = false;
+  let tryComplete;
+  const onOpened = () => {
+    opened++;
+    wait(500).then(tryComplete);
+  };
+  const onClosed = () => {
+    closed++;
+    wait(500).then(tryComplete);
+  };
+  const onMoved = () => {
+    moved++;
+    wait(500).then(tryComplete);
+  };
+  browser.tabs.onCreated.addListener(onOpened);
+  browser.tabs.onRemoved.addListener(onClosed);
+  browser.tabs.onMoved.addListener(onMoved);
+
+  await Promise.race([
+    new Promise(async (resolve, reject) => {
+      const tryComplete = () => {
+        if (operationFinished) {
           resolve();
-      });
-    };
-    browser.tabs.onCreated.addListener(onChanged);
-    browser.tabs.onRemoved.addListener(onChanged);
-    browser.tabs.onMoved.addListener(onChanged);
-    if (typeof operation == 'function') {
-      try {
-        await operation();
+          return;
+        }
+        if (opened < open ||
+            closed < close ||
+            moved < move)
+          return;
+        resolve();
+      };
+      if (typeof operation == 'function') {
+        try {
+          await operation();
+          await wait(500)
+          tryComplete();
+        }
+        catch(error) {
+          operationFinished = true;
+          return reject(error);
+        }
       }
-      catch(error) {
-        operationFinished = true;
-        return reject(error);
-      }
-    }
-    operationFinished = true;
-    if (changeCount == 0)
-      resolve();
-  });
+    }),
+    wait(timeout),
+  ]);
+
+  browser.tabs.onCreated.removeListener(onOpened);
+  browser.tabs.onRemoved.removeListener(onClosed);
+  browser.tabs.onMoved.removeListener(onMoved);
 }
 
 export async function waitUntilTabsClosed(toBeClosedTabsCount, { timeout } = {}) {
