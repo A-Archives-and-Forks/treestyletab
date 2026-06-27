@@ -1134,7 +1134,9 @@ function onMessage(message, _sender, _respond) {
     case Constants.kCOMMAND_GET_RECT: {
       const firstNode = document.querySelector(message.startBefore || message.selector);
       const lastNode  = document.querySelector(message.endAfter || message.selector);
-      if (firstNode.parentNode !== lastNode.parentNode)
+      if (!firstNode ||
+          !lastNode ||
+          firstNode.parentNode !== lastNode.parentNode)
         return Promise.resolve(null);
 
       // We need to calculate layout size manually, because
