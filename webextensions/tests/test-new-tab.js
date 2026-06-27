@@ -174,7 +174,10 @@ export async function testReopenedWithPositionByAnotherAddonImmediatelyWhileCrea
             break;
           await Utils.wait(250);
         }
-        browser.tabs.remove(tab.id);
+        await Utils.waitUntilAllTabChangesFinished(() => browser.tabs.remove(tab.id), {
+          close:   1,
+          timeout: 5000,
+        });
         resolve(reopenedTab);
       }
       catch(e) {

@@ -87,7 +87,10 @@ function closeSidebar() {
 
 async function cleanupTabs() {
   const tabs = await browser.tabs.query({ windowId: win.id });
-  await browser.tabs.remove(tabs.slice(1).map(tab => tab.id));
+  await Utils.waitUntilAllTabChangesFinished(() => browser.tabs.remove(tabs.slice(1).map(tab => tab.id)), {
+    close:   tabs.length - 1,
+    timeout: 5000,
+  });
 }
 
 
@@ -474,7 +477,10 @@ async function closeTabsFromSidebar(tabs) {
 }
 
 async function closeTabsFromOutside(tabs) {
-  await browser.tabs.remove(tabs.map(tab => tab.id));
+  await Utils.waitUntilAllTabChangesFinished(() => browser.tabs.remove(tabs.map(tab => tab.id)), {
+    close:   tabs.length,
+    timeout: 5000,
+  });
 }
 
 /*
@@ -496,12 +502,17 @@ async function moveTabsFromSidebar(tabs) {
 */
 
 async function moveTabsFromOutside(tabs) {
-  const tabIds = tabs.map(tab => tab.id);
-  for (const id of tabIds) {
-    await browser.tabs.move(id, { index: 0 });
-    await Utils.wait(300);
-  }
-  //await browser.tabs.remove(tabIds);
+  await Utils.waitUntilAllTabChangesFinished(async () => {
+    const tabIds = tabs.map(tab => tab.id);
+    for (const id of tabIds) {
+      await browser.tabs.move(id, { index: 0 });
+      await Utils.wait(300);
+    }
+    //await browser.tabs.remove(tabIds);
+  }, {
+    move:    tabs.length,
+    timeout: 5000,
+  });
 }
 
 
@@ -959,7 +970,10 @@ export async function testPromoteOnlyFirstChildWhenClosedParentIsLastChild() {
   );
   await expandAll(win.id);
 
-  await browser.tabs.remove([tabs.B.id, tabs.E.id]);
+  await Utils.waitUntilAllTabChangesFinished(() => browser.tabs.remove([tabs.B.id, tabs.E.id]), {
+    close:   2,
+    timeout: 5000,
+  });
   await Utils.wait(500);
 
   delete tabs.B;
@@ -1006,7 +1020,10 @@ export async function testPromoteAllChildrenWhenClosedParentIsLastChild() {
   );
   await expandAll(win.id);
 
-  await browser.tabs.remove([tabs.B.id, tabs.E.id]);
+  await Utils.waitUntilAllTabChangesFinished(() => browser.tabs.remove([tabs.B.id, tabs.E.id]), {
+    close:   2,
+    timeout: 5000,
+  });
   await Utils.wait(500);
 
   delete tabs.B;
@@ -1050,7 +1067,10 @@ export async function testKeepChildrenForTemporaryAggressiveGroupWithCloseParent
   await expandAll(win.id);
 
   const beforeTabs = await browser.tabs.query({ windowId: win.id });
-  await browser.tabs.remove(tabs.C.id);
+  await Utils.waitUntilAllTabChangesFinished(() => browser.tabs.remove(tabs.C.id), {
+    close:   1,
+    timeout: 5000,
+  });
   await Utils.wait(500);
   const afterTabs = await browser.tabs.query({ windowId: win.id });
   is(beforeTabs.length - 2,
