@@ -44,6 +44,8 @@ export async function setup() {
     inheritContextualIdentityToSameSiteOrphanMode:          Constants.kCONTEXTUAL_IDENTITY_DEFAULT,
     inheritContextualIdentityToTabsFromExternalMode:        Constants.kCONTEXTUAL_IDENTITY_DEFAULT,
     inheritContextualIdentityToTabsFromAnyOtherTriggerMode: Constants.kCONTEXTUAL_IDENTITY_DEFAULT,
+
+    treatTreeAsExpandedOnClosedWithNoSidebar: false,
   });
   win = await browser.windows.create();
 }

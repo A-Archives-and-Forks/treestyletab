@@ -14,6 +14,10 @@ import * as Utils from './utils.js';
 let win, sidebar;
 
 export async function setup() {
+  await Utils.setConfigs({
+    treatTreeAsExpandedOnClosedWithNoSidebar: false,
+  });
+
   win = await browser.windows.create({
     width:  600,
     height: 500,

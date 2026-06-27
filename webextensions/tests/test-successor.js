@@ -14,6 +14,9 @@ import * as Utils from './utils.js';
 let win;
 
 export async function setup() {
+  await Utils.setConfigs({
+    treatTreeAsExpandedOnClosedWithNoSidebar: false,
+  });
   win = await browser.windows.create();
 }
 
@@ -158,9 +161,8 @@ export async function testMissingSuccessor() {
 
 export async function testSimulateSelectOwnerOnClose() {
   await Utils.setConfigs({
-    successorTabControlLevel:                 Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
-    simulateSelectOwnerOnClose:               true,
-    treatTreeAsExpandedOnClosedWithNoSidebar: false,
+    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    simulateSelectOwnerOnClose: true,
   });
 
 
@@ -226,9 +228,8 @@ export async function testSimulateSelectOwnerOnClose() {
 
 export async function testSimulateSelectOwnerOnCloseCleared() {
   await Utils.setConfigs({
-    successorTabControlLevel:                 Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
-    simulateSelectOwnerOnClose:               true,
-    treatTreeAsExpandedOnClosedWithNoSidebar: false,
+    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    simulateSelectOwnerOnClose: true,
   });
 
   let tabs = await Utils.createTabs({

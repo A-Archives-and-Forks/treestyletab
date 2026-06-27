@@ -17,6 +17,9 @@ import * as Utils from './utils.js';
 let win;
 
 export async function setup() {
+  await Utils.setConfigs({
+    treatTreeAsExpandedOnClosedWithNoSidebar: false,
+  });
   win = await browser.windows.create();
 }
 
