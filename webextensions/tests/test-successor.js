@@ -163,19 +163,16 @@ export async function testSimulateSelectOwnerOnClose() {
     treatTreeAsExpandedOnClosedWithNoSidebar: false,
   });
 
+
   let tabs = await Utils.createTabs({
     A: { index: 1, active: true },
-    B: { index: 2, openerTabId: 'A' },
   });
-  // clear "last relate tab" information
-  await browser.tabs.update(tabs.B.id, { active: true });
-  await browser.tabs.update(tabs.A.id, { active: true });
-  await Utils.wait(50);
-  const childTabs = await Utils.createTabs({
+  let childTabs = await Utils.createTabs({
+    B: { index: 2, openerTabId: tabs.A.id },
     C: { index: 3, openerTabId: tabs.A.id, active: true }
   }, { windowId: win.id });
   await browser.runtime.sendMessage({ type: Constants.kCOMMAND_WAIT_UNTIL_SUCCESSORS_UPDATED });
-  tabs = await Utils.refreshTabs({ A: tabs.A, B: tabs.B, C: childTabs.C });
+  tabs = await Utils.refreshTabs({ A: tabs.A, B: childTabs.B, C: childTabs.C });
   {
     const { A, B, C } = tabs;
     is([
@@ -190,8 +187,40 @@ export async function testSimulateSelectOwnerOnClose() {
     close:   1,
     timeout: 10000,
   });
-  const activeTabName = await getActiveTabName(tabs);
-  is(`A(${tabs.A.id})`, `${activeTabName}(${tabs[activeTabName] && tabs[activeTabName].id})`,
+  let activeTabName = await getActiveTabName(tabs);
+  is(`B(${tabs.B.id})`, `${activeTabName}(${tabs[activeTabName] && tabs[activeTabName].id})`,
+     'the opener tab must not be the successor if there are mutliple lastRelatedTabs.');
+
+
+  tabs = await Utils.createTabs({
+    D: { index: 3, active: true },
+    E: { index: 4, openerTabId: 'D' },
+  });
+  // clear "last relate tab" information to avoid multiple lastRelatedTabs
+  await browser.tabs.update(tabs.E.id, { active: true });
+  await browser.tabs.update(tabs.D.id, { active: true });
+  await Utils.wait(50);
+  childTabs = await Utils.createTabs({
+    F: { index: 5, openerTabId: tabs.D.id, active: true }
+  }, { windowId: win.id });
+  await browser.runtime.sendMessage({ type: Constants.kCOMMAND_WAIT_UNTIL_SUCCESSORS_UPDATED });
+  tabs = await Utils.refreshTabs({ D: tabs.D, E: tabs.E, F: childTabs.F });
+  {
+    const { D, E, F } = tabs;
+    is([
+      `${D.id}`,
+      `${D.id} => ${E.id}`,
+      `${D.id} => ${F.id}`
+    ], Utils.treeStructure(Object.values(tabs)),
+       'tabs must be initialized with specified structure');
+  }
+
+  await Utils.waitUntilAllTabChangesFinished(() => browser.tabs.remove(tabs.F.id), {
+    close:   1,
+    timeout: 10000,
+  });
+  activeTabName = await getActiveTabName(tabs);
+  is(`D(${tabs.D.id})`, `${activeTabName}(${tabs[activeTabName] && tabs[activeTabName].id})`,
      'the opener tab must be the successor.');
 }
 
@@ -205,15 +234,9 @@ export async function testSimulateSelectOwnerOnCloseCleared() {
   let tabs = await Utils.createTabs({
     A: { index: 1, active: true },
     B: { index: 2, openerTabId: 'A' },
-  });
-  // clear "last relate tab" information
-  await browser.tabs.update(tabs.B.id, { active: true });
-  await browser.tabs.update(tabs.A.id, { active: true });
-  await Utils.wait(50);
-  const childTabs = await Utils.createTabs({
-    C: { index: 3, openerTabId: tabs.A.id }
+    C: { index: 3, openerTabId: 'A' },
   }, { windowId: win.id });
-  tabs = await Utils.refreshTabs({ A: tabs.A, B: childTabs.B, C: childTabs.C });
+  tabs = await Utils.refreshTabs(tabs);
   {
     const { A, B, C } = tabs;
     is([
