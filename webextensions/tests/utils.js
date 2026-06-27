@@ -240,19 +240,17 @@ export async function waitUntilAllTabChangesFinished(operation, { open, close, m
   await Promise.race([
     new Promise(async (resolve, reject) => {
       const tryComplete = () => {
-        if (operationFinished) {
-          resolve();
-          return;
-        }
         if (opened < open ||
             closed < close ||
-            moved < move)
+            moved < move ||
+            !operationFinished)
           return;
         resolve();
       };
       if (typeof operation == 'function') {
         try {
           returnValue = await operation();
+          operationFinished = true;
           await wait(500)
           tryComplete();
         }

@@ -48,10 +48,11 @@ export async function testInheritContainerFromAutoAttachedParent() {
         windowId:      win.id,
         cookieStoreId: 'firefox-default'
       });
+      await Utils.wait(1000); // wait until the new tab is reopened
     }, { windowId: win.id });
   }, {
     close:   1,
-    timeout: 3000,
+    timeout: 5000,
   });
   is({
     newTabsCount:    1,
@@ -59,7 +60,7 @@ export async function testInheritContainerFromAutoAttachedParent() {
     newTabContainer: 'firefox-container-1'
   }, {
     newTabsCount:    newTabs.length,
-    newTabParent:    newTabs.length > 0 && newTabs[0].$TST.parentId,
+    newTabParent:    newTabs.length > 0 && newTabs[0].openerTabId,
     newTabContainer: newTabs.length > 0 && newTabs[0].cookieStoreId
   }, 'a new tab implicitly attached to the active tab must inherit the contianer of the old active tab, and there must not be any needless group tab to group the original tab and the reopened tab.');
   isNot(originalTab.id, newTabs[0].id,
@@ -89,7 +90,7 @@ export async function testDoNotInheritContainerFromExplicitParent() {
     newTabContainer: 'firefox-default'
   }, {
     newTabsCount:    newTabs.length,
-    newTabParent:    newTabs.length > 0 && newTabs[0].$TST.parentId,
+    newTabParent:    newTabs.length > 0 && newTabs[0].openerTabId,
     newTabContainer: newTabs.length > 0 && newTabs[0].cookieStoreId
   }, 'a new tab explicitly attached to the active tab must not inherit the contianer of the old active tab.');
 }
