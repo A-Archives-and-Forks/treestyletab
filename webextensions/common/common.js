@@ -157,6 +157,7 @@ export function isRightside() {
 }
 
 
+let configsInitialized = false;
 export const configs = new Configs({
   optionsExpandedSections: [
     'section-appearance',
@@ -618,6 +619,7 @@ export const configs = new Configs({
     'common/Window':                     false,
     'common/api-tabs':                   false,
     'common/bookmark':                   false,
+    'common/common':                     false,
     'common/contextual-identities':      false,
     'common/dialog':                     false,
     'common/permissions':                false,
@@ -661,8 +663,11 @@ export const configs = new Configs({
 
   testKey: 0 // for tests/utils.js
 }, {
-  localKeys
+  localKeys,
+  logger:  (...args) => configsInitialized && log('common/common', ...args),
+  logging: true,
 });
+configsInitialized = true;
 
 configs.$addLocalLoadedObserver((key, value) => {
   switch (key) {

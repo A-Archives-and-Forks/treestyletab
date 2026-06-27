@@ -296,5 +296,5 @@ export async function wait(totalTimeout) {
   for (let i = 0; i < times; i++) {
     await commonWait(totalTimeout / times);
   }
-  console.log('wait, requested ', totalTimeout, 'msec, actual ', Date.now() - startAt, 'msec');
+  //console.log('wait, requested ', totalTimeout, 'msec, actual ', Date.now() - startAt, 'msec');
 }
