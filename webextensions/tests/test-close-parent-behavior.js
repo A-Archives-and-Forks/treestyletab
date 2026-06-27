@@ -45,6 +45,10 @@ export async function setup() {
     inheritContextualIdentityToTabsFromExternalMode:        Constants.kCONTEXTUAL_IDENTITY_DEFAULT,
     inheritContextualIdentityToTabsFromAnyOtherTriggerMode: Constants.kCONTEXTUAL_IDENTITY_DEFAULT,
 
+    autoCollapseExpandSubtreeOnAttach:                      false,
+    autoCollapseExpandSubtreeOnSelect:                      false,
+    autoCollapseExpandSubtreeOnSelectExceptActiveTabRemove: false,
+
     treatTreeAsExpandedOnClosedWithNoSidebar: false,
   });
   win = await browser.windows.create();
