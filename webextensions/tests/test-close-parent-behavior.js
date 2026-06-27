@@ -438,13 +438,13 @@ async function assertClosedParentIsReplacedWithGroup({ operator, collapsed } = {
   else
     await expandAll(win.id);
 
-  const beforeTabIds = new Set((await browser.tabs.query({ windowId: win.id })).map(tab => tab.id));
-  await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]), {
-    open:    2,
-    close:   2,
-    timeout: 10000,
-  });
-  const openedTabs = (await browser.tabs.query({ windowId: win.id })).filter(tab => !beforeTabIds.has(tab.id));
+  const openedTabs = await Utils.doAndGetNewTabs(async () => {
+    await Utils.waitUntilAllTabChangesFinished(() => operator([tabs.B, tabs.E]), {
+      open:    2,
+      close:   2,
+      timeout: 10000,
+    });
+  }, { windowId: win.id });
   is(2,
      openedTabs.length,
      'group tabs must be opened for closed parent tabs');
