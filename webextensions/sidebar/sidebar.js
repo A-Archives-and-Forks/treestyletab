@@ -1131,29 +1131,40 @@ function onMessage(message, _sender, _respond) {
       return Promise.resolve(window.devicePixelRatio);
 
     // for automated tests
-    case Constants.kCOMMAND_GET_BOUNDING_CLIENT_RECT: {
-      const range = document.createRange();
-      if (message.selector) {
-        const node = document.querySelector(message.selector);
-        if (!node) {
-          range.detach();
-          return Promise.resolve(null);
-        }
-        range.selectNode(node);
+    case Constants.kCOMMAND_GET_RECT: {
+      const firstNode = document.querySelector(message.startBefore || message.selector);
+      const lastNode  = document.querySelector(message.endAfter || message.selector);
+      if (firstNode.parentNode !== lastNode.parentNode)
+        return Promise.resolve(null);
+
+      // We need to calculate layout size manually, because
+      // Element/Range.getBoundingClientRect() returns width containing
+      // full width of clipped texts.
+      let left   = Infinity;
+      let top    = Infinity;
+      let right  = -Infinity;
+      let bottom = -Infinity;
+      for (let node = firstNode; node; node = node.nextElementSibling) {
+        const rect = node.getBoundingClientRect();
+        left   = Math.min(left, rect.left);
+        top    = Math.min(top, rect.top);
+        right  = Math.max(right, rect.left + node.offsetWidth);
+        bottom = Math.max(bottom, rect.top + node.offsetHeight);
+        if (node === lastNode)
+          break;
       }
-      else {
-        range.setStartBefore(document.querySelector(message.startBefore));
-        range.setEndAfter(document.querySelector(message.endAfter));
-      }
-      const rect = range.getBoundingClientRect();
-      range.detach();
+      if (left === Infinity)
+        return Promise.resolve(null);
+
       return Promise.resolve({
-        bottom: rect.bottom,
-        height: rect.height,
-        left:   rect.left,
-        right:  rect.right,
-        top:    rect.top,
-        width:  rect.width,
+        bottom,
+        height: bottom - top,
+        left,
+        right,
+        top,
+        width:  right - left,
+        x:      left,
+        y:      top,
       });
     }; break;
   }

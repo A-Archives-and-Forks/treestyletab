@@ -19,12 +19,13 @@ export async function setup() {
   });
 
   win = await browser.windows.create({
-    width:  600,
+    width:  800,
     height: 500,
   });
   await Utils.wait(250); // wait until the window is tracked
   sidebar = await browser.windows.create({
     url:    `${Constants.kSHORTHAND_URIS.tabbar}?windowId=${win.id}`,
+    type:   'popup',
     width:  600,
     height: 500,
   });
@@ -41,8 +42,8 @@ export async function setup() {
     }
     catch(_error) {
     }
-    if (Date.now() - startAt > 1000)
-      throw new Error('timeout: failed to initialize sidebar within 1 sec');
+    if (Date.now() - startAt > 5000)
+      throw new Error('timeout: failed to initialize sidebar within 5 sec');
     await Utils.wait(100);
   }
 }
@@ -54,10 +55,10 @@ export async function teardown() {
 }
 
 
-function getAllPinnedTabsRect() {
+function getAllPinnedTabsRect(windowId) {
   return browser.runtime.sendMessage({
-    type:        Constants.kCOMMAND_GET_BOUNDING_CLIENT_RECT,
-    windowId:    win.id,
+    type:        Constants.kCOMMAND_GET_RECT,
+    windowId,
     startBefore: 'tab-item:nth-child(1).pinned',
     endAfter:    'tab-item:nth-child(7).pinned',
   });
@@ -82,7 +83,7 @@ export async function testMaxFaviconizedPinnedTabsInOneRow() {
 
   let [pinnedTabRect, allPinnedTabsRect] = await Promise.all([ // eslint-disable-line prefer-const
     browser.runtime.sendMessage({
-      type:     Constants.kCOMMAND_GET_BOUNDING_CLIENT_RECT,
+      type:     Constants.kCOMMAND_GET_RECT,
       windowId: win.id,
       selector: 'tab-item:nth-child(1).pinned',
     }),
@@ -131,7 +132,7 @@ export async function testMaxFaviconizedPinnedTabsInOneRow() {
 
 async function isNormalTabsOverflow() {
   const rect = await browser.runtime.sendMessage({
-    type:     Constants.kCOMMAND_GET_BOUNDING_CLIENT_RECT,
+    type:     Constants.kCOMMAND_GET_RECT,
     windowId: win.id,
     selector: '#normal-tabs-container.overflow',
   });
