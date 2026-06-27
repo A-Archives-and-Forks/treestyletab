@@ -46,46 +46,46 @@ export async function createTabs(definitions, commonParams = {}) {
   let toBeActiveTabId;
   let treeChanged = false;
   await waitUntilAllTabChangesFinished(async () => {
-  if (Array.isArray(definitions)) {
-    tabs = Promise.all(definitions.map(async (definition, index) => {
-      if (!definition.url)
-        definition.url = `about:blank?${index}`;
-      const params = { ...commonParams, ...definition };
-      if (params.openerTabId)
-        treeChanged = true;
-      const tab = await createTab({
-        ...params,
-        active: false // prepare all tabs in background, otherwise they may be misordered!
-      });
-      if (definition.active)
-        toBeActiveTabId = tab.id;
-      return tab;
-    }));
-  }
-
-  if (typeof definitions == 'object') {
-    tabs = {};
-    for (const name of Object.keys(definitions)) {
-      const definition = definitions[name];
-      if (definition.openerTabId in tabs)
-        definition.openerTabId = tabs[definition.openerTabId].id;
-      if (!definition.url)
-        definition.url = `about:blank?${name}`;
-      const params = { ...commonParams, ...definition };
-      if (params.openerTabId)
-        treeChanged = true;
-      tabs[name] = await createTab({
-        ...params,
-        active: false // prepare all tabs in background, otherwise they may be misordered!
-      });
-      await wait(100);
-      if (definition.active)
-        toBeActiveTabId = tabs[name].id;
+    if (Array.isArray(definitions)) {
+      tabs = Promise.all(definitions.map(async (definition, index) => {
+        if (!definition.url)
+          definition.url = `about:blank?${index}`;
+        const params = { ...commonParams, ...definition };
+        if (params.openerTabId)
+          treeChanged = true;
+        const tab = await createTab({
+          ...params,
+          active: false // prepare all tabs in background, otherwise they may be misordered!
+        });
+        if (definition.active)
+          toBeActiveTabId = tab.id;
+        return tab;
+      }));
     }
-  }
 
-  if (!tabs)
-    throw new Error('Invalid tab definitions: ', definitions);
+    if (typeof definitions == 'object') {
+      tabs = {};
+      for (const name of Object.keys(definitions)) {
+        const definition = definitions[name];
+        if (definition.openerTabId in tabs)
+          definition.openerTabId = tabs[definition.openerTabId].id;
+        if (!definition.url)
+          definition.url = `about:blank?${name}`;
+        const params = { ...commonParams, ...definition };
+        if (params.openerTabId)
+          treeChanged = true;
+        tabs[name] = await createTab({
+          ...params,
+          active: false // prepare all tabs in background, otherwise they may be misordered!
+        });
+        await wait(100);
+        if (definition.active)
+          toBeActiveTabId = tabs[name].id;
+      }
+    }
+
+    if (!tabs)
+      throw new Error('Invalid tab definitions: ', definitions);
   }, {
     open: Array.isArray(definitions) ? definitions.length : typeof definitions == 'object' ? Object.keys(definitions).length : 0,
   })

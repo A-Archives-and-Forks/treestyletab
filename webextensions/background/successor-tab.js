@@ -460,12 +460,12 @@ Tree.onSubtreeCollapsedStateChanging.addListener((tab, _info = {}) => {
 
 SidebarConnection.onConnected.addListener((windowId, _openCount) => {
   if (configs.treatTreeAsExpandedOnClosedWithNoSidebar)
-  updateActiveTab(windowId);
+    updateActiveTab(windowId);
 });
 
 SidebarConnection.onDisconnected.addListener((windowId, _openCount) => {
   if (configs.treatTreeAsExpandedOnClosedWithNoSidebar)
-  updateActiveTab(windowId);
+    updateActiveTab(windowId);
 });
 
 // for automated test
