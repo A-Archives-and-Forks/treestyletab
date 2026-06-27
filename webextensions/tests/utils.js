@@ -45,6 +45,7 @@ export async function createTabs(definitions, commonParams = {}) {
   let tabs;
   let toBeActiveTabId;
   let treeChanged = false;
+  await waitUntilAllTabChangesFinished(async () => {
   if (Array.isArray(definitions)) {
     tabs = Promise.all(definitions.map(async (definition, index) => {
       if (!definition.url)
@@ -85,6 +86,9 @@ export async function createTabs(definitions, commonParams = {}) {
 
   if (!tabs)
     throw new Error('Invalid tab definitions: ', definitions);
+  }, {
+    open: Array.isArray(definitions) ? definitions.length : typeof definitions == 'object' ? Object.keys(definitions).length : 0,
+  })
 
   if (toBeActiveTabId)
     await browser.tabs.update(toBeActiveTabId, { active: true });
@@ -232,6 +236,7 @@ export async function waitUntilAllTabChangesFinished(operation, { open, close, m
   browser.tabs.onRemoved.addListener(onClosed);
   browser.tabs.onMoved.addListener(onMoved);
 
+  let returnValue;
   await Promise.race([
     new Promise(async (resolve, reject) => {
       const tryComplete = () => {
@@ -247,7 +252,7 @@ export async function waitUntilAllTabChangesFinished(operation, { open, close, m
       };
       if (typeof operation == 'function') {
         try {
-          await operation();
+          returnValue = await operation();
           await wait(500)
           tryComplete();
         }
@@ -263,6 +268,8 @@ export async function waitUntilAllTabChangesFinished(operation, { open, close, m
   browser.tabs.onCreated.removeListener(onOpened);
   browser.tabs.onRemoved.removeListener(onClosed);
   browser.tabs.onMoved.removeListener(onMoved);
+
+  return returnValue;
 }
 
 export async function waitUntilTabsClosed(toBeClosedTabsCount, { timeout } = {}) {

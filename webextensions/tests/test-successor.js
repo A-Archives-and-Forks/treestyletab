@@ -158,20 +158,24 @@ export async function testMissingSuccessor() {
 
 export async function testSimulateSelectOwnerOnClose() {
   await Utils.setConfigs({
-    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
-    simulateSelectOwnerOnClose: true
+    successorTabControlLevel:                 Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    simulateSelectOwnerOnClose:               true,
+    treatTreeAsExpandedOnClosedWithNoSidebar: false,
   });
 
   let tabs = await Utils.createTabs({
-    A: { index: 1, active: true }
+    A: { index: 1, active: true },
+    B: { index: 2, openerTabId: 'A' },
   });
+  // clear "last relate tab" information
+  await browser.tabs.update(tabs.B.id, { active: true });
+  await browser.tabs.update(tabs.A.id, { active: true });
   await Utils.wait(50);
   const childTabs = await Utils.createTabs({
-    B: { index: 2, openerTabId: tabs.A.id },
     C: { index: 3, openerTabId: tabs.A.id, active: true }
   }, { windowId: win.id });
   await browser.runtime.sendMessage({ type: Constants.kCOMMAND_WAIT_UNTIL_SUCCESSORS_UPDATED });
-  tabs = await Utils.refreshTabs({ A: tabs.A, B: childTabs.B, C: childTabs.C });
+  tabs = await Utils.refreshTabs({ A: tabs.A, B: tabs.B, C: childTabs.C });
   {
     const { A, B, C } = tabs;
     is([
@@ -193,15 +197,20 @@ export async function testSimulateSelectOwnerOnClose() {
 
 export async function testSimulateSelectOwnerOnCloseCleared() {
   await Utils.setConfigs({
-    successorTabControlLevel:   Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
-    simulateSelectOwnerOnClose: true
+    successorTabControlLevel:                 Constants.kSUCCESSOR_TAB_CONTROL_IN_TREE,
+    simulateSelectOwnerOnClose:               true,
+    treatTreeAsExpandedOnClosedWithNoSidebar: false,
   });
 
   let tabs = await Utils.createTabs({
-    A: { index: 1, active: true }
+    A: { index: 1, active: true },
+    B: { index: 2, openerTabId: 'A' },
   });
+  // clear "last relate tab" information
+  await browser.tabs.update(tabs.B.id, { active: true });
+  await browser.tabs.update(tabs.A.id, { active: true });
+  await Utils.wait(50);
   const childTabs = await Utils.createTabs({
-    B: { index: 2, openerTabId: tabs.A.id },
     C: { index: 3, openerTabId: tabs.A.id }
   }, { windowId: win.id });
   tabs = await Utils.refreshTabs({ A: tabs.A, B: childTabs.B, C: childTabs.C });
