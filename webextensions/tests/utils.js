@@ -291,7 +291,7 @@ export async function waitUntilTabsClosed(toBeClosedTabsCount, { timeout } = {})
 }
 
 export async function wait(totalTimeout) {
-  const startAt = Date.now();
+  //const startAt = Date.now();
   const times = Math.round(totalTimeout / 50);
   for (let i = 0; i < times; i++) {
     await commonWait(totalTimeout / times);
