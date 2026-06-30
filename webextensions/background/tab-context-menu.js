@@ -1023,20 +1023,20 @@ async function onShown(info, contextTab) {
 
     const canWriteToClipboard = typeof navigator.clipboard.write == 'function' || typeof navigator.clipboard.writeText == 'function';
     updateItem('context_copyLinks', {
-      visible: emulate && sendableContextTabs.length > 0,
-      enabled: canWriteToClipboard,
-      multiselected,
-      count:   sendableContextTabs.length
+      visible:       emulate && sendableContextTabs.length > 0,
+      enabled:       canWriteToClipboard,
+      multiselected: sendableContextTabs.length > 1,
+      count:         sendableContextTabs.length,
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_copyTreeLinks', {
-      visible: emulate && sendableContextTabs.length > 0 && configs.context_topLevel_copyTreeLinks && hasChild,
-      enabled: canWriteToClipboard && hasChild,
-      multiselected
+      visible:       emulate && sendableContextTabs.length > 0 && configs.context_topLevel_copyTreeLinks && hasChild,
+      enabled:       canWriteToClipboard && hasChild,
+      multiselected: sendableContextTabs.length > 1,
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_copyDescendantsLinks', {
-      visible: emulate && sendableContextTabs.length > 0 && configs.context_topLevel_copyDescendantsLinks && hasChild,
-      enabled: canWriteToClipboard && hasChild,
-      multiselected
+      visible:       emulate && sendableContextTabs.length > 0 && configs.context_topLevel_copyDescendantsLinks && hasChild,
+      enabled:       canWriteToClipboard && hasChild,
+      multiselected: sendableContextTabs.length > 1,
     }) && modifiedItemsCount++;
     updateItem('context_generateQRCode', {
       visible: emulate && sendableContextTabs.length == 1,
@@ -1044,14 +1044,14 @@ async function onShown(info, contextTab) {
     }) && modifiedItemsCount++;
 
     updateItem('context_sendTabsToDevice', {
-      visible: emulate && sendableContextTabs.length > 0,
-      multiselected,
-      count:   contextTabs.length
+      visible:       emulate && sendableContextTabs.length > 0,
+      multiselected: sendableContextTabs.length > 1,
+      count:         sendableContextTabs.length,
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_sendTreeToDevice', {
-      visible: emulate && sendableContextTabs.length > 0 && configs.context_topLevel_sendTreeToDevice && hasChild,
-      enabled: hasChild,
-      multiselected
+      visible:       emulate && sendableContextTabs.length > 0 && configs.context_topLevel_sendTreeToDevice && hasChild,
+      enabled:       hasChild,
+      multiselected: sendableContextTabs.length > 1,
     }) && modifiedItemsCount++;
 
     let showContextualIdentities = false;
