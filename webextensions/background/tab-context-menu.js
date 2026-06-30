@@ -845,6 +845,7 @@ async function onShown(info, contextTab) {
       contextTab ?
         [contextTab] :
         [];
+    const sendableContextTabs   = contextTabs.filter(Sync.isSendableTab);
     const hasChild              = contextTab && contextTabs.some(tab => tab.$TST.hasChild);
     const { hasUnmutedTab, hasUnmutedDescendant } = Commands.getUnmutedState(contextTabs);
     const { hasAutoplayBlockedTab, hasAutoplayBlockedDescendant } = Commands.getAutoplayBlockedState(contextTabs);
@@ -1017,39 +1018,38 @@ async function onShown(info, contextTab) {
     }) && modifiedItemsCount++;
 
     updateItem('context_shareTabURL', {
-      visible: emulate && !!contextTab && Sync.isSendableTab(contextTab) && !multiselected,
+      visible: emulate && sendableContextTabs.length > 0,
     }) && modifiedItemsCount++;
 
     const canWriteToClipboard = typeof navigator.clipboard.write == 'function' || typeof navigator.clipboard.writeText == 'function';
     updateItem('context_copyLinks', {
-      visible: emulate && !!contextTab,
+      visible: emulate && sendableContextTabs.length > 0,
       enabled: canWriteToClipboard,
       multiselected,
-      count:   contextTabs.length
+      count:   sendableContextTabs.length
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_copyTreeLinks', {
-      visible: emulate && !!contextTab && configs.context_topLevel_copyTreeLinks && hasChild,
+      visible: emulate && sendableContextTabs.length > 0 && configs.context_topLevel_copyTreeLinks && hasChild,
       enabled: canWriteToClipboard && hasChild,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_copyDescendantsLinks', {
-      visible: emulate && !!contextTab && configs.context_topLevel_copyDescendantsLinks && hasChild,
+      visible: emulate && sendableContextTabs.length > 0 && configs.context_topLevel_copyDescendantsLinks && hasChild,
       enabled: canWriteToClipboard && hasChild,
       multiselected
     }) && modifiedItemsCount++;
     updateItem('context_generateQRCode', {
-      visible: emulate && !!contextTab,
-      enabled: contextTabs.length == 1,
-      multiselected,
+      visible: emulate && sendableContextTabs.length == 1,
+      enabled: sendableContextTabs.length == 1,
     }) && modifiedItemsCount++;
 
     updateItem('context_sendTabsToDevice', {
-      visible: emulate && !!contextTab && contextTabs.filter(Sync.isSendableTab).length > 0,
+      visible: emulate && sendableContextTabs.length > 0,
       multiselected,
       count:   contextTabs.length
     }) && modifiedItemsCount++;
     updateItem('context_topLevel_sendTreeToDevice', {
-      visible: emulate && !!contextTab && contextTabs.filter(Sync.isSendableTab).length > 0 && configs.context_topLevel_sendTreeToDevice && hasChild,
+      visible: emulate && sendableContextTabs.length > 0 && configs.context_topLevel_sendTreeToDevice && hasChild,
       enabled: hasChild,
       multiselected
     }) && modifiedItemsCount++;
@@ -1352,6 +1352,7 @@ async function onClick(info, contextTab) {
   const isMultiselected = contextTab ? contextTab.$TST.multiselected : multiselectedTabs.length > 1;
   if (!isMultiselected)
     multiselectedTabs = null;
+  const sendableMultiselectedTabs = multiselectedTabs ? multiselectedTabs.filter(Sync.isSendableTab) : [];
 
   switch (info.menuItemId.replace(/^noContextTab:/, '')) {
     case 'context_newTab': {
@@ -1459,19 +1460,19 @@ async function onClick(info, contextTab) {
         //mSharingService.openPreferences();
       break;
     case 'context_copyLinks':
-      Commands.copyLinks(multiselectedTabs || [contextTab]);
+      Commands.copyLinks(sendableMultiselectedTabs || [contextTab]);
       break;
     case 'context_generateQRCode':
-      Commands.generateQRCode(contextTab);
+      Commands.generateQRCode(sendableMultiselectedTabs[0]);
       break;
     case 'context_sendTabsToDevice:all':
-      Sync.sendTabsToAllDevices(multiselectedTabs || [contextTab]);
+      Sync.sendTabsToAllDevices(sendableMultiselectedTabs || [contextTab]);
       break;
     case 'context_sendTabsToDevice:manage':
       Sync.manageDevices(windowId);
       break;
     case 'context_topLevel_sendTreeToDevice:all':
-      Sync.sendTabsToAllDevices(multiselectedTabs || [contextTab], { recursively: true });
+      Sync.sendTabsToAllDevices(sendableMultiselectedTabs || [contextTab], { recursively: true });
       break;
     case 'context_selectAllTabs': {
       const tabs = await browser.tabs.query({ windowId }).catch(ApiTabs.createErrorHandler());
